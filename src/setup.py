@@ -37,6 +37,9 @@ def make_loader():
 	os.system("as " + ASPARAMS + " loader.s -o loader.o")
 
 def link():
+	if not (os.path.isdir("./out")):
+		os.system("mkdir out")
+
 	os.system("ld -melf_i386 -T linker.ld -o ./out/kernel.bin loader.o ./kernel/kernel.o")
 
 def clean():
