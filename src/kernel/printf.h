@@ -1,3 +1,6 @@
+#ifndef PRINTF_H
+#define PRINTF_H
+
 #include <stdarg.h>
 #include "itoa.h"
 #include "string.h"
@@ -72,3 +75,5 @@ void clear()
 		VideoMemory[i] = (VideoMemory[i] & 0xff00) | ' ';
 	}
 }
+
+#endif

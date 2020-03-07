@@ -1,3 +1,6 @@
+#ifndef ITOA_H
+#define ITOA_H
+
 int digit_count(int num)
 {
   int count = 0;
@@ -28,3 +31,5 @@ void itoa(int num, char *number)
     number[dgcount] = '\0';
   }
 }
+
+#endif

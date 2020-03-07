@@ -1,3 +1,6 @@
+#ifndef STRING_H
+#define STRING_H
+
 int len(const char *format)
 {
     int index = 0;
@@ -7,3 +10,5 @@ int len(const char *format)
     }
     return index;
 }
+
+#endif
