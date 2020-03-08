@@ -7,12 +7,23 @@
 
 unsigned short* VideoMemory = (unsigned short*)0xb8000;
 int VideoMemoryIndex = 0;
+int NewLineIndex = 0;
+
+void indexmng()
+{
+	if (VideoMemoryIndex >= 80)
+	{
+		VideoMemoryIndex = 0;
+		NewLineIndex++;
+	}
+}
 
 void puts(char* str)
 {
 	for (int i = 0; str[i] != '\0'; i++){
-		VideoMemory[VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | str[i];
+		VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | str[i];
 		VideoMemoryIndex++;
+		indexmng();
 	}
 }
 
@@ -22,15 +33,17 @@ void puti(int num)
 	itoa(num, str);
 
 	for (int i = 0; str[i] != '\0'; i++){
-		VideoMemory[VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | str[i];
+		VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | str[i];
 		VideoMemoryIndex++;
+		indexmng();
 	}
 }
 
 void putc(int c)
 {
-	VideoMemory[VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | c;
+	VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | c;
 	VideoMemoryIndex++;
+	indexmng();
 }
 
 void vprintf(const char *format, va_list v)
@@ -42,11 +55,10 @@ void vprintf(const char *format, va_list v)
 	{
 		if (format[i] == '%')
 		{
-
 			if (format[i+1] == 's'){
 				puts(va_arg(v, char*));
 			}
-
+			
 			if (format[i+1] == 'd'){
 				puti(va_arg(v, int));
 			}
@@ -54,19 +66,26 @@ void vprintf(const char *format, va_list v)
 			if (format[i+1] == 'c'){
 				putc(va_arg(v, int));
 			}
+			i+=2;
 		}
-		i+=2;
+
+		if (format[i] == '\n')
+		{
+			NewLineIndex++;
+			VideoMemoryIndex = 0;
+			i++;
+		}
 	}
 }
 
 void printf (const char *format, ...)
 {
-   va_list arg;
-   int done;
+	va_list arg;
+	int done;
 
-   va_start (arg, format);
-   vprintf (format, arg);
-   va_end (arg);
+	va_start (arg, format);
+	vprintf (format, arg);
+	va_end (arg);
 }
 
 void clear()
