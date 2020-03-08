@@ -2,8 +2,8 @@
 #define PRINTF_H
 
 #include <stdarg.h>
-#include "itoa.h"
-#include "string.h"
+#include "itoa.hpp"
+#include "string.hpp"
 
 unsigned short* VideoMemory = (unsigned short*)0xb8000;
 int VideoMemoryIndex = 0;

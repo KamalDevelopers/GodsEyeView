@@ -25,7 +25,7 @@ for file in files:
 		cppfiles.append(PATH + file)
 		cppfiles_names.append(filename)
 
-	if file_extension == ".h":
+	if file_extension == ".hpp":
 		headerfiles.append(PATH + file)
 		headerfiles_names.append(filename)
 
