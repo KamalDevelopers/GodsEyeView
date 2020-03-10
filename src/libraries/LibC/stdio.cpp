@@ -1,13 +1,4 @@
-#ifndef PRINTF_H
-#define PRINTF_H
-
-#include <stdarg.h>
-#include "itoa.hpp"
-#include "string.hpp"
-
-unsigned short* VideoMemory = (unsigned short*)0xb8000;
-int VideoMemoryIndex = 0;
-int NewLineIndex = 0;
+#include "stdio.hpp"
 
 void indexmng()
 {
@@ -75,6 +66,11 @@ void vprintf(const char *format, va_list v)
 			VideoMemoryIndex = 0;
 			i++;
 		}
+		if (format[i] == '\b')
+		{
+			VideoMemoryIndex--;
+			i++;
+		}
 	}
 }
 
@@ -94,5 +90,3 @@ void clear()
 		VideoMemory[i] = (VideoMemory[i] & 0xff00) | ' ';
 	}
 }
-
-#endif

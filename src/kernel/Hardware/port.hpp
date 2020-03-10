@@ -1,7 +1,7 @@
-#ifndef PORT_H
-#define PORT_H
+#ifndef PORT_HPP
+#define PORT_HPP
 
-#include "types.hpp"
+#include "LibC/types.hpp"
 
 class Port
 {
@@ -95,5 +95,4 @@ class Port32Bit : public Port
             __asm__ volatile("outl %0, %1" : : "a"(_data), "Nd" (_port));
         }
 };
-
 #endif

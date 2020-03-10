@@ -1,7 +1,7 @@
-#ifndef ITOA_H
-#define ITOA_H
+#ifndef ITOA_HPP
+#define ITOA_HPP
 
-int digit_count(int num)
+static int digit_count(int num)
 {
     int count = 0;
     if(num == 0)
@@ -14,7 +14,7 @@ int digit_count(int num)
     return count;
 }
 
-void itoa(int num, char *number)
+static void itoa(int num, char *number)
 {
     int dgcount = digit_count(num);
     int index = dgcount - 1;
@@ -32,5 +32,4 @@ void itoa(int num, char *number)
         number[dgcount] = '\0';
     }
 }
-
 #endif
