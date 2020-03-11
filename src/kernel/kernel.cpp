@@ -1,8 +1,10 @@
 #include "LibC/stdio.hpp"
 #include "LibC/stdlib.hpp"
+#include "LibGUI/font.hpp"
 #include "GDT/gdt.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/interrupts.hpp"
+#include "Hardware/Drivers/vga.hpp"
 
 typedef void (*constructor)();
 extern "C" constructor start_ctors;

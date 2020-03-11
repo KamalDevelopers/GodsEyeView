@@ -10,6 +10,7 @@ filesC = [
 	"./kernel/kernel.cpp",
 	"./kernel/Hardware/port.cpp",
 	"./kernel/Hardware/Drivers/keyboard.cpp",
+	"./kernel/Hardware/Drivers/vga.cpp",
 	"./kernel/GDT/gdt.cpp",
 	"./kernel/Hardware/interrupts.cpp",
 
