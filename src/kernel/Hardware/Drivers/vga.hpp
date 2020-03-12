@@ -41,7 +41,7 @@ public:
 	virtual bool SetMode(uint32_t width, uint32_t height, uint32_t colordepth);
 	virtual void PutPixel(uint32_t x, uint32_t y,  uint8_t r, uint8_t g, uint8_t b);
 	virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex);
-	virtual void RenderBitMap(int bitmap[], uint8_t colorIndex);
+	virtual void RenderBitMap(int bitmap[], uint8_t colorIndex, unsigned int gridX, unsigned int gridY);
 private:
 	int vga_x_offset = 0;
 	int vga_y_offset = 0;

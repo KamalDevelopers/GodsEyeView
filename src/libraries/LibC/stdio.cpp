@@ -37,6 +37,15 @@ void putc(int c)
 	indexmng();
 }
 
+void putx(int c)
+{
+	char* f = "00";
+	char* hex = "0123456789ABCDEF";
+	f[0] = hex[(c >> 4) & 0xF];
+	f[1] = hex[c & 0xF];
+	puts(f);
+}
+
 void vprintf(const char *format, va_list v)
 {
 	int size = len(format);
@@ -56,6 +65,10 @@ void vprintf(const char *format, va_list v)
 
 			if (format[i+1] == 'c'){
 				putc(va_arg(v, int));
+			}
+
+			if (format[i+1] == 'x'){
+				putx(va_arg(v, int));
 			}
 			i+=2;
 		}

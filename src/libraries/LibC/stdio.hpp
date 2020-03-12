@@ -1,5 +1,5 @@
-#ifndef PRINTF_HPP
-#define PRINTF_HPP
+#ifndef STDIO_HPP
+#define STDIO_HPP
 
 #include <stdarg.h>
 #include "itoa.hpp"
@@ -13,6 +13,7 @@ extern void indexmng();
 extern void puts(char* str);
 extern void puti(int num);
 extern void putc(int c);
+extern void putx(int c);
 extern void vprintf(const char *format, va_list v);
 extern void printf (const char *format, ...);
 extern void clear();
