@@ -17,13 +17,5 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
-	Graphics vga;
-	vga.Init(640, 480, 16, 0x2);
-	
-
-	for (int i = 0; i < 50; i++){
-		vga.PutPixel(i, 1, 0xFC, 0xFC, 0xFC);
-	}
-	//clear();
 	while(1);
 }
