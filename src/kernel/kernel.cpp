@@ -17,5 +17,10 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
+	Graphics vga;
+	vga.Init(320, 200, 256, 0x2);
+	
+	vga.RenderBitMap(font_basic[68], 0x1);
+	//clear();
 	while(1);
 }
