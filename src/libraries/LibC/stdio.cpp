@@ -12,8 +12,7 @@ void indexmng()
 void puts(char* str)
 {
 	for (int i = 0; str[i] != '\0'; i++){
-		VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | str[i];
-		VideoMemoryIndex++;
+		putc(str[i]);
 		indexmng();
 	}
 }
@@ -102,4 +101,26 @@ void clear()
 	for (int i = 0; i < 2200; i++){
 		VideoMemory[i] = (VideoMemory[i] & 0xff00) | ' ';
 	}
+}
+
+void outb(uint16_t port, uint8_t data)
+{
+  asm volatile("outb %0, %1" : "=a"(data) : "d"(port));
+}
+
+uint8_t inb(uint16_t port)
+{
+  uint8_t ret;
+  asm volatile("inb %1, %0" : "=a"(ret) : "d"(port));
+  return ret;
+}
+
+void sleep(uint32_t timer_count)
+{
+  while(1){
+    asm volatile("nop");
+    timer_count--;
+    if(timer_count <= 0)
+      break;
+    }
 }

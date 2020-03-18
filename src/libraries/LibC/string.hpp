@@ -22,7 +22,7 @@ static int len(const char* arr)
     return l;
 }
 
-static void * strcpy(char *arr, const char *str)
+static void * strcpy(char *arr, char *str)
 {
 	while (*str)
 	{

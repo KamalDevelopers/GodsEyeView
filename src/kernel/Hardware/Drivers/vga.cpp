@@ -54,11 +54,11 @@ void Graphics::WriteRegisters(uint8_t* registers)
 
     attributeControllerResetPort.Read();
     attributeControllerIndexPort.Write(0x20);
-
 }
 
 bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
 {
+    vga_on = 1;
     unsigned char g_320x200x256[] =
     {
         /* MISC */
@@ -138,4 +138,18 @@ void Graphics::RenderBitMap(int bitmap[], uint8_t colorIndex)
         }
     }
     vga_x_offset += 8;
+}
+
+void Graphics::Print(char* str, uint8_t colorIndex)
+{
+    if ((str[0] == '/') && (str[1] == '~')){
+        vga_x_offset -= 8;
+        RenderBitMap(font_basic[127], colorIndex);
+        vga_x_offset -= 8;
+        return;
+    }
+
+    int size = str_len(str);
+    for (int i = 0; i < size; i++)
+        RenderBitMap(font_basic[str[i]], colorIndex);
 }

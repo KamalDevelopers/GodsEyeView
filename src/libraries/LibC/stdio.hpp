@@ -17,5 +17,8 @@ extern void putx(int c);
 extern void vprintf(const char *format, va_list v);
 extern void printf (const char *format, ...);
 extern void clear();
+extern void outb(uint16_t port, uint8_t data);
+extern uint8_t inb(uint16_t port);
+extern void sleep(uint32_t timer_count);
 
 #endif

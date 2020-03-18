@@ -3,15 +3,21 @@
 #include "LibC/stdlib.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"
+#include "LibC/string.hpp"
+#include "LibGUI/font.hpp"
 #include "../port.hpp"
+#include "LibGUI/cardgraphics.hpp"
 
 #define VGA_BLUE           0x1
 #define VGA_GREEN          0x2
 #define VGA_CYAN           0x3
 #define VGA_RED            0x4
 #define VGA_MAGENTA        0x5
-#define VGA_BROWN          0x6
+#define VGA_YELLOW         0x6
 #define VGA_GRAY           0x7
+#define VGA_DARKBLUE       0x8
+
+static uint8_t vga_on = 0;
 
 class Graphics
 {
@@ -42,7 +48,8 @@ public:
 	virtual void PutPixel(uint32_t x, uint32_t y,  uint8_t r, uint8_t g, uint8_t b);
 	virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex);
 	virtual void RenderBitMap(int bitmap[], uint8_t colorIndex);
-private:
+	virtual void Print(char* str, uint8_t colorIndex);
+
 	int vga_x_offset = 0;
 	int vga_y_offset = 0;
 

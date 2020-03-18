@@ -19,6 +19,46 @@ KeyboardDriver::~KeyboardDriver()
 {
 }
 
+char* KeyboardDriver::GetKeys(char* arr)
+{
+    int size = str_len(keys);
+    for (int i = 0; i < size; i++){
+        arr[i] = keys[i];
+    }
+    arr[size-1] = '\0';
+
+    return keys;
+}
+
+char KeyboardDriver::GetLastKey()
+{
+    return keys[key_press_index-1];
+}
+
+void KeyboardDriver::on_key(char keypress, int out_screen)
+{
+    keys[key_press_index] = keypress;
+    key_press_index++;
+    if (out_screen == 1){
+        if (keypress != '~')
+            putc(keypress);
+    }
+    if (out_screen == 2){
+        if (keypress == '~'){
+            vga->Print("/~", 0x0);
+            return;
+        }
+        vga->RenderBitMap(font_basic[keypress], color);
+    }
+}
+
+void KeyboardDriver::ScreenOutput(int i, uint8_t color_index, Graphics *g)
+{
+    color = color_index;
+    vga = g;
+    outp = i;
+} 
+
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
 {
     uint8_t key = dataport.Read();
@@ -26,60 +66,57 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
     {
         switch(key)
         {
-            case 0x02: printf("%s", "1"); break;
-            case 0x03: printf("%s", "2"); break;
-            case 0x04: printf("%s", "3"); break;
-            case 0x05: printf("%s", "4"); break;
-            case 0x06: printf("%s", "5"); break;
-            case 0x07: printf("%s", "6"); break;
-            case 0x08: printf("%s", "7"); break;
-            case 0x09: printf("%s", "8"); break;
-            case 0x0A: printf("%s", "9"); break;
-            case 0x0B: printf("%s", "0"); break;
+            case 0x02: on_key('1', outp); break;
+            case 0x03: on_key('2', outp); break;
+            case 0x04: on_key('3', outp); break;
+            case 0x05: on_key('4', outp); break;
+            case 0x06: on_key('5', outp); break;
+            case 0x07: on_key('6', outp); break;
+            case 0x08: on_key('7', outp); break;
+            case 0x09: on_key('8', outp); break;
+            case 0x0A: on_key('9', outp); break;
+            case 0x0B: on_key('0', outp); break;
 
-            case 0x10: printf("%s", "q"); break;
-            case 0x11: printf("%s", "w"); break;
-            case 0x12: printf("%s", "e"); break;
-            case 0x13: printf("%s", "r"); break;
-            case 0x14: printf("%s", "t"); break;
-            case 0x15: printf("%s", "y"); break;
-            case 0x16: printf("%s", "u"); break;
-            case 0x17: printf("%s", "i"); break;
-            case 0x18: printf("%s", "o"); break;
-            case 0x19: printf("%s", "p"); break;
+            case 0x10: on_key('q', outp); break;
+            case 0x11: on_key('w', outp); break;
+            case 0x12: on_key('e', outp); break;
+            case 0x13: on_key('r', outp); break;
+            case 0x14: on_key('t', outp); break;
+            case 0x15: on_key('y', outp); break;
+            case 0x16: on_key('u', outp); break;
+            case 0x17: on_key('i', outp); break;
+            case 0x18: on_key('o', outp); break;
+            case 0x19: on_key('p', outp); break;
 
-            case 0x1E: printf("%s", "a"); break;
-            case 0x1F: printf("%s", "s"); break;
-            case 0x20: printf("%s", "d"); break;
-            case 0x21: printf("%s", "f"); break;
-            case 0x22: printf("%s", "g"); break;
-            case 0x23: printf("%s", "h"); break;
-            case 0x24: printf("%s", "j"); break;
-            case 0x25: printf("%s", "k"); break;
-            case 0x26: printf("%s", "l"); break;
+            case 0x1E: on_key('a', outp); break;
+            case 0x1F: on_key('s', outp); break;
+            case 0x20: on_key('d', outp); break;
+            case 0x21: on_key('f', outp); break;
+            case 0x22: on_key('g', outp); break;
+            case 0x23: on_key('h', outp); break;
+            case 0x24: on_key('j', outp); break;
+            case 0x25: on_key('k', outp); break;
+            case 0x26: on_key('l', outp); break;
 
-            case 0x2C: printf("%s", "z"); break;
-            case 0x2D: printf("%s", "x"); break;
-            case 0x2E: printf("%s", "c"); break;
-            case 0x2F: printf("%s", "v"); break;
-            case 0x30: printf("%s", "b"); break;
-            case 0x31: printf("%s", "n"); break;
-            case 0x32: printf("%s", "m"); break;
-            case 0x33: printf("%s", ","); break;
-            case 0x34: printf("%s", "."); break;
-            case 0x35: printf("%s", "-"); break;
+            case 0x2C: on_key('z', outp); break;
+            case 0x2D: on_key('x', outp); break;
+            case 0x2E: on_key('c', outp); break;
+            case 0x2F: on_key('v', outp); break;
+            case 0x30: on_key('b', outp); break;
+            case 0x31: on_key('n', outp); break;
+            case 0x32: on_key('m', outp); break;
+            case 0x33: on_key(',', outp); break;
+            case 0x34: on_key('.', outp); break;
+            case 0x35: on_key('-', outp); break;
 
-            case 0x1C: printf("\n"); break;
-            case 0x39: printf("%s", " "); break;
-            case 0x0E: printf("\b%s\b", " "); break;
+            case 0x1C: on_key('\n', outp); break;
+            case 0x39: on_key(' ', outp); break;
+            case 0x0E: printf("\b%s\b", " "); 
+                       on_key('~', outp); break;
 
             default:
             {
-                char* foo = "KEYBOARD 0x00 ";
-                char* hex = "0123456789ABCDEF";
-                foo[11] = hex[(key >> 4) & 0xF];
-                foo[12] = hex[key & 0xF];
-                printf("%s", foo);
+                printf("%x", key);
                 break;
             }
         }

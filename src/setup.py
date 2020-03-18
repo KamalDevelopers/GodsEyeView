@@ -9,6 +9,7 @@ ASPARAMS  = "--32"
 filesC = [
 	"./kernel/kernel.cpp",
 	"./kernel/Hardware/port.cpp",
+	"./kernel/Hardware/Drivers/mouse.cpp",
 	"./kernel/Hardware/Drivers/keyboard.cpp",
 	"./kernel/Hardware/Drivers/vga.cpp",
 	"./kernel/GDT/gdt.cpp",
@@ -46,7 +47,7 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-	os.system("qemu-system-i386 -cdrom kernel.iso")
+	os.system("qemu-system-i386 -cdrom kernel.iso -soundhw pcspk")
 
 def make_kernel():
 	for file in filesC:
