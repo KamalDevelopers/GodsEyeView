@@ -36,6 +36,13 @@ void putc(int c)
 	indexmng();
 }
 
+/* Not real implementation, TODO */
+void putf(float f)
+{
+	int c = f;
+	puti(c);
+}
+
 void putx(int c)
 {
 	char* f = "00";
@@ -60,6 +67,10 @@ void vprintf(const char *format, va_list v)
 			
 			if (format[i+1] == 'd'){
 				puti(va_arg(v, int));
+			}
+
+			if (format[i+1] == 'f'){
+				putf(va_arg(v, double));
 			}
 
 			if (format[i+1] == 'c'){
