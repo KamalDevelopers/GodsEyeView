@@ -2,9 +2,9 @@
 #define INTERRUPTMANAGER_HPP
 
 #include "../GDT/gdt.hpp"
-#include "LibC/types.hpp"
+#include "types.hpp"
 #include "port.hpp"
-#include "LibC/stdio.hpp"
+#include "stdio.hpp"
 
 class InterruptManager;
 

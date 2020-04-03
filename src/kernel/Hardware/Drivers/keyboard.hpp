@@ -1,12 +1,12 @@
 #ifndef __KEYBOARD_HPP
 #define __KEYBOARD_HPP
 
-#include "LibC/types.hpp"
+#include "types.hpp"
 #include "../interrupts.hpp"
 #include "../port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/string.hpp"
-#include "LibGUI/font.hpp"
+#include "stdio.hpp"
+#include "string.hpp"
+#include "../../../libraries/LibGUI/font.hpp"
 #include "vga.hpp"
 
 class KeyboardDriver : public InterruptHandler

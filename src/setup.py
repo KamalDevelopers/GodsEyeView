@@ -3,7 +3,7 @@ import sys
 from colorama import *
 init()
 
-GPPPARAMS = "-m32 -Ilibraries -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings"
+GPPPARAMS = "-m32 -Ilibraries/LibC -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings"
 ASPARAMS  = "--32"
 
 filesC = [
@@ -16,7 +16,8 @@ filesC = [
 	"./kernel/Hardware/interrupts.cpp",
 
 	"./libraries/LibC/stdio.cpp",
-	"./libraries/LibC/stdlib.cpp"
+	"./libraries/LibC/stdlib.cpp",
+	"./libraries/LibGUI/gui.cpp"
 ]
 
 filesA = [

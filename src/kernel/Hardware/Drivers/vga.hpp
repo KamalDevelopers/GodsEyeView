@@ -1,12 +1,12 @@
 #ifndef VGA_HPP
 #define VGA_HPP
-#include "LibC/stdlib.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/types.hpp"
-#include "LibC/string.hpp"
-#include "LibGUI/font.hpp"
+#include "stdlib.hpp"
+#include "stdio.hpp"
+#include "types.hpp"
+#include "string.hpp"
+#include "../../../libraries/LibGUI/font.hpp"
 #include "../port.hpp"
-#include "LibGUI/cardgraphics.hpp"
+#include "../../../libraries/LibGUI/cardgraphics.hpp"
 
 #define VGA_BLUE           0x1
 #define VGA_GREEN          0x2
@@ -18,7 +18,7 @@
 #define VGA_DARKBLUE       0x8
 
 static uint8_t vga_on = 0;
-
+static uint16_t* vga_buffer;
 class Graphics
 {
 protected:
@@ -45,10 +45,13 @@ public:
 
 	virtual bool Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorIndex);
 	virtual bool SetMode(uint32_t width, uint32_t height, uint32_t colordepth);
+
 	virtual void PutPixel(uint32_t x, uint32_t y,  uint8_t r, uint8_t g, uint8_t b);
+	virtual uint8_t* GetPixelColor(int x, int y);
 	virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex);
-	virtual void RenderBitMap(int bitmap[], uint8_t colorIndex);
-	virtual void Print(char* str, uint8_t colorIndex);
+	virtual void RenderBitMap(int bitmap[], uint8_t colorIndex, int x_offset = 0, int y_offset = 0);
+	virtual void Print(char* str, uint8_t colorIndex, int x_offset = 0, int y_offset = 0);
+	virtual void ResetOffset();
 
 	int vga_x_offset = 0;
 	int vga_y_offset = 0;

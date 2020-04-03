@@ -61,22 +61,22 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
     vga_on = 1;
     unsigned char g_320x200x256[] =
     {
-        /* MISC */
-            0x63,
-        /* SEQ */
-            0x03, 0x01, 0x0F, 0x00, 0x0E,
-        /* CRTC */
-            0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
-            0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
-            0xFF,
-        /* GC */
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
-            0xFF,
-        /* AC */
-            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-            0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-            0x41, 0x00, 0x0F, 0x00, 0x00
+    /* MISC */
+        0x63,
+    /* SEQ */
+        0x03, 0x01, 0x0F, 0x00, 0x0E,
+    /* CRTC */
+        0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+        0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
+        0xFF,
+    /* GC */
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
+        0xFF,
+    /* AC */
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+        0x41, 0x00, 0x0F, 0x00, 0x00
     };
 
     WriteRegisters(g_320x200x256);
@@ -106,7 +106,13 @@ uint8_t* Graphics::GetFrameBufferSegment()
     }
 }
 
-void Graphics::PutPixel(uint32_t x, uint32_t y,  uint8_t colorIndex)
+uint8_t* Graphics::GetPixelColor(int x, int y)
+{
+    uint8_t* pixelAddress = GetFrameBufferSegment() + 320*y + x;
+    return pixelAddress;
+}
+
+void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
     uint8_t* pixelAddress = GetFrameBufferSegment() + 320*y + x;
     *pixelAddress = colorIndex;
@@ -124,7 +130,12 @@ void Graphics::PutPixel(uint32_t x, uint32_t y,  uint8_t r, uint8_t g, uint8_t b
     PutPixel(x,y, GetColorIndex(r,g,b));
 }
 
-void Graphics::RenderBitMap(int bitmap[], uint8_t colorIndex)
+void Graphics::ResetOffset()
+{
+    vga_x_offset = 0;
+}
+
+void Graphics::RenderBitMap(int bitmap[], uint8_t colorIndex, int x_offset, int y_offset)
 {
     int x,y;
     int set;
@@ -134,13 +145,13 @@ void Graphics::RenderBitMap(int bitmap[], uint8_t colorIndex)
         for (y=0; y < 8; y++) {
             set = bitmap[x] & 1 << y;
             if (set != 0)
-                PutPixel(vga_x_offset+y, x, colorIndex);
+                PutPixel(x_offset+vga_x_offset+y, y_offset+x, colorIndex);
         }
     }
     vga_x_offset += 8;
 }
 
-void Graphics::Print(char* str, uint8_t colorIndex)
+void Graphics::Print(char* str, uint8_t colorIndex, int x_offset, int y_offset)
 {
     if ((str[0] == '/') && (str[1] == '~')){
         vga_x_offset -= 8;
@@ -151,5 +162,5 @@ void Graphics::Print(char* str, uint8_t colorIndex)
 
     int size = str_len(str);
     for (int i = 0; i < size; i++)
-        RenderBitMap(font_basic[str[i]], colorIndex);
+        RenderBitMap(font_basic[str[i]], colorIndex, x_offset, y_offset);
 }

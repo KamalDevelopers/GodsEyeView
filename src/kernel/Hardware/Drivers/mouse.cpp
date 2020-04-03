@@ -1,11 +1,12 @@
 #include "mouse.hpp"
 
-MouseDriver::MouseDriver(InterruptManager* manager, Graphics* v)
+MouseDriver::MouseDriver(InterruptManager* manager, Graphics* v, Desktop* d)
 : InterruptHandler(manager, 0x2C),
 dataport(0x60),
 commandport(0x64)
 {
     vga = v;
+    gui = d;
     offset = 0;
     buttons = 0;
     w = 320;
@@ -39,17 +40,28 @@ void MouseDriver::OnMouseMove(int x, int y)
     if(newMouseY < 0) newMouseY = 0;
     if(newMouseY >= h) newMouseY = h - 1;
     
-    for (int t_y = 0; t_y < 10; t_y++)
-        vga->PutPixel(MouseX, MouseY+t_y, 0x1);
+    //for (int t_y = 0; t_y < 10; t_y++)
+    //    vga->PutPixel(MouseX, MouseY+t_y, 0x1);
 
-    for (int t_x = 0; t_x < 5; t_x++)
-        vga->PutPixel(MouseX+t_x, MouseY+5, 0x1);
+    //for (int t_x = 0; t_x < 5; t_x++)
+    //    vga->PutPixel(MouseX+t_x, MouseY+5, 0x1);
 
-    for (int t_x = 0; t_x < 5; t_x++)
-        vga->PutPixel(MouseX-t_x, MouseY+5, 0x1);
+    //for (int t_x = 0; t_x < 5; t_x++)
+    //    vga->PutPixel(MouseX-t_x, MouseY+5, 0x1);
 
     MouseX = newMouseX;
     MouseY = newMouseY;
+    gui->DrawMouse(MouseX, MouseY);
+}
+
+void MouseDriver::OnMouseUp(int b)
+{
+    gui->MouseRelease(MouseX, MouseY, b);
+}
+
+void MouseDriver::OnMouseDown(int b)
+{
+    gui->MousePress(MouseX, MouseY, b);
 }
 
 uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
@@ -73,10 +85,10 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
         {
             if((buffer[0] & (0x1<<i)) != (buttons & (0x1<<i)))
             {
-                //if(buttons & (0x1<<i)) //Todo
-                //    OnMouseUp(i+1);
-                //else
-                //    OnMouseDown(i+1);
+                if(buttons & (0x1<<i)) //Todo
+                    OnMouseUp(i+1);
+                else
+                    OnMouseDown(i+1);
             }
         }
         
