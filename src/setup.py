@@ -8,6 +8,7 @@ ASPARAMS  = "--32"
 
 filesC = [
 	"./kernel/kernel.cpp",
+	"./kernel/multitasking.cpp",
 	"./kernel/Hardware/port.cpp",
 	"./kernel/Hardware/Drivers/mouse.cpp",
 	"./kernel/Hardware/Drivers/keyboard.cpp",
