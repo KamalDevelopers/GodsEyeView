@@ -68,20 +68,29 @@ def link():
 		objectfiles.append(file[:-2] + ".o")
 
 	if not (os.path.isdir("./out")):
-		os.system("mkdir out")
+		os.system("mkdir out > /dev/null 2>&1")
 
-	os.system("rm out/*.iso")
-	os.system("rm out/*.bin")
+	os.system("rm out/*.iso > /dev/null 2>&1")
+	os.system("rm out/*.bin > /dev/null 2>&1")
 	os.system("ld -melf_i386 -T linker.ld -o ./out/kernel.bin loader.o " + ' '.join(objectfiles))
 
 def clean():
-	os.system("rm *.o")
-	os.system("rm ./kernel/*.o")
-	os.system("rm ./kernel/Hardware/*.o")
-	os.system("rm ./kernel/GDT/*.o")
-	os.system("rm ./kernel/Hardware/Drivers/*.o")
-	os.system("rm ./libraries/LibGUI/*.o")
-	os.system("rm ./libraries/LibC/*.o")
+	os.system("rm *.o > /dev/null")
+
+	ofolders = []
+	for file in filesC:
+		p = '/'.join(file.split('/')[0:-1])
+		if p not in ofolders:
+			ofolders.append(p)
+
+	for file in filesA:
+		p = '/'.join(file.split('/')[0:-1])
+		if p not in ofolders:
+			ofolders.append(p)
+
+	for file in ofolders:
+		os.system("rm " + "./" + file + "/*.o > /dev/null")
+
 
 if len(sys.argv) < 2:
 	print(Fore.RED + "Invalid amount of arguments\n" + Style.RESET_ALL + h)
@@ -101,7 +110,7 @@ if sys.argv[1] == "link":
 	link()
 
 if sys.argv[1] == "clean":
-	clean() 
+	clean()
 
 if sys.argv[1] == "--help" or sys.argv[1] == "help" or sys.argv[1] == "-h":
 	print(h)
