@@ -8,14 +8,25 @@
 #include "../port.hpp"
 #include "../../../libraries/LibGUI/cardgraphics.hpp"
 
-#define VGA_BLUE           0x1
-#define VGA_GREEN          0x2
-#define VGA_CYAN           0x3
-#define VGA_RED            0x4
-#define VGA_MAGENTA        0x5
-#define VGA_YELLOW         0x6
-#define VGA_GRAY           0x7
-#define VGA_DARKBLUE       0x8
+namespace VGA16
+{
+	static uint8_t BLACK         = 0x0;
+	static uint8_t BLUE          = 0x1;
+	static uint8_t GREEN         = 0x2;
+	static uint8_t CYAN          = 0x3;
+	static uint8_t RED           = 0x4;
+	static uint8_t MAGENTA       = 0x5;
+	static uint8_t BROWN         = 0x6;
+	static uint8_t WHITE         = 0x7;
+	static uint8_t GRAY          = 0x8;
+	static uint8_t LIGHT_BLUE    = 0x9;
+	static uint8_t LIGHT_GREEN   = 0xA;
+	static uint8_t LIGHT_CYAN    = 0xB;
+	static uint8_t LIGHT_RED     = 0xC;
+	static uint8_t LIGHT_MAGENTA = 0xD;
+	static uint8_t YELLOW        = 0xE;
+	static uint8_t BRIGHT_WHITE  = 0xF;
+};
 
 static uint8_t vga_on = 0;
 static uint16_t* vga_buffer;

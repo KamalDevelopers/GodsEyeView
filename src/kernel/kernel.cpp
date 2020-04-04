@@ -8,6 +8,7 @@
 #include "Hardware/interrupts.hpp"
 #include "Hardware/Drivers/vga.hpp"
 #include "Hardware/Drivers/mouse.hpp"
+#include "Hardware/Drivers/cmos.hpp"
 
 typedef void (*constructor)();
 extern "C" constructor start_ctors;

@@ -97,7 +97,7 @@ void vprintf(const char *format, va_list v)
 	}
 }
 
-void printf (const char *format, ...)
+void printf(const char *format, ...)
 {
 	va_list arg;
 	int done;
@@ -109,6 +109,8 @@ void printf (const char *format, ...)
 
 void clear()
 {
+	VideoMemoryIndex = 0;
+	NewLineIndex = 0;
 	for (int i = 0; i < 2200; i++){
 		VideoMemory[i] = (VideoMemory[i] & 0xff00) | ' ';
 	}
@@ -116,13 +118,13 @@ void clear()
 
 void outb(uint16_t port, uint8_t data)
 {
-  asm volatile("outb %0, %1" : "=a"(data) : "d"(port));
+  asm volatile("outb %0, %1" : "=a"(data) : "Nd"(port));
 }
 
 uint8_t inb(uint16_t port)
 {
   uint8_t ret;
-  asm volatile("inb %1, %0" : "=a"(ret) : "d"(port));
+  asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
   return ret;
 }
 
