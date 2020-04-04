@@ -13,6 +13,7 @@ filesC = [
 	"./kernel/Hardware/Drivers/mouse.cpp",
 	"./kernel/Hardware/Drivers/keyboard.cpp",
 	"./kernel/Hardware/Drivers/vga.cpp",
+	"./kernel/Hardware/Drivers/cmos.cpp",
 	"./kernel/GDT/gdt.cpp",
 	"./kernel/Hardware/interrupts.cpp",
 

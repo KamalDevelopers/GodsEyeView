@@ -1,5 +1,5 @@
-#ifndef __KEYBOARD_HPP
-#define __KEYBOARD_HPP
+#ifndef KEYBOARD_HPP
+#define KEYBOARD_HPP
 
 #include "../../../libraries/LibGUI/font.hpp"
 #include "../interrupts.hpp"
