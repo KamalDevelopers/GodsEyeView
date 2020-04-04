@@ -35,6 +35,7 @@ char* input(char brk, uint8_t color_index, KeyboardDriver *keyboard, Graphics *v
 extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
 	Graphics vga;
-	vga.Init(320, 200, 256, 0x0);
+	vga.Init(640, 480, 16, 0);
+
 	while(1);
 }

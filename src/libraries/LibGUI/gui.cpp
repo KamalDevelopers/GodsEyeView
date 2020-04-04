@@ -71,13 +71,8 @@ void  Window::MousePress(uint32_t x, uint32_t y, int b, Graphics* vga)
 			{
 				if ((bar_x == x) and (bar_y == y))
 				{
-					while (1)
-					{
-						win_xpos = x;
-						win_ypos = y;
-						if (mouse_down == 0)
-							break;
-					}
+					win_xpos = x;
+					win_ypos = y;
 				}
 			}
 		}

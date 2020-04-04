@@ -39,6 +39,13 @@ protected:
 
 	virtual uint8_t GetColorIndex(uint8_t r, uint8_t g, uint8_t b);
 
+private:
+	int vga_x_offset = 0;
+	int vga_y_offset = 0;
+	int screen_width = 0;
+	int screen_height = 0;
+	int screen_colordepth = 0;
+
 public:
 	Graphics();
 	~Graphics();
@@ -52,9 +59,10 @@ public:
 	virtual void RenderBitMap(int bitmap[], uint8_t colorIndex, int x_offset = 0, int y_offset = 0);
 	virtual void Print(char* str, uint8_t colorIndex, int x_offset = 0, int y_offset = 0);
 	virtual void ResetOffset();
-
-	int vga_x_offset = 0;
-	int vga_y_offset = 0;
+	virtual void set_plane(unsigned p);
+	virtual int GetScreenH(){ return screen_width; }
+	virtual int GetScreenW(){ return screen_height; }
+	virtual int GetScreenC(){ return screen_colordepth; }
 
 };
 #endif

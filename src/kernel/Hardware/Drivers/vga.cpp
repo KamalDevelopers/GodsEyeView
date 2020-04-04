@@ -59,6 +59,7 @@ void Graphics::WriteRegisters(uint8_t* registers)
 bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
 {
     vga_on = 1;
+
     unsigned char g_320x200x256[] =
     {
     /* MISC */
@@ -79,8 +80,42 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
         0x41, 0x00, 0x0F, 0x00, 0x00
     };
 
-    WriteRegisters(g_320x200x256);
-    return true;
+    unsigned char g_640x480x16[] =
+    {
+    /* MISC */
+        0xE3,
+    /* SEQ */
+        0x03, 0x01, 0x08, 0x00, 0x06,
+    /* CRTC */
+        0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0B, 0x3E,
+        0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xEA, 0x0C, 0xDF, 0x28, 0x00, 0xE7, 0x04, 0xE3,
+        0xFF,
+    /* GC */
+        0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x05, 0x0F,
+        0xFF,
+    /* AC */
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
+        0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+        0x01, 0x00, 0x0F, 0x00, 0x00
+    };
+
+    screen_width = width;
+    screen_height = height;
+    screen_colordepth = colordepth;
+
+    if ((width == 640) && (height = 480) && (colordepth == 16)){
+        WriteRegisters(g_640x480x16);
+        return true;
+    }
+
+    if ((width == 320) && (height = 200) && (colordepth == 256)){
+        WriteRegisters(g_320x200x256);
+        return true;
+    }
+    printf("%s\n", "VGA Error: Mode not supported.");
+    screen_width, screen_height, screen_colordepth = 0;
+    return false;
 }
 
 bool Graphics::Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorIndex)
@@ -112,10 +147,45 @@ uint8_t* Graphics::GetPixelColor(int x, int y)
     return pixelAddress;
 }
 
+void Graphics::set_plane(unsigned p)
+{
+    unsigned char pmask;
+    p &= 3;
+    pmask = 1 << p;
+    graphicsControllerIndexPort.Write(4);
+    graphicsControllerDataPort.Write(p);
+    sequencerIndexPort.Write(2);
+    sequencerDataPort.Write(pmask);
+}
+
 void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
-    uint8_t* pixelAddress = GetFrameBufferSegment() + 320*y + x;
-    *pixelAddress = colorIndex;
+    if ((screen_width == 640) && (screen_height = 480) && (screen_colordepth == 16)){
+        unsigned wd_in_bytes, wd_x, mask, p, pmask;
+
+        wd_in_bytes = 640 / 8;
+        wd_x = x / 8;
+
+        uint8_t* pixelAddress = GetFrameBufferSegment() + wd_in_bytes * y + wd_x;
+
+        x = (x & 7) * 1;
+        mask = 0x80 >> x;
+        pmask = 1;
+        for(p = 0; p < 4; p++)
+        {
+            set_plane(p);
+            if(pmask & colorIndex)
+                *pixelAddress = *pixelAddress | mask;
+            else
+                *pixelAddress = *pixelAddress & ~mask;
+            pmask <<= 1;
+        }
+    }
+    if ((screen_width == 320) && (screen_height = 200) && (screen_colordepth == 256)){
+        uint8_t* pixelAddress = GetFrameBufferSegment() + 320*y + x;
+        *pixelAddress = colorIndex;
+    }
+
 }
 
 uint8_t Graphics::GetColorIndex(uint8_t r, uint8_t g, uint8_t b)
