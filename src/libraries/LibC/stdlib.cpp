@@ -1,15 +1,14 @@
 #include "stdlib.hpp"
 
-int atoi(char *array)
-{    
+int atoi(char* array)
+{
     int number = 0;
     int mult = 1;
     int n = str_len(array);
 
     n = (int)n < 0 ? -n : n;
 
-    while (n--)
-    {
+    while (n--) {
         if ((array[n] < '0' || array[n] > '9') && array[n] != '-') {
             if (number)
                 break;
@@ -22,8 +21,7 @@ int atoi(char *array)
                 number = -number;
                 break;
             }
-        }
-        else {
+        } else {
             number += (array[n] - '0') * mult;
             mult *= 10;
         }

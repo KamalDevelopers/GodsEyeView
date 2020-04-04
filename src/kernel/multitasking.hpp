@@ -1,12 +1,11 @@
 #ifndef MULTITASKING_H
 #define MULTITASKING_H
 
-#include "types.hpp"
 #include "./GDT/gdt.hpp"
+#include "types.hpp"
 #include <stdarg.h>
 
-struct CPUState
-{
+struct CPUState {
     uint32_t eax;
     uint32_t ebx;
     uint32_t ecx;
@@ -22,29 +21,28 @@ struct CPUState
     uint32_t cs;
     uint32_t eflags;
     uint32_t esp;
-    uint32_t ss;        
+    uint32_t ss;
 } __attribute__((packed));
-    
-    
-class Task
-{
-friend class TaskManager;
+
+class Task {
+    friend class TaskManager;
+
 private:
     uint8_t stack[4096]; // 4 KiB
     CPUState* cpustate;
+
 public:
-    Task(GlobalDescriptorTable *gdt, void entrypoint());
+    Task(GlobalDescriptorTable* gdt, void entrypoint());
     ~Task();
 };
-    
-    
-class TaskManager
-{
+
+class TaskManager {
 private:
     bool AddTask(Task* task);
     Task* tasks[256];
     int numTasks;
     int currentTask;
+
 public:
     bool AppendTasks(int count, ...);
     TaskManager();

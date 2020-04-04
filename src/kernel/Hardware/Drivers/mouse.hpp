@@ -1,16 +1,15 @@
 #ifndef MOUSE_HPP
 #define MOUSE_HPP
 
-#include "stdio.hpp"
-#include "types.hpp"
+#include "../../../libraries/LibGUI/gui.hpp"
 #include "../interrupts.hpp"
 #include "../port.hpp"
+#include "stdio.hpp"
+#include "types.hpp"
 #include "vga.hpp"
-#include "../../../libraries/LibGUI/gui.hpp"
 
 using namespace GUI;
-class MouseDriver : public InterruptHandler
-{
+class MouseDriver : public InterruptHandler {
     Port8Bit dataport;
     Port8Bit commandport;
     uint8_t buffer[3];
@@ -20,6 +19,7 @@ class MouseDriver : public InterruptHandler
     uint8_t x, y;
     int32_t w, h;
     uint32_t MouseX, MouseY;
+
 public:
     MouseDriver(InterruptManager* manager, Graphics* v, Desktop* d);
     ~MouseDriver();
@@ -29,8 +29,9 @@ public:
     virtual void OnMouseDown(int b);
     virtual int GetMouseY() { return MouseY; }
     virtual int GetMouseX() { return MouseX; }
+
 private:
-	Graphics* vga;
+    Graphics* vga;
     Desktop* gui;
 };
 

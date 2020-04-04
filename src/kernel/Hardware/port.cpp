@@ -42,7 +42,6 @@ void Port8BitSlow::Write(uint8_t data)
     Write8Slow(portnumber, data);
 }
 
-
 Port16Bit::Port16Bit(uint16_t portnumber)
     : Port(portnumber)
 {

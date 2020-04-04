@@ -1,18 +1,18 @@
 #include "multitasking.hpp"
 
-Task::Task(GlobalDescriptorTable *gdt, void entrypoint())
+Task::Task(GlobalDescriptorTable* gdt, void entrypoint())
 {
     cpustate = (CPUState*)(stack + 4096 - sizeof(CPUState));
-    cpustate -> eax = 0;
-    cpustate -> ebx = 0;
-    cpustate -> ecx = 0;
-    cpustate -> edx = 0;
-    cpustate -> esi = 0;
-    cpustate -> edi = 0;
-    cpustate -> ebp = 0;
-    cpustate -> eip = (uint32_t)entrypoint;
-    cpustate -> cs = gdt->CodeSegmentSelector();
-    cpustate -> eflags = 0x202;
+    cpustate->eax = 0;
+    cpustate->ebx = 0;
+    cpustate->ecx = 0;
+    cpustate->edx = 0;
+    cpustate->esi = 0;
+    cpustate->edi = 0;
+    cpustate->ebp = 0;
+    cpustate->eip = (uint32_t)entrypoint;
+    cpustate->cs = gdt->CodeSegmentSelector();
+    cpustate->eflags = 0x202;
 }
 
 Task::~Task()
@@ -31,7 +31,7 @@ TaskManager::~TaskManager()
 
 bool TaskManager::AddTask(Task* task)
 {
-    if(numTasks >= 256)
+    if (numTasks >= 256)
         return false;
     tasks[numTasks++] = task;
     return true;
@@ -50,13 +50,13 @@ bool TaskManager::AppendTasks(int count, ...)
 
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
-    if(numTasks <= 0)
+    if (numTasks <= 0)
         return cpustate;
-    
-    if(currentTask >= 0)
+
+    if (currentTask >= 0)
         tasks[currentTask]->cpustate = cpustate;
-    
-    if(++currentTask >= numTasks)
+
+    if (++currentTask >= numTasks)
         currentTask %= numTasks;
     return tasks[currentTask]->cpustate;
 }

@@ -2,36 +2,34 @@
 #define INTERRUPTMANAGER_HPP
 
 #include "../GDT/gdt.hpp"
-#include "types.hpp"
+#include "../multitasking.hpp"
 #include "port.hpp"
 #include "stdio.hpp"
- #include "../multitasking.hpp"
+#include "types.hpp"
 
 class InterruptManager;
 
-class InterruptHandler
-{
+class InterruptHandler {
 protected:
     uint8_t InterruptNumber;
     InterruptManager* interruptManager;
     InterruptHandler(InterruptManager* interruptManager, uint8_t InterruptNumber);
     ~InterruptHandler();
+
 public:
     virtual uint32_t HandleInterrupt(uint32_t esp);
 };
 
-class InterruptManager
-{
+class InterruptManager {
 
-friend class InterruptHandler;
+    friend class InterruptHandler;
+
 protected:
-
     static InterruptManager* ActiveInterruptManager;
     InterruptHandler* handlers[256];
-    TaskManager *taskManager;
+    TaskManager* taskManager;
 
-    struct GateDescriptor
-    {
+    struct GateDescriptor {
         uint16_t handlerAddressLowBits;
         uint16_t gdt_codeSegmentSelector;
         uint8_t reserved;
@@ -41,17 +39,15 @@ protected:
 
     static GateDescriptor interruptDescriptorTable[256];
 
-    struct InterruptDescriptorTablePointer
-    {
+    struct InterruptDescriptorTablePointer {
         uint16_t size;
         uint32_t base;
     } __attribute__((packed));
 
     uint16_t hardwareInterruptOffset;
     static void SetInterruptDescriptorTableEntry(uint8_t interrupt,
-    uint16_t codeSegmentSelectorOffset, void (*handler)(),
-    uint8_t DescriptorPrivilegeLevel, uint8_t DescriptorType);
-
+        uint16_t codeSegmentSelectorOffset, void (*handler)(),
+        uint8_t DescriptorPrivilegeLevel, uint8_t DescriptorType);
 
     static void InterruptIgnore();
 

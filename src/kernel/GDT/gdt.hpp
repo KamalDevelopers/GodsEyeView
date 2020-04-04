@@ -2,13 +2,10 @@
 #define GDT_HPP
 
 #include "types.hpp"
-    
-class GlobalDescriptorTable
-{
-public:
 
-    class SegmentDescriptor
-    {
+class GlobalDescriptorTable {
+public:
+    class SegmentDescriptor {
     private:
         uint16_t limit_lo;
         uint16_t base_lo;
