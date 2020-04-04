@@ -80,6 +80,7 @@ def clean():
 	os.system("rm ./kernel/Hardware/*.o")
 	os.system("rm ./kernel/GDT/*.o")
 	os.system("rm ./kernel/Hardware/Drivers/*.o")
+	os.system("rm ./libraries/LibGUI/*.o")
 
 if len(sys.argv) < 2:
 	print(Fore.RED + "Invalid amount of arguments\n" + Style.RESET_ALL + h)

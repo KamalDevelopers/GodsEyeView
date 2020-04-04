@@ -80,6 +80,26 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
         0x41, 0x00, 0x0F, 0x00, 0x00
     };
 
+    unsigned char g_720x480x16[] =
+    {
+    /* MISC */
+        0xE7,
+    /* SEQ */
+        0x03, 0x01, 0x08, 0x00, 0x06,
+    /* CRTC */
+        0x6B, 0x59, 0x5A, 0x82, 0x60, 0x8D, 0x0B, 0x3E,
+        0x00, 0x40, 0x06, 0x07, 0x00, 0x00, 0x00, 0x00,
+        0xEA, 0x0C, 0xDF, 0x2D, 0x08, 0xE8, 0x05, 0xE3,
+        0xFF,
+    /* GC */
+        0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x05, 0x0F,
+        0xFF,
+    /* AC */
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+        0x01, 0x00, 0x0F, 0x00, 0x00,
+    };
+
     unsigned char g_640x480x16[] =
     {
     /* MISC */
@@ -103,6 +123,11 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
     screen_width = width;
     screen_height = height;
     screen_colordepth = colordepth;
+
+    if ((width == 720) && (height = 480) && (colordepth == 16)){
+        WriteRegisters(g_720x480x16);
+        return true;
+    }
 
     if ((width == 640) && (height = 480) && (colordepth == 16)){
         WriteRegisters(g_640x480x16);
@@ -160,10 +185,10 @@ void Graphics::set_plane(unsigned p)
 
 void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
-    if ((screen_width == 640) && (screen_height = 480) && (screen_colordepth == 16)){
+    if (screen_colordepth == 16){
         unsigned wd_in_bytes, wd_x, mask, p, pmask;
 
-        wd_in_bytes = 640 / 8;
+        wd_in_bytes = screen_width / 8;
         wd_x = x / 8;
 
         uint8_t* pixelAddress = GetFrameBufferSegment() + wd_in_bytes * y + wd_x;
@@ -181,8 +206,8 @@ void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
             pmask <<= 1;
         }
     }
-    if ((screen_width == 320) && (screen_height = 200) && (screen_colordepth == 256)){
-        uint8_t* pixelAddress = GetFrameBufferSegment() + 320*y + x;
+    if (screen_colordepth == 256){
+        uint8_t* pixelAddress = GetFrameBufferSegment() + screen_width*y + x;
         *pixelAddress = colorIndex;
     }
 
