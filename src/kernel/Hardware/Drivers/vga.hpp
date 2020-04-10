@@ -28,7 +28,7 @@ static uint8_t BRIGHT_WHITE = 0xF;
 };
 
 static uint8_t vga_on = 0;
-static uint16_t* vga_buffer;
+
 class Graphics {
 protected:
     Port8Bit miscPort;
@@ -45,8 +45,12 @@ protected:
 
     void WriteRegisters(uint8_t* registers);
     uint8_t* GetFrameBufferSegment();
+    void VgaDraw(uint32_t x, uint32_t y, uint8_t colorIndex);
 
     virtual uint8_t GetColorIndex(uint8_t r, uint8_t g, uint8_t b);
+    uint8_t vga_buffer[480][720];
+    uint8_t old_vga_buffer[480][720];
+    uint8_t is_ready = 0;
 
 private:
     int vga_x_offset = 0;
@@ -62,15 +66,19 @@ public:
     virtual bool Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorIndex);
     virtual bool SetMode(uint32_t width, uint32_t height, uint32_t colordepth);
 
+    virtual void RenderScreen(uint8_t i = 0);
     virtual void PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
     virtual uint8_t* GetPixelColor(int x, int y);
     virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex);
     virtual void RenderBitMap(int bitmap[], uint8_t colorIndex, int x_offset = 0, int y_offset = 0);
     virtual void Print(char* str, uint8_t colorIndex, int x_offset = 0, int y_offset = 0);
     virtual void ResetOffset();
-    virtual void set_plane(unsigned p);
+    virtual void DecreaseOffset(int x) { vga_x_offset -= x; }
+    virtual void SetPlane(unsigned p);
     virtual int GetScreenH() { return screen_width; }
     virtual int GetScreenW() { return screen_height; }
     virtual int GetScreenC() { return screen_colordepth; }
+    virtual void FrameStart(uint8_t i) { is_ready = i; }
+    virtual uint8_t GetFrameStart() { return is_ready; }
 };
 #endif

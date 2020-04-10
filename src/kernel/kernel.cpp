@@ -19,19 +19,6 @@ extern "C" void callConstructors()
         (*i)();
 }
 
-char* input(char brk, uint8_t color_index, KeyboardDriver* keyboard, Graphics* v)
-{
-    keyboard->ScreenOutput(2, color_index, v);
-    char key;
-    char* inp;
-
-    while (key != brk) {
-        key = keyboard->GetLastKey();
-    }
-    keyboard->GetKeys(inp);
-    return inp;
-}
-
 extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
     Graphics vga;

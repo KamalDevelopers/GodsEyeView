@@ -19,14 +19,17 @@ KeyboardDriver::~KeyboardDriver()
 {
 }
 
-char* KeyboardDriver::GetKeys(char* arr)
+void KeyboardDriver::ScreenOutput(int i, uint8_t color_index, int xo, int yo, Graphics* g)
 {
-    int size = str_len(keys);
-    for (int i = 0; i < size; i++) {
-        arr[i] = keys[i];
-    }
-    arr[size - 1] = '\0';
+    color = color_index;
+    vga = g;
+    outp = i;
+    x_offset = xo;
+    y_offset = yo;
+}
 
+char* KeyboardDriver::GetKeys()
+{
     return keys;
 }
 
@@ -39,7 +42,7 @@ void KeyboardDriver::on_key(char keypress, int out_screen)
 {
     keys[key_press_index] = keypress;
     key_press_index++;
-    if (out_screen == 1) {
+    /*if (out_screen == 1) {
         if (keypress != '~')
             putc(keypress);
     }
@@ -48,15 +51,9 @@ void KeyboardDriver::on_key(char keypress, int out_screen)
             vga->Print("/~", 0x0);
             return;
         }
-        vga->RenderBitMap(font_basic[keypress], color);
-    }
-}
-
-void KeyboardDriver::ScreenOutput(int i, uint8_t color_index, Graphics* g)
-{
-    color = color_index;
-    vga = g;
-    outp = i;
+        vga->RenderBitMap(font_basic[keypress], color, x_offset, y_offset);
+        //vga->PutPixel(10, 10, 0x6);
+    }*/
 }
 
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
@@ -94,7 +91,6 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
         case 0x0B:
             on_key('0', outp);
             break;
-
         case 0x10:
             on_key('q', outp);
             break;
@@ -125,7 +121,6 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
         case 0x19:
             on_key('p', outp);
             break;
-
         case 0x1E:
             on_key('a', outp);
             break;
@@ -153,7 +148,6 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
         case 0x26:
             on_key('l', outp);
             break;
-
         case 0x2C:
             on_key('z', outp);
             break;
@@ -184,7 +178,6 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
         case 0x35:
             on_key('-', outp);
             break;
-
         case 0x1C:
             on_key('\n', outp);
             break;
@@ -193,7 +186,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
             break;
         case 0x0E:
             printf("\b%s\b", " ");
-            on_key('~', outp);
+            on_key('*', outp);
             break;
 
         default: {

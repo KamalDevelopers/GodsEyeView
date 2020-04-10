@@ -1,16 +1,16 @@
 #include "mouse.hpp"
 
-MouseDriver::MouseDriver(InterruptManager* manager, Graphics* v, Desktop* d)
+MouseDriver::MouseDriver(InterruptManager* manager, Graphics* v)
     : InterruptHandler(manager, 0x2C)
     , dataport(0x60)
     , commandport(0x64)
 {
     vga = v;
-    gui = d;
+    //gui = d;
     offset = 0;
     buttons = 0;
-    w = 320;
-    h = 200;
+    w = v->GetScreenW();
+    h = v->GetScreenH();
 
     commandport.Write(0xA8);
     commandport.Write(0x20);
@@ -55,17 +55,18 @@ void MouseDriver::OnMouseMove(int x, int y)
 
     MouseX = newMouseX;
     MouseY = newMouseY;
-    gui->DrawMouse(MouseX, MouseY);
 }
 
 void MouseDriver::OnMouseUp(int b)
 {
-    gui->MouseRelease(MouseX, MouseY, b);
+    //gui->MouseRelease(MouseX, MouseY, b);
+    MousePress = 0;
 }
 
 void MouseDriver::OnMouseDown(int b)
 {
-    gui->MousePress(MouseX, MouseY, b);
+    //gui->MousePress(MouseX, MouseY, b);
+    MousePress = 1;
 }
 
 uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
