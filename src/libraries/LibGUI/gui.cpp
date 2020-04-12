@@ -371,7 +371,7 @@ void Desktop::Draw()
     }
 
     int index = 0;
-    for (int y = 0; y < 8; y++)
+    for (int y = 0; y < 11; y++)
         for (int x = 0; x < 8; x++) {
             if (mouse_bitmap[index] != -1)
                 vga->PutPixel(x + mouse->GetMouseX(), y + mouse->GetMouseY(), mouse_bitmap[index]);
