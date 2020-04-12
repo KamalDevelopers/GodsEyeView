@@ -14,8 +14,11 @@ filesC = [
 	"./kernel/Hardware/Drivers/keyboard.cpp",
 	"./kernel/Hardware/Drivers/vga.cpp",
 	"./kernel/Hardware/Drivers/cmos.cpp",
+	"./kernel/Hardware/Drivers/ata.cpp",
 	"./kernel/GDT/gdt.cpp",
 	"./kernel/Hardware/interrupts.cpp",
+	"./kernel/Filesystem/pt.cpp",
+	"./kernel/Filesystem/fat32.cpp",
 
 	"./libraries/LibC/stdio.cpp",
 	"./libraries/LibC/stdlib.cpp",

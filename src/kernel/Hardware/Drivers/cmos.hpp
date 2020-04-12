@@ -3,6 +3,8 @@
 
 #include "../port.hpp"
 #include "stdio.hpp"
+#include "string.hpp"
+#include "itoa.hpp"
 
 #define CURRENT_YEAR 2020
 
@@ -21,6 +23,8 @@ public:
     virtual unsigned char GetDay();
     virtual unsigned char GetMonth();
     virtual unsigned int GetYear();
+
+    virtual char* GetFullTime();
 
 protected:
     int century_register = 0x00;

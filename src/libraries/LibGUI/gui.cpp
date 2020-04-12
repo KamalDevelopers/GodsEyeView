@@ -2,6 +2,29 @@
 
 using namespace GUI;
 
+Image::Image(int width, int height, short int* bmp)
+{
+    widget_width = width;
+    widget_height = height;
+    bitmap = bmp;
+}
+
+void Image::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight)
+{
+    int index = 0;
+    for (int y = 0; y < widget_height; y++){
+        for (int x = 0; x < widget_width; x++)
+        {
+            if ((x > parentWidth) || (y > parentHeight))
+                return;
+            
+            if (bitmap[index] != -1)
+                vga->PutPixel(x + parentPosX, y + parentPosY, bitmap[index]);
+            index++;
+        }
+    }
+}
+
 Label::Label(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text)
 {
     widget_xpos = xpos;
@@ -36,6 +59,49 @@ void Label::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, 
 
     vga->ResetOffset();
     vga->Print(widget_text, widget_color, twidget_xpos, twidget_ypos);
+}
+
+Input::Input(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text)
+{
+    widget_xpos = xpos;
+    widget_ypos = ypos;
+    widget_width = width;
+    widget_height = height;
+
+    widget_color = fcolor;
+    box_color = bcolor;
+    widget_text = text;
+}
+
+void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int parentPosX, int parentPosY, int parentWidth, int parentHeight)
+{
+    int twidget_xpos = widget_xpos + parentPosX;
+    int twidget_ypos = widget_ypos + parentPosY;
+
+    for (int y = 0; y < widget_height; y++) {
+        for (int x = 0; x < widget_width; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y;
+
+            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t) && (mouse->GetMousePress() == 1))
+                active_input = 1;
+
+            if (active_input == 1)
+                if (input_text_index != keyboard->GetIndex() - backslashoffset){
+                    if (keyboard->GetLastKey() == '*'){
+                        input_text[input_text_index - backslashoffset - 1] = ' ';
+                        backslashoffset++;
+                    }else if (keyboard->GetLastKey() != '\n'){
+                        input_text[input_text_index - backslashoffset] = keyboard->GetLastKey();
+                        input_text_index++;
+                    }
+                }
+            vga->PutPixel(x_t, y_t, box_color);
+        }
+    }
+    vga->ResetOffset();
+    vga->Print(widget_text, widget_color, twidget_xpos, twidget_ypos);
+    vga->Print(input_text, widget_color, twidget_xpos, twidget_ypos);
 }
 
 Button::Button(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text, void (*op)(void))
@@ -80,6 +146,14 @@ void Button::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
 
     vga->ResetOffset();
     vga->Print(widget_text, widget_color, twidget_xpos, twidget_ypos);
+    if (render_image == 1)
+        image->Add(vga, twidget_xpos, twidget_ypos, widget_width, widget_height);
+}
+
+void Button::AddImage(Image* img)
+{
+    image = img;
+    render_image = 1;
 }
 
 Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
@@ -95,12 +169,29 @@ Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
 void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
 {
     for (int y = 0 + win_ypos; y < win_height + win_ypos; y++)
-        for (int x = 0 + win_xpos; x < win_width + win_xpos; x++)
+        for (int x = 0 + win_xpos; x < win_width + win_xpos; x++){
             vga->PutPixel(x, y, win_color);
+            if (x == win_xpos)
+                for (int i = 0; i < border_thickness; i++)
+                    vga->PutPixel(x+i, y, border_color);
+
+            if (x == win_xpos + win_width - 1)
+                for (int i = 0; i < border_thickness; i++)
+                    vga->PutPixel(x-i, y, border_color);
+
+            if (y == win_ypos)
+                for (int i = 0; i < border_thickness; i++)
+                    if (win_bar != 1)
+                        vga->PutPixel(x, y+i, border_color);
+
+            if (y == win_ypos + win_height - 1)
+                for (int i = 0; i < border_thickness; i++)
+                    vga->PutPixel(x, y-i, border_color);
+        }
 
     if (win_bar == 1) {
-        for (int y = 0 + win_ypos; y < win_ypos + 4; y++) {
-            for (int x = 0 + win_xpos; x < win_width + win_xpos; x++) {
+        for (int y = 0 + win_ypos; y < win_ypos + 10; y++) {
+            for (int x = 0 + win_xpos; x < win_width + win_xpos - 10; x++) {
                 if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1))
                     save_mouse_press = 1;
 
@@ -114,6 +205,19 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
                 vga->PutPixel(x, y - 4, 0x8);
             }
         }
+        int index = 0;
+        for (int x = 0 + win_xpos + win_width - 10; x < 10 + win_xpos + win_width - 10; x++){
+            for (int y = 0 + win_ypos - 4; y < 10 + win_ypos - 4; y++){
+                if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1))
+                    destroy_win = 1;
+
+                if (closewindow_bitmap[index] != -1)
+                    vga->PutPixel(x, y, closewindow_bitmap[index]);
+                index++;
+            }
+        }
+        vga->ResetOffset();
+        vga->Print(win_title, 0x0, win_xpos + 5, win_ypos - 2);
     }
 
     for (int i = 0; i < widget_indexL; i++)
@@ -121,6 +225,15 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
 
     for (int i = 0; i < widget_indexB; i++)
         childrenB[i]->Add(vga, mouse, win_xpos, win_ypos, win_width, win_height);
+
+    for (int i = 0; i < widget_indexI; i++)
+        childrenI[i]->Add(vga, mouse, keyboard, win_xpos, win_ypos, win_width, win_height);
+}
+
+void Window::Border(uint8_t thickness, uint8_t color)
+{
+    border_thickness = thickness;
+    border_color = color;
 }
 
 int Window::AddWidget(char* count, ...)
@@ -138,6 +251,10 @@ int Window::AddWidget(char* count, ...)
         case 'b':
             childrenB[widget_indexB] = va_arg(list, Button*);
             widget_indexB++;
+            break;
+        case 'i':
+            childrenI[widget_indexI] = va_arg(list, Input*);
+            widget_indexI++;
             break;
         }
     }
@@ -201,6 +318,12 @@ void Desktop::DrawMouse(int32_t x, int32_t y)
     old_mouse_y = y;
 }
 
+void Desktop::SetWallpaper(Image* img)
+{
+    desk_wallpaper = img;
+    render_wallpapaper = 1;
+}
+
 int Desktop::AddWin(int count, ...)
 {
     if (count > 100)
@@ -219,14 +342,33 @@ int Desktop::AddWin(int count, ...)
     return 0;
 }
 
+int Desktop::AppendWin(Window* win)
+{
+    win_index++;
+    children[win_index] = win;
+    return 0;
+}
+
 void Desktop::Draw()
 {
-    for (int y = 0; y < desk_height; y++)
-        for (int x = 0; x < desk_width; x++)
-            vga->PutPixel(x, y, 0x0);
+    int windex = 0;
+    for (int y = 0; y < 480; y++)
+        for (int x = 0; x < 640; x++){
+            if (render_wallpapaper == 1)
+                vga->PutPixel(x, y, desk_wallpaper->GetColor(windex));
+            else
+                vga->PutPixel(x, y, 0x0);
+            windex++;
+        }
 
-    for (int i = 0; i < win_index; i++)
-        children[i]->Begin(vga, mouse, keyboard);
+    for (int i = 0; i < win_index; i++){
+        if (children[i]->GetDestroy() == 1){
+            deleteElement(i, win_index, children);
+            win_index = win_index - 1;
+        }
+        else if (children[i]->GetHidden() != 1)
+            children[i]->Begin(vga, mouse, keyboard);
+    }
 
     int index = 0;
     for (int y = 0; y < 8; y++)
