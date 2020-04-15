@@ -9,14 +9,15 @@ ASPARAMS  = "--32"
 filesC = [
 	"./kernel/kernel.cpp",
 	"./kernel/multitasking.cpp",
+	"./kernel/syscalls.cpp",
 	"./kernel/Hardware/port.cpp",
 	"./kernel/Hardware/Drivers/mouse.cpp",
 	"./kernel/Hardware/Drivers/keyboard.cpp",
 	"./kernel/Hardware/Drivers/vga.cpp",
 	"./kernel/Hardware/Drivers/cmos.cpp",
 	"./kernel/Hardware/Drivers/ata.cpp",
-	"./kernel/GDT/gdt.cpp",
 	"./kernel/Hardware/interrupts.cpp",
+	"./kernel/GDT/gdt.cpp",
 	"./kernel/Filesystem/pt.cpp",
 	"./kernel/Filesystem/fat32.cpp",
 

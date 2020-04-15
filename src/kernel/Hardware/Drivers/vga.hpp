@@ -1,6 +1,5 @@
 #ifndef VGA_HPP
 #define VGA_HPP
-#include "../../../libraries/LibGUI/cardgraphics.hpp"
 #include "../../../libraries/LibGUI/font.hpp"
 #include "../port.hpp"
 #include "stdio.hpp"

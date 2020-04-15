@@ -14,6 +14,9 @@
 #include "Filesystem/fat32.hpp"
 #include "Filesystem/pt.hpp"
 
+#include "multitasking.hpp"
+#include "syscalls.hpp"
+
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
