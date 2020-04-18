@@ -104,12 +104,13 @@ void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int
     vga->Print(input_text, widget_color, twidget_xpos, twidget_ypos);
 }
 
-Button::Button(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text, void (*op)(void))
+Button::Button(int xpos, int ypos, int width, int height, int soffset,uint8_t fcolor, uint8_t bcolor, uint8_t scolor,char* text, void (*op)(void))
 {
     widget_xpos = xpos;
     widget_ypos = ypos;
     widget_width = width;
     widget_height = height;
+    shadow_offset = soffset;
 
     widget_color = fcolor;
     box_color = bcolor;
@@ -140,6 +141,7 @@ void Button::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
             if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t) && (mouse->GetMousePress() == 1))
                 on_press();
 
+            vga->PutPixel(x_t + shadow_offset, y_t + shadow_offset, shadow_color);
             vga->PutPixel(x_t, y_t, box_color);
         }
     }

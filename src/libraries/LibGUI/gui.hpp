@@ -49,8 +49,10 @@ private:
     int widget_ypos;
     int widget_width;
     int widget_height;
+    int shadow_offset;
     uint8_t widget_color;
     uint8_t box_color;
+    uint8_t shadow_color;
     uint8_t render_image = 0;
     char* widget_text;
     MouseDriver* mouse;
@@ -58,7 +60,7 @@ private:
     void (*on_press)(void);
 
 public:
-    Button(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text, void (*op)(void));
+    Button(int xpos, int ypos, int width, int height, int soffset, uint8_t fcolor, uint8_t bcolor, uint8_t scolor,char* text, void (*op)(void));
     void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     void AddImage(Image* img);
 };
