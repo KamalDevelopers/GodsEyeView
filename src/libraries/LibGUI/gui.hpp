@@ -65,6 +65,19 @@ public:
     void AddImage(Image* img);
 };
 
+class Panel {
+private:
+    int widget_xpos;
+    int widget_ypos;
+    int widget_width;
+    int widget_height;
+    uint8_t panel_color;
+
+public:
+    Panel(int xpos, int ypos, int width, int height, uint8_t color);
+    void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
+};
+
 class Label {
 private:
     int widget_xpos;
@@ -91,6 +104,7 @@ private:
     int widget_indexL;
     int widget_indexB;
     int widget_indexI;
+    int widget_indexP;
     int win_height;
     int win_width;
     int win_xpos;
@@ -105,6 +119,7 @@ private:
     Label* childrenL[100];
     Button* childrenB[100];
     Input* childrenI[100];
+    Panel* childrenP[100];
 
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);

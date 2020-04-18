@@ -158,6 +158,29 @@ void Button::AddImage(Image* img)
     render_image = 1;
 }
 
+Panel::Panel(int xpos, int ypos, int width, int height, uint8_t color)
+{
+    widget_xpos = xpos;
+    widget_ypos = ypos;
+    widget_width = width;
+    widget_height = height;
+    panel_color = color;
+}
+
+void Panel::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight)
+{
+    int twidget_xpos = widget_xpos + parentPosX;
+    int twidget_ypos = widget_ypos + parentPosY;
+
+    for (int y = 0; y < widget_height; y++)
+        for (int x = 0; x < widget_width; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y;
+
+            vga->PutPixel(x_t, y_t, panel_color);
+        }
+}
+
 Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
 {
     win_bar = wb;
@@ -230,6 +253,9 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
 
     for (int i = 0; i < widget_indexI; i++)
         childrenI[i]->Add(vga, mouse, keyboard, win_xpos, win_ypos, win_width, win_height);
+    
+    for (int i = 0; i < widget_indexP; i++)
+        childrenP[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
 }
 
 void Window::Border(uint8_t thickness, uint8_t color)
@@ -257,6 +283,10 @@ int Window::AddWidget(char* count, ...)
         case 'i':
             childrenI[widget_indexI] = va_arg(list, Input*);
             widget_indexI++;
+            break;
+        case 'p':
+            childrenP[widget_indexP] = va_arg(list, Panel*);
+            widget_indexP++;
             break;
         }
     }
