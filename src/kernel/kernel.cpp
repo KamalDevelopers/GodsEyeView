@@ -56,7 +56,7 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GUI::Desktop desktop(640, 480, &vga, &mouse, &keyboard);
     interrupts.Activate();
 
-    GUI::Window window(0, 0, 640, 20, 0x8, 0);
+    GUI::Window window(0, 0, 640, 21, 0x8, 0);
     GUI::Window *win = &window;
 
     GUI::Window terminal(22, 42, 250, 150, 0x0, 1);
@@ -65,8 +65,8 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     term->SetTitle("Terminal");
 
     GUI::Image image(10, 10, powerbutton);
-    GUI::Button button(4, 4, 10, 10, 0,0x8, 0x8, 0x0,"", poweroff);
-    GUI::Button terminal_button(24, 7, 20, 10, 0, 0x0, 0x8, 0x0,"Terminal", open_term);
+    GUI::Button button(6, 4, 10, 10, 0, 0x8, 0x8, 0x0,"", poweroff);
+    GUI::Button terminal_button(24, 3, 14, 15, 2, 0x0, 0x7, 0x0,"Terminal", open_term);
 
     char* user_name = "Terry";
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 69, 7, 0, 10, 0x0, 0x8, "");

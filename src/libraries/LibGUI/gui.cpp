@@ -147,7 +147,7 @@ void Button::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
     }
 
     vga->ResetOffset();
-    vga->Print(widget_text, widget_color, twidget_xpos, twidget_ypos);
+    vga->Print(widget_text, widget_color, twidget_xpos + 1 + widget_width / 2, twidget_ypos - 4 + widget_height / 2);
     if (render_image == 1)
         image->Add(vga, twidget_xpos, twidget_ypos, widget_width, widget_height);
 }
