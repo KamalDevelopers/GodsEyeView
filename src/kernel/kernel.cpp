@@ -64,12 +64,9 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GUI::Window *term = &terminal;
     term->SetTitle("Terminal");
 
-    GUI::Panel panel(1, 6, 248, 50, 0x3);
     GUI::Image image(10, 10, powerbutton);
     GUI::Button button(6, 4, 10, 10, 0, 0x8, 0x8, 0x0,"", poweroff);
     GUI::Button terminal_button(24, 3, 14, 15, 2, 0x0, 0x7, 0x0,"Terminal", open_term);
-
-    term->AddWidget("p", &panel);
 
     char* user_name = "Terry";
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 69, 7, 0, 10, 0x0, 0x8, "");
