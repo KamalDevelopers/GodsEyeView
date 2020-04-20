@@ -104,7 +104,7 @@ void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int
     vga->Print(input_text, widget_color, twidget_xpos, twidget_ypos);
 }
 
-Button::Button(int xpos, int ypos, int width, int height, int soffset,uint8_t fcolor, uint8_t bcolor, uint8_t scolor,char* text, void (*op)(void))
+Button::Button(int xpos, int ypos, int width, int height, int soffset,uint8_t fcolor, uint8_t bcolor, uint8_t scolor, char* text, void (*op)(void))
 {
     widget_xpos = xpos;
     widget_ypos = ypos;
@@ -133,21 +133,36 @@ void Button::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
     if (twidget_ypos + 8 > parentHeight + parentPosY)
         return;
 
+    for (int y = 0; y < widget_height; y++)
+        for (int x = 0; x < widget_width + Xsize; x++){
+            if (on_hover_state == 2)
+                vga->PutPixel(twidget_xpos + x + 1, twidget_ypos + y + 1, shadow_color);
+            else
+                vga->PutPixel(twidget_xpos + x + shadow_offset, twidget_ypos + y + shadow_offset, shadow_color);
+        }
+
+    on_hover_state = 0;
+    for (int y = 0; y < widget_height; y++)
+        for (int x = 0; x < widget_width + Xsize; x++)
+            if ((mouse->GetMouseX() == twidget_xpos + x) && (mouse->GetMouseY() == twidget_ypos + y) && (shadow_offset != 0))
+                if (mouse->GetMousePress() == 1) on_hover_state = 2;
+                else on_hover_state = 1;
+
     for (int y = 0; y < widget_height; y++) {
         for (int x = 0; x < widget_width + Xsize; x++) {
             int x_t = twidget_xpos + x;
             int y_t = twidget_ypos + y;
 
-            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t) && (mouse->GetMousePress() == 1))
-                on_press();
+            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t))
+                if (mouse->GetMousePress() == 1)
+                    on_press();
 
-            vga->PutPixel(x_t + shadow_offset, y_t + shadow_offset, shadow_color);
-            vga->PutPixel(x_t, y_t, box_color);
+            vga->PutPixel(x_t + on_hover_state, y_t + on_hover_state, box_color);
         }
     }
 
     vga->ResetOffset();
-    vga->Print(widget_text, widget_color, twidget_xpos + 1 + widget_width / 2, twidget_ypos - 4 + widget_height / 2);
+    vga->Print(widget_text, widget_color, on_hover_state + twidget_xpos + 1 + widget_width / 2, on_hover_state + twidget_ypos - 4 + widget_height / 2);
     if (render_image == 1)
         image->Add(vga, twidget_xpos, twidget_ypos, widget_width, widget_height);
 }

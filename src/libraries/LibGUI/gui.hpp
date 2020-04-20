@@ -50,6 +50,7 @@ private:
     int widget_width;
     int widget_height;
     int shadow_offset;
+    uint8_t on_hover_state = 0;
     uint8_t widget_color;
     uint8_t box_color;
     uint8_t shadow_color;
