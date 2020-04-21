@@ -79,22 +79,14 @@ static char* findchar(const char* str, int c)
     return (char*)position;
 }
 
-static char* strcat(char* destination, char* source)
+static char* strcat(char *dest, char *src)
 {
-    int c = 0;
-    int sc;
-
-    while (destination[c] != 0) {
-        c++;
-    }
-
-    for (sc = 0; sc < str_len(source); sc++) {
-        destination[sc + c] = source[sc];
-    }
-
-    destination[sc + c] = 0;
-
-    return destination;
+    size_t i, j;
+    i = str_len(dest);
+    for (j = 0; src[j] != '\0'; j++)
+        dest[i + j] = src[j];
+    dest[i + j] = '\0';
+    return dest;
 }
 
 static void memcpy(char* dest, char* src, int count)

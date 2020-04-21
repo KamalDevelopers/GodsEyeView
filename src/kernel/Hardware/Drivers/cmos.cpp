@@ -15,16 +15,16 @@ char* TimeDriver::GetFullTime()
     itoa(GetSecond(), sec);
     itoa(GetMinute(), min);
     itoa(GetHour(), hour);
-    strncpy(middle, ":", 1);
 
     if (str_len(sec) == 1){ sec[1] = sec[0]; sec[0] = '0'; }
-    //else if (str_len(min) == 1){ min[1] = min[0]; min[0] = '0'; }
+    else if (str_len(min) == 1){ min[1] = min[0]; min[0] = '0'; }
     else if (str_len(hour) == 1){ hour[1] = hour[0]; hour[0] = '0'; }
 
-    char* clck1 = strcat(hour, middle);
-    char* clck2 = strcat(min, middle);
-    char* clck3 = strcat(clck1, clck2);
-    char* clck = strcat(clck3, sec);
+    strcat(hour, (char*)":\0");
+    strcat(min, (char*)":\0");
+
+    char* hourmin = strcat(hour, min);
+    char* clck = strcat(hourmin, sec);
 
     return clck;
 }
