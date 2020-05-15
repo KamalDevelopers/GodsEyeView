@@ -18,8 +18,6 @@ filesC = [
 	"./kernel/Hardware/Drivers/ata.cpp",
 	"./kernel/Hardware/interrupts.cpp",
 	"./kernel/GDT/gdt.cpp",
-	"./kernel/Filesystem/pt.cpp",
-	"./kernel/Filesystem/fat32.cpp",
 
 	"./libraries/LibC/stdio.cpp",
 	"./libraries/LibC/stdlib.cpp",

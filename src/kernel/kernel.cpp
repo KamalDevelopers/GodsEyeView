@@ -11,9 +11,6 @@
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/interrupts.hpp"
 
-#include "Filesystem/fat32.hpp"
-#include "Filesystem/pt.hpp"
-
 #include "multitasking.hpp"
 #include "syscalls.hpp"
 
