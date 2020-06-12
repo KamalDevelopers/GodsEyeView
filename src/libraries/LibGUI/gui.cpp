@@ -241,6 +241,12 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
                 if (save_mouse_press == 1) {
                     win_xpos = mouse->GetMouseX();
                     win_ypos = mouse->GetMouseY();
+                    if (win_xpos >= 640 - win_width)
+                        win_xpos = 640 - win_width;
+                    if (win_ypos >= 475)
+                        win_ypos = 480;
+                    if (win_ypos <= 25)
+                        win_ypos = 25;                    
                 }
                 vga->PutPixel(x, y - 4, 0x8);
             }
@@ -258,6 +264,7 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
         }
         vga->ResetOffset();
         vga->Print(win_title, 0x7, win_xpos + 5, win_ypos - 2);
+
     }
 
     for (int i = 0; i < widget_indexL; i++)
