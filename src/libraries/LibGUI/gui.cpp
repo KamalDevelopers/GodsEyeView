@@ -257,7 +257,7 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
             }
         }
         vga->ResetOffset();
-        vga->Print(win_title, 0x0, win_xpos + 5, win_ypos - 2);
+        vga->Print(win_title, 0x7, win_xpos + 5, win_ypos - 2);
     }
 
     for (int i = 0; i < widget_indexL; i++)

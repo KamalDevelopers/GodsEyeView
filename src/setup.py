@@ -52,7 +52,7 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-	os.system("qemu-system-i386 -cdrom kernel.iso -soundhw pcspk")
+	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk")
 
 def make_kernel():
 	for file in filesC:
