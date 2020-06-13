@@ -76,7 +76,12 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 
     while (1)
     {
+        char* mposx;
+        char* mposy;
+        itoa(mouse.GetMouseX(), mposx);
+        itoa(mouse.GetMouseY(), mposy);
         desktop.Draw();
+        vga.Print(mposx, 0x3, 100, 100);
         vga.RenderScreen();
 
         if (open_term_hook == 1){ open_term_hook = 0; term->Revive(); desktop.AppendWin(term); }
