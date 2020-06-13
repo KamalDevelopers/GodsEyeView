@@ -64,14 +64,13 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GUI::Image image(10, 10, powerbutton);
     GUI::Button button(6, 4, 10, 10, 0, 0x8, 0x8, 0x0,"", poweroff);
     GUI::Button terminal_button(24, 3, 14, 15, 2, 0x0, 0x7, 0x0,"Terminal", open_term);
-    GUI::Button test_button(250, 3, 14, 15, 2, 0x0, 0x7, 0x0,"test", open_term);
 
     char* user_name = "Terry";
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 69, 7, 0, 10, 0x0, 0x8, "");
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
 
     button.AddImage(&image);
-    win->AddWidget("lblbb", &user_label, &button, &clock_label, &terminal_button, &test_button);
+    win->AddWidget("lblb", &user_label, &button, &clock_label, &terminal_button);
 
     desktop.AddWin(1, win);
 
@@ -82,5 +81,6 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 
         if (open_term_hook == 1){ open_term_hook = 0; term->Revive(); desktop.AppendWin(term); }
         clock_label.SetText(time.GetFullTime());
+        
     }
 }

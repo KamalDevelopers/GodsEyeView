@@ -74,8 +74,8 @@ public:
     virtual void ResetOffset();
     virtual void DecreaseOffset(int x) { vga_x_offset -= x; }
     virtual void SetPlane(unsigned p);
-    virtual int GetScreenH() { return screen_width; }
-    virtual int GetScreenW() { return screen_height; }
+    virtual int GetScreenH() { return screen_height; }
+    virtual int GetScreenW() { return screen_width; }
     virtual int GetScreenC() { return screen_colordepth; }
     virtual void FrameStart(uint8_t i) { is_ready = i; }
     virtual uint8_t GetFrameStart() { return is_ready; }

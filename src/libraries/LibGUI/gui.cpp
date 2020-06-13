@@ -241,10 +241,11 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
                 if (save_mouse_press == 1) {
                     win_xpos = mouse->GetMouseX();
                     win_ypos = mouse->GetMouseY();
-                    if (win_xpos >= 640 - win_width)
-                        win_xpos = 640 - win_width;
-                    if (win_ypos >= 475)
-                        win_ypos = 480;
+                    if (win_xpos >= vga->GetScreenW() - win_width)
+                        win_xpos = vga->GetScreenW() - win_width;
+                    if (win_ypos >= vga->GetScreenH() - 10)
+                        win_ypos = vga->GetScreenH() - 10;
+                    //Temporary code just to stop windows from overlapping top bar    
                     if (win_ypos <= 25)
                         win_ypos = 25;                    
                 }
