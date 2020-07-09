@@ -7,8 +7,9 @@
 #include "string.hpp"
 #include "types.hpp"
 #include "vga.hpp"
+#include "driver.hpp"
 
-class KeyboardDriver : public InterruptHandler {
+class KeyboardDriver : public InterruptHandler, public Driver {
     Port8Bit dataport;
     Port8Bit commandport;
 

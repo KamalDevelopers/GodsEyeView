@@ -18,6 +18,9 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         case 4:
             printf("%s", (char*)cpu->ebx);
             break;
+        case 162:
+            sleep((uint32_t)cpu->ebx);
+            break;
 
         default:
             break;

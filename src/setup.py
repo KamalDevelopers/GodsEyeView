@@ -16,7 +16,9 @@ filesC = [
 	"./kernel/Hardware/Drivers/vga.cpp",
 	"./kernel/Hardware/Drivers/cmos.cpp",
 	"./kernel/Hardware/Drivers/ata.cpp",
+	"./kernel/Hardware/Drivers/driver.cpp",
 	"./kernel/Hardware/interrupts.cpp",
+	"./kernel/Hardware/pci.cpp",
 	"./kernel/GDT/gdt.cpp",
 
 	"./libraries/LibC/stdio.cpp",

@@ -113,18 +113,18 @@ void clear()
 
 void outb(uint16_t port, uint8_t data)
 {
-    asm volatile("outb %0, %1"
-                 : "=a"(data)
-                 : "Nd"(port));
+    __asm__ volatile("outb %0, %1"
+                         :
+                         : "a"(data), "Nd"(port));
 }
 
 uint8_t inb(uint16_t port)
 {
-    uint8_t ret;
-    asm volatile("inb %1, %0"
-                 : "=a"(ret)
-                 : "Nd"(port));
-    return ret;
+    uint8_t result;
+    __asm__ volatile("inb %1, %0"
+                         : "=a"(result)
+                         : "Nd"(port));
+    return result;
 }
 
 void sleep(uint32_t timer_count)
@@ -135,4 +135,40 @@ void sleep(uint32_t timer_count)
         if (timer_count <= 0)
             break;
     }
+}
+
+void usleep(uint32_t ms)
+{
+    while (1) {
+        sleep(40000);
+        ms--;
+        if (ms <= 0)
+            break;
+    }
+}
+
+void PCS_play_sound(uint32_t nFrequence) {
+    uint32_t Div;
+    uint8_t tmp;
+ 
+    Div = 1193180 / nFrequence;
+    outb(0x43, 0xb6);
+    outb(0x42, (uint8_t) (Div) );
+    outb(0x42, (uint8_t) (Div >> 8));
+ 
+    tmp = inb(0x61);
+    if (tmp != (tmp | 3)) {
+        outb(0x61, tmp | 3);
+    }
+}
+ 
+void PCS_nosound() {
+    uint8_t tmp = inb(0x61) & 0xFC;
+    outb(0x61, tmp);
+}
+
+void beep(int ms_time, int frequency) {
+    PCS_play_sound(frequency);
+    usleep(ms_time);
+    PCS_nosound();
 }

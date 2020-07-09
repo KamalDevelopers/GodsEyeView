@@ -6,8 +6,9 @@
 #include "stdio.hpp"
 #include "types.hpp"
 #include "vga.hpp"
+#include "driver.hpp"
 
-class MouseDriver : public InterruptHandler {
+class MouseDriver : public InterruptHandler, public Driver {
     Port8Bit dataport;
     Port8Bit commandport;
     uint8_t buffer[3];

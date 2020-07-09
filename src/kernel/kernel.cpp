@@ -4,12 +4,14 @@
 #include "stdlib.hpp"
 
 #include "GDT/gdt.hpp"
+#include "Hardware/Drivers/driver.hpp"
 #include "Hardware/Drivers/cmos.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/Drivers/vga.hpp"
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/interrupts.hpp"
+#include "Hardware/pci.hpp"   
 
 #include "multitasking.hpp"
 #include "syscalls.hpp"
@@ -43,13 +45,22 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     Graphics vga;
     TaskManager t;
     TimeDriver time;
+    DriverManager drvManager;
 
     vga.Init(640, 480, 16, 0x0);
     GlobalDescriptorTable gdt;
+
     InterruptManager interrupts(0x20, &gdt, &t);
+
     MouseDriver mouse(&interrupts, &vga);
     KeyboardDriver keyboard(&interrupts);
+    
+    drvManager.AddDriver(&keyboard);
+    drvManager.AddDriver(&mouse);
+    PCIcontroller PCI;
+    PCI.SelectDrivers(&drvManager);
 
+    drvManager.ActivateAll();
     GUI::Desktop desktop(640, 480, &vga, &mouse, &keyboard);
     interrupts.Activate();
 
@@ -66,6 +77,7 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GUI::Button terminal_button(24, 3, 14, 15, 2, 0x0, 0x7, 0x0,"Terminal", open_term);
 
     char* user_name = "Terry";
+
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 69, 7, 0, 10, 0x0, 0x8, "");
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
 
@@ -73,19 +85,11 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     win->AddWidget("lblb", &user_label, &button, &clock_label, &terminal_button);
 
     desktop.AddWin(1, win);
-
     while (1)
     {
-        char* mposx;
-        char* mposy;
-        itoa(mouse.GetMouseX(), mposx);
-        itoa(mouse.GetMouseY(), mposy);
+        clock_label.SetText(time.GetFullTime());
         desktop.Draw();
-        vga.Print(mposx, 0x3, 100, 100);
-        vga.RenderScreen();
 
         if (open_term_hook == 1){ open_term_hook = 0; term->Revive(); desktop.AppendWin(term); }
-        clock_label.SetText(time.GetFullTime());
-        
     }
 }
