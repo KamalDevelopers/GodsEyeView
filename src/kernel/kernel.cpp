@@ -68,13 +68,14 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GUI::Window *win = &window;
 
     GUI::Window terminal(22, 42, 250, 150, 0x0, 1);
-    terminal.Border(1, 0x8);
     GUI::Window *term = &terminal;
     term->SetTitle("Terminal");
 
     GUI::Image image(10, 10, powerbutton);
-    GUI::Button button(6, 4, 10, 10, 0, 0x8, 0x8, 0x0,"", poweroff);
-    GUI::Button terminal_button(24, 3, 14, 15, 2, 0x0, 0x7, 0x0,"Terminal", open_term);
+    GUI::Button button(6, 4, 10, 10, "", poweroff);
+    button.ShadowOffset(0);
+    button.Color(0x8);
+    GUI::Button terminal_button(24, 3, 14, 15, "Terminal", open_term);
 
     char* user_name = "Terry";
 

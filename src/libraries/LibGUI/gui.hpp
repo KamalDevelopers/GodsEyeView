@@ -49,11 +49,11 @@ private:
     int widget_ypos;
     int widget_width;
     int widget_height;
-    int shadow_offset;
+    int shadow_offset = 2;
     uint8_t on_hover_state = 0;
-    uint8_t widget_color;
-    uint8_t box_color;
-    uint8_t shadow_color;
+    uint8_t widget_color = 0x0;
+    uint8_t box_color = 0x7;
+    uint8_t shadow_color = 0x0;
     uint8_t render_image = 0;
     char* widget_text;
     MouseDriver* mouse;
@@ -61,9 +61,12 @@ private:
     void (*on_press)(void);
 
 public:
-    Button(int xpos, int ypos, int width, int height, int soffset, uint8_t fcolor, uint8_t bcolor, uint8_t scolor,char* text, void (*op)(void));
+    Button(int xpos, int ypos, int width, int height, char* text, void (*op)(void));
     void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     void AddImage(Image* img);
+    void Color(uint8_t color) {box_color = color;}
+    void ShadowColor(uint8_t scolor) {shadow_color = scolor;}
+    void ShadowOffset(int soffset) {shadow_offset = soffset;}
 };
 
 class Panel {
@@ -113,8 +116,8 @@ private:
 
     uint8_t win_color;
     uint8_t win_bar;
-    uint8_t border_thickness = 0;
-    uint8_t border_color = 0;
+    uint8_t border_thickness = 1;
+    uint8_t border_color = 0x8;
     char* win_title = " ";
     
     Label* childrenL[100];
