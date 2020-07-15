@@ -72,18 +72,16 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     term->SetTitle("Terminal");
 
     GUI::Image image(10, 10, powerbutton);
-    GUI::Button button(6, 4, 10, 10, "", poweroff);
-    button.ShadowOffset(0);
-    button.Color(0x8);
+    GUI::Button power_button(3, 3, 16, 15, "", poweroff);
     GUI::Button terminal_button(24, 3, 14, 15, "Terminal", open_term);
 
     char* user_name = "Terry";
 
-    GUI::Label clock_label(630 - (str_len(user_name) * 8) - 69, 7, 0, 10, 0x0, 0x8, "");
+    GUI::Label clock_label(630 - (str_len(user_name) * 8) - 69, 7, 0, 10, 0x0, 0x8, "clock");
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
 
-    button.AddImage(&image);
-    win->AddWidget("lblb", &user_label, &button, &clock_label, &terminal_button);
+    power_button.AddImage(&image);
+    win->AddWidget("lblb", &user_label, &power_button, &clock_label, &terminal_button);
 
     desktop.AddWin(1, win);
     while (1)
