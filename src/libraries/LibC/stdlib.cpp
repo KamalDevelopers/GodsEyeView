@@ -63,3 +63,15 @@ void* memcpy(void* __restrict dst, const void* __restrict src, size_t count)
 
     return dst;
 }
+
+void *memset(void *b, char c, int len)
+{
+    char *b_char = (char *)b;
+    while(*b_char && len > 0)
+    {
+        *b_char = c;
+        b_char++;
+        len--;
+    }
+    return b;
+}

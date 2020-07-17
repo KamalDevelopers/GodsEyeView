@@ -49,6 +49,7 @@ protected:
     virtual uint8_t GetColorIndex(uint8_t r, uint8_t g, uint8_t b);
     uint8_t vga_buffer[480][720];
     uint8_t old_vga_buffer[480][720];
+    uint8_t* pixel_address_buffer[480][720];
     uint8_t is_ready = 0;
 
 private:

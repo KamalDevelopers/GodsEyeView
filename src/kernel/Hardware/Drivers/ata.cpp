@@ -44,7 +44,6 @@ void AdvancedTechnologyAttachment::Identify()
         status = commandPort.Read();
 
     if (status & 0x01) {
-        printf("%s", "IDENTIFY ERROR");
         return;
     }
 
@@ -54,13 +53,12 @@ void AdvancedTechnologyAttachment::Identify()
         text[0] = (data >> 8) & 0xFF;
         text[1] = data & 0xFF;
     }
-    printf("\n");
 }
 
-char* AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, int count)
+uint8_t* AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t* data, int count)
 {
     uint16_t index = 0;
-    char* buffer;
+    uint8_t* buffer;
     for (int i = 0; i < 512; i++)
         buffer[i] = '\0';
 
@@ -93,13 +91,16 @@ char* AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, int count)
         buffer[index] = f[0];
         buffer[index + 1] = f[1];
         index += 2;
+        
+        data[i] = wdata & 0x00FF;
+        if(i+1 < count)
+            data[i+1] = (wdata >> 8) & 0x00FF;
     }
 
     for (int i = count + (count % 2); i < 512; i += 2)
         dataPort.Read();
 
     buffer[index + 1] = '\0';
-    printf("\n");
     return buffer;
 }
 
@@ -143,7 +144,6 @@ void AdvancedTechnologyAttachment::Flush()
         status = commandPort.Read();
 
     if (status & 0x01) {
-        printf("%s", "FLUSH ERROR");
         return;
     }
 }

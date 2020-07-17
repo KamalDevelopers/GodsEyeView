@@ -12,6 +12,7 @@
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"   
+#include "FileSystem/fs.hpp"
 
 #include "multitasking.hpp"
 #include "syscalls.hpp"
@@ -41,6 +42,8 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
     AdvancedTechnologyAttachment ata0s(true, 0x1F0);
     ata0s.Identify();
+    char *fserror;
+    FileSystem fs(&ata0s, &fserror);
 
     Graphics vga;
     TaskManager t;

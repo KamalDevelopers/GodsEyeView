@@ -26,7 +26,7 @@ public:
     ~AdvancedTechnologyAttachment();
 
     void Identify();
-    char* Read28(uint32_t sectorNum, int count = 512);
+    uint8_t* Read28(uint32_t sectorNum, uint8_t* data, int count = 512);
     void Write28(uint32_t sectorNum, uint8_t* data, uint32_t count);
     void Flush();
 };

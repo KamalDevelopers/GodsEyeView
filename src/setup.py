@@ -20,6 +20,7 @@ filesC = [
 	"./kernel/Hardware/interrupts.cpp",
 	"./kernel/Hardware/pci.cpp",
 	"./kernel/GDT/gdt.cpp",
+	"./kernel/Filesystem/fs.cpp",
 
 	"./libraries/LibC/stdio.cpp",
 	"./libraries/LibC/stdlib.cpp",
