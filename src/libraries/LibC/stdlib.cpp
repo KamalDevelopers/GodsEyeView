@@ -53,18 +53,22 @@ void free(void* ptr)
     free_block_list_head.next = block;
 }
 
-void* memcpy(void* __restrict dst, const void* __restrict src, size_t count)
+void* memcpy(void* dst, const void* src, unsigned int cnt)
 {
-    char* __restrict s = (char*)src;
-    char* __restrict d = (char*)dst;
-
-    while (count-- > 0)
-        *s++ = *d++;
-
+    char *pszDest = (char*)dst;
+    const char *pszSource = (const char*)src;
+    if((pszDest != NULL) && (pszSource != NULL))
+    {
+        while(cnt)
+        {
+            *(pszDest++) = *(pszSource++);
+            --cnt;
+        }
+    }
     return dst;
 }
 
-void *memset(void *b, char c, int len)
+void* memset(void *b, char c, int len)
 {
     char *b_char = (char *)b;
     while(*b_char && len > 0)

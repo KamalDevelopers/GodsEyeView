@@ -56,8 +56,17 @@ void vprintf(const char* format, va_list v)
     int size = len(format);
     int i = 0;
     char res[100];
+    int flag = 0;
     while (i < size) {
+        if (flag > 0) { flag--; }
+        
+        if (flag == 0) {
+            putc(format[i]);
+            i++;
+        }
+
         if (format[i] == '%') {
+            flag = 2;
             if (format[i + 1] == 's') {
                 puts(va_arg(v, char*));
             }
@@ -81,11 +90,13 @@ void vprintf(const char* format, va_list v)
         }
 
         if (format[i] == '\n') {
+            flag = 1;
             NewLineIndex++;
             VideoMemoryIndex = 0;
             i++;
         }
         if (format[i] == '\b') {
+            flag = 1;
             VideoMemoryIndex--;
             i++;
         }

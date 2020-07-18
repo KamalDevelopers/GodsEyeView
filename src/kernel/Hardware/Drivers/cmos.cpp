@@ -16,24 +16,13 @@ char* TimeDriver::GetFullTime()
     itoa(GetMinute(), min);
     itoa(GetHour(), hour);
 
-    if (str_len(sec) == 1) {
-        sec[1] = sec[0];
-        sec[0] = '0';
-    } else if (str_len(min) == 1) {
-        min[1] = min[0];
-        min[0] = '0';
-    } else if (str_len(hour) == 1) {
-        hour[1] = hour[0];
-        hour[0] = '0';
-    }
-
-    strcat(hour, (char*)":\0");
-    strcat(min, (char*)":\0");
+    strcat(hour, (char*)":");
+    strcat(min, (char*)":");
 
     char* hourmin = strcat(hour, min);
     char* clck = strcat(hourmin, sec);
 
-    return clck;
+    return clck + '\0';
 }
 unsigned char TimeDriver::GetSecond()
 {

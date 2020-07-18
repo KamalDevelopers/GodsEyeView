@@ -17,6 +17,7 @@ filesC = [
 	"./kernel/Hardware/Drivers/cmos.cpp",
 	"./kernel/Hardware/Drivers/ata.cpp",
 	"./kernel/Hardware/Drivers/driver.cpp",
+	"./kernel/Hardware/Drivers/amd79.cpp",
 	"./kernel/Hardware/interrupts.cpp",
 	"./kernel/Hardware/pci.cpp",
 	"./kernel/GDT/gdt.cpp",

@@ -10,6 +10,7 @@
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/Drivers/vga.hpp"
 #include "Hardware/Drivers/ata.hpp"
+#include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"   
 #include "FileSystem/fs.hpp"
@@ -54,19 +55,19 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GlobalDescriptorTable gdt;
 
     InterruptManager interrupts(0x20, &gdt, &t);
+    PCIcontroller PCI;
 
     MouseDriver mouse(&interrupts, &vga);
     KeyboardDriver keyboard(&interrupts);
-    
+
     drvManager.AddDriver(&keyboard);
     drvManager.AddDriver(&mouse);
-    PCIcontroller PCI;
     PCI.SelectDrivers(&drvManager);
 
     drvManager.ActivateAll();
-    GUI::Desktop desktop(640, 480, &vga, &mouse, &keyboard);
     interrupts.Activate();
 
+    GUI::Desktop desktop(640, 480, &vga, &mouse, &keyboard);
     GUI::Window window(0, 0, 640, 21, 0x8, 0);
     GUI::Window *win = &window;
 

@@ -53,12 +53,12 @@ void PCIcontroller::SelectDrivers(DriverManager* driverManager)
         for (int device = 0; device < 32; device++) {
             int numFunctions = DeviceHasFunctions(bus, device) ? 8 : 1;
             for (int function = 0; function < numFunctions; function++) {
-                PCIcontrollerDeviceDescriptor dev = GetDeviceDescriptor(bus, device, function);
+                dev = GetDeviceDescriptor(bus, device, function);
 
                 if (dev.vendor_id == 0x0000 || dev.vendor_id == 0xFFFF)
                     break;
 
-                printf("%s", "PCI BUS ");
+                /*printf("%s", "PCI BUS ");
                 printf("%x", bus & 0xFF);
 
                 printf("%s", ", DEVICE ");
@@ -72,10 +72,15 @@ void PCIcontroller::SelectDrivers(DriverManager* driverManager)
                 printf("%x", dev.vendor_id & 0xFF);
                 printf("%s", ", DEVICE ");
                 printf("%x", (dev.device_id & 0xFF00) >> 8);
-                printf("%x\n", dev.device_id & 0xFF);
+                printf("%x\n", dev.device_id & 0xFF);*/
             }
         }
     }
+}
+
+PCIcontrollerDeviceDescriptor* PCIcontroller::GetDescriptor()
+{
+    return &dev;
 }
 
 PCIcontrollerDeviceDescriptor PCIcontroller::GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function)

@@ -8,7 +8,7 @@ unsigned int random(unsigned int seed, unsigned int max);
 void* malloc(int size);
 void free(void* ptr);
 void* sbrk(int incr);
-void* memcpy(void* __restrict dst, const void* __restrict src, size_t count);
+void* memcpy(void* dst, const void* src, unsigned int cnt);
 void* memset(void *b, char c, int len);
 
 template <typename T>

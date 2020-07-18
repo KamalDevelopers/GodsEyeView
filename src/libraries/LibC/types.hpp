@@ -1,6 +1,6 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
-#define NULL 0;
+#define NULL 0
 
 typedef char int8_t;
 typedef unsigned char uint8_t;

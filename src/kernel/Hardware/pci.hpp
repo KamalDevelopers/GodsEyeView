@@ -31,6 +31,7 @@ public:
 class PCIcontroller {
     Port32Bit dataPort;
     Port32Bit commandPort;
+    PCIcontrollerDeviceDescriptor dev;
 
 public:
     PCIcontroller();
@@ -42,6 +43,7 @@ public:
 
     void SelectDrivers(DriverManager* driverManager);
     PCIcontrollerDeviceDescriptor GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function);
+    PCIcontrollerDeviceDescriptor* GetDescriptor();
 };
 
 #endif
