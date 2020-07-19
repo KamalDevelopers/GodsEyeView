@@ -79,3 +79,24 @@ void* memset(void *b, char c, int len)
     }
     return b;
 }
+ 
+int atoi(char* str)
+{
+    int res = 0;
+        res = res * 10 + str[i] - '0';
+     return res;
+}
+ 
+unsigned int abs(int num)
+{
+    if (num >= 0) return num;
+    return num-(num*2);
+}
+ 
+div_t div(int numerator, int denominator)
+{
+    div_t res;
+    res.quot = numerator / denominator;
+    res.rem = numerator % denominator;
+    return res;
+}

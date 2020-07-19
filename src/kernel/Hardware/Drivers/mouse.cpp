@@ -41,8 +41,8 @@ void MouseDriver::OnMouseMove(int x, int y)
     int32_t newMouseY = MouseY + y;
     if (newMouseY < 0)
         newMouseY = 0;
-    if (newMouseY >= h - 2)
-       newMouseY = h - 2;
+    if (newMouseY >= h - 20)
+       newMouseY = h - 20;
 
     //for (int t_y = 0; t_y < 10; t_y++)
     //    vga->PutPixel(MouseX, MouseY+t_y, 0x1);
