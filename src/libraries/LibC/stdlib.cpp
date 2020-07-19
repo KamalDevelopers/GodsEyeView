@@ -83,10 +83,11 @@ void* memset(void *b, char c, int len)
 int atoi(char* str)
 {
     int res = 0;
+    for (int i = 0; str[i] != '\0'; ++i)
         res = res * 10 + str[i] - '0';
      return res;
-}
- 
+} 
+
 unsigned int abs(int num)
 {
     if (num >= 0) return num;
