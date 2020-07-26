@@ -85,7 +85,10 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magicnumber)
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
 
     power_button.AddImage(&image);
-    win->AddWidget("lblb", &user_label, &power_button, &clock_label, &terminal_button);
+    win->AddWidget(&user_label);
+    win->AddWidget(&power_button);
+    win->AddWidget(&clock_label);
+    win->AddWidget(&terminal_button);
 
     desktop.AddWin(1, win);
     while (1)

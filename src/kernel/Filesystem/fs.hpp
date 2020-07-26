@@ -7,7 +7,7 @@
 #define MAX_FILENAME_LEN    15
 #define MAX_FILE_DESCRIPTOR 32
 #define MAX_FILE_SIZE       100000
-#define MAX_FILES           10
+#define MAX_FILES           100
 
 class FileSystem {
 private:

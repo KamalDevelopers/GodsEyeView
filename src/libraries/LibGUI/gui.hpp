@@ -8,6 +8,7 @@
 #include <stdarg.h>
 
 namespace GUI {
+
 class Image {
 private:
     int widget_width;
@@ -41,6 +42,7 @@ public:
     Input(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text);
     void Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     char* GetInput() { return input_text; }
+    int GetType() { return 4; }
 };
 
 class Button {
@@ -67,6 +69,7 @@ public:
     void Color(uint8_t color) {box_color = color;}
     void ShadowColor(uint8_t scolor) {shadow_color = scolor;}
     void ShadowOffset(int soffset) {shadow_offset = soffset;}
+    int GetType() { return 3; }
 };
 
 class Panel {
@@ -80,6 +83,7 @@ private:
 public:
     Panel(int xpos, int ypos, int width, int height, uint8_t color);
     void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
+    int GetType() { return 2; }
 };
 
 class Label {
@@ -96,6 +100,7 @@ public:
     Label(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text);
     void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     void SetText(char* new_text) { widget_text = new_text; }
+    int GetType() { return 1; }
 };
 
 class Window {
@@ -128,7 +133,28 @@ private:
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
     void Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
-    int AddWidget(char* count, ...);
+
+    template <class T> void AddWidget(T* data) {
+        switch (data->GetType()) {
+            case 1:
+                childrenL[widget_indexL] = (Label*)data;
+                widget_indexL++;
+                break;
+            case 2:
+                childrenP[widget_indexP] = (Panel*)data;
+                widget_indexP++;
+                break;
+            case 3:
+                childrenB[widget_indexB] = (Button*)data;
+                widget_indexB++;
+                break;
+            case 4:
+                childrenI[widget_indexI] = (Input*)data;
+                widget_indexI++;
+                break;
+        }
+    }
+
     void Border(uint8_t thickness, uint8_t color);
     void SetTitle(char* wt) { win_title = wt; }
 

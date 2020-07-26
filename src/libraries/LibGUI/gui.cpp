@@ -284,37 +284,6 @@ void Window::Border(uint8_t thickness, uint8_t color)
     border_color = color;
 }
 
-int Window::AddWidget(char* count, ...)
-{
-    va_list list;
-    int j = 0;
-
-    va_start(list, count);
-    for (j = 0; j < str_len(count); j++) {
-        switch (count[j]) {
-        case 'l':
-            childrenL[widget_indexL] = va_arg(list, Label*);
-            widget_indexL++;
-            break;
-        case 'b':
-            childrenB[widget_indexB] = va_arg(list, Button*);
-            widget_indexB++;
-            break;
-        case 'i':
-            childrenI[widget_indexI] = va_arg(list, Input*);
-            widget_indexI++;
-            break;
-        case 'p':
-            childrenP[widget_indexP] = va_arg(list, Panel*);
-            widget_indexP++;
-            break;
-        }
-    }
-
-    va_end(list);
-    return 0;
-}
-
 void Window::MouseRelease(uint32_t x, uint32_t y, int b)
 {
     mouse_down = 0;

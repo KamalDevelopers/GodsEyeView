@@ -60,7 +60,7 @@ void vprintf(const char* format, va_list v)
     while (i < size) {
         if (flag > 0) { flag--; }
         
-        if (flag == 0) {
+        if ((flag == 0) && (format[i] != '%') && (format[i] != '\n') && (format[i] != '\b')) {
             putc(format[i]);
             i++;
         }

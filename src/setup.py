@@ -56,11 +56,11 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk")
+	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk -soundhw sb16")
 
 def make_kernel():
 	for file in filesC:
-		os.system("g++ " + GPPPARAMS + " -c " + file + " -o" + file[:-4] + ".o")
+		os.system("g++ " + GPPPARAMS + " -c " + file + " -o " + file[:-4] + ".o")
 
 	for file in filesA:
 		os.system("as " + ASPARAMS + " " + file + " -o" + file[:-2] + ".o")
