@@ -17,7 +17,7 @@ void Image::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, 
         {
             if ((x > parentWidth) || (y > parentHeight))
                 return;
-            
+
             if (bitmap[index] != -1)
                 vga->PutPixel(x + parentPosX, y + parentPosY, bitmap[index]);
             index++;
@@ -242,9 +242,9 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
                         win_xpos = vga->GetScreenW() - win_width;
                     if (win_ypos >= vga->GetScreenH() - 10)
                         win_ypos = vga->GetScreenH() - 10;
-                    //Temporary code just to stop windows from overlapping top bar    
+                    //Temporary code just to stop windows from overlapping top bar
                     if (win_ypos <= 25)
-                        win_ypos = 25;                    
+                        win_ypos = 25;
                 }
                 vga->PutPixel(x, y - 4, 0x8);
             }
@@ -273,7 +273,7 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
 
     for (int i = 0; i < widget_indexI; i++)
         childrenI[i]->Add(vga, mouse, keyboard, win_xpos, win_ypos, win_width, win_height);
-    
+
     for (int i = 0; i < widget_indexP; i++)
         childrenP[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
 }
@@ -400,4 +400,12 @@ void Desktop::Draw()
         }
 
     vga->RenderScreen();
+}
+
+void Desktop::Start()
+{
+    while (1)
+    {
+        Draw();
+    }
 }

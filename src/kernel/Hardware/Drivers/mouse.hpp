@@ -20,7 +20,7 @@ class MouseDriver : public InterruptHandler, public Driver {
     uint32_t MouseX, MouseY, MousePress;
 
 public:
-    MouseDriver(InterruptManager* manager, Graphics* v);
+    MouseDriver(InterruptManager* manager, int screenw, int screenh);
     ~MouseDriver();
     virtual uint32_t HandleInterrupt(uint32_t esp);
     virtual void OnMouseMove(int x, int y);
@@ -29,9 +29,6 @@ public:
     virtual int GetMouseY() { return MouseY; }
     virtual int GetMouseX() { return MouseX; }
     virtual int GetMousePress() { return MousePress; }
-
-private:
-    Graphics* vga;
 };
 
 #endif

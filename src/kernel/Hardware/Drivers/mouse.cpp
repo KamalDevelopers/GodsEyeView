@@ -1,17 +1,19 @@
 #include "mouse.hpp"
 
-MouseDriver::MouseDriver(InterruptManager* manager, Graphics* v)
+MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)//, Graphics* v)
     : InterruptHandler(manager, 0x2C)
     , dataport(0x60)
     , commandport(0x64)
 {
-    vga = v;
+    //vga = v;
     //gui = d;
     offset = 0;
     buttons = 0;
-    w = v->GetScreenW();
-    h = v->GetScreenH();
-
+    //w = v->GetScreenW();
+    //h = v->GetScreenH();
+    w = screenw;
+    h = screenh;
+    
     commandport.Write(0xA8);
     commandport.Write(0x20);
     uint8_t status = dataport.Read() | 2;
