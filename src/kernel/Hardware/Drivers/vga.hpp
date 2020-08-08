@@ -61,7 +61,7 @@ private:
 
 public:
     Graphics();
-    ~Graphics();
+    //~Graphics();
 
     virtual bool Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorIndex);
     virtual bool SetMode(uint32_t width, uint32_t height, uint32_t colordepth);

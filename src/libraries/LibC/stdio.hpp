@@ -1,5 +1,6 @@
 #ifndef STDIO_HPP
 #define STDIO_HPP
+#define COMPORT 0x3f8
 
 #include "itoa.hpp"
 #include "string.hpp"
@@ -25,4 +26,9 @@ extern void PCS_play_sound(uint32_t nFrequence);
 extern void PCS_nosound();
 extern void beep(int time, int frequency);
 
+/*Serials*/
+void init_serial();
+int transmit_empty();
+void log_putc(char c);
+void klog(char* str);
 #endif

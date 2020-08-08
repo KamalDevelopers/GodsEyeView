@@ -65,13 +65,6 @@ HandleInterruptRequest 0x80
 
 int_bottom:
 
-    # save registers
-    #pusha
-    #pushl %ds
-    #pushl %es
-    #pushl %fs
-    #pushl %gs
-    
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -81,20 +74,11 @@ int_bottom:
     pushl %ebx
     pushl %eax
 
-    # load ring 0 segment register
-    #cld
-    #mov $0x10, %eax
-    #mov %eax, %eds
-    #mov %eax, %ees
-
-    # call C++ Handler
     pushl %esp
     push (interruptnumber)
     call _ZN16InterruptManager15HandleInterruptEhj
-    #add %esp, 6
-    mov %eax, %esp # switch the stack
+    mov %eax, %esp
 
-    # restore registers
     popl %eax
     popl %ebx
     popl %ecx
@@ -103,12 +87,7 @@ int_bottom:
     popl %esi
     popl %edi
     popl %ebp
-    #pop %gs
-    #pop %fs
-    #pop %es
-    #pop %ds
-    #popa
-    
+
     add $4, %esp
 
 .global _ZN16InterruptManager15InterruptIgnoreEv

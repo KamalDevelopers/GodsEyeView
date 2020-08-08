@@ -3,11 +3,12 @@ import sys
 from colorama import *
 init()
 
-GPPPARAMS = "-m32 -Ilibraries/LibC -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings"
-ASPARAMS  = "--32"
+GPPPARAMS = "-m32 -Ilibraries/LibC -fno-use-cxa-atexit -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -fno-builtin-function"
+ASPARAMS  = "--32 -nostdlib -fno-use-linker-plugin"
 
 filesC = [
 	"./kernel/kernel.cpp",
+	"./kernel/memory.cpp",
 	"./kernel/multitasking.cpp",
 	"./kernel/syscalls.cpp",
 	"./kernel/Hardware/port.cpp",
@@ -56,7 +57,7 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk -soundhw sb16")
+	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk -soundhw sb16 -serial mon:stdio")
 
 def make_kernel():
 	for file in filesC:
@@ -64,7 +65,7 @@ def make_kernel():
 
 	for file in filesA:
 		os.system("as " + ASPARAMS + " " + file + " -o" + file[:-2] + ".o")
-		
+
 def make_loader():
 	os.system("as " + ASPARAMS + " loader.s -o loader.o")
 

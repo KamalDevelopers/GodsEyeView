@@ -34,7 +34,7 @@ private:
     uint8_t active_input = 0;
     uint8_t widget_color;
     uint8_t box_color;
-    
+
     char* input_text = " ";
     char* widget_text;
 
@@ -196,7 +196,7 @@ public:
     void MouseRelease(uint32_t x, uint32_t y, int b);
 
     void SetHidden(uint8_t hide) { win_hidden = hide; }
-    
+
     void Revive() { destroy_win = 0; }
     void Destroy() { destroy_win = 1; }
 
@@ -226,6 +226,7 @@ private:
 
 public:
     Desktop(int w, int h, Graphics* g, MouseDriver* m, KeyboardDriver* k);
+    void Start();
     void Draw();
     int AddWin(int count, ...);
     int AppendWin(Window* win);
