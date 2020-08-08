@@ -103,6 +103,34 @@ public:
     int GetType() { return 1; }
 };
 
+class ProgressBar {
+private:
+    int widget_xpos;
+    int widget_ypos;
+    int widget_length;
+    int widget_height = 20;
+    uint8_t widget_color = 0x8;
+    uint8_t border_color = 0x7;
+    uint8_t bar_color = 0x2;
+    uint8_t text_color = 0xF;
+
+    uint8_t show_text = 1;
+
+    float progress = 0;
+
+public:
+    ProgressBar(int xpos, int ypos, int length);
+    void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
+    void SetProgress(float percentage) { progress = percentage; };
+    float GetProgress() { return progress; };
+    void Color(uint8_t c) { widget_color = c; };
+    void BorderColor(uint8_t c) { border_color = c; };
+    void BarColor(uint8_t c) { bar_color = c; };
+    void TextColor(uint8_t c) { text_color = c; };
+    void ShowText(uint8_t s) { show_text = s; };
+    int GetType() { return 5;}
+};
+
 class Window {
 private:
     uint8_t destroy_win = 0;
@@ -110,10 +138,11 @@ private:
     uint8_t save_mouse_press = 0;
 
     int mouse_down = 0;
-    int widget_indexL;
-    int widget_indexB;
-    int widget_indexI;
-    int widget_indexP;
+    int widget_indexLabel;
+    int widget_indexButton;
+    int widget_indexInput;
+    int widget_indexPanel;
+    int widget_indexProgressBar;
     int win_height;
     int win_width;
     int win_xpos;
@@ -125,10 +154,11 @@ private:
     uint8_t border_color = 0x8;
     char* win_title = " ";
     
-    Label* childrenL[100];
-    Button* childrenB[100];
-    Input* childrenI[100];
-    Panel* childrenP[100];
+    Label* childrenLabel[100];
+    Button* childrenButton[100];
+    Input* childrenInput[100];
+    Panel* childrenPanel[100];
+    ProgressBar* childrenProgressBar[100];
 
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
@@ -137,20 +167,24 @@ public:
     template <class T> void AddWidget(T* data) {
         switch (data->GetType()) {
             case 1:
-                childrenL[widget_indexL] = (Label*)data;
-                widget_indexL++;
+                childrenLabel[widget_indexLabel] = (Label*)data;
+                widget_indexLabel++;
                 break;
             case 2:
-                childrenP[widget_indexP] = (Panel*)data;
-                widget_indexP++;
+                childrenPanel[widget_indexPanel] = (Panel*)data;
+                widget_indexPanel++;
                 break;
             case 3:
-                childrenB[widget_indexB] = (Button*)data;
-                widget_indexB++;
+                childrenButton[widget_indexButton] = (Button*)data;
+                widget_indexButton++;
                 break;
             case 4:
-                childrenI[widget_indexI] = (Input*)data;
-                widget_indexI++;
+                childrenInput[widget_indexInput] = (Input*)data;
+                widget_indexInput++;
+                break;
+            case 5:
+                childrenProgressBar[widget_indexProgressBar] = (ProgressBar*)data;
+                widget_indexProgressBar++;
                 break;
         }
     }

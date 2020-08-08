@@ -193,6 +193,51 @@ void Panel::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, 
         }
 }
 
+ProgressBar::ProgressBar(int xpos, int ypos, int length) 
+{
+    widget_xpos = xpos;
+    widget_ypos = ypos;
+    widget_length = length;
+}
+
+void ProgressBar::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight)
+{
+    int twidget_xpos = widget_xpos + parentPosX;
+    int twidget_ypos = widget_ypos + parentPosY;
+
+    //border color
+    for (int y = 0; y < widget_height + 2; y++)
+        for (int x = 0; x < widget_length + 2; x++) {
+            int x_t = twidget_xpos + x - 1;
+            int y_t = twidget_ypos + y - 1;
+
+            vga->PutPixel(x_t, y_t, border_color);
+        }
+    //Back color
+    for (int y = 0; y < widget_height; y++)
+        for (int x = 0; x < widget_length; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y;
+
+            vga->PutPixel(x_t, y_t, widget_color);
+        }
+    //Bar
+    if (progress > 100)
+        progress = 100;
+    if (progress < 0)
+        progress = 0;
+
+    float progressInPixels = (progress / 100) * widget_length;
+
+    for (int y = 0; y < widget_height; y++)
+        for (int x = 0; x < progressInPixels; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y;
+
+            vga->PutPixel(x_t, y_t, bar_color);
+        }
+}
+
 Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
 {
     win_bar = wb;
@@ -265,17 +310,20 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
 
     }
 
-    for (int i = 0; i < widget_indexL; i++)
-        childrenL[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
+    for (int i = 0; i < widget_indexLabel; i++)
+        childrenLabel[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
 
-    for (int i = 0; i < widget_indexB; i++)
-        childrenB[i]->Add(vga, mouse, win_xpos, win_ypos, win_width, win_height);
+    for (int i = 0; i < widget_indexButton; i++)
+        childrenButton[i]->Add(vga, mouse, win_xpos, win_ypos, win_width, win_height);
 
-    for (int i = 0; i < widget_indexI; i++)
-        childrenI[i]->Add(vga, mouse, keyboard, win_xpos, win_ypos, win_width, win_height);
+    for (int i = 0; i < widget_indexInput; i++)
+        childrenInput[i]->Add(vga, mouse, keyboard, win_xpos, win_ypos, win_width, win_height);
     
-    for (int i = 0; i < widget_indexP; i++)
-        childrenP[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
+    for (int i = 0; i < widget_indexPanel; i++)
+        childrenPanel[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
+    
+    for (int i = 0; i < widget_indexProgressBar; i++)
+        childrenProgressBar[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
 }
 
 void Window::Border(uint8_t thickness, uint8_t color)

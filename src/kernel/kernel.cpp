@@ -13,7 +13,7 @@
 #include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"   
-#include "FileSystem/fs.hpp"
+#include "Filesystem/fs.hpp"
 
 #include "multitasking.hpp"
 #include "syscalls.hpp"
