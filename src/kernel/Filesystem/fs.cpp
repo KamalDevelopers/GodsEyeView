@@ -57,10 +57,13 @@ uint8_t* FileSystem::ReadFile(int index, uint8_t* edata)
 	hd->Read28(index, (uint8_t*)&file, sizeof(FileInfo));
 	files[npos] = file;
 
-	printf("%s%s%s%d%s%d", "Name: ", files[npos].name, " Head: ", files[npos].head_index, " File Size: ", files[npos].size);
+	klog((char*)files[npos].name);
+	char *size;
+	itoa(files[npos].size, size);
+	klog(size);
 
 	uint8_t* data = 0;
-	if (files[npos].size <= 512) { return 0; }
+	if (files[npos].size <= 512) { hd->Read28(index + 1, data, files[npos].size); }
 	else {
 		uint8_t databuffer[files[npos].size];
 		uint8_t buffer[513];
@@ -77,7 +80,7 @@ uint8_t* FileSystem::ReadFile(int index, uint8_t* edata)
 			sector_offset++;
 		}
 	}
-	
+
 	edata = data;
 	return data;
 }

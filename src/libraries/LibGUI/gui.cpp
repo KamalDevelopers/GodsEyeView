@@ -82,21 +82,44 @@ void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int
         for (int x = 0; x < widget_width; x++) {
             int x_t = twidget_xpos + x;
             int y_t = twidget_ypos + y;
+            int x_e = parentPosX + parentWidth;
+            int y_e = parentPosY + parentHeight;
 
             if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t) && (mouse->GetMousePress() == 1))
                 active_input = 1;
+            if ((active_input != 1) && (hitbox_expand == 1) && (mouse->GetMouseX() < parentPosX+parentWidth) && (mouse->GetMouseX() > parentPosX))
+                if ((mouse->GetMouseY() < parentPosY+parentHeight) && (mouse->GetMouseY() > parentPosY) && (mouse->GetMousePress() == 1))
+                    active_input = 1;
 
-            if (active_input == 1)
-                if (input_text_index != keyboard->GetIndex() - backslashoffset){
-                    if (keyboard->GetLastKey() == '*'){
+            if (input_text_index != keyboard->GetIndex() - backslashoffset - enteroffset){
+                if (active_input == 1){
+                    /*if ((keyboard->GetLastKey() == '*') && (input_text_index != 0)){
                         input_text[input_text_index - backslashoffset - 1] = ' ';
                         backslashoffset++;
-                    }else if (keyboard->GetLastKey() != '\n'){
-                        input_text[input_text_index - backslashoffset] = keyboard->GetLastKey();
-                        input_text_index++;
+                    }else*/
+                    if ((keyboard->GetLastKey() != '\n') && (keyboard->GetLastKey() != '*')){
+                        if (((input_text_index*8) + (str_len(widget_text)*8)) < widget_width)
+                        {
+                            input_text[input_text_index - backslashoffset] = keyboard->GetLastKey();
+                            input_text[input_text_index - backslashoffset + 1] = '\0';
+                            input_text_index++;
+                        }
                     }
-                }
-            vga->PutPixel(x_t, y_t, box_color);
+                    if (keyboard->GetLastKey() == '\n'){
+                        strcpy(out_data, input_text);
+                        //on_press(out_data);
+                        klog(out_data);
+
+                        for (int i = 0; i < input_text_index; i++) input_text[i] = '\0';
+                        enteroffset = enteroffset + (input_text_index+1);
+
+                        vga->ResetOffset();
+                        vga->Print(widget_text, widget_color, twidget_xpos, twidget_ypos);
+                        input_text_index = 0;
+                    }
+                } else {enteroffset++;}
+                vga->PutPixel(x_t, y_t, box_color);
+            }
         }
     }
     vga->ResetOffset();
@@ -193,7 +216,7 @@ void Panel::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, 
         }
 }
 
-ProgressBar::ProgressBar(int xpos, int ypos, int length) 
+ProgressBar::ProgressBar(int xpos, int ypos, int length)
 {
     widget_xpos = xpos;
     widget_ypos = ypos;
@@ -248,7 +271,7 @@ Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
     win_color = color;
 }
 
-void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
+uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, uint8_t active)
 {
     for (int y = 0 + win_ypos; y < win_height + win_ypos; y++)
         for (int x = 0 + win_xpos; x < win_width + win_xpos; x++){
@@ -274,7 +297,7 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
     if (win_bar == 1) {
         for (int y = 0 + win_ypos; y < win_ypos + 10; y++) {
             for (int x = 0 + win_xpos; x < win_width + win_xpos - 10; x++) {
-                if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1))
+                if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1) && (active != 1))
                     save_mouse_press = 1;
 
                 if ((mouse->GetMousePress() == 0) && (save_mouse_press == 1))
@@ -285,8 +308,8 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
                     win_ypos = mouse->GetMouseY();
                     if (win_xpos >= vga->GetScreenW() - win_width)
                         win_xpos = vga->GetScreenW() - win_width;
-                    if (win_ypos >= vga->GetScreenH() - 10)
-                        win_ypos = vga->GetScreenH() - 10;
+                    if (win_ypos >= vga->GetScreenH() - win_height - 1)
+                        win_ypos = vga->GetScreenH() - win_height - 1;
                     //Temporary code just to stop windows from overlapping top bar
                     if (win_ypos <= 25)
                         win_ypos = 25;
@@ -298,7 +321,7 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
         for (int x = 0 + win_xpos + win_width - 10; x < 10 + win_xpos + win_width - 10; x++){
             for (int y = 0 + win_ypos - 4; y < 10 + win_ypos - 4; y++){
                 if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1))
-                    destroy_win = 1;
+                    win_hidden = 1;
 
                 if (closewindow_bitmap[index] != -1)
                     vga->PutPixel(x, y, closewindow_bitmap[index]);
@@ -307,7 +330,6 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
         }
         vga->ResetOffset();
         vga->Print(win_title, 0x7, win_xpos + 5, win_ypos - 2);
-
     }
 
     for (int i = 0; i < widget_indexLabel; i++)
@@ -318,12 +340,14 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
 
     for (int i = 0; i < widget_indexInput; i++)
         childrenInput[i]->Add(vga, mouse, keyboard, win_xpos, win_ypos, win_width, win_height);
-    
+
     for (int i = 0; i < widget_indexPanel; i++)
         childrenPanel[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
-    
+
     for (int i = 0; i < widget_indexProgressBar; i++)
         childrenProgressBar[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
+    active = save_mouse_press;
+    return active;
 }
 
 void Window::Border(uint8_t thickness, uint8_t color)
@@ -436,7 +460,7 @@ void Desktop::Draw()
             win_index = win_index - 1;
         }
         else if (children[i]->GetHidden() != 1)
-            children[i]->Begin(vga, mouse, keyboard);
+            active_window = children[i]->Begin(vga, mouse, keyboard, active_window);
     }
 
     int index = 0;

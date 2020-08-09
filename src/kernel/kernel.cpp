@@ -12,8 +12,10 @@
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/interrupts.hpp"
-#include "Hardware/pci.hpp"   
+#include "Hardware/pci.hpp"
 #include "Filesystem/fs.hpp"
+#include "Filesystem/part.hpp"
+#include "Filesystem/fat.hpp"
 
 #include "multitasking.hpp"
 #include "syscalls.hpp"
@@ -52,16 +54,13 @@ void desktopEnvironment()
     GUI::Window window(0, 0, 640, 21, 0x8, 0);
     GUI::Window *win = &window;
 
-    GUI::Window terminal(22, 42, 250, 150, 0x0, 1);
-    GUI::Window *term = &terminal;
-    term->SetTitle("Terminal");
-
     GUI::Image image(10, 10, powerbutton);
     GUI::Button power_button(3, 3, 16, 15, "", poweroff);
 
     static uint8_t open_term_hook = 0;
     auto open_term = []() { open_term_hook = 1; };
     GUI::Button terminal_button(24, 3, 14, 15, "Terminal", open_term);
+
     char* user_name = "Terry";
 
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 80, 7, 0, 10, 0x0, 0x8, "clock");
@@ -74,25 +73,44 @@ void desktopEnvironment()
     win->AddWidget(&user_label);
     desktop.AddWin(1, win);
 
+    GUI::Window terminal(22, 42, 250, 150, 0x0, 1);
+    terminal.SetTitle("Terminal");
+
+    GUI::Input TerminalInput(5, 15, 240, 20, 0xF, 0x0, "Terry@Gev>");
+    GUI::Label TerminalOutput(5, 35, 100, 100, 0xF, 0x0, "");
+    TerminalInput.HitboxExpand(1);
+
+    terminal.AddWidget(&TerminalOutput);
+    terminal.AddWidget(&TerminalInput);
+    terminal.SetHidden(1);
+    desktop.AddWin(1, &terminal);
+
     while (1)
     {
         desktop.Draw();
-        clock_label.SetText(time.GetFullTime());
         /*Launch Application*/
-        if (open_term_hook == 1){ open_term_hook = 0; term->Revive(); desktop.AppendWin(term); }
+        if (open_term_hook == 1){
+            open_term_hook = 0;
+            terminal.SetHidden(0);
+        }
+        else { clock_label.SetText(time.GetFullTime()); }
     }
 }
 
 void kernelInit()
 {
     klog("Starting ATA driver");
-    AdvancedTechnologyAttachment ata0s(true, 0x1F0);
+    AdvancedTechnologyAttachment ata1s(true, 0x1F0);
+    AdvancedTechnologyAttachment ata0s(false, 0x1F0);
     ata0s.Identify();
     char *fserror;
-    klog("Starting filesystem");
-    FileSystem fs(&ata0s, &fserror);
-    DriverManager drvManager;
+    /* Filesystem disabled until stable */
+    //klog("Starting filesystem");
+    //FileSystem fs(&ata0s, &fserror);
+    //PartTable part;
+    //part.ReadPartitions(&vga, &ata0s);
 
+    DriverManager drvManager;
     klog("Starting PCI and activating drivers");
     PCIcontroller PCI;
     drvManager.AddDriver(drivers.keyboard);
