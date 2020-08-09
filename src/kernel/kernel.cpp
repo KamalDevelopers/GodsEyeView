@@ -4,6 +4,10 @@
 #include "stdlib.hpp"
 
 #include "GDT/gdt.hpp"
+#include "Net/etherframe.hpp"
+#include "Net/arp.hpp"
+#include "Net/ipv4.hpp"
+
 #include "Hardware/Drivers/driver.hpp"
 #include "Hardware/Drivers/cmos.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
@@ -97,7 +101,7 @@ void desktopEnvironment()
     }
 }
 
-void kernelInit()
+void fsInit()
 {
     klog("Starting ATA driver");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
@@ -109,14 +113,6 @@ void kernelInit()
     //FileSystem fs(&ata0s, &fserror);
     //PartTable part;
     //part.ReadPartitions(&vga, &ata0s);
-
-    DriverManager drvManager;
-    klog("Starting PCI and activating drivers");
-    PCIcontroller PCI;
-    drvManager.AddDriver(drivers.keyboard);
-    drvManager.AddDriver(drivers.mouse);
-    PCI.SelectDrivers(&drvManager);
-    drvManager.ActivateAll();
 }
 
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
@@ -127,6 +123,10 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr;
 
+    uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
+    size_t heap = 10*1024*1024;
+    MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+
     klog("Initializing input drivers");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
     MouseDriver m(&interrupts, 640, 480);
@@ -134,11 +134,21 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     drivers.mouse = &m;
     drivers.keyboard = &k;
-    kernelInit();
+    fsInit();
+
+    DriverManager drvManager;
+    klog("Starting PCI and activating drivers");
+
+    PCIcontroller PCI;
+    drvManager.AddDriver(drivers.keyboard);
+    drvManager.AddDriver(drivers.mouse);
+    PCI.SelectDrivers(&drvManager, &interrupts);
+    drvManager.ActivateAll();
 
     klog("Setting up tasks");
     Task DesktopTask(&gdt, desktopEnvironment);
     tasksmgr.AppendTasks(1, &DesktopTask);
+
     interrupts.Activate();
     while (1);
 }

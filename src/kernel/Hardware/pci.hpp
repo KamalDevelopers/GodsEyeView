@@ -5,6 +5,22 @@
 #include "port.hpp"
 #include "types.hpp"
 #include "Drivers/driver.hpp"
+#include "../memory.hpp"
+
+enum BaseAddressRegisterType
+{
+    MemoryMapping = 0,
+    InputOutput = 1
+};
+
+class BaseAddressRegister
+{
+public:
+    bool prefetchable;
+    uint8_t* address;
+    uint32_t size;
+    BaseAddressRegisterType type;
+};
 
 class PCIcontrollerDeviceDescriptor {
 public:
@@ -41,9 +57,11 @@ public:
     void Write(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset, uint32_t value);
     bool DeviceHasFunctions(uint16_t bus, uint16_t device);
 
-    void SelectDrivers(DriverManager* driverManager);
+    void SelectDrivers(DriverManager* driverManager, InterruptManager* interrupts);
     PCIcontrollerDeviceDescriptor GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function);
     PCIcontrollerDeviceDescriptor* GetDescriptor();
+    Driver* GetDriver(PCIcontrollerDeviceDescriptor dev, InterruptManager* interrupts);
+    BaseAddressRegister GetBaseAddressRegister(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
 };
 
 #endif

@@ -22,6 +22,11 @@ filesC = [
 	"./kernel/Hardware/interrupts.cpp",
 	"./kernel/Hardware/pci.cpp",
 	"./kernel/GDT/gdt.cpp",
+
+	"./kernel/Net/arp.cpp",
+	"./kernel/Net/etherframe.cpp",
+	"./kernel/Net/ipv4.cpp",
+
 	"./kernel/Filesystem/fs.cpp",
 	"./kernel/Filesystem/fat.cpp",
 	"./kernel/Filesystem/part.cpp",
