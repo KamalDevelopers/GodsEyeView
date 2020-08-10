@@ -8,6 +8,19 @@
 #include "stdio.hpp"
 #include "types.hpp"
 
+class AmdDriver;
+class RawDataHandler
+{
+protected:
+    AmdDriver* backend;
+public:
+    RawDataHandler(AmdDriver* backend);
+    ~RawDataHandler();
+
+    virtual bool OnRawDataReceived(uint8_t* buffer, uint32_t size);
+    void Send(uint8_t* buffer, uint32_t size);
+};
+
 class AmdDriver : public Driver, public InterruptHandler {
     struct InitializationBlock {
         uint16_t mode;
@@ -48,6 +61,7 @@ class AmdDriver : public Driver, public InterruptHandler {
     uint8_t recvBufferDescrMemory[2048 + 15];
     uint8_t recvBuffers[2 * 1024 + 15][8];
     uint8_t currentRecvBuffer;
+    RawDataHandler* handler;
 
 public:
     AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* interrupts);
@@ -58,6 +72,10 @@ public:
     uint32_t HandleInterrupt(uint32_t esp);
     void Send(uint8_t* buffer, int count);
     void Receive();
+    void SetHandler(RawDataHandler* handler);
+    uint64_t GetMACAddress();
+    void SetIPAddress(uint32_t);
+    uint32_t GetIPAddress();
 };
 
 #endif

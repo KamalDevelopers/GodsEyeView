@@ -22,7 +22,14 @@ filesC = [
 	"./kernel/Hardware/interrupts.cpp",
 	"./kernel/Hardware/pci.cpp",
 	"./kernel/GDT/gdt.cpp",
+
+	"./kernel/Net/arp.cpp",
+	"./kernel/Net/etherframe.cpp",
+	"./kernel/Net/ipv4.cpp",
+
 	"./kernel/Filesystem/fs.cpp",
+	"./kernel/Filesystem/fat.cpp",
+	"./kernel/Filesystem/part.cpp",
 
 	"./libraries/LibC/stdio.cpp",
 	"./libraries/LibC/stdlib.cpp",
@@ -57,7 +64,7 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk -soundhw sb16 -serial mon:stdio")
+	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk -serial mon:stdio")
 
 def make_kernel():
 	for file in filesC:

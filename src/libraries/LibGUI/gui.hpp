@@ -28,21 +28,27 @@ private:
     int widget_ypos;
     int widget_width;
     int widget_height;
+    void (*on_press)(char*);
+
     int input_text_index = 0;
     int backslashoffset = 0;
+    int enteroffset = 0;
 
     uint8_t active_input = 0;
     uint8_t widget_color;
     uint8_t box_color;
-
+    uint8_t hitbox_expand = 0;
     char* input_text = " ";
+    char* out_data = " ";
+
     char* widget_text;
 
 public:
     Input(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text);
     void Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    char* GetInput() { return input_text; }
     int GetType() { return 4; }
+    void HitboxExpand(int value) { hitbox_expand = value; }
+    void SetListener(void (*op)(char*)) { on_press = op; }
 };
 
 class Button {
@@ -201,7 +207,7 @@ private:
     uint8_t border_thickness = 1;
     uint8_t border_color = 0x8;
     char* win_title = " ";
-    
+
     Label* childrenLabel[100];
     Button* childrenButton[100];
     Input* childrenInput[100];
@@ -212,7 +218,7 @@ private:
 
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
-    void Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
+    uint8_t Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, uint8_t active);
 
     template <class T> void AddWidget(T* data) {
         switch (data->GetType()) {
@@ -275,6 +281,7 @@ private:
     int old_mouse_y;
     uint8_t old_mouse_color;
     uint8_t render_wallpapaper = 0;
+    uint8_t active_window = 0;
 
     Image* desk_wallpaper;
     Window* children[100];
