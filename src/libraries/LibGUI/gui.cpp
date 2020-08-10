@@ -238,6 +238,92 @@ void ProgressBar::Add(Graphics* vga, int parentPosX, int parentPosY, int parentW
         }
 }
 
+
+//Not Finished
+CheckBox::CheckBox(int xpos, int ypos) 
+{
+    widget_xpos = xpos;
+    widget_ypos = ypos;
+}
+//Not Finished
+void CheckBox::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight)
+{
+    int twidget_xpos = widget_xpos + parentPosX;
+    int twidget_ypos = widget_ypos + parentPosY;
+
+    //fill
+    
+    for (int y = 0; y < widget_height; y++)
+        for (int x = 0; x < widget_width; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y;
+            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t))
+                if (mouse->GetMousePress() == 1)
+                {
+                    if (state == 1)
+                    {
+                        klog("state is now 0");
+                        state = 0;
+                    }
+                    if (state == 0)
+                    {
+                        klog("state is now 1");
+                        state = 1;
+                    }
+                }
+            if (state == 1)
+                vga->PutPixel(x_t, y_t, active_color);
+            if (state == 0)
+                vga->PutPixel(x_t, y_t, normal_color);
+        }
+}
+
+Slider::Slider(int xpos, int ypos, int width) 
+{
+    widget_xpos = xpos;
+    widget_ypos = ypos;
+    widget_width = width;
+}
+
+void Slider::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight) 
+{
+    int twidget_xpos = widget_xpos + parentPosX;
+    int twidget_ypos = widget_ypos + parentPosY;
+
+    for (int y = 0; y < slider_height; y++)
+        for (int x = 0; x < widget_width + knob_width; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y;
+
+            vga->PutPixel(x_t, y_t, slider_color);
+            vga->PutPixel(x_t + 1, y_t + 1, 0x0);
+        }
+
+    for (int y = 0; y < knob_height; y++)
+        for (int x = 0; x < knob_width; x++) {
+            int x_t = twidget_xpos + x;
+            int y_t = twidget_ypos + y - knob_height / 3;
+
+            vga->PutPixel(x_t + valueInPixels, y_t, knob_color);
+            vga->PutPixel(x_t + 1 + valueInPixels, y_t + 1, 0x0);
+        }
+
+    for (int y = 0; y < knob_height; y++)
+        for (int x = 0; x < widget_width + 2; x++)
+        {
+            int x_t = twidget_xpos - 1 + x;
+            int y_t = twidget_ypos + y - knob_height / 3;
+
+            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t))
+                if (mouse->GetMousePress() == 1)
+                {
+                    valueInPixels = mouse->GetMouseX() - widget_xpos;
+                }
+            //vga->PutPixel(x_t, y_t, 0x4);
+        }
+
+}
+
 Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
 {
     win_bar = wb;
@@ -287,7 +373,6 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
                         win_xpos = vga->GetScreenW() - win_width;
                     if (win_ypos >= vga->GetScreenH() - 10)
                         win_ypos = vga->GetScreenH() - 10;
-                    //Temporary code just to stop windows from overlapping top bar
                     if (win_ypos <= 25)
                         win_ypos = 25;
                 }
@@ -324,6 +409,12 @@ void Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard)
     
     for (int i = 0; i < widget_indexProgressBar; i++)
         childrenProgressBar[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
+    
+    for (int i = 0; i < widget_indexCheckBox; i++)
+        childrenCheckBox[i]->Add(vga, mouse, win_xpos, win_ypos, win_width, win_height);
+
+    for (int i = 0; i < widget_indexSlider; i++)
+        childrenSlider[i]->Add(vga, mouse, win_xpos, win_ypos, win_width, win_height);
 }
 
 void Window::Border(uint8_t thickness, uint8_t color)
