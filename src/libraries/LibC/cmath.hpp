@@ -42,11 +42,9 @@ static int sqrt(int x)
     return z;
 }
 
-static double floor(double floor)
+static double floor(double x)
 {
-    int c = floor;
-    double t = c;
-    return t;
+    return double(int(x))
 }
 
 static double ceil(double x)
