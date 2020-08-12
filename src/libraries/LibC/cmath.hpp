@@ -51,12 +51,7 @@ static double floor(double floor)
 
 static double ceil(double x)
 {
-    int c = x;
-    float temp = c + 0.5;
-    if (temp <= x)
-        return c + 1;
-    else
-        return c;
+    return double(int(x) < x ? int(x) + 1 : x);
 }
 
 static double fabs(double x)
