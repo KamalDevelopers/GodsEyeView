@@ -44,7 +44,7 @@ static int sqrt(int x)
 
 static double floor(double x)
 {
-    return double(int(x))
+    return double(int(x));
 }
 
 static double ceil(double x)
@@ -54,10 +54,7 @@ static double ceil(double x)
 
 static double fabs(double x)
 {
-    double c = -1 * x;
-    if (c < 0)
-        return -1 * c;
-    return c;
+    return x >= 0 ? x : -1 * x;
 }
 
 static double modf(double x, int* integer)
