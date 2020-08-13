@@ -44,7 +44,7 @@ static int sqrt(int x)
 
 static double floor(double x)
 {
-    return double(int(x) < x ? int(x): int(x) - 1);
+    return double(int(x) <= x ? int(x): int(x) - 1);
 }
 
 static double ceil(double x)
