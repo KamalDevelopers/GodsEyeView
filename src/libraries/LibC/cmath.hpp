@@ -42,29 +42,19 @@ static int sqrt(int x)
     return z;
 }
 
-static double floor(double floor)
+static double floor(double x)
 {
-    int c = floor;
-    double t = c;
-    return t;
+    return double(int(x) <= x ? int(x): int(x) - 1);
 }
 
 static double ceil(double x)
 {
-    int c = x;
-    float temp = c + 0.5;
-    if (temp <= x)
-        return c + 1;
-    else
-        return c;
+    return double(int(x) < x ? int(x) + 1 : int(x));
 }
 
 static double fabs(double x)
 {
-    double c = -1 * x;
-    if (c < 0)
-        return -1 * c;
-    return c;
+    return x >= 0 ? x : -1 * x;
 }
 
 static double modf(double x, int* integer)
