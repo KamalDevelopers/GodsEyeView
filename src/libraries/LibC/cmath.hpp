@@ -44,12 +44,12 @@ static int sqrt(int x)
 
 static double floor(double x)
 {
-    return double(int(x));
+    return double(int(x) < x ? int(x): int(x) - 1);
 }
 
 static double ceil(double x)
 {
-    return double(int(x) < x ? int(x) + 1 : x);
+    return double(int(x) < x ? int(x) + 1 : int(x));
 }
 
 static double fabs(double x)
