@@ -41,7 +41,7 @@ struct MasterBootRecord
 class PartTable
 {
 public:
-    static void ReadPartitions(Graphics* vga, AdvancedTechnologyAttachment* hd);
+    static void ReadPartitions(AdvancedTechnologyAttachment* hd);
 };
 
 #endif

@@ -6,6 +6,9 @@
 #include "string.hpp"
 #include <stdarg.h>
 
+static char* datacolorblue = "\033[01;34m[GevOS]: ";
+static char* datacoloroff = "\033[0m";
+
 static unsigned short* VideoMemory = (unsigned short*)0xb8000;
 static int VideoMemoryIndex = 0;
 static int NewLineIndex = 0;
@@ -27,8 +30,9 @@ extern void PCS_nosound();
 extern void beep(int time, int frequency);
 
 /*Serials*/
-void init_serial();
-int transmit_empty();
-void log_putc(char c);
-void klog(char* str);
+extern void init_serial();
+extern int transmit_empty();
+extern void log_putc(char c);
+extern void klog(char* str);
+extern void klog(int num);
 #endif

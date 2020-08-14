@@ -1,7 +1,7 @@
 #include "fat.hpp"
 /*Read only*/
 
-void ReadBiosBlock(Graphics* vga, AdvancedTechnologyAttachment* hd, uint32_t partitionOffset)
+void ReadBiosBlock(AdvancedTechnologyAttachment* hd, uint32_t partitionOffset)
 {
     BiosParameterBlock32 bpb;
     hd->Read28(partitionOffset, (uint8_t*)&bpb, sizeof(BiosParameterBlock32));
@@ -29,10 +29,7 @@ void ReadBiosBlock(Graphics* vga, AdvancedTechnologyAttachment* hd, uint32_t par
         if((dirent[i].attributes & 0x0F) == 0x0F)
             continue;
 
-        char* buff = "        \n";
-        for(int j = 0; j < 8; j++)
-            buff[j] = dirent[i].name[j];
-        printf(buff, "\n");
+        printf((char*)dirent[i].name, "\n");
 
         if((dirent[i].attributes & 0x10) == 0x10)
             continue;
@@ -57,9 +54,11 @@ void ReadBiosBlock(Graphics* vga, AdvancedTechnologyAttachment* hd, uint32_t par
                 hd->Read28(fileSector+sectorOffset, buffer, 512);
                 if(++sectorOffset > bpb.sectorsPerCluster)
                     break;
-                //buffer[SIZE > 512 ? 512 : SIZE] = '\0';
+                buffer[SIZE > 512 ? 512 : SIZE] = '\0';
                 /*Find way to save buffer and store it in a VFS*/
                 strcat((char*)file_data, (char*)buffer);
+                file_data += '\0';
+                printf((char*)file_data);
             }
 
             uint32_t fatSectorForCurrentCluster = nextFileCluster / (512/sizeof(uint32_t));

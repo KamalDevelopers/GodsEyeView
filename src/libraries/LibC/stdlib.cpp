@@ -11,6 +11,18 @@ unsigned int random(unsigned int seed, unsigned int max)
     return rand(seed, max);
 }
 
+void * memcpy(void* dst, const void* src, unsigned int cnt)
+{
+    char *pszDest = (char*)dst;
+    const char *pszSource = (const char*)src;
+    while(cnt)
+    {
+        *(pszDest++)= *(pszSource++);
+        --cnt;
+    }
+    return dst;
+}
+
 void* memset(void *b, char c, int len)
 {
     char *b_char = (char *)b;

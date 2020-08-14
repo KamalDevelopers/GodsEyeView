@@ -20,8 +20,19 @@ void log_putc(char c) {
 }
 
 void klog(char* str) {
-    char* datacolorblue = "\033[01;34m[GevOS]: ";
-    char* datacoloroff = "\033[0m";
+    for (int i = 0; i < str_len(datacolorblue); i++) log_putc(datacolorblue[i]); //color on
+    for (int i = 0; str[i] != '\0'; i++) {
+        log_putc(str[i]);
+    }
+    log_putc('\n');
+    for (int i = 0; i < str_len(datacoloroff); i++) log_putc(datacoloroff[i]); //color off
+}
+
+void klog(int num)
+{
+    char* str;
+    itoa(num, str);
+
     for (int i = 0; i < str_len(datacolorblue); i++) log_putc(datacolorblue[i]); //color on
     for (int i = 0; str[i] != '\0'; i++) {
         log_putc(str[i]);
@@ -41,8 +52,14 @@ void indexmng()
 void puts(char* str)
 {
     for (int i = 0; str[i] != '\0'; i++) {
-        putc(str[i]);
+        if (str[i] != 10)
+            putc(str[i]);
+        else {
+            NewLineIndex++;
+            VideoMemoryIndex = 0;
+        }
         indexmng();
+
     }
 }
 

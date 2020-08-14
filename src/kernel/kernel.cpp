@@ -1,3 +1,4 @@
+#include "../multiboot.hpp"
 #include "../libraries/LibGUI/font.hpp"
 #include "../libraries/LibGUI/gui.hpp"
 #include "stdio.hpp"
@@ -17,7 +18,7 @@
 #include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"
-#include "Filesystem/fs.hpp"
+#include "Filesystem/tar.hpp"
 #include "Filesystem/part.hpp"
 #include "Filesystem/fat.hpp"
 
@@ -32,6 +33,9 @@ extern "C" void callConstructors()
 {
     for (constructor* i = &start_ctors; i != &end_ctors; i++)
         (*i)();
+}
+extern "C" {
+    multiboot_info_t* multiboot_info_ptr;
 }
 
 void poweroff()
@@ -101,20 +105,6 @@ void desktopEnvironment()
     }
 }
 
-void fsInit()
-{
-    klog("Starting ATA driver");
-    AdvancedTechnologyAttachment ata1s(true, 0x1F0);
-    AdvancedTechnologyAttachment ata0s(false, 0x1F0);
-    ata0s.Identify();
-    char *fserror;
-    /* Filesystem disabled until stable */
-    //klog("Starting filesystem");
-    //FileSystem fs(&ata0s, &fserror);
-    //PartTable part;
-    //part.ReadPartitions(&vga, &ata0s);
-}
-
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
     init_serial();
@@ -134,11 +124,15 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     drivers.mouse = &m;
     drivers.keyboard = &k;
-    fsInit();
+
+    klog("Starting filesystem");
+    AdvancedTechnologyAttachment ata1s(false, 0x170);
+    ata1s.Identify();
+    //Tar fs_tar(&ata1s);
+    //fs_tar.Mount();
 
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");
-
     PCIcontroller PCI;
     drvManager.AddDriver(drivers.keyboard);
     drvManager.AddDriver(drivers.mouse);

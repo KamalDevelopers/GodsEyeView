@@ -31,7 +31,6 @@ Driver* PCIcontroller::GetDriver(PCIcontrollerDeviceDescriptor dev, InterruptMan
                     driver = (AmdDriver*)MemoryManager::activeMemoryManager->malloc(sizeof(AmdDriver));
                     if(driver != 0){
                         new (driver) AmdDriver(&dev, interrupts);
-                        printf("AMD am79c973\n");
                     }
                     return driver;
                     break;
@@ -47,7 +46,6 @@ Driver* PCIcontroller::GetDriver(PCIcontrollerDeviceDescriptor dev, InterruptMan
             switch(dev.subclass_id)
             {
                 case 0x00: // VGA
-                    printf("VGA\n");
                     break;
             }
             break;

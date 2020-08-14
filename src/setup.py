@@ -3,8 +3,10 @@ import sys
 from colorama import *
 init()
 
-GPPPARAMS = "-m32 -Ilibraries/LibC -fno-use-cxa-atexit -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -fno-builtin-function"
-ASPARAMS  = "--32 -nostdlib -fno-use-linker-plugin"
+GCCPATH = "$HOME/opt/cross/bin/i686-elf-g++"
+GPPPARAMS = "-Ilibraries/LibC -Ilibraries-fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings"
+ASPARAMS  = "--32"
+QEMUPARAMS= "-cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -m 1024 -drive format=raw,file=../../hdd.tar"
 
 filesC = [
 	"./kernel/kernel.cpp",
@@ -27,7 +29,7 @@ filesC = [
 	"./kernel/Net/etherframe.cpp",
 	"./kernel/Net/ipv4.cpp",
 
-	"./kernel/Filesystem/fs.cpp",
+	"./kernel/Filesystem/tar.cpp",
 	"./kernel/Filesystem/fat.cpp",
 	"./kernel/Filesystem/part.cpp",
 
@@ -54,6 +56,7 @@ def make_iso():
 	os.system("mkdir out/iso/boot")
 	os.system("mkdir out/iso/boot/grub")
 	os.system("cp out/kernel.bin out/iso/boot/kernel.bin")
+	#os.system("echo 'set vbemode=1024x768x32'                      > out/iso/boot/grub/grub.cfg")
 	os.system("echo 'set timeout=0'                      > out/iso/boot/grub/grub.cfg")
 	os.system("echo 'set default=0'                     >> out/iso/boot/grub/grub.cfg")
 	os.system("echo ''                                  >> out/iso/boot/grub/grub.cfg")
@@ -64,11 +67,12 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-	os.system("qemu-system-x86_64 -cdrom kernel.iso -soundhw pcspk -serial mon:stdio")
+        os.system("tar cf hdd.tar ../../root/")
+	os.system("qemu-system-x86_64 " + QEMUPARAMS)
 
 def make_kernel():
 	for file in filesC:
-		os.system("g++ " + GPPPARAMS + " -c " + file + " -o " + file[:-4] + ".o")
+		os.system(GCCPATH + " " + GPPPARAMS + " -c " + file + " -o " + file[:-4] + ".o")
 
 	for file in filesA:
 		os.system("as " + ASPARAMS + " " + file + " -o" + file[:-2] + ".o")
@@ -105,7 +109,7 @@ def clean():
 
 	for file in ofolders:
 		os.system("rm " + "./" + file + "/*.o > /dev/null")
-
+        os.system("rm -rf tar.hdd")
 
 if len(sys.argv) < 2:
 	print(Fore.RED + "Invalid amount of arguments\n" + Style.RESET_ALL + h)

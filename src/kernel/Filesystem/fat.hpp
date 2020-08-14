@@ -57,6 +57,6 @@ struct DirectoryEntryFat32
     uint32_t size;
 } __attribute__((packed));
 
-void ReadBiosBlock(Graphics* vga, AdvancedTechnologyAttachment* hd, uint32_t partitionOffset);
+void ReadBiosBlock(AdvancedTechnologyAttachment* hd, uint32_t partitionOffset);
 
 #endif

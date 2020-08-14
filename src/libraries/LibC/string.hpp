@@ -64,6 +64,32 @@ static int strcmp(const char* s1, const char* s2)
     return 0;
 }
 
+static int strncmp(const char* s1, const char* s2, int count)
+{
+    const unsigned char* p1 = (const unsigned char*)s1;
+    const unsigned char* p2 = (const unsigned char*)s2;
+    int index = 0;
+
+    while (*p1 != '\0') {
+        if (index == count)
+            break;
+        if (*p2 == '\0')
+            return 1;
+        if (*p2 > *p1)
+            return -1;
+        if (*p1 > *p2)
+            return 1;
+
+        p1++;
+        p2++;
+        index++;
+    }
+
+    if (*p2 != '\0')
+        return -1;
+
+    return 0;
+}
 static char* findchar(const char* str, int c)
 {
     const char* position = NULL;

@@ -6,14 +6,14 @@ typedef struct {
   int quot, rem;
 } div_t;
 
-unsigned rand(unsigned int seed);
-unsigned int random(unsigned int seed, unsigned int max);
+extern unsigned rand(unsigned int seed);
+extern unsigned int random(unsigned int seed, unsigned int max);
 
-void* memcpy(void* dst, const void* src, unsigned int cnt);
-void* memset(void *b, char c, int len);
-int atoi(char* str);
-unsigned int abs(int num);
-div_t div(int numerator, int denominator);
+extern void* memcpy(void* dst, const void* src, unsigned int cnt);
+extern void* memset(void *b, char c, int len);
+extern int atoi(char* str);
+extern unsigned int abs(int num);
+extern div_t div(int numerator, int denominator);
 
 template <typename T>
 static void deleteElement(int x, int size, T* arr[])

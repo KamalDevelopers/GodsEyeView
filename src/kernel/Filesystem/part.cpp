@@ -1,6 +1,6 @@
 #include "part.hpp"
 
-void PartTable::ReadPartitions(Graphics* vga, AdvancedTechnologyAttachment* hd)
+void PartTable::ReadPartitions(AdvancedTechnologyAttachment* hd)
 {
     MasterBootRecord mbr;
     printf("MBR: ");
@@ -22,11 +22,11 @@ void PartTable::ReadPartitions(Graphics* vga, AdvancedTechnologyAttachment* hd)
         printf("%x", i & 0xFF);
 
         if(mbr.primaryPartition[i].bootable == 0x80)
-            printf(" bootable. Type");
+            printf(" bootable. Type ");
         else
             printf(" not bootable. Type ");
 
-        //printf("%x", mbr.primaryPartition[i].partition_id);
-        ReadBiosBlock(vga, hd, mbr.primaryPartition[i].start_lba);
+        printf("%d", mbr.primaryPartition[i].start_lba);
+        ReadBiosBlock(hd, mbr.primaryPartition[i].start_lba);
     }
 }
