@@ -1,8 +1,10 @@
+import time
 import os
 import sys
 from colorama import *
 init()
 
+WRITEDISK = False
 GCCPATH = "$HOME/opt/cross/bin/i686-elf-g++"
 GPPPARAMS = "-Ilibraries/LibC -Ilibraries-fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings"
 ASPARAMS  = "--32"
@@ -52,7 +54,7 @@ setup.py clean       - remove all generated object files
 objectfiles = []
 
 def make_iso():
-	os.system("mkdir out/iso")
+        os.system("mkdir out/iso")
 	os.system("mkdir out/iso/boot")
 	os.system("mkdir out/iso/boot/grub")
 	os.system("cp out/kernel.bin out/iso/boot/kernel.bin")
@@ -67,8 +69,10 @@ def make_iso():
 	os.chdir("./out")
 	os.system("grub-mkrescue --output=kernel.iso iso")
 	os.system("rm -rf iso")
-        os.system("tar cf hdd.tar ../../root/")
-	os.system("qemu-system-x86_64 " + QEMUPARAMS)
+        if WRITEDISK == True:
+            os.system("tar cf ../../hdd.tar ../../root/")
+	    time.sleep(0.5)
+        os.system("qemu-system-x86_64 " + QEMUPARAMS)
 
 def make_kernel():
 	for file in filesC:
@@ -109,7 +113,8 @@ def clean():
 
 	for file in ofolders:
 		os.system("rm " + "./" + file + "/*.o > /dev/null")
-        os.system("rm -rf tar.hdd")
+        if WRITEDISK == True:
+            os.system("rm -rf tar.hdd")
 
 if len(sys.argv) < 2:
 	print(Fore.RED + "Invalid amount of arguments\n" + Style.RESET_ALL + h)

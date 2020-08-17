@@ -126,10 +126,10 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     drivers.keyboard = &k;
 
     klog("Starting filesystem");
-    AdvancedTechnologyAttachment ata1s(false, 0x170);
+    AdvancedTechnologyAttachment ata1s(true, 0x1F0);
     ata1s.Identify();
-    //Tar fs_tar(&ata1s);
-    //fs_tar.Mount();
+    Tar fs_tar(&ata1s);
+    fs_tar.Mount();
 
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");

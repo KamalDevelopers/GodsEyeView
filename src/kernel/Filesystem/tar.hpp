@@ -7,8 +7,8 @@
 #include "string.hpp"
 
 #define SB_OFFSET    1024
-#define MAX_FILES    100 // Reduce to decrease RAM usage
-#define MAX_DIRS     100 // Maximum amount of directories and files on disk
+#define MAX_FILES    50 // Reduce to decrease RAM usage
+#define MAX_DIRS     20 // Maximum amount of directories and files on disk
 #define MAGIC        "ustar"
 
 struct posix_header
@@ -40,11 +40,12 @@ private:
     int file_index;
     posix_header dirs[100];          // Maximum amount of directories in RAM
     posix_header files[100];         // Maximum amount of files in RAM
-    uint32_t sector_links_dir[100];  // Sector index of directories
-    uint32_t sector_links_file[100]; // Sector index of files
+    uint32_t sector_links_dir[MAX_DIRS];  // Sector index of directories
+    uint32_t sector_links_file[MAX_FILES]; // Sector index of files
 
     int OctBin(char *str, int size);
     int GetMode(int file_id, int utype);
+    int BinOct(int decimalNumber);
 
 public:
     void ReadData(uint32_t sector_start, uint8_t* fdata, int count);
@@ -55,5 +56,7 @@ public:
     int ReadFileId(int file_id, uint8_t* data);
     int ReadFile(char* file_name, uint8_t* data);    
     int ListDir(char* dirname, char** file_ids);
+    int WriteFile(char* file_name, uint8_t* data, int data_length);
+    void WriteData(uint32_t sector_start, uint8_t* fdata, int count);
 };
 #endif

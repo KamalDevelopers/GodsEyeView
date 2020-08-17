@@ -195,7 +195,9 @@ void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
     if (screen_colordepth == 16) {
         unsigned mask, p, pmask;
-        uint8_t* pixelAddress = pixel_address_buffer[y][x];
+    	unsigned wd_x = x / 8;
+    	unsigned wd_in_bytes = screen_width / 8;
+    	uint8_t* pixelAddress = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
 
         x = (x & 7) * 1;
         mask = 0x80 >> x;
@@ -217,9 +219,6 @@ void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorIndex)
 
 void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
-    unsigned wd_x = x / 8;
-    unsigned wd_in_bytes = screen_width / 8;
-    pixel_address_buffer[y][x] = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
     if (vga_buffer[y][x] != colorIndex)
         vga_buffer[y][x] = colorIndex;
 }

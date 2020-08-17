@@ -1,3 +1,4 @@
+/* Fix metadata issue when writing to files */
 #include "tar.hpp"
 
 int Tar::OctBin(char *str, int size) {
@@ -49,6 +50,29 @@ void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 	memcpy(fdata, databuffer, count);
 }
 
+void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
+{
+	uint8_t data[count];
+	strncpy((char*)data, (char*)fdata, count);
+	data[count] = '\0';
+	
+	uint8_t buffer[513];
+	int SIZE = count;
+	int sector_offset = 0;
+
+	for (; SIZE > 0; SIZE -= 512)
+	{
+		for (int i = 0; i < 512; i++) buffer[i] = '\0';
+		hd->Write28(sector_start + sector_offset, buffer, 512); // Fill the sector with null 	
+		/* Copy the file data into a sector sized buffer */
+		for (int i = sector_offset*512; i < count; i++){ buffer[i] = data[i]; }
+		buffer[SIZE > 512 ? 512 : SIZE] = '\0';
+		hd->Write28(sector_start + sector_offset, buffer, 512);
+		sector_offset++;
+	}
+	hd->Flush();
+}
+
 int Tar::GetMode(int file_id, int utype)
 {
 	char p = 0;
@@ -75,7 +99,7 @@ int Tar::GetMode(int file_id, int utype)
 int Tar::ReadFileId(int file_id, uint8_t* data)
 {
 	if (file_id > file_index) return -1;
-	int permission = GetMode(file_id, 0);
+	int permission = GetMode(file_id, 2);
 	if (permission < 4) // No read 
 		return -1;
 	int data_offset = sector_links_file[file_id]+1; // File data sector index
@@ -89,9 +113,63 @@ int Tar::ReadFile(char* file_name, uint8_t* data)
 {
 	int file_id = FindFile(file_name);
 	if (file_id > file_index) return -1;
+	int permission = GetMode(file_id, 2);
+	if (permission < 4) // No read 
+		return -1;
 	int data_offset = sector_links_file[file_id]+1; // File data sector index
 	int data_size = (OctBin(files[file_id].size, 11)/512)+1; // Get sector index
 	ReadData(data_offset, data, data_size*512); // Convert sectors into bytes
+	return 0;
+}
+
+int Tar::BinOct(int decimalNumber)
+{
+    int rem, i = 1, octalNumber = 0;
+    while (decimalNumber != 0)
+    {
+        rem = decimalNumber % 8;
+        decimalNumber /= 8;
+        octalNumber += rem * i;
+        i *= 10;
+    }
+    return octalNumber;
+}
+
+int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
+{
+	/* Calculate where the file should be located */
+	int file_id = file_index+1;
+	int data_size = (OctBin(files[file_id-2].size, 11)/512)+1; // Size of last file
+	int data_offset = sector_links_file[file_id-2]; // Position of last file
+	int newfile_offset = data_offset+data_size+1; // New file data location
+	
+	/* Create the header data */
+	posix_header meta_head;
+	strcpy(meta_head.name, file_name);
+	printf("\n%d", data_length);
+	printf("\n%d", BinOct(data_length));
+	
+	/* Conver size data to octal */
+	char* sizedata;
+	itoa(BinOct(data_length), sizedata);
+	int octal_offset = 12 - str_len(sizedata);
+	char tsize[octal_offset];
+
+	tsize[octal_offset] = '\0';	
+	for (int i = 0; i < octal_offset; i++) tsize[i] = '0'; // Fill the sizedata with 0s
+	strcat(tsize, sizedata);
+	strcpy(meta_head.size, tsize);
+
+	strcpy(meta_head.magic, "ustar");
+	strcpy(meta_head.version, "1"); // Not sure what to put here
+	strcpy(meta_head.mode, "0000766"); // UNIX Permissions
+	strcpy(meta_head.uname, "terry\0");
+	meta_head.typeflag = '0'; // Standard file
+
+	files[file_id-1] = meta_head;
+	hd->Write28(data_offset+data_size+1, (uint8_t*)&meta_head, 512);
+	WriteData(data_offset+data_size+2, data, data_length);
+	
 	return 0;
 }
 
@@ -107,9 +185,9 @@ int Tar::FindFile(char* fname)
 /* Reads all files and directories */
 void Tar::Mount()
 {
+	clear();
 	int sector_offset = 0;
 	char magic[6] = MAGIC; // Header magic, used for validation checking
-
 	while (1){
 	        posix_header meta_head;
 		hd->Read28(sector_offset, (uint8_t*)&meta_head, sizeof(posix_header));
