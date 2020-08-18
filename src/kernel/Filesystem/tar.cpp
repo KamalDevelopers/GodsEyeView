@@ -1,4 +1,3 @@
-/* Fix metadata issue when writing to files */
 #include "tar.hpp"
 
 int Tar::OctBin(char *str, int size) {
@@ -134,6 +133,18 @@ int Tar::BinOct(int decimalNumber)
     }
     return octalNumber;
 }
+			
+int Tar::CalculateChecksum(posix_header* header_data){
+	posix_header* meta_head;
+	*meta_head = *header_data;
+	unsigned int chck = 0;	
+	memset(meta_head->chksum, ' ', 8);
+
+	for (int i = 0; i < 400; i++) chck += ((uint8_t*)meta_head)[i];
+	chck = BinOct(chck+32);
+	printf("\nD: %s\n", header_data->name);
+	return chck;
+}
 
 int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
 {
@@ -145,6 +156,7 @@ int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
 	
 	/* Create the header data */
 	posix_header meta_head;
+	for (int i = 0; i < 99; i++) meta_head.name[i] = '\0';
 	strcpy(meta_head.name, file_name);
 	printf("\n%d", data_length);
 	printf("\n%d", BinOct(data_length));
@@ -152,23 +164,47 @@ int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
 	/* Conver size data to octal */
 	char* sizedata;
 	itoa(BinOct(data_length), sizedata);
-	int octal_offset = 12 - str_len(sizedata);
+	int octal_offset = 11 - str_len(sizedata);
 	char tsize[octal_offset];
 
 	tsize[octal_offset] = '\0';	
-	for (int i = 0; i < octal_offset; i++) tsize[i] = '0'; // Fill the sizedata with 0s
+	for (int i = 0; i < octal_offset; i++) tsize[i] = '0';
 	strcat(tsize, sizedata);
 	strcpy(meta_head.size, tsize);
 
-	strcpy(meta_head.magic, "ustar");
-	strcpy(meta_head.version, "1"); // Not sure what to put here
-	strcpy(meta_head.mode, "0000766"); // UNIX Permissions
-	strcpy(meta_head.uname, "terry\0");
+	strcpy(meta_head.magic,   "ustar");
+	strcpy(meta_head.version, "\0\0"); 
+	strcpy(meta_head.mode,    "0000766\0");      // UNIX Permissions
+	strcpy(meta_head.uname,   "terry\0");
+	strcpy(meta_head.gname,   "\0");
+	strcpy(meta_head.uid,     "0001750\0");      // User id
+	strcpy(meta_head.gid,     "0001750\0");      // Group id
+	strcpy(meta_head.mtime,   "13715523517\0");  // Temporary, should be calculated	
+	strcpy(meta_head.chksum,  "       \0");      // Temporary data that helps with the checksum calculation
+
 	meta_head.typeflag = '0'; // Standard file
 
+	int check = CalculateChecksum(&meta_head); // Calculate the checksum of the header data
+	char* checksumdata;
+	itoa(check, checksumdata);
+	int octal_offset_check = 6 - str_len(checksumdata);
+	
+	char checksum[octal_offset_check];
+	for (int i = 0; i < octal_offset_check; i++) checksum[i] = '0';
+	strcat(checksum, checksumdata);
+	
+	strncpy(meta_head.chksum, checksum, 7);
+	meta_head.chksum[6] = '\0';
+	meta_head.chksum[7] = ' ';
+	
 	files[file_id-1] = meta_head;
-	hd->Write28(data_offset+data_size+1, (uint8_t*)&meta_head, 512);
+	/* Clean the sectors */
+	for (int i = 0; i < 513; i++) hd->Write28(data_offset+data_size+2+i, (uint8_t*)"\0", 1);
+	for (int i = 0; i < 513; i++) hd->Write28(data_offset+data_size+1+i, (uint8_t*)"\0", 1);
+	hd->Write28(data_offset+data_size+1, (uint8_t*)&meta_head, sizeof(posix_header));
 	WriteData(data_offset+data_size+2, data, data_length);
+	
+	check = CalculateChecksum(&meta_head); // Calculate the checksum of the header data
 	
 	return 0;
 }
@@ -198,6 +234,7 @@ void Tar::Mount()
 
 		/* Check type and add it to ram */
 		if (OctBin((char*)&meta_head.typeflag, 1) == 0){
+			//printf("Mount: %s : %d", meta_head.name, CalculateChecksum(&meta_head));
 			files[file_index] = meta_head;
 			sector_links_file[file_index] = sector_offset;
 			file_index++;
