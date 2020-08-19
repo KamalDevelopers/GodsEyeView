@@ -1,11 +1,7 @@
 #include "memory.hpp"
 
-MemoryManager* MemoryManager::activeMemoryManager = 0;
-
-MemoryManager::MemoryManager(size_t start, size_t size)
+void kheap_init(size_t start, size_t size)
 {
-    activeMemoryManager = this;
-
     if(size < sizeof(MemoryChunk))
     {
         first = 0;
@@ -21,13 +17,7 @@ MemoryManager::MemoryManager(size_t start, size_t size)
     }
 }
 
-MemoryManager::~MemoryManager()
-{
-    if(activeMemoryManager == this)
-        activeMemoryManager = 0;
-}
-
-void* MemoryManager::malloc(size_t size)
+void* malloc(size_t size)
 {
     MemoryChunk *result = 0;
 
@@ -57,7 +47,7 @@ void* MemoryManager::malloc(size_t size)
     return (void*)(((size_t)result) + sizeof(MemoryChunk));
 }
 
-void MemoryManager::free(void* ptr)
+void free(void* ptr)
 {
     MemoryChunk* chunk = (MemoryChunk*)((size_t)ptr - sizeof(MemoryChunk));
 
@@ -85,16 +75,12 @@ void MemoryManager::free(void* ptr)
 
 void* operator new(size_t size)
 {
-    if(MemoryManager::activeMemoryManager == 0)
-        return (void*)0;
-    return MemoryManager::activeMemoryManager->malloc(size);
+    return malloc(size);
 }
 
 void* operator new[](size_t size)
 {
-    if(MemoryManager::activeMemoryManager == 0)
-        return (void*)0;
-    return MemoryManager::activeMemoryManager->malloc(size);
+    return malloc(size);
 }
 
 void* operator new(size_t size, void* ptr)
@@ -109,12 +95,10 @@ void* operator new[](size_t size, void* ptr)
 
 void operator delete(void* ptr)
 {
-    if(MemoryManager::activeMemoryManager != 0)
-        MemoryManager::activeMemoryManager->free(ptr);
+    free(ptr);
 }
 
 void operator delete[](void* ptr)
 {
-    if(MemoryManager::activeMemoryManager != 0)
-        MemoryManager::activeMemoryManager->free(ptr);
+    free(ptr);
 }

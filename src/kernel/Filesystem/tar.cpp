@@ -221,7 +221,9 @@ int Tar::FindFile(char* fname)
 /* Reads all files and directories */
 void Tar::Mount()
 {
-	clear();
+	files = new posix_header[MAX_FILES];
+	dirs = new posix_header[MAX_DIRS];
+
 	int sector_offset = 0;
 	char magic[6] = MAGIC; // Header magic, used for validation checking
 	while (1){

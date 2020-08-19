@@ -1,5 +1,5 @@
 #include "../multiboot.hpp"
-#include "../libraries/LibGUI/font.hpp"
+#include "../libraries/LibGUI/font.hpp" 
 #include "../libraries/LibGUI/gui.hpp"
 #include "stdio.hpp"
 #include "stdlib.hpp"
@@ -115,7 +115,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10*1024*1024;
-    MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+    kheap_init(heap, (*memupper)*1024 - heap - 10*1024);
 
     klog("Initializing input drivers");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
@@ -130,7 +130,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
-
+    
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");
     PCIcontroller PCI;

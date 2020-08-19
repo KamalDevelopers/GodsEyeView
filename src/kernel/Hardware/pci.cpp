@@ -28,7 +28,7 @@ Driver* PCIcontroller::GetDriver(PCIcontrollerDeviceDescriptor dev, InterruptMan
             switch(dev.device_id)
             {
                 case 0x2000:
-                    driver = (AmdDriver*)MemoryManager::activeMemoryManager->malloc(sizeof(AmdDriver));
+                    driver = (AmdDriver*)malloc(sizeof(AmdDriver));
                     if(driver != 0){
                         new (driver) AmdDriver(&dev, interrupts);
                     }

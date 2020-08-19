@@ -10,22 +10,11 @@ struct MemoryChunk
     size_t size;
 };
 
+static MemoryChunk* first;
+void kheap_init(size_t first, size_t size);
 
-class MemoryManager
-{
-
-protected:
-    MemoryChunk* first;
-public:
-
-    static MemoryManager *activeMemoryManager;
-
-    MemoryManager(size_t first, size_t size);
-    ~MemoryManager();
-
-    void* malloc(size_t size);
-    void free(void* ptr);
-};
+void* malloc(size_t size);
+void free(void* ptr);
 
 void* operator new(size_t size);
 void* operator new[](size_t size);

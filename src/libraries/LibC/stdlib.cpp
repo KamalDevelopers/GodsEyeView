@@ -11,7 +11,7 @@ unsigned int random(unsigned int seed, unsigned int max)
     return rand(seed, max);
 }
 
-void * memcpy(void* dst, const void* src, unsigned int cnt)
+void* memcpy(void* dst, const void* src, unsigned int cnt)
 {
     char *pszDest = (char*)dst;
     const char *pszSource = (const char*)src;
