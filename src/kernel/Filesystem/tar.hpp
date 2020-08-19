@@ -51,12 +51,13 @@ public:
     void ReadData(uint32_t sector_start, uint8_t* fdata, int count);
     Tar(AdvancedTechnologyAttachment* ata);
     void Mount();
-    int ListDir(char* dirname);
+    int ReadDir(char* dirname);
     int FindFile(char* fname);
-    int ReadFileId(int file_id, uint8_t* data);
+    int ReadFile(int file_id, uint8_t* data);
     int ReadFile(char* file_name, uint8_t* data);    
-    int ListDir(char* dirname, char** file_ids);
+    int ReadDir(char* dirname, char** file_ids);
     int WriteFile(char* file_name, uint8_t* data, int data_length);
+
     void WriteData(uint32_t sector_start, uint8_t* fdata, int count);
     int CalculateChecksum(posix_header* header_data); 
 };

@@ -16,7 +16,7 @@ Tar::Tar(AdvancedTechnologyAttachment* ata)
 	hd = ata;
 }
 
-int Tar::ListDir(char* dirname, char** file_ids)
+int Tar::ReadDir(char* dirname, char** file_ids)
 {
 	/* Iterate through file names */
 	for (int i = 0; i < file_index; i++)
@@ -95,7 +95,7 @@ int Tar::GetMode(int file_id, int utype)
 }
 
 /* Reads file from ram */
-int Tar::ReadFileId(int file_id, uint8_t* data)
+int Tar::ReadFile(int file_id, uint8_t* data)
 {
 	if (file_id > file_index) return -1;
 	int permission = GetMode(file_id, 2);
@@ -203,9 +203,6 @@ int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
 	for (int i = 0; i < 513; i++) hd->Write28(data_offset+data_size+1+i, (uint8_t*)"\0", 1);
 	hd->Write28(data_offset+data_size+1, (uint8_t*)&meta_head, sizeof(posix_header));
 	WriteData(data_offset+data_size+2, data, data_length);
-	
-	check = CalculateChecksum(&meta_head); // Calculate the checksum of the header data
-	
 	return 0;
 }
 
