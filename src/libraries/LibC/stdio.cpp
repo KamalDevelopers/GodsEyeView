@@ -41,25 +41,14 @@ void klog(int num)
     for (int i = 0; i < str_len(datacoloroff); i++) log_putc(datacoloroff[i]); //color off
 }
 
-void indexmng()
-{
-    if (VideoMemoryIndex >= 80) {
-        VideoMemoryIndex = 0;
-        NewLineIndex++;
-    }
-}
-
 void puts(char* str)
 {
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] != 10)
             putc(str[i]);
         else {
-            NewLineIndex++;
-            VideoMemoryIndex = 0;
-        }
-        indexmng();
-
+	    newline();
+	}
     }
 }
 
@@ -69,17 +58,35 @@ void puti(int num)
     itoa(num, str);
 
     for (int i = 0; str[i] != '\0'; i++) {
-        VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | str[i];
-        VideoMemoryIndex++;
-        indexmng();
+    	putc(str[i]);
     }
 }
 
 void putc(int c)
-{
-    VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | c;
-    VideoMemoryIndex++;
-    indexmng();
+{	
+    if (c == 10) {
+        NewLineIndex++;
+    	VideoMemoryIndex = 0;
+    } else {
+    	VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | c;
+    	VideoMemoryIndex++;
+    }
+
+    if (NewLineIndex >= MAX_ROWS) {
+        for (int y = 0; y < MAX_ROWS; y++){
+	    for (int x = 0; x < MAX_COLS; x++){
+	    	VideoMemory[80 * y + x] = VideoMemory[80 * (y+1) + x];
+	    }
+	}
+	
+	VideoMemoryIndex = 0;
+	NewLineIndex = MAX_ROWS-1;
+    }
+    
+    if (VideoMemoryIndex >= MAX_COLS) {
+    	VideoMemoryIndex = 0;
+	NewLineIndex++;
+    }	
 }
 
 /* Not real implementation, TODO */
@@ -102,7 +109,7 @@ void vprintf(const char* format, va_list v)
 {
     int size = len(format);
     int i = 0;
-    char res[100];
+    //char res[100];
     int flag = 0;
     while (i < size) {
         if (flag > 0) { flag--; }
@@ -138,14 +145,14 @@ void vprintf(const char* format, va_list v)
 
         if (format[i] == '\n') {
             flag = 1;
-            NewLineIndex++;
-            VideoMemoryIndex = 0;
-            i++;
+	    newline();
+	    i++;
         }
         if (format[i] == '\b') {
             flag = 1;
-            VideoMemoryIndex--;
-            i++;
+            //VideoMemoryIndex--;
+            //indexmng();
+	    i++;
         }
     }
 }

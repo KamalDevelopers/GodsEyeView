@@ -1,6 +1,9 @@
 #ifndef STDIO_HPP
 #define STDIO_HPP
-#define COMPORT 0x3f8
+
+#define COMPORT  0x3f8
+#define MAX_ROWS 25
+#define MAX_COLS 80
 
 #include "itoa.hpp"
 #include "string.hpp"
@@ -13,7 +16,6 @@ static unsigned short* VideoMemory = (unsigned short*)0xb8000;
 static int VideoMemoryIndex = 0;
 static int NewLineIndex = 0;
 
-extern void indexmng();
 extern void puts(char* str);
 extern void puti(int num);
 extern void putc(int c);
@@ -28,6 +30,10 @@ extern void usleep(uint32_t ms);
 extern void PCS_play_sound(uint32_t nFrequence);
 extern void PCS_nosound();
 extern void beep(int time, int frequency);
+static void newline()
+{
+    putc(10);
+}
 
 /*Serials*/
 extern void init_serial();

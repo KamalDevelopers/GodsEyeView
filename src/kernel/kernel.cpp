@@ -56,6 +56,7 @@ void desktopEnvironment()
 {
     TimeDriver time;
     Graphics vga;
+    
     GUI::Desktop desktop(640, 480, &vga, drivers.mouse, drivers.keyboard);
     vga.Init(640, 480, 16, 0x0);
 
@@ -107,6 +108,8 @@ void desktopEnvironment()
 
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
+    clear();
+    
     init_serial();
     klog("Kernel started");
 
