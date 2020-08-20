@@ -24,6 +24,16 @@ char* TimeDriver::GetFullTime()
 
     return clck + '\0';
 }
+unsigned int TimeDriver::GetTime()
+{
+	unsigned int yeardata  = ((GetYear()-1970)) * SECONDS_YEAR;
+	unsigned int monthdata = GetMonth()  * SECONDS_MONTH;
+	unsigned int daydata   = GetDay()    * SECONDS_DAY;
+	unsigned int hourdata  = GetHour()   * SECONDS_HOUR;
+	unsigned int mindata   = GetMinute() * SECONDS_MIN;
+
+	return yeardata + monthdata + daydata + hourdata + mindata + GetSecond();
+}
 unsigned char TimeDriver::GetSecond()
 {
     read_rtc();

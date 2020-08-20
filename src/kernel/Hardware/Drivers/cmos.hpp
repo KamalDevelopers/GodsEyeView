@@ -6,7 +6,14 @@
 #include "stdio.hpp"
 #include "string.hpp"
 
-#define CURRENT_YEAR 2020
+#define CURRENT_YEAR  2020
+#define UNIX_TIME     62168472000
+#define SECONDS_YEAR  31557600
+#define SECONDS_MONTH 2629800
+#define SECONDS_WEEK  604800
+#define SECONDS_DAY   86400
+#define SECONDS_HOUR  3600
+#define SECONDS_MIN   60
 
 class TimeDriver {
 public:
@@ -23,7 +30,7 @@ public:
     virtual unsigned char GetDay();
     virtual unsigned char GetMonth();
     virtual unsigned int GetYear();
-
+    virtual unsigned int GetTime(); // Unix
     virtual char* GetFullTime();
 
 protected:
