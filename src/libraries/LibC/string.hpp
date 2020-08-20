@@ -105,7 +105,7 @@ static char* findchar(const char* str, int c)
     return (char*)position;
 }
 
-static char* strcat(char *dest, char *src)
+static char* strcat(char* dest, char* src)
 {
     size_t i, j;
     i = str_len(dest);

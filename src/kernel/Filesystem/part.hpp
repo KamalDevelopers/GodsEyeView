@@ -1,16 +1,15 @@
 #ifndef PART_HPP
 #define PART_HPP
 
-#include "types.hpp"
 #include "../Hardware/Drivers/ata.hpp"
 #include "../Hardware/Drivers/vga.hpp"
 #include "fat.hpp"
-#include "stdlib.hpp"
 #include "stdio.hpp"
+#include "stdlib.hpp"
 #include "string.hpp"
+#include "types.hpp"
 
-struct PartitionTableEntry
-{
+struct PartitionTableEntry {
     uint8_t bootable;
 
     uint8_t start_head;
@@ -27,8 +26,7 @@ struct PartitionTableEntry
     uint32_t length;
 } __attribute__((packed));
 
-struct MasterBootRecord
-{
+struct MasterBootRecord {
     uint8_t bootloader[440];
     uint32_t signature;
     uint16_t unused;
@@ -38,8 +36,7 @@ struct MasterBootRecord
     uint16_t magicnumber;
 } __attribute__((packed));
 
-class PartTable
-{
+class PartTable {
 public:
     static void ReadPartitions(AdvancedTechnologyAttachment* hd);
 };

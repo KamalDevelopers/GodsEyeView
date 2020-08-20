@@ -1,7 +1,7 @@
 #ifndef STDIO_HPP
 #define STDIO_HPP
 
-#define COMPORT  0x3f8
+#define COMPORT 0x3f8
 #define MAX_ROWS 25
 #define MAX_COLS 80
 

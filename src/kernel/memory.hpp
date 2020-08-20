@@ -2,10 +2,9 @@
 #define MEMORY_HPP
 #include "types.hpp"
 
-struct MemoryChunk
-{
-    MemoryChunk *next;
-    MemoryChunk *prev;
+struct MemoryChunk {
+    MemoryChunk* next;
+    MemoryChunk* prev;
     bool allocated;
     size_t size;
 };

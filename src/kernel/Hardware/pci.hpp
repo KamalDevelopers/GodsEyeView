@@ -1,20 +1,18 @@
 #ifndef PCI_HPP
 #define PCI_HPP
 
+#include "../memory.hpp"
+#include "Drivers/driver.hpp"
 #include "interrupts.hpp"
 #include "port.hpp"
 #include "types.hpp"
-#include "Drivers/driver.hpp"
-#include "../memory.hpp"
 
-enum BaseAddressRegisterType
-{
+enum BaseAddressRegisterType {
     MemoryMapping = 0,
     InputOutput = 1
 };
 
-class BaseAddressRegister
-{
+class BaseAddressRegister {
 public:
     bool prefetchable;
     uint8_t* address;

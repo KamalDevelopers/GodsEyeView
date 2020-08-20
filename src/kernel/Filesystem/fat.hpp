@@ -1,14 +1,13 @@
 #ifndef FAT_HPP
 #define FAT_HPP
 
-#include "types.hpp"
 #include "../Hardware/Drivers/ata.hpp"
 #include "../Hardware/Drivers/vga.hpp"
 #include "stdlib.hpp"
 #include "string.hpp"
+#include "types.hpp"
 
-struct BiosParameterBlock32
-{
+struct BiosParameterBlock32 {
     uint8_t jump[3];
     uint8_t softName[8];
     uint16_t bytesPerSector;
@@ -39,9 +38,7 @@ struct BiosParameterBlock32
     uint8_t fatTypeLabel[8];
 } __attribute__((packed));
 
-
-struct DirectoryEntryFat32
-{
+struct DirectoryEntryFat32 {
     uint8_t name[8];
     uint8_t ext[3];
     uint8_t attributes;

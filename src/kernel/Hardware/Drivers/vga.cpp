@@ -55,7 +55,7 @@ void Graphics::WriteRegisters(uint8_t* registers)
 bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
 {
     vga_on = 1;
-
+    // clang-format off
     unsigned char g_320x200x256[] = {
         /* MISC */
         0x63,
@@ -113,6 +113,7 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
         0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
         0x01, 0x00, 0x0F, 0x00, 0x00
     };
+    // clang-format on
 
     screen_width = width;
     screen_height = height;
@@ -195,9 +196,9 @@ void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
     if (screen_colordepth == 16) {
         unsigned mask, p, pmask;
-    	unsigned wd_x = x / 8;
-    	unsigned wd_in_bytes = screen_width / 8;
-    	uint8_t* pixelAddress = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
+        unsigned wd_x = x / 8;
+        unsigned wd_in_bytes = screen_width / 8;
+        uint8_t* pixelAddress = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
 
         x = (x & 7) * 1;
         mask = 0x80 >> x;

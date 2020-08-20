@@ -9,10 +9,10 @@
 #include "types.hpp"
 
 class AmdDriver;
-class RawDataHandler
-{
+class RawDataHandler {
 protected:
     AmdDriver* backend;
+
 public:
     RawDataHandler(AmdDriver* backend);
     ~RawDataHandler();
@@ -21,7 +21,8 @@ public:
     void Send(uint8_t* buffer, uint32_t size);
 };
 
-class AmdDriver : public Driver, public InterruptHandler {
+class AmdDriver : public Driver
+    , public InterruptHandler {
     struct InitializationBlock {
         uint16_t mode;
         unsigned reserved1 : 4;

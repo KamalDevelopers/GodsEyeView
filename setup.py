@@ -1,6 +1,7 @@
 import os
 import sys
 
+os.system("find src/ -iname *.hpp -o -iname *.cpp | xargs clang-format -i")
 os.chdir("./src/")
 os.system("python setup.py make kernel")
 os.system("python setup.py make loader")

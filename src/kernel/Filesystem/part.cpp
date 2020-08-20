@@ -7,21 +7,19 @@ void PartTable::ReadPartitions(AdvancedTechnologyAttachment* hd)
 
     hd->Read28(0, (uint8_t*)&mbr, sizeof(MasterBootRecord));
 
-    if(mbr.magicnumber != 0xAA55)
-    {
+    if (mbr.magicnumber != 0xAA55) {
         printf("illegal MBR");
         return;
     }
 
-    for(int i = 0; i < 4; i++)
-    {
-        if(mbr.primaryPartition[i].partition_id == 0x00)
+    for (int i = 0; i < 4; i++) {
+        if (mbr.primaryPartition[i].partition_id == 0x00)
             continue;
 
         printf(" Partition ");
         printf("%x", i & 0xFF);
 
-        if(mbr.primaryPartition[i].bootable == 0x80)
+        if (mbr.primaryPartition[i].bootable == 0x80)
             printf(" bootable. Type ");
         else
             printf(" not bootable. Type ");

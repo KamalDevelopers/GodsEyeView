@@ -21,17 +21,16 @@ void RawDataHandler::Send(uint8_t* buffer, uint32_t size)
     backend->Send(buffer, size);
 }
 
-
 AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* interrupts)
-:   Driver(),
-    InterruptHandler(interrupts, dev->interrupt + interrupts->HardwareInterruptOffset()),
-    MACAddress0Port(dev->portBase),
-    MACAddress2Port(dev->portBase + 0x02),
-    MACAddress4Port(dev->portBase + 0x04),
-    registerDataPort(dev->portBase + 0x10),
-    registerAddressPort(dev->portBase + 0x12),
-    resetPort(dev->portBase + 0x14),
-    busControlRegisterDataPort(dev->portBase + 0x16)
+    : Driver()
+    , InterruptHandler(interrupts, dev->interrupt + interrupts->HardwareInterruptOffset())
+    , MACAddress0Port(dev->portBase)
+    , MACAddress2Port(dev->portBase + 0x02)
+    , MACAddress4Port(dev->portBase + 0x04)
+    , registerDataPort(dev->portBase + 0x10)
+    , registerAddressPort(dev->portBase + 0x12)
+    , resetPort(dev->portBase + 0x14)
+    , busControlRegisterDataPort(dev->portBase + 0x16)
 {
     this->handler = 0;
     currentSendBuffer = 0;
@@ -45,11 +44,11 @@ AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* inter
     uint64_t MAC5 = MACAddress4Port.Read() / 256;
 
     uint64_t MAC = MAC5 << 40
-                 | MAC4 << 32
-                 | MAC3 << 24
-                 | MAC2 << 16
-                 | MAC1 << 8
-                 | MAC0;
+        | MAC4 << 32
+        | MAC3 << 24
+        | MAC2 << 16
+        | MAC1 << 8
+        | MAC0;
 
     // 32 bit mode
     registerAddressPort.Write(20);
@@ -74,26 +73,24 @@ AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* inter
     recvBufferDescr = (BufferDescriptor*)((((uint32_t)&recvBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
     initBlock.recvBufferDescrAddress = (uint32_t)recvBufferDescr;
 
-    for(uint8_t i = 0; i < 8; i++)
-    {
-        sendBufferDescr[i].address = (((uint32_t)&sendBuffers[i]) + 15 ) & ~(uint32_t)0xF;
+    for (uint8_t i = 0; i < 8; i++) {
+        sendBufferDescr[i].address = (((uint32_t)&sendBuffers[i]) + 15) & ~(uint32_t)0xF;
         sendBufferDescr[i].flags = 0x7FF
-                                 | 0xF000;
+            | 0xF000;
         sendBufferDescr[i].flags2 = 0;
         sendBufferDescr[i].avail = 0;
 
-        recvBufferDescr[i].address = (((uint32_t)&recvBuffers[i]) + 15 ) & ~(uint32_t)0xF;
+        recvBufferDescr[i].address = (((uint32_t)&recvBuffers[i]) + 15) & ~(uint32_t)0xF;
         recvBufferDescr[i].flags = 0xF7FF
-                                 | 0x80000000;
+            | 0x80000000;
         recvBufferDescr[i].flags2 = 0;
         sendBufferDescr[i].avail = 0;
     }
 
     registerAddressPort.Write(1);
-    registerDataPort.Write(  (uint32_t)(&initBlock) & 0xFFFF );
+    registerDataPort.Write((uint32_t)(&initBlock) & 0xFFFF);
     registerAddressPort.Write(2);
-    registerDataPort.Write(  ((uint32_t)(&initBlock) >> 16) & 0xFFFF );
-
+    registerDataPort.Write(((uint32_t)(&initBlock) >> 16) & 0xFFFF);
 }
 
 AmdDriver::~AmdDriver()
@@ -114,8 +111,7 @@ void AmdDriver::Send(uint8_t* buffer, int size)
         *dst = *src;
 
     printf("\nSending: ");
-    for(int i = 0; i < size; i++)
-    {
+    for (int i = 0; i < size; i++) {
         printf("%x", buffer[i]);
         printf(" ");
     }
@@ -142,14 +138,13 @@ void AmdDriver::Receive()
 
             uint8_t* buffer = (uint8_t*)(recvBufferDescr[currentRecvBuffer].address);
 
-            if(handler != 0)
-                if(handler->OnRawDataReceived(buffer, size))
+            if (handler != 0)
+                if (handler->OnRawDataReceived(buffer, size))
                     Send(buffer, size);
 
             printf("\nData Received: ");
             size = 64;
-            for(int i = 0; i < size; i++)
-            {
+            for (int i = 0; i < size; i++) {
                 printf("%x", buffer[i]);
                 printf(" ");
             }
@@ -208,18 +203,25 @@ uint32_t AmdDriver::HandleInterrupt(uint32_t esp)
     registerAddressPort.Write(0);
     uint32_t temp = registerDataPort.Read();
 
-    if((temp & 0x8000) == 0x8000) printf("\nAMD am79c973 ERROR\n");
-    if((temp & 0x2000) == 0x2000) printf("\nAMD am79c973 COLLISION ERROR\n");
-    if((temp & 0x1000) == 0x1000) printf("\nAMD am79c973 MISSED FRAME\n");
-    if((temp & 0x0800) == 0x0800) printf("\nAMD am79c973 MEMORY ERROR\n");
-    if((temp & 0x0400) == 0x0400) Receive();
-    if((temp & 0x0200) == 0x0200) printf("\nAMD am79c973 DATA SENT\n");
+    if ((temp & 0x8000) == 0x8000)
+        printf("\nAMD am79c973 ERROR\n");
+    if ((temp & 0x2000) == 0x2000)
+        printf("\nAMD am79c973 COLLISION ERROR\n");
+    if ((temp & 0x1000) == 0x1000)
+        printf("\nAMD am79c973 MISSED FRAME\n");
+    if ((temp & 0x0800) == 0x0800)
+        printf("\nAMD am79c973 MEMORY ERROR\n");
+    if ((temp & 0x0400) == 0x0400)
+        Receive();
+    if ((temp & 0x0200) == 0x0200)
+        printf("\nAMD am79c973 DATA SENT\n");
 
     // acknoledge
     registerAddressPort.Write(0);
     registerDataPort.Write(temp);
 
-    if((temp & 0x0100) == 0x0100) printf("\nAMD am79c973 INIT DONE\n");
+    if ((temp & 0x0100) == 0x0100)
+        printf("\nAMD am79c973 INIT DONE\n");
 
     return esp;
 }

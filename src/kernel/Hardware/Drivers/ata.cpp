@@ -91,10 +91,10 @@ uint8_t* AdvancedTechnologyAttachment::Read28(uint32_t sectorNum, uint8_t* data,
         buffer[index] = f[0];
         buffer[index + 1] = f[1];
         index += 2;
-        
+
         data[i] = wdata & 0x00FF;
-        if(i+1 < count)
-            data[i+1] = (wdata >> 8) & 0x00FF;
+        if (i + 1 < count)
+            data[i + 1] = (wdata >> 8) & 0x00FF;
     }
 
     for (int i = count + (count % 2); i < 512; i += 2)

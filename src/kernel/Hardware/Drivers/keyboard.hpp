@@ -3,13 +3,14 @@
 
 #include "../interrupts.hpp"
 #include "../port.hpp"
+#include "driver.hpp"
 #include "stdio.hpp"
 #include "string.hpp"
 #include "types.hpp"
 #include "vga.hpp"
-#include "driver.hpp"
 
-class KeyboardDriver : public InterruptHandler, public Driver {
+class KeyboardDriver : public InterruptHandler
+    , public Driver {
     Port8Bit dataport;
     Port8Bit commandport;
 

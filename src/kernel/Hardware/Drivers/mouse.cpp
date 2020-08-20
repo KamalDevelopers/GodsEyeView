@@ -1,6 +1,6 @@
 #include "mouse.hpp"
 
-MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)//, Graphics* v)
+MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh) //, Graphics* v)
     : InterruptHandler(manager, 0x2C)
     , dataport(0x60)
     , commandport(0x64)
@@ -13,7 +13,7 @@ MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)//,
     //h = v->GetScreenH();
     w = screenw;
     h = screenh;
-    
+
     commandport.Write(0xA8);
     commandport.Write(0x20);
     uint8_t status = dataport.Read() | 2;
@@ -44,7 +44,7 @@ void MouseDriver::OnMouseMove(int x, int y)
     if (newMouseY < 0)
         newMouseY = 0;
     if (newMouseY >= h - 20)
-       newMouseY = h - 20;
+        newMouseY = h - 20;
 
     //for (int t_y = 0; t_y < 10; t_y++)
     //    vga->PutPixel(MouseX, MouseY+t_y, 0x1);

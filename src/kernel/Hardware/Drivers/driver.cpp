@@ -7,7 +7,7 @@ Driver::Driver()
 Driver::~Driver()
 {
 }
-        
+
 void Driver::Activate()
 {
 }
@@ -34,6 +34,6 @@ void DriverManager::AddDriver(Driver* drv)
 
 void DriverManager::ActivateAll()
 {
-    for(int i = 0; i < numDrivers; i++)
+    for (int i = 0; i < numDrivers; i++)
         drivers[i]->Activate();
 }

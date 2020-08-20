@@ -3,8 +3,8 @@
 #include "../../kernel/Hardware/Drivers/keyboard.hpp"
 #include "../../kernel/Hardware/Drivers/mouse.hpp"
 #include "../../kernel/Hardware/Drivers/vga.hpp"
-#include "../LibC/string.hpp"
 #include "../LibC/stdlib.hpp"
+#include "../LibC/string.hpp"
 #include <stdarg.h>
 
 namespace GUI {
@@ -21,8 +21,7 @@ public:
     uint16_t GetColor(int index) { return bitmap[index]; }
 };
 
-class Input
-{
+class Input {
 private:
     int widget_xpos;
     int widget_ypos;
@@ -72,9 +71,9 @@ public:
     Button(int xpos, int ypos, int width, int height, char* text, void (*op)(void));
     void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     void AddImage(Image* img);
-    void Color(uint8_t color) {box_color = color;}
-    void ShadowColor(uint8_t scolor) {shadow_color = scolor;}
-    void ShadowOffset(int soffset) {shadow_offset = soffset;}
+    void Color(uint8_t color) { box_color = color; }
+    void ShadowColor(uint8_t scolor) { shadow_color = scolor; }
+    void ShadowOffset(int soffset) { shadow_offset = soffset; }
     int GetType() { return 3; }
 };
 
@@ -134,7 +133,7 @@ public:
     void BarColor(uint8_t c) { bar_color = c; }
     void TextColor(uint8_t c) { text_color = c; }
     void ShowText(uint8_t s) { show_text = s; }
-    int GetType() { return 5;}
+    int GetType() { return 5; }
 };
 
 class CheckBox {
@@ -174,7 +173,7 @@ private:
 
     float value = 40;
     int valueInPixels;
-    
+
 public:
     Slider(int xpos, int ypos, int width);
     void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
@@ -220,36 +219,38 @@ public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
     uint8_t Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, uint8_t active);
 
-    template <class T> void AddWidget(T* data) {
+    template<class T>
+    void AddWidget(T* data)
+    {
         switch (data->GetType()) {
-            case 1:
-                childrenLabel[widget_indexLabel] = (Label*)data;
-                widget_indexLabel++;
-                break;
-            case 2:
-                childrenPanel[widget_indexPanel] = (Panel*)data;
-                widget_indexPanel++;
-                break;
-            case 3:
-                childrenButton[widget_indexButton] = (Button*)data;
-                widget_indexButton++;
-                break;
-            case 4:
-                childrenInput[widget_indexInput] = (Input*)data;
-                widget_indexInput++;
-                break;
-            case 5:
-                childrenProgressBar[widget_indexProgressBar] = (ProgressBar*)data;
-                widget_indexProgressBar++;
-                break;
-            case 6:
-                childrenCheckBox[widget_indexCheckBox] = (CheckBox*)data;
-                widget_indexCheckBox++;
-                break;
-            case 7:
-                childrenSlider[widget_indexSlider] = (Slider*)data;
-                widget_indexSlider++;
-                break;
+        case 1:
+            childrenLabel[widget_indexLabel] = (Label*)data;
+            widget_indexLabel++;
+            break;
+        case 2:
+            childrenPanel[widget_indexPanel] = (Panel*)data;
+            widget_indexPanel++;
+            break;
+        case 3:
+            childrenButton[widget_indexButton] = (Button*)data;
+            widget_indexButton++;
+            break;
+        case 4:
+            childrenInput[widget_indexInput] = (Input*)data;
+            widget_indexInput++;
+            break;
+        case 5:
+            childrenProgressBar[widget_indexProgressBar] = (ProgressBar*)data;
+            widget_indexProgressBar++;
+            break;
+        case 6:
+            childrenCheckBox[widget_indexCheckBox] = (CheckBox*)data;
+            widget_indexCheckBox++;
+            break;
+        case 7:
+            childrenSlider[widget_indexSlider] = (Slider*)data;
+            widget_indexSlider++;
+            break;
         }
     }
 

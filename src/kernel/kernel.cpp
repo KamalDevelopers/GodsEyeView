@@ -1,30 +1,30 @@
-#include "../multiboot.hpp"
-#include "../libraries/LibGUI/font.hpp" 
+#include "../libraries/LibGUI/font.hpp"
 #include "../libraries/LibGUI/gui.hpp"
+#include "../multiboot.hpp"
 #include "stdio.hpp"
 #include "stdlib.hpp"
 
 #include "GDT/gdt.hpp"
-#include "Net/etherframe.hpp"
 #include "Net/arp.hpp"
+#include "Net/etherframe.hpp"
 #include "Net/ipv4.hpp"
 
-#include "Hardware/Drivers/driver.hpp"
+#include "Filesystem/fat.hpp"
+#include "Filesystem/part.hpp"
+#include "Filesystem/tar.hpp"
+#include "Hardware/Drivers/amd79.hpp"
+#include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/cmos.hpp"
+#include "Hardware/Drivers/driver.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/Drivers/vga.hpp"
-#include "Hardware/Drivers/ata.hpp"
-#include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"
-#include "Filesystem/tar.hpp"
-#include "Filesystem/part.hpp"
-#include "Filesystem/fat.hpp"
 
+#include "memory.hpp"
 #include "multitasking.hpp"
 #include "syscalls.hpp"
-#include "memory.hpp"
 
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -35,7 +35,7 @@ extern "C" void callConstructors()
         (*i)();
 }
 extern "C" {
-    multiboot_info_t* multiboot_info_ptr;
+multiboot_info_t* multiboot_info_ptr;
 }
 
 void poweroff()
@@ -56,12 +56,12 @@ void desktopEnvironment()
 {
     TimeDriver time;
     Graphics vga;
-    
+
     GUI::Desktop desktop(640, 480, &vga, drivers.mouse, drivers.keyboard);
     vga.Init(640, 480, 16, 0x0);
 
     GUI::Window window(0, 0, 640, 21, 0x8, 0);
-    GUI::Window *win = &window;
+    GUI::Window* win = &window;
 
     GUI::Image image(10, 10, powerbutton);
     GUI::Button power_button(3, 3, 16, 15, "", poweroff);
@@ -94,22 +94,22 @@ void desktopEnvironment()
     terminal.SetHidden(1);
     desktop.AddWin(1, &terminal);
 
-    while (1)
-    {
+    while (1) {
         desktop.Draw();
         /*Launch Application*/
-        if (open_term_hook == 1){
+        if (open_term_hook == 1) {
             open_term_hook = 0;
             terminal.SetHidden(0);
+        } else {
+            clock_label.SetText(time.GetFullTime());
         }
-        else { clock_label.SetText(time.GetFullTime()); }
     }
 }
 
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
     clear();
-    
+
     init_serial();
     klog("Kernel started");
 
@@ -117,8 +117,8 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     TaskManager tasksmgr;
 
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
-    size_t heap = 10*1024*1024;
-    kheap_init(heap, (*memupper)*1024 - heap - 10*1024);
+    size_t heap = 10 * 1024 * 1024;
+    kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
 
     klog("Initializing input drivers");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
@@ -133,7 +133,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
-    
+
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");
     PCIcontroller PCI;
@@ -147,5 +147,6 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     tasksmgr.AppendTasks(1, &DesktopTask);
 
     interrupts.Activate();
-    while (1);
+    while (1)
+        ;
 }

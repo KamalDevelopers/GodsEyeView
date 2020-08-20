@@ -1,20 +1,18 @@
 #include "types.hpp"
 
-struct multiboot_aout_symbol_table
-{
-  uint32_t tabsize;
-  uint32_t strsize;
-  uint32_t addr;
-  uint32_t reserved;
+struct multiboot_aout_symbol_table {
+    uint32_t tabsize;
+    uint32_t strsize;
+    uint32_t addr;
+    uint32_t reserved;
 };
 typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
 
-struct multiboot_elf_section_header_table
-{
-  uint32_t num;
-  uint32_t size;
-  uint32_t addr;
-  uint32_t shndx;
+struct multiboot_elf_section_header_table {
+    uint32_t num;
+    uint32_t size;
+    uint32_t addr;
+    uint32_t shndx;
 };
 typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
 

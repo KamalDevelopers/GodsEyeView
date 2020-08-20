@@ -3,12 +3,13 @@
 
 #include "../interrupts.hpp"
 #include "../port.hpp"
+#include "driver.hpp"
 #include "stdio.hpp"
 #include "types.hpp"
 #include "vga.hpp"
-#include "driver.hpp"
 
-class MouseDriver : public InterruptHandler, public Driver {
+class MouseDriver : public InterruptHandler
+    , public Driver {
     Port8Bit dataport;
     Port8Bit commandport;
     uint8_t buffer[3];
@@ -22,7 +23,11 @@ class MouseDriver : public InterruptHandler, public Driver {
 public:
     MouseDriver(InterruptManager* manager, int screenw, int screenh);
     ~MouseDriver();
-    virtual void SetRes(int width, int height) { w = width; h = height; }
+    virtual void SetRes(int width, int height)
+    {
+        w = width;
+        h = height;
+    }
     virtual uint32_t HandleInterrupt(uint32_t esp);
     virtual void OnMouseMove(int x, int y);
     virtual void OnMouseUp(int b);

@@ -13,21 +13,19 @@ unsigned int random(unsigned int seed, unsigned int max)
 
 void* memcpy(void* dst, const void* src, unsigned int cnt)
 {
-    char *pszDest = (char*)dst;
-    const char *pszSource = (const char*)src;
-    while(cnt)
-    {
-        *(pszDest++)= *(pszSource++);
+    char* pszDest = (char*)dst;
+    const char* pszSource = (const char*)src;
+    while (cnt) {
+        *(pszDest++) = *(pszSource++);
         --cnt;
     }
     return dst;
 }
 
-void* memset(void *b, char c, int len)
+void* memset(void* b, char c, int len)
 {
-    char *b_char = (char *)b;
-    while(*b_char && len > 0)
-    {
+    char* b_char = (char*)b;
+    while (*b_char && len > 0) {
         *b_char = c;
         b_char++;
         len--;
@@ -40,13 +38,14 @@ int atoi(char* str)
     int res = 0;
     for (int i = 0; str[i] != '\0'; ++i)
         res = res * 10 + str[i] - '0';
-     return res;
+    return res;
 }
 
 unsigned int abs(int num)
 {
-    if (num >= 0) return num;
-    return num-(num*2);
+    if (num >= 0)
+        return num;
+    return num - (num * 2);
 }
 
 div_t div(int numerator, int denominator)
