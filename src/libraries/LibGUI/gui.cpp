@@ -9,6 +9,67 @@ Image::Image(int width, int height, short int* bmp)
     bitmap = bmp;
 }
 
+void Image::ImageRenderer(unsigned char* data)
+{
+    int i = 0;
+    bitmap = new short int[widget_height * widget_width];
+    for (int y = 0; y < widget_height; y++) {
+        for (int x = 0; x < widget_width; x++) {
+            switch (data[i]) {
+            case '0':
+                bitmap[i] = 0;
+                break;
+            case '1':
+                bitmap[i] = 1;
+                break;
+            case '2':
+                bitmap[i] = 2;
+                break;
+            case '3':
+                bitmap[i] = 3;
+                break;
+            case '4':
+                bitmap[i] = 4;
+                break;
+            case '5':
+                bitmap[i] = 5;
+                break;
+            case '6':
+                bitmap[i] = 6;
+                break;
+            case '7':
+                bitmap[i] = 7;
+                break;
+            case '8':
+                bitmap[i] = 8;
+                break;
+            case '9':
+                bitmap[i] = 9;
+                break;
+            case 'A':
+                bitmap[i] = 10;
+                break;
+            case 'B':
+                bitmap[i] = 11;
+                break;
+            case 'C':
+                bitmap[i] = 12;
+                break;
+            case 'D':
+                bitmap[i] = 13;
+                break;
+            case 'E':
+                bitmap[i] = 14;
+                break;
+            case 'F':
+                bitmap[i] = 15;
+                break;
+            }
+            i++;
+        }
+    }
+}
+
 void Image::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight)
 {
     int index = 0;

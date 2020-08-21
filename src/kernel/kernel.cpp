@@ -52,6 +52,7 @@ struct DriverObjects {
     KeyboardDriver* keyboard;
 } static drivers;
 
+static uint8_t* wallpaper_data;
 void desktopEnvironment()
 {
     TimeDriver time;
@@ -94,6 +95,10 @@ void desktopEnvironment()
     terminal.SetHidden(1);
     desktop.AddWin(1, &terminal);
 
+    GUI::Image wallpaper(640, 480, 0x0);
+    wallpaper.ImageRenderer(wallpaper_data);
+    desktop.SetWallpaper(&wallpaper);
+
     while (1) {
         desktop.Draw();
         /*Launch Application*/
@@ -133,6 +138,10 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
+
+    uint8_t* data;
+    fs_tar.ReadFile("root/wallpaper", data);
+    wallpaper_data = data;
 
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");

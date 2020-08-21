@@ -18,6 +18,7 @@ private:
 public:
     Image(int width, int height, short int* bmp);
     void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
+    void ImageRenderer(unsigned char* data);
     uint16_t GetColor(int index) { return bitmap[index]; }
 };
 
