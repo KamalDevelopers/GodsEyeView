@@ -114,7 +114,6 @@ void desktopEnvironment()
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
     clear();
-
     init_serial();
     klog("Kernel started");
 

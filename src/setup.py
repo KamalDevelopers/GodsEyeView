@@ -35,6 +35,7 @@ filesC = [
 	"./kernel/Filesystem/fat.cpp",
 	"./kernel/Filesystem/part.cpp",
 
+        "./libraries/LibC/string.cpp",
 	"./libraries/LibC/stdio.cpp",
 	"./libraries/LibC/stdlib.cpp",
 	"./libraries/LibGUI/gui.cpp"
