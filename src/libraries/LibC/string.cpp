@@ -9,9 +9,9 @@ int str_len(char arr[])
     return l;
 }
 
-size_t strlen(char* str)
+size_t strlen(const char* str)
 {
-    return str_len(str);
+    return str_len((char*)str);
 }
 
 size_t strspn(char* str1, char* str2)
@@ -32,6 +32,17 @@ int len(const char* arr)
         l++;
     }
     return l;
+}
+
+void* memchr(const void* str, int c, size_t n)
+{
+    unsigned char* p = (unsigned char*)str;
+    while (n--)
+        if (*p != (unsigned char)c)
+            p++;
+        else
+            return p;
+    return 0;
 }
 
 char* strcpy(char* arr, char* str)
