@@ -4,7 +4,7 @@ import sys
 from colorama import *
 init()
 
-WRITEDISK = False
+WRITEDISK = True
 GCCPATH = '$HOME/opt/cross/bin/i686-elf-g++'
 GPPPARAMS = \
     '-Ilibraries/LibC -Ilibraries-fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings'
@@ -134,8 +134,8 @@ def clean():
 
 
 if len(sys.argv) < 2:
-    print Fore.RED + 'Invalid amount of arguments\n' + Style.RESET_ALL \
-        + h
+    print(Fore.RED + 'Invalid amount of arguments\n' + Style.RESET_ALL \
+        + h)
     sys.exit()
 
 if sys.argv[1] == 'make':
@@ -156,6 +156,6 @@ if sys.argv[1] == 'clean':
 
 if sys.argv[1] == '--help' or sys.argv[1] == 'help' or sys.argv[1] \
     == '-h':
-    print h
+    print(h)
 
 			
