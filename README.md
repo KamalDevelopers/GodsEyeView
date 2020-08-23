@@ -1,4 +1,4 @@
-<img src="https://i.postimg.cc/3JBqrjRJ/gev.png" alt="GevOS" width="300">
+<img src="https://i.postimg.cc/DZSW1jsK/Gev-OSLogo.png" alt="GevOS" width="500">
 
  The next most holy operating system developed by Gevorg.
  
