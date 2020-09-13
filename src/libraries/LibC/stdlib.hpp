@@ -1,5 +1,6 @@
 #ifndef STDLIB_HPP
 #define STDLIB_HPP
+#include "memory.hpp"
 #include "stdio.hpp"
 
 typedef struct {

@@ -2,7 +2,7 @@
 #define ETHERFRAME_HPP
 
 #include "../Hardware/Drivers/amd79.hpp"
-#include "../memory.hpp"
+#include "stdlib.hpp"
 #include "types.hpp"
 
 namespace Network {
