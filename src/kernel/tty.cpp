@@ -1,5 +1,10 @@
 #include "tty.hpp"
 
+void kprintf(char* str)
+{
+    write_string(str);
+}
+
 void write_string(char* str)
 {
     if (strcmp(str, "\33[H\33[2J") == 0) {

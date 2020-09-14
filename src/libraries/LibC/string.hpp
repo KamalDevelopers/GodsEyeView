@@ -14,6 +14,7 @@ extern int strncmp(const char* s1, const char* s2, int count);
 extern char* strcat(char* dest, char* src);
 extern char* strtok(char* str, char* delimiter);
 extern char strpbrk(char* str, char* cmp);
+extern float stof(const char* str);
 extern void* memchr(const void* str, int c, size_t n);
 
 extern char* findchar(const char* str, int c);

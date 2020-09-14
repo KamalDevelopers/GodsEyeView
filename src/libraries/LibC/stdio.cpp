@@ -72,11 +72,11 @@ void puti(int num)
     puts(str);
 }
 
-/* Not real implementation, TODO */
 void putf(float f)
 {
-    int c = f;
-    puti(c);
+    char* str;
+    ftoa(f, str, 2);
+    puts(str);
 }
 
 void putx(int c)

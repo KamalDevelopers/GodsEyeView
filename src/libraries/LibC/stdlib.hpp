@@ -1,5 +1,6 @@
 #ifndef STDLIB_HPP
 #define STDLIB_HPP
+#include "cmath.hpp"
 #include "memory.hpp"
 #include "stdio.hpp"
 
@@ -12,7 +13,9 @@ extern unsigned int random(unsigned int seed, unsigned int max);
 
 extern void* memcpy(void* dst, const void* src, unsigned int cnt);
 extern void* memset(void* b, char c, int len);
+extern int itoan(int x, char str[], int d);
 extern int atoi(char* str);
+extern char* ftoa(float n, char* res, int afterpoint);
 extern unsigned int abs(int num);
 extern div_t div(int numerator, int denominator);
 

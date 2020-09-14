@@ -11,7 +11,8 @@ static uint16_t* VideoMemory = (unsigned short*)0xb8000;
 static int VideoMemoryIndex = 0;
 static int NewLineIndex = 0;
 
-extern void write_string(char* str);
-extern void write_char(int c);
-extern void clear_screen();
+void kprintf(char* str);
+void write_string(char* str);
+void write_char(int c);
+void clear_screen();
 #endif
