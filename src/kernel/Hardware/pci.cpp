@@ -128,7 +128,7 @@ void PCIcontroller::SelectDrivers(DriverManager* driverManager, InterruptManager
                 Driver* driver = GetDriver(dev, interrupts);
                 if (driver != 0) {
                     driverManager->AddDriver(driver);
-                    printf("amd79 activated");
+                    klog("amd79 activated");
                 }
             }
         }

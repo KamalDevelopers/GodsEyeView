@@ -133,7 +133,7 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
         WriteRegisters(g_320x200x256);
         return true;
     }
-    printf("%s\n", "VGA Error: Mode not supported.");
+    write_string("VGA Error: Mode not supported.");
     screen_width, screen_height, screen_colordepth = 0;
     return false;
 }

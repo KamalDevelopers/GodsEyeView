@@ -3,6 +3,7 @@
 
 #include "../GDT/gdt.hpp"
 #include "../multitasking.hpp"
+#include "../tty.hpp"
 #include "port.hpp"
 #include "stdio.hpp"
 #include "types.hpp"

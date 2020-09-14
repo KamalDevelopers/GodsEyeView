@@ -113,7 +113,7 @@ void desktopEnvironment()
 
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
-    clear();
+    clear_screen();
     init_serial();
     klog("Kernel started");
 
@@ -124,8 +124,9 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     size_t heap = 10 * 1024 * 1024;
     kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
 
-    klog("Initializing input drivers");
+    klog("Initializing input drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
+    SyscallHandler syscalls(&interrupts, 0x80);
     MouseDriver m(&interrupts, 640, 480);
     KeyboardDriver k(&interrupts);
 

@@ -4,6 +4,7 @@
 #include "Hardware/interrupts.hpp"
 #include "multitasking.hpp"
 #include "stdio.hpp"
+#include "tty.hpp"
 #include "types.hpp"
 
 class SyscallHandler : public InterruptHandler {

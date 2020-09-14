@@ -52,50 +52,24 @@ void klog(int num)
 
 void puts(char* str)
 {
-    for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] != 10)
-            putc(str[i]);
-        else {
-            newline();
-        }
-    }
+    asm("int $0x80"
+        :
+        : "a"(4), "b"(1), "c"(str));
+}
+
+void putc(int c)
+{
+    char buff[2];
+    buff[0] = c;
+    buff[1] = '\0';
+    puts(buff);
 }
 
 void puti(int num)
 {
     char* str;
     itoa(num, str);
-
-    for (int i = 0; str[i] != '\0'; i++) {
-        putc(str[i]);
-    }
-}
-
-void putc(int c)
-{
-    if (c == 10) {
-        NewLineIndex++;
-        VideoMemoryIndex = 0;
-    } else {
-        VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | c;
-        VideoMemoryIndex++;
-    }
-
-    if (NewLineIndex >= MAX_ROWS) {
-        for (int y = 0; y < MAX_ROWS; y++) {
-            for (int x = 0; x < MAX_COLS; x++) {
-                VideoMemory[80 * y + x] = VideoMemory[80 * (y + 1) + x];
-            }
-        }
-
-        VideoMemoryIndex = 0;
-        NewLineIndex = MAX_ROWS - 1;
-    }
-
-    if (VideoMemoryIndex >= MAX_COLS) {
-        VideoMemoryIndex = 0;
-        NewLineIndex++;
-    }
+    puts(str);
 }
 
 /* Not real implementation, TODO */
@@ -180,11 +154,7 @@ void printf(const char* format, ...)
 
 void clear()
 {
-    VideoMemoryIndex = 0;
-    NewLineIndex = 0;
-    for (int i = 0; i < 2200; i++) {
-        VideoMemory[i] = (VideoMemory[i] & 0xff00) | ' ';
-    }
+    puts("\33[H\33[2J");
 }
 
 void outb(uint16_t port, uint8_t data)

@@ -16,6 +16,7 @@ filesC = [
     './kernel/kernel.cpp',
     './kernel/multitasking.cpp',
     './kernel/syscalls.cpp',
+    './kernel/tty.cpp',
     './kernel/Hardware/port.cpp',
     './kernel/Hardware/Drivers/mouse.cpp',
     './kernel/Hardware/Drivers/keyboard.cpp',

@@ -12,7 +12,7 @@ SyscallHandler::~SyscallHandler()
 void sys_write(int file_handle, char* data)
 {
     if (file_handle == 1)
-        printf("%s", data);
+        write_string(data);
 }
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)

@@ -12,10 +12,6 @@
 static char* datacolorblue = "\033[01;34m[GevOS]: ";
 static char* datacoloroff = "\033[0m";
 
-static unsigned short* VideoMemory = (unsigned short*)0xb8000;
-static int VideoMemoryIndex = 0;
-static int NewLineIndex = 0;
-
 extern void puts(char* str);
 extern void puti(int num);
 extern void putc(int c);
