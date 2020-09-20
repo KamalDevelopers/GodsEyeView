@@ -29,6 +29,7 @@
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
+extern "C" int shutdown();
 extern "C" void callConstructors()
 {
     for (constructor* i = &start_ctors; i != &end_ctors; i++)
@@ -40,6 +41,7 @@ multiboot_info_t* multiboot_info_ptr;
 
 void poweroff()
 {
+    shutdown();
     Port16Bit qemu_power(0x604);
     qemu_power.Write(0x2000);
 
