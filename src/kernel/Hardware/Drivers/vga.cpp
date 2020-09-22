@@ -220,8 +220,7 @@ void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorIndex)
 
 void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
 {
-    if (vga_buffer[y][x] != colorIndex)
-        vga_buffer[y][x] = colorIndex;
+    vga_buffer[y][x] = colorIndex;
 }
 
 void Graphics::RenderScreen(uint8_t i)

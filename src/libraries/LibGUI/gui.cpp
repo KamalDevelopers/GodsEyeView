@@ -386,7 +386,9 @@ Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
 
 uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, uint8_t active)
 {
-    for (int y = 0 + win_ypos; y < win_height + win_ypos; y++)
+    for (int y = 0 + win_ypos; y < win_height + win_ypos; y++) {
+        if (save_mouse_press == 1)
+            break;
         for (int x = 0 + win_xpos; x < win_width + win_xpos; x++) {
             vga->PutPixel(x, y, win_color);
             if (x == win_xpos)
@@ -406,6 +408,7 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
                 for (int i = 0; i < border_thickness; i++)
                     vga->PutPixel(x, y - i, border_color);
         }
+    }
 
     if (win_bar == 1) {
         for (int y = 0 + win_ypos; y < win_ypos + 10; y++) {
@@ -444,6 +447,8 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
         vga->Print(win_title, 0x7, win_xpos + 5, win_ypos - 2);
     }
 
+    if (save_mouse_press == 1)
+        return active;
     for (int i = 0; i < widget_indexLabel; i++)
         childrenLabel[i]->Add(vga, win_xpos, win_ypos, win_width, win_height);
 
