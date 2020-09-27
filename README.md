@@ -8,4 +8,4 @@ It also has multiple experimental and WIP features such as an IPV4 networking st
 
 ### Building GevOS
 
-Instructions on how to build GevOS are on the [Wiki](https://github.com/KamalDevelopers/GevOS/wiki/Buidling-GevOS)
+Instructions on how to build GevOS are on the [Wiki](https://github.com/KamalDevelopers/GevOS/wiki/Building-GevOS)
