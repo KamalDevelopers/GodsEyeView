@@ -49,6 +49,14 @@ void poweroff()
     vbox_power.Write(0x3400);
 }
 
+void reboot()
+{
+    uint8_t good = 0x02;
+    while (good & 0x02)
+        good = inb(0x64);
+    outb(0x64, 0xFE);
+}
+
 struct DriverObjects {
     MouseDriver* mouse;
     KeyboardDriver* keyboard;
@@ -66,21 +74,25 @@ void desktopEnvironment()
     GUI::Window window(0, 0, 640, 21, 0x8, 0);
     GUI::Window* win = &window;
 
-    GUI::Image image(10, 10, powerbutton);
+    GUI::Image power_image(11, 10, powerbutton);
+    GUI::Image reboot_image(11, 10, rebootbutton);
     GUI::Button power_button(3, 3, 16, 15, "", poweroff);
+    GUI::Button reboot_button(25, 3, 16, 15, "", reboot);
 
     static uint8_t open_term_hook = 0;
     auto open_term = []() { open_term_hook = 1; };
-    GUI::Button terminal_button(24, 3, 14, 15, "Terminal", open_term);
+    //GUI::Button terminal_button(36, 3, 14, 15, "Terminal", open_term);
 
     char* user_name = "Terry";
 
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 80, 7, 0, 10, 0x0, 0x8, "clock");
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
 
-    power_button.AddImage(&image);
+    power_button.AddImage(&power_image);
+    reboot_button.AddImage(&reboot_image);
     win->AddWidget(&power_button);
-    win->AddWidget(&terminal_button);
+    win->AddWidget(&reboot_button);
+    //win->AddWidget(&terminal_button);
     win->AddWidget(&clock_label);
     win->AddWidget(&user_label);
     desktop.AddWin(1, win);
