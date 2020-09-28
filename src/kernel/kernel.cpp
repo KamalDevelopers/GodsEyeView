@@ -77,11 +77,11 @@ void desktopEnvironment()
     GUI::Image power_image(11, 10, powerbutton);
     GUI::Image reboot_image(11, 10, rebootbutton);
     GUI::Button power_button(3, 3, 16, 15, "", poweroff);
-    GUI::Button reboot_button(25, 3, 16, 15, "", reboot);
+    GUI::Button reboot_button(23, 3, 16, 15, "", reboot);
 
     static uint8_t open_term_hook = 0;
     auto open_term = []() { open_term_hook = 1; };
-    //GUI::Button terminal_button(36, 3, 14, 15, "Terminal", open_term);
+    GUI::Button terminal_button(47, 3, 14, 15, "Terminal", open_term);
 
     char* user_name = "Terry";
 
@@ -92,7 +92,7 @@ void desktopEnvironment()
     reboot_button.AddImage(&reboot_image);
     win->AddWidget(&power_button);
     win->AddWidget(&reboot_button);
-    //win->AddWidget(&terminal_button);
+    win->AddWidget(&terminal_button);
     win->AddWidget(&clock_label);
     win->AddWidget(&user_label);
     desktop.AddWin(1, win);
