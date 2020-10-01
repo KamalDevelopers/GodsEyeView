@@ -74,14 +74,17 @@ void desktopEnvironment()
     GUI::Window window(0, 0, 640, 21, 0x8, 0);
     GUI::Window* win = &window;
 
+    static int shutdown_hook = 0;
+    static int shutdown_cancel = 0;
+    auto open_shutdown = []() { shutdown_hook = 1; };
+    auto close_shutdown = []() { shutdown_cancel = 1; };
+
     GUI::Image power_image(11, 10, powerbutton);
-    GUI::Image reboot_image(11, 10, rebootbutton);
-    GUI::Button power_button(3, 3, 16, 15, "", poweroff);
-    GUI::Button reboot_button(23, 3, 16, 15, "", reboot);
+    GUI::Button power_button(3, 3, 16, 15, "", open_shutdown);
 
     static uint8_t open_term_hook = 0;
     auto open_term = []() { open_term_hook = 1; };
-    GUI::Button terminal_button(47, 3, 14, 15, "Terminal", open_term);
+    GUI::Button terminal_button(25, 3, 14, 15, "Terminal", open_term);
 
     char* user_name = "Terry";
 
@@ -89,9 +92,7 @@ void desktopEnvironment()
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
 
     power_button.AddImage(&power_image);
-    reboot_button.AddImage(&reboot_image);
     win->AddWidget(&power_button);
-    win->AddWidget(&reboot_button);
     win->AddWidget(&terminal_button);
     win->AddWidget(&clock_label);
     win->AddWidget(&user_label);
@@ -109,19 +110,39 @@ void desktopEnvironment()
     terminal.SetHidden(1);
     desktop.AddWin(1, &terminal);
 
+    GUI::Window shutdownModal(200, 170, 235, 80, 0x8, 0);
+    GUI::Label shutdown_label(30, 25, 10, 5, 0x0, 0x8, "Shutdown confirmation");
+    GUI::Button shutdown_button(5, 55, 10, 20, "Shutdown", poweroff);
+    shutdown_button.Color(0xC);
+    GUI::Button reboot_button(85, 55, 20, 20, "Reboot", reboot);
+    GUI::Button cancel_button(160, 55, 20, 20, "Cancel", close_shutdown);
+    shutdownModal.Border(1, 0x7);
+    shutdownModal.AddWidget(&shutdown_button);
+    shutdownModal.AddWidget(&reboot_button);
+    shutdownModal.AddWidget(&cancel_button);
+    shutdownModal.AddWidget(&shutdown_label);
+    desktop.AddWin(1, &shutdownModal);
+    shutdownModal.SetHidden(1);
+
     GUI::Image wallpaper(640, 480, 0x0);
     wallpaper.ImageRenderer(wallpaper_data);
     desktop.SetWallpaper(&wallpaper);
 
     while (1) {
-        desktop.Draw();
         /*Launch Application*/
         if (open_term_hook == 1) {
             open_term_hook = 0;
             terminal.SetHidden(0);
+        } else if (shutdown_hook == 1) {
+            shutdown_hook = 0;
+            shutdownModal.SetHidden(0);
+        } else if (shutdown_cancel == 1) {
+            shutdown_cancel = 0;
+            shutdownModal.SetHidden(1);
         } else {
             clock_label.SetText(time.GetFullTime());
         }
+        desktop.Draw();
     }
 }
 
