@@ -71,7 +71,7 @@ void desktopEnvironment()
     GUI::Desktop desktop(640, 480, &vga, drivers.mouse, drivers.keyboard);
     vga.Init(640, 480, 16, 0x0);
 
-    GUI::Window window(0, 0, 640, 21, 0x8, 0);
+    GUI::Window window(0, 0, 640, 22, 0x7, 0);
     GUI::Window* win = &window;
 
     static int shutdown_hook = 0;
@@ -88,8 +88,8 @@ void desktopEnvironment()
 
     char* user_name = "Terry";
 
-    GUI::Label clock_label(630 - (str_len(user_name) * 8) - 80, 7, 0, 10, 0x0, 0x8, "clock");
-    GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x8, user_name);
+    GUI::Label clock_label(630 - (str_len(user_name) * 8) - 80, 7, 0, 10, 0x0, 0x7, "clock");
+    GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x7, user_name);
 
     power_button.AddImage(&power_image);
     win->AddWidget(&power_button);
@@ -99,6 +99,7 @@ void desktopEnvironment()
     desktop.AddWin(1, win);
 
     GUI::Window terminal(22, 42, 250, 150, 0x0, 1);
+    terminal.Border(1, 0x7);
     terminal.SetTitle("Terminal");
 
     GUI::Input TerminalInput(5, 15, 240, 20, 0xF, 0x0, "Terry@Gev>");
@@ -110,13 +111,13 @@ void desktopEnvironment()
     terminal.SetHidden(1);
     desktop.AddWin(1, &terminal);
 
-    GUI::Window shutdownModal(200, 170, 235, 80, 0x8, 0);
-    GUI::Label shutdown_label(30, 25, 10, 5, 0x0, 0x8, "Shutdown confirmation");
+    GUI::Window shutdownModal(200, 170, 235, 80, 0x7, 0);
+    GUI::Label shutdown_label(30, 25, 10, 5, 0x0, 0x7, "Shutdown confirmation");
     GUI::Button shutdown_button(5, 55, 10, 20, "Shutdown", poweroff);
     shutdown_button.Color(0xC);
     GUI::Button reboot_button(85, 55, 20, 20, "Reboot", reboot);
     GUI::Button cancel_button(160, 55, 20, 20, "Cancel", close_shutdown);
-    shutdownModal.Border(1, 0x7);
+    shutdownModal.Border(1, 0x8);
     shutdownModal.AddWidget(&shutdown_button);
     shutdownModal.AddWidget(&reboot_button);
     shutdownModal.AddWidget(&cancel_button);

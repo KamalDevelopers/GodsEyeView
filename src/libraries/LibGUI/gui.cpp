@@ -429,7 +429,7 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
                     if (win_ypos <= 25)
                         win_ypos = 25;
                 }
-                vga->PutPixel(x, y - 4, 0x8);
+                vga->PutPixel(x, y - 4, 0x7);
             }
         }
         int index = 0;
@@ -444,7 +444,7 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
             }
         }
         vga->ResetOffset();
-        vga->Print(win_title, 0x7, win_xpos + 5, win_ypos - 2);
+        vga->Print(win_title, 0x0, win_xpos + 5, win_ypos - 2);
     }
 
     if (save_mouse_press == 1)

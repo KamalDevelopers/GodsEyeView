@@ -60,7 +60,7 @@ private:
     int shadow_offset = 2;
     uint8_t on_hover_state = 0;
     uint8_t widget_color = 0x0;
-    uint8_t box_color = 0x7;
+    uint8_t box_color = 0xF;
     uint8_t shadow_color = 0x0;
     uint8_t render_image = 0;
     char* widget_text;
