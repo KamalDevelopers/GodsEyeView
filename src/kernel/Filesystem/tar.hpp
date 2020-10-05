@@ -37,8 +37,8 @@ private:
     AdvancedTechnologyAttachment* hd;
     int dir_index;
     int file_index;
-    posix_header* dirs;                    // Maximum amount of directories in RAM
-    posix_header* files;                   // Maximum amount of files in RAM
+    posix_header dirs[MAX_DIRS];           // Maximum amount of directories in RAM
+    posix_header files[MAX_FILES];         // Maximum amount of files in RAM
     uint32_t sector_links_dir[MAX_DIRS];   // Sector index of directories
     uint32_t sector_links_file[MAX_FILES]; // Sector index of files
 

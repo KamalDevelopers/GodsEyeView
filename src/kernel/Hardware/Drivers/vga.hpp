@@ -48,8 +48,8 @@ protected:
     void VgaDraw(uint32_t x, uint32_t y, uint8_t colorIndex);
 
     virtual uint8_t GetColorIndex(uint8_t r, uint8_t g, uint8_t b);
-    uint8_t vga_buffer[480][720];
-    uint8_t old_vga_buffer[480][720];
+    uint8_t vga_buffer[480][640];
+    uint8_t old_vga_buffer[480][640];
     uint8_t is_ready = 0;
 
 private:
@@ -61,7 +61,7 @@ private:
 
 public:
     Graphics();
-    //~Graphics();
+    ~Graphics();
 
     virtual bool Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorIndex);
     virtual bool SetMode(uint32_t width, uint32_t height, uint32_t colordepth);

@@ -4,7 +4,7 @@
 GevOS supports 16-color 640x480 VGA graphics, a graphical user interface and a Tar filesystem.
 It also has multiple experimental and WIP features such as an IPV4 networking stack and 16 million color VBE graphics support.
 
-[![gevosnew.png](https://i.ibb.co/j5LYTtS/gevpreview.png)
+![gevosnew.png](https://i.ibb.co/j5LYTtS/gevpreview.png)
 
 ### Building GevOS
 

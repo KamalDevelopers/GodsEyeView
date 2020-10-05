@@ -5,6 +5,7 @@
 #include "stdlib.hpp"
 
 #include "GDT/gdt.hpp"
+#include "Mem/paging.hpp"
 #include "Net/arp.hpp"
 #include "Net/etherframe.hpp"
 #include "Net/ipv4.hpp"
@@ -22,7 +23,6 @@
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"
 
-#include "memory.hpp"
 #include "multitasking.hpp"
 #include "syscalls.hpp"
 
@@ -62,7 +62,7 @@ struct DriverObjects {
     KeyboardDriver* keyboard;
 } static drivers;
 
-static uint8_t* wallpaper_data;
+static uint8_t wallpaper_data[640 * 480];
 void desktopEnvironment()
 {
     TimeDriver time;
@@ -130,7 +130,6 @@ void desktopEnvironment()
     desktop.SetWallpaper(&wallpaper);
 
     while (1) {
-        /*Launch Application*/
         if (open_term_hook == 1) {
             open_term_hook = 0;
             terminal.SetHidden(0);
@@ -156,9 +155,12 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr;
 
+    /* Paging and the heap can't be enabled concurrently */
+    /* A new memory manager is required which utilizes paging */
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10 * 1024 * 1024;
-    kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
+    //kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
+    Paging::p_init();
 
     klog("Initializing input drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
@@ -171,13 +173,13 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
+
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
-
-    uint8_t* data;
-    fs_tar.ReadFile("root/wallpaper", data);
-    wallpaper_data = data;
+    uint8_t* fdata;
+    fs_tar.ReadFile("root/wallpaper", fdata);
+    memcpy((void*)wallpaper_data, (void*)fdata, 640 * 480);
 
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");

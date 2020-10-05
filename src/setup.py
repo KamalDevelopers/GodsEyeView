@@ -27,6 +27,7 @@ filesC = [
     './kernel/Hardware/Drivers/amd79.cpp',
     './kernel/Hardware/interrupts.cpp',
     './kernel/Hardware/pci.cpp',
+    './kernel/Mem/paging.cpp',
     './kernel/GDT/gdt.cpp',
     './kernel/Net/arp.cpp',
     './kernel/Net/etherframe.cpp',
