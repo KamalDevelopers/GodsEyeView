@@ -5,6 +5,7 @@
 #include "stdlib.hpp"
 
 #include "GDT/gdt.hpp"
+#include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
 #include "Net/arp.hpp"
 #include "Net/etherframe.hpp"
@@ -161,6 +162,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     size_t heap = 10 * 1024 * 1024;
     //kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
     Paging::p_init();
+    mm_init();
 
     klog("Initializing input drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
