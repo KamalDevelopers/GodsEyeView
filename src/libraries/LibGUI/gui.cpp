@@ -412,9 +412,10 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
 
     if (win_bar == 1) {
         for (int y = 0 + win_ypos; y < win_ypos + 10; y++) {
-            for (int x = 0 + win_xpos; x < win_width + win_xpos - 10; x++) {
+            for (int x = 0 + win_xpos; x < win_width + win_xpos; x++) {
                 if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1) && (active != 1))
-                    save_mouse_press = 1;
+                    if (x < win_width + win_xpos - 10)
+                        save_mouse_press = 1;
 
                 if ((mouse->GetMousePress() == 0) && (save_mouse_press == 1))
                     save_mouse_press = 0;
@@ -429,7 +430,8 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
                     if (win_ypos <= 25)
                         win_ypos = 25;
                 }
-                vga->PutPixel(x, y - 4, 0x7);
+                if (save_mouse_press != 1)
+                    vga->PutPixel(x, y - 4, 0x7);
             }
         }
         int index = 0;
