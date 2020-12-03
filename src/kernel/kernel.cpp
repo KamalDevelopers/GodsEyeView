@@ -30,6 +30,7 @@
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
+
 extern "C" int shutdown();
 extern "C" void callConstructors()
 {
@@ -156,13 +157,13 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr;
 
-    /* Paging and the heap can't be enabled concurrently */
-    /* A new memory manager is required which utilizes paging */
+    /* Disabled until we figure out how to allocate pages properly */
+    //Paging::p_init();
+    //mm_init();
+
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10 * 1024 * 1024;
-    //kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
-    Paging::p_init();
-    mm_init();
+    kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
 
     klog("Initializing input drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);

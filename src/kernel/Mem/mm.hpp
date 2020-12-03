@@ -1,6 +1,7 @@
 #ifndef MM_HPP
 #define MM_HPP
 
+#include "paging.hpp"
 #include "stdlib.hpp"
 
 #define MAX_ALLOC_PAGES 32

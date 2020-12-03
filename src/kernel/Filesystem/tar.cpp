@@ -34,24 +34,28 @@ int Tar::ReadDir(char* dirname, char** file_ids)
 
 void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t databuffer[count]; // Reserved space for the entire file
-    uint8_t buffer[513];       // Sector buffer
+    uint8_t* databuffer = new uint8_t[count];
+    uint8_t* buffer = new uint8_t[513];
+
     int SIZE = count;
     int sector_offset = 0;
 
     /* Iterate through the sectors and store the contents in buffers */
     for (; SIZE > 0; SIZE -= 512) {
         hd->Read28(sector_start + sector_offset, buffer, 512);
+
         buffer[SIZE > 512 ? 512 : SIZE] = '\0';
         strcat((char*)databuffer, (char*)buffer);
         sector_offset++;
     }
     memcpy(fdata, databuffer, count);
+    free(databuffer);
+    free(buffer);
 }
 
 void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t data[count];
+    uint8_t* data = new uint8_t[count];
     strncpy((char*)data, (char*)fdata, count);
     data[count] = '\0';
 
@@ -72,6 +76,7 @@ void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
         sector_offset++;
     }
     hd->Flush();
+    free(data);
 }
 
 int Tar::GetMode(int file_id, int utype)

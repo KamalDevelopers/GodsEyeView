@@ -9,6 +9,9 @@ void mm_init()
 /* Allocate a page */
 void* pmalloc(size_t size)
 {
+    if (size > 4096)
+        return 0;
+
     /* Page alloc */
     for (int i = 0; i < MAX_ALLOC_PAGES; i++) {
         if (pheap_desc[i])
@@ -16,12 +19,13 @@ void* pmalloc(size_t size)
         pheap_desc[i] = 1;
         return (void*)(pheap_begin + i * 4096);
     }
+    klog("pmalloc Error");
     return 0;
 }
 
 void pfree(void* mem)
 {
-    /* Determine which page is it */
+    /* Determine which page */
     uint32_t ad = (uint32_t)mem;
     ad -= pheap_begin;
     ad /= 4096;
