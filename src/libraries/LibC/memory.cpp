@@ -1,5 +1,6 @@
 #include "memory.hpp"
 
+/*
 void kheap_init(size_t start, size_t size)
 {
     if (size < sizeof(MemoryChunk)) {
@@ -95,3 +96,4 @@ void operator delete[](void* ptr)
 {
     free(ptr);
 }
+*/

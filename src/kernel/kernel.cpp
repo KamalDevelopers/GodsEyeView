@@ -28,6 +28,7 @@
 #include "syscalls.hpp"
 
 typedef void (*constructor)();
+extern "C" uint32_t kernel_end;
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 
@@ -64,8 +65,7 @@ struct DriverObjects {
     KeyboardDriver* keyboard;
 } static drivers;
 
-static uint8_t wallpaper_data[640 * 480];
-void desktopEnvironment()
+void desktopEnvironment(uint8_t* wallpaper_data)
 {
     TimeDriver time;
     Graphics vga;
@@ -157,13 +157,8 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr;
 
-    /* Disabled until we figure out how to allocate pages properly */
-    //Paging::p_init();
-    //mm_init();
-
-    uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
-    size_t heap = 10 * 1024 * 1024;
-    kheap_init(heap, (*memupper) * 1024 - heap - 10 * 1024);
+    Paging::p_init();
+    mm_init(kernel_end);
 
     klog("Initializing input drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
@@ -180,9 +175,12 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
-    uint8_t* fdata;
+
+    uint8_t* fdata = new uint8_t[640 * 480];
     fs_tar.ReadFile("root/wallpaper", fdata);
+    uint8_t* wallpaper_data;
     memcpy((void*)wallpaper_data, (void*)fdata, 640 * 480);
+    kfree(fdata);
 
     DriverManager drvManager;
     klog("Starting PCI and activating drivers");
@@ -193,10 +191,11 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     drvManager.ActivateAll();
 
     klog("Setting up tasks");
-    Task DesktopTask(&gdt, desktopEnvironment);
-    tasksmgr.AppendTasks(1, &DesktopTask);
+    //Task DesktopTask(&gdt, desktopEnvironment);
+    //tasksmgr.AppendTasks(1, &DesktopTask);
 
     interrupts.Activate();
+    desktopEnvironment(wallpaper_data);
     while (1)
         ;
 }

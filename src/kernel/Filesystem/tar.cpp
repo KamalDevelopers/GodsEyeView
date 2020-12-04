@@ -34,8 +34,11 @@ int Tar::ReadDir(char* dirname, char** file_ids)
 
 void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t* databuffer = new uint8_t[count];
-    uint8_t* buffer = new uint8_t[513];
+    uint8_t* databuffer = (uint8_t*)kmalloc(sizeof(uint8_t) * count); //= new uint8_t[count];
+    uint8_t* buffer = (uint8_t*)kmalloc(sizeof(uint8_t) * 513);       //= new uint8_t[count];
+
+    if ((databuffer == 0) || (buffer == 0))
+        klog("Not enough heap memory!");
 
     int SIZE = count;
     int sector_offset = 0;
@@ -48,9 +51,10 @@ void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
         strcat((char*)databuffer, (char*)buffer);
         sector_offset++;
     }
+
     memcpy(fdata, databuffer, count);
-    free(databuffer);
-    free(buffer);
+    kfree(databuffer);
+    kfree(buffer);
 }
 
 void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
@@ -76,7 +80,7 @@ void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
         sector_offset++;
     }
     hd->Flush();
-    free(data);
+    kfree(data);
 }
 
 int Tar::GetMode(int file_id, int utype)

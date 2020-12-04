@@ -1,6 +1,7 @@
 #ifndef IPV4_HPP
 #define IPV4_HPP
 
+#include "../Mem/mm.hpp"
 #include "arp.hpp"
 #include "etherframe.hpp"
 #include "types.hpp"

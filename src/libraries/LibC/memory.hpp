@@ -1,8 +1,10 @@
 #ifndef MEMORY_HPP
 #define MEMORY_HPP
 
+#include "stdio.hpp"
 #include "types.hpp"
 
+/*
 struct MemoryChunk {
     MemoryChunk* next;
     MemoryChunk* prev;
@@ -24,5 +26,5 @@ void* operator new[](size_t size, void* ptr);
 
 void operator delete(void* ptr);
 void operator delete[](void* ptr);
-
+*/
 #endif

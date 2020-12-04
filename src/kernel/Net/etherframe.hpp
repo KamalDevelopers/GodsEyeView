@@ -2,6 +2,7 @@
 #define ETHERFRAME_HPP
 
 #include "../Hardware/Drivers/amd79.hpp"
+#include "../Mem/mm.hpp"
 #include "stdlib.hpp"
 #include "types.hpp"
 

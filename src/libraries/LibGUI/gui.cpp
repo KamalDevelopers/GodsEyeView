@@ -6,38 +6,41 @@ Image::Image(int width, int height, short int* bmp)
 {
     widget_width = width;
     widget_height = height;
-    bitmap = bmp;
+    if (bmp != 0) {
+        bitmap = new short int[width * height];
+        memcpy((void*)bitmap, (void*)bmp, (width * height) * sizeof(short int));
+    }
 }
 
 void Image::ImageRenderer(unsigned char* data)
 {
     int i = 0;
-    bitmap = new short int[widget_height * widget_width];
     for (int y = 0; y < widget_height; y++) {
         for (int x = 0; x < widget_width; x++) {
             // clang-format off
             switch (data[i]) {
-            case '0': bitmap[i] = 0; break;
-            case '1': bitmap[i] = 1; break;
-            case '2': bitmap[i] = 2; break;
-            case '3': bitmap[i] = 3; break;
-            case '4': bitmap[i] = 4; break;
-            case '5': bitmap[i] = 5; break;
-            case '6': bitmap[i] = 6; break;
-            case '7': bitmap[i] = 7; break;
-            case '8': bitmap[i] = 8; break;
-            case '9': bitmap[i] = 9; break;
-            case 'A': bitmap[i] = 10; break;
-            case 'B': bitmap[i] = 11; break;
-            case 'C': bitmap[i] = 12; break;
-            case 'D': bitmap[i] = 13; break;
-            case 'E': bitmap[i] = 14; break;
-            case 'F': bitmap[i] = 15; break;
+            case '0': image_data[i] = 0; break;
+            case '1': image_data[i] = 1; break;
+            case '2': image_data[i] = 2; break;
+            case '3': image_data[i] = 3; break;
+            case '4': image_data[i] = 4; break;
+            case '5': image_data[i] = 5; break;
+            case '6': image_data[i] = 6; break;
+            case '7': image_data[i] = 7; break;
+            case '8': image_data[i] = 8; break;
+            case '9': image_data[i] = 9; break;
+            case 'A': image_data[i] = 10; break;
+            case 'B': image_data[i] = 11; break;
+            case 'C': image_data[i] = 12; break;
+            case 'D': image_data[i] = 13; break;
+            case 'E': image_data[i] = 14; break;
+            case 'F': image_data[i] = 15; break;
             }
             // clang-format on
             i++;
         }
     }
+    bitmap = 0;
 }
 
 void Image::Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight)

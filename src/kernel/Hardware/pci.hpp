@@ -1,6 +1,7 @@
 #ifndef PCI_HPP
 #define PCI_HPP
 
+#include "../Mem/mm.hpp"
 #include "Drivers/driver.hpp"
 #include "interrupts.hpp"
 #include "port.hpp"

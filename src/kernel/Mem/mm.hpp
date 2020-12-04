@@ -2,16 +2,29 @@
 #define MM_HPP
 
 #include "paging.hpp"
+#include "stdio.hpp"
 #include "stdlib.hpp"
 
-#define MAX_ALLOC_PAGES 32
+#define MAX_PAGE_ALIGNED_ALLOCS 32
 
-static uint32_t pheap_begin = 0;
-static uint32_t pheap_end = 0;
-static uint8_t* pheap_desc = 0;
+typedef struct {
+    uint8_t status;
+    uint32_t size;
+} alloc_t;
 
 extern void pfree(void* mem);
+extern void mm_init(uint32_t kernel_end);
 extern void* pmalloc(size_t size);
-extern void mm_init();
+extern char* kmalloc(size_t size);
+extern void kfree(void* mem);
+
+void* operator new(size_t size);
+void* operator new[](size_t size);
+
+void* operator new(size_t size, void* ptr);
+void* operator new[](size_t size, void* ptr);
+
+void operator delete(void* ptr);
+void operator delete[](void* ptr);
 
 #endif

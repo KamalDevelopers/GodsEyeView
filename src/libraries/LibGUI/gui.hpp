@@ -3,6 +3,7 @@
 #include "../../kernel/Hardware/Drivers/keyboard.hpp"
 #include "../../kernel/Hardware/Drivers/mouse.hpp"
 #include "../../kernel/Hardware/Drivers/vga.hpp"
+#include "../../kernel/Mem/mm.hpp"
 #include "../LibC/stdlib.hpp"
 #include "../LibC/string.hpp"
 #include <stdarg.h>
@@ -14,12 +15,24 @@ private:
     int widget_width;
     int widget_height;
     short int* bitmap;
+    short int image_data[640 * 480]; // Fixed size, dynamically allocate without memory leak? FIXME
 
 public:
     Image(int width, int height, short int* bmp);
+    ~Image()
+    {
+        if (bitmap != 0)
+            kfree(bitmap);
+    }
+
     void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     void ImageRenderer(unsigned char* data);
-    uint16_t GetColor(int index) { return bitmap[index]; }
+    uint16_t GetColor(int index)
+    {
+        if (bitmap == 0)
+            return image_data[index];
+        return bitmap[index];
+    }
 };
 
 class Input {

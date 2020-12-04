@@ -61,7 +61,7 @@ bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size)
 
 void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t* buffer, uint32_t size)
 {
-    uint8_t* buffer2 = (uint8_t*)malloc(sizeof(EtherFrameHeader) + size);
+    uint8_t* buffer2 = (uint8_t*)kmalloc(sizeof(EtherFrameHeader) + size);
     EtherFrameHeader* frame = (EtherFrameHeader*)buffer2;
 
     frame->dstMAC_BE = dstMAC_BE;
@@ -74,7 +74,7 @@ void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t
         dst[i] = src[i];
 
     backend->Send(buffer2, size + sizeof(EtherFrameHeader));
-    free(buffer2);
+    kfree(buffer2);
 }
 
 uint32_t EtherFrameProvider::GetIPAddress()
