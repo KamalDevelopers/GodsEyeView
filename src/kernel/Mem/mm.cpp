@@ -56,45 +56,35 @@ char* kmalloc(size_t size)
     if (!size)
         return 0;
 
-    /* Loop through blocks and find a block sized the same or bigger */
     uint8_t* mem = (uint8_t*)heap_begin;
     while ((uint32_t)mem < last_alloc) {
         alloc_t* a = (alloc_t*)mem;
-        /* If the alloc has no size, we have reaced the end of allocation */
-        //mprint("mem=0x%x a={.status=%d, .size=%d}\n", mem, a->status, a->size);
+
         if (!a->size)
-            goto nalloc;
-        /* If the alloc has a status of 1 (allocated), then add its size
-		 * and the sizeof alloc_t to the memory and continue looking.
-		 */
+            break;
+
         if (a->status) {
             mem += a->size;
             mem += sizeof(alloc_t);
             mem += 4;
             continue;
         }
-        /* If the is not allocated, and its size is bigger or equal to the
-		 * requested size, then adjust its size, set status and return the location.
-		 */
+
         if (a->size >= size) {
-            /* Set to allocated */
             a->status = 1;
 
             memset(mem + sizeof(alloc_t), 0, size);
             memory_used += size + sizeof(alloc_t);
             return (char*)(mem + sizeof(alloc_t));
         }
-        /* If it isn't allocated, but the size is not good, then
-		 * add its size and the sizeof alloc_t to the pointer and
-		 * continue;
-		 */
+
         mem += a->size;
         mem += sizeof(alloc_t);
         mem += 4;
     }
 
-nalloc:;
     if (last_alloc + size + sizeof(alloc_t) >= heap_end) {
+        return 0;
     }
     alloc_t* alloc = (alloc_t*)last_alloc;
     alloc->status = 1;

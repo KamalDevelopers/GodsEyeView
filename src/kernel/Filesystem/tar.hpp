@@ -51,6 +51,7 @@ public:
     void ReadData(uint32_t sector_start, uint8_t* fdata, int count);
     Tar(AdvancedTechnologyAttachment* ata);
     void Mount();
+    int GetSize(char* file_name);
     int ReadDir(char* dirname);
     int FindFile(char* fname);
     int ReadFile(int file_id, uint8_t* data);

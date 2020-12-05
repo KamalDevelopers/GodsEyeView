@@ -1,16 +1,14 @@
 import time
 import os
 import sys
-from colorama import *
-init()
 
-WRITEDISK = True
+WRITEDISK = False 
 GCCPATH = '$HOME/opt/cross/bin/i686-elf-g++'
 GPPPARAMS = \
     '-Ilibraries/LibC -Ilibraries-fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings'
 ASPARAMS = '--32'
 QEMUPARAMS = \
-    '-cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -m 1024 -drive format=raw,file=../../hdd.tar'
+    '-cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=../../hdd.tar'
 
 filesC = [
     './kernel/kernel.cpp',
@@ -33,6 +31,7 @@ filesC = [
     './kernel/Net/arp.cpp',
     './kernel/Net/etherframe.cpp',
     './kernel/Net/ipv4.cpp',
+    './kernel/Exec/elf.cpp',
     './kernel/Filesystem/tar.cpp',
     './kernel/Filesystem/fat.cpp',
     './kernel/Filesystem/part.cpp',
@@ -83,9 +82,8 @@ def make_iso():
     os.system('rm -rf iso')
     if WRITEDISK == True:
         os.system('tar cf ../../hdd.tar ../../root/')
-        time.sleep(0.5)
+        time.sleep(0.1)
     os.system('qemu-system-x86_64 ' + QEMUPARAMS)
-
 
 def make_kernel():
     for file in filesC:
@@ -96,10 +94,8 @@ def make_kernel():
         os.system('as ' + ASPARAMS + ' ' + file + ' -o' + file[:-2]
                   + '.o')
 
-
 def make_loader():
     os.system('as ' + ASPARAMS + ' loader.s -o loader.o')
-
 
 def link():
     for file in filesC:
@@ -137,8 +133,7 @@ def clean():
 
 
 if len(sys.argv) < 2:
-    print(Fore.RED + 'Invalid amount of arguments\n' + Style.RESET_ALL \
-        + h)
+    print('Invalid amount of arguments\n')
     sys.exit()
 
 if sys.argv[1] == 'make':
@@ -160,5 +155,3 @@ if sys.argv[1] == 'clean':
 if sys.argv[1] == '--help' or sys.argv[1] == 'help' or sys.argv[1] \
     == '-h':
     print(h)
-
-			

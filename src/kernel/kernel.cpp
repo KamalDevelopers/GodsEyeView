@@ -4,6 +4,7 @@
 #include "stdio.hpp"
 #include "stdlib.hpp"
 
+#include "Exec/elf.hpp"
 #include "GDT/gdt.hpp"
 #include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
@@ -177,8 +178,8 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     fs_tar.Mount();
 
     uint8_t* fdata = new uint8_t[640 * 480];
-    fs_tar.ReadFile("root/wallpaper", fdata);
     uint8_t* wallpaper_data;
+    fs_tar.ReadFile("root/wallpaper", fdata);
     memcpy((void*)wallpaper_data, (void*)fdata, 640 * 480);
     kfree(fdata);
 
@@ -195,6 +196,12 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     //tasksmgr.AppendTasks(1, &DesktopTask);
 
     interrupts.Activate();
+
+    uint8_t* elfdata = (uint8_t*)kmalloc(sizeof(uint8_t) * fs_tar.GetSize("root/program.elf"));
+    fs_tar.ReadFile("root/program.elf", elfdata);
+    int elfexec = Elf::elf_header_parse(elfdata);
+    kfree(elfdata);
+
     desktopEnvironment(wallpaper_data);
     while (1)
         ;

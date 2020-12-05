@@ -142,6 +142,17 @@ int Tar::ReadFile(char* file_name, uint8_t* data)
     return 0;
 }
 
+/* Reads file from ram using file name */
+int Tar::GetSize(char* file_name)
+{
+    int file_id = FindFile(file_name);
+    if (file_id > file_index)
+        return -1;
+    int data_offset = sector_links_file[file_id] + 1;            // File data sector index
+    int data_size = (OctBin(files[file_id].size, 11) / 512) + 1; // Get sector index
+    return data_size * 512;                                      // Convert sectors into bytes
+}
+
 int Tar::BinOct(int decimalNumber)
 {
     int rem, i = 1, octalNumber = 0;
