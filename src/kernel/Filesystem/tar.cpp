@@ -42,13 +42,17 @@ void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 
     int SIZE = count;
     int sector_offset = 0;
+    int data_index = 0;
 
     /* Iterate through the sectors and store the contents in buffers */
     for (; SIZE > 0; SIZE -= 512) {
         hd->Read28(sector_start + sector_offset, buffer, 512);
 
         buffer[SIZE > 512 ? 512 : SIZE] = '\0';
-        strcat((char*)databuffer, (char*)buffer);
+        for (int i = 0; i < 512; i++) {
+            databuffer[data_index] = buffer[i];
+            data_index++;
+        }
         sector_offset++;
     }
 

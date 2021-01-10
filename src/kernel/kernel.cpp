@@ -197,7 +197,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     interrupts.Activate();
 
-    uint8_t* elfdata = (uint8_t*)kmalloc(sizeof(uint8_t) * fs_tar.GetSize("root/program.elf"));
+    uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/program.elf")];
     fs_tar.ReadFile("root/program.elf", elfdata);
     int elfexec = Elf::elf_header_parse(elfdata);
     kfree(elfdata);
