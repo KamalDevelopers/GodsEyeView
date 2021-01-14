@@ -1,6 +1,7 @@
 #ifndef CMOS_HPP
 #define CMOS_HPP
 
+#include "../../Mem/mm.hpp"
 #include "../port.hpp"
 #include "stdio.hpp"
 #include "stdlib.hpp"
@@ -31,7 +32,7 @@ public:
     virtual unsigned char GetMonth();
     virtual unsigned int GetYear();
     virtual unsigned int GetTime(); // Unix
-    virtual char* GetFullTime();
+    virtual char* GetFullTime(char seperator = ':');
 
 protected:
     int century_register = 0x00;

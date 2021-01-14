@@ -8,16 +8,18 @@ TimeDriver::TimeDriver()
 
 void TimeDriver::SetTimezoneOffset(uint16_t t_offset) { timezone_offset = t_offset; }
 
-char* TimeDriver::GetFullTime()
+char* TimeDriver::GetFullTime(char seperator)
 {
-    char *sec, *min, *hour, *middle;
+    char *sec, *min, *hour, *middle, *clock;
 
     itoa(GetSecond(), sec);
     itoa(GetMinute(), min);
     itoa(GetHour(), hour);
 
-    char* format;
-    memcpy(format, "00:00:00\0", 9);
+    char* format = new char[9];
+    memcpy(format, "00:00:00", 9);
+    format[2] = seperator;
+    format[5] = seperator;
 
     if (strlen(hour) == 1) {
         format[0] = '0';
@@ -40,7 +42,12 @@ char* TimeDriver::GetFullTime()
         format[6] = sec[0];
         format[7] = sec[1];
     }
-    return format;
+
+    strcat(format, "\0");
+    memcpy(clock, format, 10);
+    kfree(format);
+
+    return clock;
 }
 unsigned int TimeDriver::GetTime()
 {
