@@ -1,6 +1,7 @@
 #include "../libraries/LibGUI/font.hpp"
 #include "../libraries/LibGUI/gui.hpp"
 #include "../multiboot.hpp"
+#include "ctype.hpp"
 #include "stdio.hpp"
 #include "stdlib.hpp"
 
