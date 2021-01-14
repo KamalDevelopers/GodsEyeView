@@ -2,8 +2,8 @@
 #define CMOS_HPP
 
 #include "../port.hpp"
-#include "itoa.hpp"
 #include "stdio.hpp"
+#include "stdlib.hpp"
 #include "string.hpp"
 
 #define CURRENT_YEAR 2020

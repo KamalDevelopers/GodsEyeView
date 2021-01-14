@@ -33,14 +33,6 @@ void* memset(void* b, char c, int len)
     return b;
 }
 
-int atoi(char* str)
-{
-    int res = 0;
-    for (int i = 0; str[i] != '\0'; ++i)
-        res = res * 10 + str[i] - '0';
-    return res;
-}
-
 void reverse(char* str, int len)
 {
     int i = 0, j = len - 1, temp;
@@ -51,6 +43,46 @@ void reverse(char* str, int len)
         i++;
         j--;
     }
+}
+
+int digit_count(int num)
+{
+    int count = 0;
+    if (num == 0)
+        return 1;
+
+    while (num > 0) {
+        count++;
+        num = num / 10;
+    }
+    return count;
+}
+
+void itoa(int num, char* number)
+{
+    int dgcount = digit_count(num);
+    int index = dgcount - 1;
+    char x;
+    if (num == 0 && dgcount == 1) {
+        number[0] = '0';
+        number[1] = '\0';
+    } else {
+        while (num != 0) {
+            x = num % 10;
+            number[index] = x + '0';
+            index--;
+            num = num / 10;
+        }
+        number[dgcount] = '\0';
+    }
+}
+
+int atoi(char* str)
+{
+    int res = 0;
+    for (int i = 0; str[i] != '\0'; ++i)
+        res = res * 10 + str[i] - '0';
+    return res;
 }
 
 int itoan(int x, char str[], int d)

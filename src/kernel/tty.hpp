@@ -4,7 +4,7 @@
 #define MAX_ROWS 25
 #define MAX_COLS 80
 
-#include "itoa.hpp"
+#include "stdlib.hpp"
 #include "string.hpp"
 
 static uint16_t* VideoMemory = (unsigned short*)0xb8000;

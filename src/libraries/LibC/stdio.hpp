@@ -5,7 +5,6 @@
 #define MAX_ROWS 25
 #define MAX_COLS 80
 
-#include "itoa.hpp"
 #include "stdlib.hpp"
 #include "string.hpp"
 #include <stdarg.h>
