@@ -52,9 +52,10 @@ void klog(int num)
 
 void puts(char* str)
 {
+    int len = strlen(str);
     asm("int $0x80"
         :
-        : "a"(4), "b"(1), "c"(str));
+        : "a"(4), "b"(1), "c"(str), "d"(len));
 }
 
 void putc(int c)

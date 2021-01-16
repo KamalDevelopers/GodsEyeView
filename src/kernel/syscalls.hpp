@@ -2,6 +2,7 @@
 #define SYSCALLS_H
 
 #include "Hardware/interrupts.hpp"
+#include "Mem/mm.hpp"
 #include "multitasking.hpp"
 #include "stdio.hpp"
 #include "tty.hpp"
