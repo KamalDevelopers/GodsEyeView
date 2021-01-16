@@ -193,16 +193,17 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     drvManager.ActivateAll();
 
     klog("Setting up tasks");
-    //Task DesktopTask(&gdt, desktopEnvironment);
-    //tasksmgr.AppendTasks(1, &DesktopTask);
-
-    interrupts.Activate();
 
     uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/program.elf")];
     fs_tar.ReadFile("root/program.elf", elfdata);
-    int elfexec = Elf::elf_header_parse(elfdata);
+    int elfexec = Elf::exec(elfdata);
     kfree(elfdata);
 
+    /* Schedule the programs TODO: Kill idle programs */
+    //Task ProgramT(&gdt, elfexec);
+    //tasksmgr.AppendTasks(1, &ProgramT);
+
+    interrupts.Activate();
     desktopEnvironment(wallpaper_data);
     while (1)
         ;

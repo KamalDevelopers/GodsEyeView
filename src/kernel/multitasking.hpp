@@ -32,7 +32,7 @@ private:
     CPUState* cpustate;
 
 public:
-    Task(GlobalDescriptorTable* gdt, void entrypoint());
+    Task(GlobalDescriptorTable* gdt, uint32_t entrypoint);
     ~Task();
 };
 

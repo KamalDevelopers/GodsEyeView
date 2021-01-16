@@ -20,7 +20,7 @@ void mm_init(uint32_t kernel_end)
 }
 
 /* Allocate a page */
-void* pmalloc(size_t size)
+char* pmalloc(size_t size)
 {
     if (size > 4096)
         return 0;
@@ -30,7 +30,7 @@ void* pmalloc(size_t size)
         if (pheap_desc[i])
             continue;
         pheap_desc[i] = 1;
-        return (void*)(pheap_begin + i * 4096);
+        return (char*)(pheap_begin + i * 4096);
     }
     klog("pmalloc Error");
     return 0;

@@ -1,6 +1,6 @@
 #include "elf.hpp"
 
-int Elf::elf_header_parse(uint8_t* file_data)
+int Elf::header_parse(uint8_t* file_data)
 {
     uint8_t executable = 0;
     uint8_t valid = 0;
@@ -25,4 +25,34 @@ int Elf::elf_header_parse(uint8_t* file_data)
         return 0;
 
     return -1;
+}
+
+int Elf::exec(uint8_t* file_data)
+{
+    Elf32_Ehdr* elf_header = (Elf32_Ehdr*)file_data;
+
+    if (header_parse(file_data) != 1)
+        return 0;
+
+    /* Map the virtual space */
+    uint32_t phys_loc = 0x500000; //FIXME INCREMENT THIS
+
+    Elf32_Phdr* elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
+
+    for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
+        switch (elf_program_header->p_type) {
+        case 0:
+            break;
+        case 1:
+            /* LOAD */
+            Paging::p_map_page(elf_program_header->p_vaddr, phys_loc);
+            memcpy((void*)elf_program_header->p_vaddr, file_data + elf_program_header->p_offset, elf_program_header->p_filesz);
+            break;
+
+        default:
+            return 0;
+        }
+    }
+
+    return elf_header->e_entry;
 }

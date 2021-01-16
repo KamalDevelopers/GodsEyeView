@@ -14,7 +14,7 @@ typedef struct {
 
 extern void pfree(void* mem);
 extern void mm_init(uint32_t kernel_end);
-extern void* pmalloc(size_t size);
+extern char* pmalloc(size_t size);
 extern char* kmalloc(size_t size);
 extern void kfree(void* mem);
 

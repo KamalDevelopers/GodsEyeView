@@ -112,7 +112,8 @@ typedef struct {
 } Elf32_Phdr;
 
 namespace Elf {
-int elf_header_parse(uint8_t* file_data);
+int header_parse(uint8_t* file_data);
+int exec(uint8_t* file_data);
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "multitasking.hpp"
 
-Task::Task(GlobalDescriptorTable* gdt, void entrypoint())
+Task::Task(GlobalDescriptorTable* gdt, uint32_t entrypoint)
 {
     cpustate = (CPUState*)(stack + 4096 - sizeof(CPUState));
     cpustate->eax = 0;
@@ -10,7 +10,7 @@ Task::Task(GlobalDescriptorTable* gdt, void entrypoint())
     cpustate->esi = 0;
     cpustate->edi = 0;
     cpustate->ebp = 0;
-    cpustate->eip = (uint32_t)entrypoint;
+    cpustate->eip = entrypoint;
     cpustate->cs = gdt->CodeSegmentSelector();
     cpustate->eflags = 0x202;
 }
