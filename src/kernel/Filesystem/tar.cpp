@@ -91,11 +91,11 @@ int Tar::GetMode(int file_id, int utype)
 {
     char p = 0;
     if (utype == 0) // All
-        p = files[file_id].mode[8];
-    if (utype == 1) // Group
-        p = files[file_id].mode[7];
-    if (utype == 2) // Owner
         p = files[file_id].mode[6];
+    if (utype == 1) // Group
+        p = files[file_id].mode[5];
+    if (utype == 2) // Owner
+        p = files[file_id].mode[4];
     switch (p) {
     case '7':
         return 7; // RWX
