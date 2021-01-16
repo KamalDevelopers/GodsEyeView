@@ -6,6 +6,7 @@
 #include "stdlib.hpp"
 
 #include "Exec/elf.hpp"
+#include "Exec/loader.hpp"
 #include "GDT/gdt.hpp"
 #include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
@@ -192,11 +193,14 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     PCI.SelectDrivers(&drvManager, &interrupts);
     drvManager.ActivateAll();
 
-    klog("Setting up tasks");
+    klog("Setting up loaders and tasks");
+    loader_t** loaders = new loader_t*[1];
+    loaders[0] = Elf::init();
+    Loader ploader(loaders, 1);
 
     uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/program.elf")];
     fs_tar.ReadFile("root/program.elf", elfdata);
-    int elfexec = Elf::exec(elfdata);
+    int elfexec = ploader.load->exec(elfdata);
     kfree(elfdata);
 
     /* Schedule the programs TODO: Kill idle programs */

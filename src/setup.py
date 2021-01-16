@@ -29,6 +29,7 @@ filesC = [
     './kernel/Net/arp.cpp',
     './kernel/Net/etherframe.cpp',
     './kernel/Net/ipv4.cpp',
+    './kernel/Exec/loader.cpp',
     './kernel/Exec/elf.cpp',
     './kernel/Filesystem/tar.cpp',
     './kernel/Filesystem/fat.cpp',

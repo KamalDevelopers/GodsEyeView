@@ -27,15 +27,12 @@ int Elf::header_parse(uint8_t* file_data)
     return -1;
 }
 
-int Elf::exec(uint8_t* file_data)
+int Elf::exec(uint8_t* file_data, uint32_t phys_loc)
 {
     Elf32_Ehdr* elf_header = (Elf32_Ehdr*)file_data;
 
     if (header_parse(file_data) != 1)
         return 0;
-
-    /* Map the virtual space */
-    uint32_t phys_loc = 0x500000; //FIXME INCREMENT THIS
 
     Elf32_Phdr* elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
 
@@ -55,4 +52,13 @@ int Elf::exec(uint8_t* file_data)
     }
 
     return elf_header->e_entry;
+}
+
+loader_t* Elf::init()
+{
+    loader_t* elfloader;
+    elfloader->name = "elf32";
+    elfloader->probe = header_parse;
+    elfloader->exec = exec;
+    return elfloader;
 }

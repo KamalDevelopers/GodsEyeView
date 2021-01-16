@@ -3,6 +3,7 @@
 
 #include "../Mem/mm.hpp"
 #include "../Mem/paging.hpp"
+#include "loader.hpp"
 #include "stdlib.hpp"
 
 #define ELF_NIDENT 16
@@ -113,7 +114,8 @@ typedef struct {
 
 namespace Elf {
 int header_parse(uint8_t* file_data);
-int exec(uint8_t* file_data);
+int exec(uint8_t* file_data, uint32_t phys_loc);
+loader_t* init();
 };
 
 #endif
