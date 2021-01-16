@@ -198,8 +198,8 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     loaders[0] = Elf::init();
     Loader ploader(loaders, 1);
 
-    uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/program.elf")];
-    fs_tar.ReadFile("root/program.elf", elfdata);
+    uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/demo")];
+    fs_tar.ReadFile("root/demo", elfdata);
     int elfexec = ploader.load->exec(elfdata);
     kfree(elfdata);
 
