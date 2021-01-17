@@ -194,13 +194,13 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     drvManager.ActivateAll();
 
     klog("Setting up loaders and tasks");
-    loader_t** loaders = new loader_t*[1];
-    loaders[0] = Elf::init();
-    Loader ploader(loaders, 1);
+    Elf elf_load("elf32");
+    Loader mloader;
+    mloader.add(&elf_load);
 
     uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/demo")];
     fs_tar.ReadFile("root/demo", elfdata);
-    int elfexec = ploader.load->exec(elfdata);
+    int elfexec = mloader.load->exec(elfdata);
     kfree(elfdata);
 
     /* Schedule the programs TODO: Kill idle programs */

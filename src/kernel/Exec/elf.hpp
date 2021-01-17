@@ -112,10 +112,16 @@ typedef struct {
     Elf32_Word p_align;  /* memory alignment */
 } Elf32_Phdr;
 
-namespace Elf {
-int header_parse(uint8_t* file_data);
-int exec(uint8_t* file_data, uint32_t phys_loc);
-loader_t* init();
+class Elf : public Execf {
+private:
+    char* format_name;
+
+public:
+    Elf(char* n);
+    ~Elf();
+    int probe(uint8_t* file_data);
+    int exec(uint8_t* file_data, uint32_t phys_loc);
+    char* name();
 };
 
 #endif

@@ -1,6 +1,18 @@
 #include "elf.hpp"
 
-int Elf::header_parse(uint8_t* file_data)
+Elf::Elf(char* n)
+    : Execf(n)
+{
+    format_name = new char[strlen(n)];
+    strcpy(format_name, n);
+}
+
+Elf::~Elf()
+{
+    kfree(format_name);
+}
+
+int Elf::probe(uint8_t* file_data)
 {
     uint8_t executable = 0;
     uint8_t valid = 0;
@@ -31,7 +43,7 @@ int Elf::exec(uint8_t* file_data, uint32_t phys_loc)
 {
     Elf32_Ehdr* elf_header = (Elf32_Ehdr*)file_data;
 
-    if (header_parse(file_data) != 1)
+    if (probe(file_data) != 1)
         return 0;
 
     Elf32_Phdr* elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
@@ -54,11 +66,7 @@ int Elf::exec(uint8_t* file_data, uint32_t phys_loc)
     return elf_header->e_entry;
 }
 
-loader_t* Elf::init()
+char* Elf::name()
 {
-    loader_t* elfloader;
-    elfloader->name = "elf32";
-    elfloader->probe = header_parse;
-    elfloader->exec = exec;
-    return elfloader;
+    return format_name;
 }
