@@ -17,6 +17,18 @@ int Tar::OctBin(char* str, int size)
     return n;
 }
 
+int Tar::BinOct(int decimal_num)
+{
+    int rem, i = 1, octaln = 0;
+    while (decimal_num != 0) {
+        rem = decimal_num % 8;
+        decimal_num /= 8;
+        octaln += rem * i;
+        i *= 10;
+    }
+    return octaln;
+}
+
 int Tar::RenameFile(char* file_name, char* new_file_name)
 {
     int file_name_len = strlen(file_name);
@@ -180,18 +192,6 @@ int Tar::GetSize(char* file_name)
     return data_size * 512;                                      // Convert sectors into bytes
 }
 
-int Tar::BinOct(int decimalNumber)
-{
-    int rem, i = 1, octalNumber = 0;
-    while (decimalNumber != 0) {
-        rem = decimalNumber % 8;
-        decimalNumber /= 8;
-        octalNumber += rem * i;
-        i *= 10;
-    }
-    return octalNumber;
-}
-
 /* Checksum write in octal */
 posix_header* Tar::FileCalculateChecksum(posix_header* header_data)
 {
@@ -246,11 +246,11 @@ int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
         meta_head.name[i] = '\0';
     strcpy(meta_head.name, file_name);
 
-    /* Conver size data to octal */
+    /* Convert size data to octal */
     char* sizedata;
+    char tsize[12];
     itoa(BinOct(data_length), sizedata);
     int octal_offset = 11 - str_len(sizedata);
-    char tsize[octal_offset];
 
     tsize[octal_offset] = '\0';
     for (int i = 0; i < octal_offset; i++)

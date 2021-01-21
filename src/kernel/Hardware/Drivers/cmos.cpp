@@ -1,9 +1,11 @@
 #include "cmos.hpp"
 
+TimeDriver* TimeDriver::time = 0;
 TimeDriver::TimeDriver()
     : cmos_address(0x70)
     , cmos_data(0x71)
 {
+    time = this;
 }
 
 void TimeDriver::SetTimezoneOffset(uint16_t t_offset) { timezone_offset = t_offset; }
@@ -46,6 +48,7 @@ char* TimeDriver::GetFullTime(char seperator)
     format[9] = '\0';
     return format;
 }
+
 unsigned int TimeDriver::GetTime()
 {
     unsigned int yeardata = ((GetYear() - 1970)) * SECONDS_YEAR;
@@ -56,16 +59,19 @@ unsigned int TimeDriver::GetTime()
 
     return yeardata + monthdata + daydata + hourdata + mindata + GetSecond();
 }
+
 unsigned char TimeDriver::GetSecond()
 {
     read_rtc();
     return second;
 }
+
 unsigned char TimeDriver::GetMinute()
 {
     read_rtc();
     return minute;
 }
+
 unsigned char TimeDriver::GetHour(uint16_t t_offset)
 {
     read_rtc();
@@ -77,11 +83,13 @@ unsigned char TimeDriver::GetDay()
     read_rtc();
     return day;
 }
+
 unsigned char TimeDriver::GetMonth()
 {
     read_rtc();
     return month;
 }
+
 unsigned int TimeDriver::GetYear()
 {
     read_rtc();

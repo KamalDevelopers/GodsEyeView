@@ -45,8 +45,8 @@ private:
     uint32_t sector_links_file[MAX_FILES]; // Sector index of files
 
     int OctBin(char* str, int size);
+    int BinOct(int decimal_num);
     int GetMode(int file_id, int utype);
-    int BinOct(int decimalNumber);
 
 public:
     void ReadData(uint32_t sector_start, uint8_t* fdata, int count);

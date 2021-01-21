@@ -70,7 +70,6 @@ struct DriverObjects {
 
 void desktopEnvironment(uint8_t* wallpaper_data)
 {
-    TimeDriver time;
     Graphics vga;
 
     GUI::Desktop desktop(640, 480, &vga, drivers.mouse, drivers.keyboard);
@@ -145,7 +144,7 @@ void desktopEnvironment(uint8_t* wallpaper_data)
             shutdown_cancel = 0;
             shutdownModal.SetHidden(1);
         } else {
-            clock_label.SetText(time.GetFullTime());
+            clock_label.SetText(TimeDriver::time->GetFullTime());
         }
         desktop.Draw();
     }
@@ -159,6 +158,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr;
+    TimeDriver time;
 
     Paging::p_init();
     mm_init(kernel_end);
