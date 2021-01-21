@@ -196,11 +196,11 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");
     Loader mloader;
-    mloader.add(&elf_load);
+    mloader.Add(&elf_load);
 
     uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/demo")];
     fs_tar.ReadFile("root/demo", elfdata);
-    int elfexec = mloader.load->exec(elfdata);
+    int elfexec = Loader::load->Exec(elfdata);
     kfree(elfdata);
 
     /* Schedule the programs TODO: Kill idle programs */

@@ -10,9 +10,9 @@ public:
     Execf(char* n);
     ~Execf();
 
-    virtual int probe(uint8_t* file_data);
-    virtual int exec(uint8_t* file_data, uint32_t phys_loc);
-    virtual char* name();
+    virtual int Probe(uint8_t* file_data);
+    virtual int Exec(uint8_t* file_data, uint32_t phys_loc);
+    virtual char* Name();
 };
 
 class Loader {
@@ -27,11 +27,10 @@ public:
     ~Loader();
 
     static Loader* load;
-
-    void add(Execf* l);
-    int exec(uint8_t* file_buffer, char* loader_name = 0);
-    int probe(uint8_t* file_buffer, char* loader_name);
-    uint32_t plocation();
+    void Add(Execf* l);
+    int Exec(uint8_t* file_buffer, char* loader_name = 0);
+    int Probe(uint8_t* file_buffer, char* loader_name);
+    uint32_t Location();
 };
 
 #endif

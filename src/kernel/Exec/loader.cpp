@@ -8,17 +8,17 @@ Execf::~Execf()
 {
 }
 
-int Execf::probe(uint8_t* file_data)
+int Execf::Probe(uint8_t* file_data)
 {
     return 0;
 }
 
-int Execf::exec(uint8_t* file_data, uint32_t phys_loc)
+int Execf::Exec(uint8_t* file_data, uint32_t phys_loc)
 {
     return 0;
 }
 
-char* Execf::name()
+char* Execf::Name()
 {
     return 0;
 }
@@ -31,7 +31,7 @@ Loader::Loader()
     location = 0x400000;
 }
 
-void Loader::add(Execf* l)
+void Loader::Add(Execf* l)
 {
     if (loader_num >= MAX_LOADERS)
         return;
@@ -39,33 +39,33 @@ void Loader::add(Execf* l)
     loader_num++;
 }
 
-int Loader::exec(uint8_t* file_buffer, char* loader_name)
+int Loader::Exec(uint8_t* file_buffer, char* loader_name)
 {
     for (int i = 0; i < loader_num; i++) {
         if (loader_name) {
-            if (strcmp(loader_name, execfs[i]->name()) == 0) {
+            if (strcmp(loader_name, execfs[i]->Name()) == 0) {
                 location += 0x400000;
-                return execfs[i]->exec(file_buffer, location);
+                return execfs[i]->Exec(file_buffer, location);
             }
-        } else if (execfs[i]->probe(file_buffer) == 1) {
+        } else if (execfs[i]->Probe(file_buffer) == 1) {
             location += 0x400000;
-            return execfs[i]->exec(file_buffer, location);
+            return execfs[i]->Exec(file_buffer, location);
         }
     }
     return -1;
 }
 
-int Loader::probe(uint8_t* file_buffer, char* loader_name)
+int Loader::Probe(uint8_t* file_buffer, char* loader_name)
 {
     for (int i = 0; i < loader_num; i++) {
-        if (strcmp(loader_name, execfs[i]->name()) == 0) {
-            return execfs[i]->probe(file_buffer);
+        if (strcmp(loader_name, execfs[i]->Name()) == 0) {
+            return execfs[i]->Probe(file_buffer);
         }
     }
     return -1;
 }
 
-uint32_t Loader::plocation()
+uint32_t Loader::Location()
 {
     return location;
 }

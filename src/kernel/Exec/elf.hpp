@@ -119,9 +119,9 @@ private:
 public:
     Elf(char* n);
     ~Elf();
-    int probe(uint8_t* file_data);
-    int exec(uint8_t* file_data, uint32_t phys_loc);
-    char* name();
+    int Probe(uint8_t* file_data);
+    int Exec(uint8_t* file_data, uint32_t phys_loc);
+    char* Name();
 };
 
 #endif

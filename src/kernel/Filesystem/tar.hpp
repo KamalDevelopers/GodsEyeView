@@ -59,8 +59,10 @@ public:
     int ReadFile(char* file_name, uint8_t* data);
     int ReadDir(char* dirname, char** file_ids);
     int WriteFile(char* file_name, uint8_t* data, int data_length);
+    int RenameFile(char* file_name, char* new_file_name);
 
     void WriteData(uint32_t sector_start, uint8_t* fdata, int count);
+    posix_header* FileCalculateChecksum(posix_header* header_data);
     int CalculateChecksum(posix_header* header_data);
 };
 #endif
