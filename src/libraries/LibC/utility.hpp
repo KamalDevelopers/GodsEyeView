@@ -1,3 +1,6 @@
+#ifndef UTILITY_HPP
+#define UTILITY_HPP
+
 template<typename T>
 void swap(T& first, T& second)
 {
@@ -5,3 +8,5 @@ void swap(T& first, T& second)
     first = second;
     second = temp;
 }
+
+#endif 
