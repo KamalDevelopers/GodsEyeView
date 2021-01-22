@@ -36,7 +36,7 @@ void* memset(void* b, char c, int len)
 
 void reverse(char* str, int len)
 {
-    int i = 0, j = len - 1, temp;
+    int i = 0, j = len - 1;
     while (i < j) {
         swap(str[i++], str[j--]);
     }
