@@ -9,4 +9,4 @@ void swap(T& first, T& second)
     second = temp;
 }
 
-#endif 
+#endif

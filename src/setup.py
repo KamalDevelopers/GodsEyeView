@@ -59,7 +59,7 @@ def make_iso():
     os.chdir('./out')
     os.system('grub-mkrescue --output=kernel.iso iso')
     os.system('rm -rf iso')
-    if WRITEDISK == True:
+    if WRITEDISK == True or not os.path.exists("../../hdd.tar"):
         os.system('tar cf ../../hdd.tar ../../root/')
         time.sleep(0.1)
     os.system('qemu-system-x86_64 ' + QEMUPARAMS)
@@ -101,7 +101,7 @@ def clean():
     for file in ofolders:
         os.system('rm ' + './' + file + '/*.o > /dev/null')
     if WRITEDISK == True:
-        os.system('rm -rf tar.hdd')
+        os.system('rm -rf hdd.tar')
 
 if len(sys.argv) < 2:
     print('Invalid amount of arguments\n')
