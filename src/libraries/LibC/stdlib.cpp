@@ -1,7 +1,7 @@
 #include "stdlib.hpp"
 #include "utility.hpp"
 
-unsigned rand(unsigned int seed = 918, unsigned int max = 36000)
+unsigned rand(unsigned int seed, unsigned int max)
 {
     seed = seed * 1103515245 + 12345;
     return ((unsigned)(seed / ((max + 1) * 2)) % (max + 1));
