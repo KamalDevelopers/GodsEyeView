@@ -1,4 +1,5 @@
 #include "stdlib.hpp"
+#include "utility.hpp"
 
 unsigned rand(unsigned int seed = 918, unsigned int max = 36000)
 {
@@ -35,13 +36,9 @@ void* memset(void* b, char c, int len)
 
 void reverse(char* str, int len)
 {
-    int i = 0, j = len - 1, temp;
+    int i = 0, j = len - 1;
     while (i < j) {
-        temp = str[i];
-        str[i] = str[j];
-        str[j] = temp;
-        i++;
-        j--;
+        swap(str[i++], str[j--]);
     }
 }
 
