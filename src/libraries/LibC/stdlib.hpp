@@ -15,7 +15,7 @@ unsigned int random(unsigned int seed, unsigned int max);
 extern void* memcpy(void* dst, const void* src, unsigned int cnt);
 extern void* memset(void* b, char c, int len);
 extern int itoan(int x, char str[], int d);
-extern void itoa(int num, char* number);
+extern void itoa(unsigned int num, char* number);
 extern int atoi(char* str);
 extern char* ftoa(float n, char* res, int afterpoint);
 extern unsigned int abs(int num);

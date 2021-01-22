@@ -68,7 +68,7 @@ void putc(int c)
 
 void puti(int num)
 {
-    char* str;
+    char str[20];
     itoa(num, str);
     puts(str);
 }
@@ -93,12 +93,11 @@ void vprintf(const char* format, va_list v)
 {
     int size = len(format);
     int i = 0;
-    //char res[100];
     int flag = 0;
+
     while (i < size) {
-        if (flag > 0) {
+        if (flag > 0)
             flag--;
-        }
 
         if ((flag == 0) && (format[i] != '%') && (format[i] != '\n') && (format[i] != '\b')) {
             putc(format[i]);
@@ -107,25 +106,20 @@ void vprintf(const char* format, va_list v)
 
         if (format[i] == '%') {
             flag = 2;
-            if (format[i + 1] == 's') {
+            if (format[i + 1] == 's')
                 puts(va_arg(v, char*));
-            }
 
-            if (format[i + 1] == 'd') {
+            if (format[i + 1] == 'd')
                 puti(va_arg(v, int));
-            }
 
-            if (format[i + 1] == 'f') {
+            if (format[i + 1] == 'f')
                 putf(va_arg(v, double));
-            }
 
-            if (format[i + 1] == 'c') {
+            if (format[i + 1] == 'c')
                 putc(va_arg(v, int));
-            }
 
-            if (format[i + 1] == 'x') {
+            if (format[i + 1] == 'x')
                 putx(va_arg(v, int));
-            }
             i += 2;
         }
 
@@ -136,8 +130,6 @@ void vprintf(const char* format, va_list v)
         }
         if (format[i] == '\b') {
             flag = 1;
-            //VideoMemoryIndex--;
-            //indexmng();
             i++;
         }
     }

@@ -55,8 +55,13 @@ int digit_count(int num)
     return count;
 }
 
-void itoa(int num, char* number)
+void itoa(unsigned int num, char* number)
 {
+    if (num > 1000000000) {
+        *number = '\0';
+        return;
+    }
+
     int dgcount = digit_count(num);
     int index = dgcount - 1;
     char x;
