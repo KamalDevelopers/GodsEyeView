@@ -37,6 +37,7 @@ class Tar {
 
 private:
     AdvancedTechnologyAttachment* hd;
+    uint32_t tar_end;
     int dir_index;
     int file_index;
     posix_header dirs[MAX_DIRS];           // Maximum amount of directories in RAM
@@ -49,19 +50,24 @@ private:
     int GetMode(int file_id, int utype);
 
 public:
-    void ReadData(uint32_t sector_start, uint8_t* fdata, int count);
     Tar(AdvancedTechnologyAttachment* ata);
+
     void Mount();
-    int GetSize(char* file_name);
-    int ReadDir(char* dirname);
-    int FindFile(char* fname);
+    void Update(int uentry, int uentry_size);
+
+    int WriteFile(char* file_name, uint8_t* data, int data_length);
     int ReadFile(int file_id, uint8_t* data);
     int ReadFile(char* file_name, uint8_t* data);
-    int ReadDir(char* dirname, char** file_ids);
-    int WriteFile(char* file_name, uint8_t* data, int data_length);
+    int FindFile(char* fname);
+    int GetSize(char* file_name);
     int RenameFile(char* file_name, char* new_file_name);
+    int Unlink(char* path, bool update = 1);
+    int ReadDir(char* dirname, char** file_ids);
 
+    void SectorSwap(int sector_src, int sector_dest);
     void WriteData(uint32_t sector_start, uint8_t* fdata, int count);
+    void ReadData(uint32_t sector_start, uint8_t* fdata, int count);
+
     posix_header* FileCalculateChecksum(posix_header* header_data);
     int CalculateChecksum(posix_header* header_data);
 };

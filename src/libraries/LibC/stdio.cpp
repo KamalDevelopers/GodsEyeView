@@ -37,7 +37,7 @@ void klog(char* str)
 
 void klog(int num)
 {
-    char* str;
+    char str[20];
     itoa(num, str);
 
     for (int i = 0; i < str_len(datacolorblue); i++)

@@ -29,13 +29,32 @@ int Tar::BinOct(int decimal_num)
     return octaln;
 }
 
+int Tar::Unlink(char* file_name, bool update)
+{
+    /* Removes file entry from RAM */
+    int file_id = FindFile(file_name);
+    int file_size = GetSize(file_name) / 512;
+    if ((file_id > file_index) || (file_id == -1))
+        return -1;
+
+    for (int i = 0; i < file_index; i++) {
+        if (i <= file_id)
+            continue;
+        files[i - 1] = files[i];
+    }
+    /* Removes file from hd */
+    if (update == 1)
+        Update(sector_links_file[file_id], file_size);
+    return 0;
+}
+
 int Tar::RenameFile(char* file_name, char* new_file_name)
 {
     int file_name_len = strlen(file_name);
     if (file_name_len >= 99)
         return -1;
     int file_id = FindFile(file_name);
-    if (file_id > file_index)
+    if ((file_id > file_index) || (file_id == -1))
         return -1;
 
     posix_header meta_head;
@@ -49,6 +68,21 @@ int Tar::RenameFile(char* file_name, char* new_file_name)
     hd->Write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
     hd->Flush();
     return 0;
+}
+
+/* Returns the index of fname */
+int Tar::FindFile(char* fname)
+{
+    char fn[101];
+    for (int i = 0; i < file_index; i++) {
+        strcpy(fn, files[i].name);
+        fn[strlen(files[i].name)] = '\0';
+        if (strcmp(fname, fn) == 0) {
+            return i;
+        }
+    }
+    klog("File not found!");
+    return -1;
 }
 
 int Tar::ReadDir(char* dirname, char** file_ids)
@@ -97,8 +131,10 @@ void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
 {
     uint8_t* databuffer = new uint8_t[count];
+
     if (databuffer == 0)
         klog("Not enough heap memory!");
+
     memcpy((char*)databuffer, (char*)fdata, count);
     databuffer[count] = '\0';
 
@@ -107,13 +143,13 @@ void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
     int sector_offset = 0;
 
     for (; SIZE > 0; SIZE -= 512) {
-        for (int i = 0; i < 512; i++)
+        for (int i = 0; i <= 512; i++)
             buffer[i] = '\0';
-        hd->Write28(sector_start + sector_offset, buffer, 512); // Fill the sector with null
-        /* Copy the file data into a sector sized buffer */
-        for (int i = sector_offset * 512; i < count; i++) {
+        hd->Write28(sector_start + sector_offset, buffer, 512);
+
+        for (int i = sector_offset * 512; i < count; i++)
             buffer[i] = databuffer[i];
-        }
+
         buffer[SIZE > 512 ? 512 : SIZE] = '\0';
         hd->Write28(sector_start + sector_offset, buffer, 512);
         sector_offset++;
@@ -157,9 +193,6 @@ int Tar::ReadFile(int file_id, uint8_t* data)
 {
     if (file_id > file_index)
         return -1;
-    int permission = GetMode(file_id, 2);
-    if (permission < 4) // No read
-        return -1;
     int data_offset = sector_links_file[file_id] + 1;            // File data sector index
     int data_size = (OctBin(files[file_id].size, 11) / 512) + 1; // Get sector index
     ReadData(data_offset, data, data_size * 512);                // Convert sectors into bytes
@@ -170,22 +203,16 @@ int Tar::ReadFile(int file_id, uint8_t* data)
 int Tar::ReadFile(char* file_name, uint8_t* data)
 {
     int file_id = FindFile(file_name);
-    if (file_id > file_index)
+    if ((file_id > file_index) || (file_id == -1))
         return -1;
-    int permission = GetMode(file_id, 2);
-    if (permission < 4) // No read
-        return -1;
-    int data_offset = sector_links_file[file_id] + 1;            // File data sector index
-    int data_size = (OctBin(files[file_id].size, 11) / 512) + 1; // Get sector index
-    ReadData(data_offset, data, data_size * 512);                // Convert sectors into bytes
-    return 0;
+    return ReadFile(file_id, data);
 }
 
 /* Reads file from ram using file name */
 int Tar::GetSize(char* file_name)
 {
     int file_id = FindFile(file_name);
-    if (file_id > file_index)
+    if ((file_id > file_index) || (file_id == -1))
         return -1;
     int data_offset = sector_links_file[file_id] + 1;            // File data sector index
     int data_size = (OctBin(files[file_id].size, 11) / 512) + 1; // Get sector index
@@ -282,21 +309,44 @@ int Tar::WriteFile(char* file_name, uint8_t* data, int data_length)
     return 0;
 }
 
-/* Returns the index of fname */
-int Tar::FindFile(char* fname)
+void Tar::SectorSwap(int sector_src, int sector_dest)
 {
-    char* fn;
-    for (int i = 0; i < file_index; i++) {
-        strcpy(fn, files[i].name);
-        fn[strlen(files[i].name)] = '\0';
-        if (strcmp(fname, fn) == 0) {
-            return i;
-        }
-    }
-    return -1;
+    uint8_t buffer[513];
+    hd->Read28(sector_src, buffer, 512);
+    hd->Write28(sector_dest, buffer, 512);
+    hd->Flush();
 }
 
-/* Reads all files and directories */
+/* Remove entry from archive */
+void Tar::Update(int uentry, int uentry_size)
+{
+    int lastloc = uentry + uentry_size;
+    int moveto = uentry;
+    int sector_offset = 0;
+
+    while (1) {
+        if (sector_offset == tar_end)
+            break;
+        if (sector_offset > lastloc) {
+            SectorSwap(sector_offset, moveto);
+            moveto++;
+        }
+        sector_offset++;
+    }
+
+    uint8_t buffer[513];
+    for (int i = 0; i <= 512; i++)
+        buffer[i] = '\0';
+
+    int sectors_overflow = uentry_size - (moveto - uentry);
+    while (moveto < lastloc) {
+        hd->Write28(moveto, (uint8_t*)&buffer, 512);
+        hd->Flush();
+        moveto++;
+    }
+}
+
+/* Stores all files and directories in RAM */
 void Tar::Mount()
 {
     int sector_offset = 0;
@@ -330,4 +380,5 @@ void Tar::Mount()
         }
         sector_offset++;
     }
+    tar_end = sector_offset - 1;
 }
