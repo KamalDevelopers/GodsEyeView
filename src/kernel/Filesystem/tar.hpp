@@ -1,5 +1,5 @@
-#ifndef FS_HPP
-#define FS_HPP
+#ifndef TAR_HPP
+#define TAR_HPP
 
 #include "../Hardware/Drivers/ata.hpp"
 #include "../Mem/mm.hpp"
@@ -51,6 +51,7 @@ private:
 
 public:
     Tar(AdvancedTechnologyAttachment* ata);
+    ~Tar();
 
     void Mount();
     void Update(int uentry, int uentry_size);
@@ -63,6 +64,7 @@ public:
     int RenameFile(char* file_name, char* new_file_name);
     int Unlink(char* path, bool update = 1);
     int ReadDir(char* dirname, char** file_ids);
+    int Chmod(char* file_name, char* permissions);
 
     void SectorSwap(int sector_src, int sector_dest);
     void WriteData(uint32_t sector_start, uint8_t* fdata, int count);
@@ -71,4 +73,5 @@ public:
     posix_header* FileCalculateChecksum(posix_header* header_data);
     int CalculateChecksum(posix_header* header_data);
 };
+
 #endif

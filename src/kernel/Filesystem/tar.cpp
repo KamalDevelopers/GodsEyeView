@@ -70,6 +70,34 @@ int Tar::RenameFile(char* file_name, char* new_file_name)
     return 0;
 }
 
+int Tar::Chmod(char* file_name, char* permissions)
+{
+    int file_id = FindFile(file_name);
+    if ((file_id > file_index) || (file_id == -1))
+        return -1;
+
+    char mode[8];
+    int prefix_len = 7 - strlen(permissions);
+    for (int i = 0; i < prefix_len; i++)
+        mode[i] = '0';
+    mode[prefix_len] = '\0';
+
+    strcat(mode, permissions);
+    klog(mode);
+
+    posix_header meta_head;
+    meta_head = files[file_id];
+
+    strcpy(meta_head.mode, mode);
+
+    memcpy((void*)&meta_head, (void*)FileCalculateChecksum(&meta_head), sizeof(posix_header));
+    files[file_id] = meta_head;
+
+    hd->Write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
+    hd->Flush();
+    return 0;
+}
+
 /* Returns the index of fname */
 int Tar::FindFile(char* file_name)
 {
