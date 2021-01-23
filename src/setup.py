@@ -34,7 +34,6 @@ filesC = [
     './kernel/Filesystem/tar.cpp',
     './kernel/Filesystem/fat.cpp',
     './kernel/Filesystem/part.cpp',
-    './libraries/LibC/memory.cpp',
     './libraries/LibC/string.cpp',
     './libraries/LibC/stdio.cpp',
     './libraries/LibC/stdlib.cpp',

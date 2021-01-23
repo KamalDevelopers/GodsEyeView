@@ -1,7 +1,8 @@
 #ifndef LOADER_HPP
 #define LOADER_HPP
 
-#include "stdlib.hpp"
+#include "stdio.hpp"
+#include "string.hpp"
 
 #define MAX_LOADERS 5
 

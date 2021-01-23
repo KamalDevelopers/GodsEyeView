@@ -416,18 +416,24 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
     if (win_bar == 1) {
         for (int y = 0 + win_ypos; y < win_ypos + 10; y++) {
             for (int x = 0 + win_xpos; x < win_width + win_xpos; x++) {
-                if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1) && (active != 1))
-                    if (x < win_width + win_xpos - 10)
+                if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1) && (active != 1)) {
+                    if (x < win_width + win_xpos - 10) {
+                        mouse_offset_x = x - win_xpos;
+                        mouse_offset_y = y - win_ypos;
                         save_mouse_press = 1;
+                    }
+                }
 
                 if ((mouse->GetMousePress() == 0) && (save_mouse_press == 1))
                     save_mouse_press = 0;
 
                 if (save_mouse_press == 1) {
-                    win_xpos = mouse->GetMouseX();
-                    win_ypos = mouse->GetMouseY();
-                    if (win_xpos >= vga->GetScreenW() - win_width)
+                    win_xpos = mouse->GetMouseX() - mouse_offset_x;
+                    win_ypos = mouse->GetMouseY() - mouse_offset_y;
+                    if (win_xpos + win_width >= vga->GetScreenW())
                         win_xpos = vga->GetScreenW() - win_width;
+                    if (win_xpos <= 1)
+                        win_xpos = 1;
                     if (win_ypos >= vga->GetScreenH() - 10)
                         win_ypos = vga->GetScreenH() - 10;
                     if (win_ypos <= 25)
@@ -594,8 +600,12 @@ void Desktop::Draw()
     int index = 0;
     for (int y = 0; y < 11; y++)
         for (int x = 0; x < 8; x++) {
-            if (mouse_bitmap[index] != -1)
-                vga->PutPixel(x + mouse->GetMouseX(), y + mouse->GetMouseY(), mouse_bitmap[index]);
+            if (mouse_bitmap[index] != -1) {
+                if (mouse->GetMouseX() + 8 < vga->GetScreenW())
+                    vga->PutPixel(x + mouse->GetMouseX(), y + mouse->GetMouseY(), mouse_bitmap[index]);
+                else
+                    vga->PutPixel(x + vga->GetScreenW() - 8, y + mouse->GetMouseY(), mouse_bitmap[index]);
+            }
             index++;
         }
 

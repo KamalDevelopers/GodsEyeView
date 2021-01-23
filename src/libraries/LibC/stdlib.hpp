@@ -2,8 +2,7 @@
 #define STDLIB_HPP
 
 #include "cmath.hpp"
-#include "memory.hpp"
-#include "stdio.hpp"
+#include "types.hpp"
 
 typedef struct {
     int quot, rem;

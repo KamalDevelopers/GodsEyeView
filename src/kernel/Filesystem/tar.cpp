@@ -83,7 +83,6 @@ int Tar::Chmod(char* file_name, char* permissions)
     mode[prefix_len] = '\0';
 
     strcat(mode, permissions);
-    klog(mode);
 
     posix_header meta_head;
     meta_head = files[file_id];
@@ -153,7 +152,6 @@ void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 
     memcpy(fdata, databuffer, count);
     kfree(databuffer);
-    kfree(buffer);
 }
 
 void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)
@@ -379,7 +377,8 @@ void Tar::Update(int uentry, int uentry_size)
 void Tar::Mount()
 {
     int sector_offset = 0;
-    char magic[6] = MAGIC; // Header magic, used for validation checking
+    char magic[6] = MAGIC;
+
     while (1) {
         posix_header meta_head;
         hd->Read28(sector_offset, (uint8_t*)&meta_head, sizeof(posix_header));

@@ -203,6 +203,8 @@ private:
     uint8_t save_mouse_press = 0;
 
     int mouse_down = 0;
+    int mouse_offset_x;
+    int mouse_offset_y;
     int widget_indexLabel;
     int widget_indexButton;
     int widget_indexInput;
