@@ -71,13 +71,13 @@ int Tar::RenameFile(char* file_name, char* new_file_name)
 }
 
 /* Returns the index of fname */
-int Tar::FindFile(char* fname)
+int Tar::FindFile(char* file_name)
 {
     char fn[101];
     for (int i = 0; i < file_index; i++) {
         strcpy(fn, files[i].name);
         fn[strlen(files[i].name)] = '\0';
-        if (strcmp(fname, fn) == 0) {
+        if (strcmp(file_name, fn) == 0) {
             return i;
         }
     }
@@ -317,7 +317,8 @@ void Tar::SectorSwap(int sector_src, int sector_dest)
     hd->Flush();
 }
 
-/* Remove entry from archive */
+/* Remove entry from archive 
+ * FIXME: Should update all entry changes */
 void Tar::Update(int uentry, int uentry_size)
 {
     int lastloc = uentry + uentry_size;

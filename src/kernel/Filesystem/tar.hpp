@@ -58,7 +58,7 @@ public:
     int WriteFile(char* file_name, uint8_t* data, int data_length);
     int ReadFile(int file_id, uint8_t* data);
     int ReadFile(char* file_name, uint8_t* data);
-    int FindFile(char* fname);
+    int FindFile(char* file_name);
     int GetSize(char* file_name);
     int RenameFile(char* file_name, char* new_file_name);
     int Unlink(char* path, bool update = 1);
