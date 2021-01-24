@@ -436,7 +436,6 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
                 if ((mouse->GetMouseX() == x) && (mouse->GetMouseY() == y - 4) && (mouse->GetMousePress() == 1)) {
                     if (x < win_width + win_xpos - 10) {
                         mouse_offset_x = x - win_xpos;
-                        mouse_offset_y = y - win_ypos;
                         save_mouse_press = 1;
                         ms_disable();
                     }
@@ -449,7 +448,7 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
 
                 if (save_mouse_press == 1) {
                     win_xpos = mouse->GetMouseX() - mouse_offset_x;
-                    win_ypos = mouse->GetMouseY() - mouse_offset_y;
+                    win_ypos = mouse->GetMouseY();
                     if (win_xpos + win_width >= vga->GetScreenW())
                         win_xpos = vga->GetScreenW() - win_width;
                     if (win_xpos <= 1)
@@ -459,7 +458,7 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
                     if (win_ypos <= 25)
                         win_ypos = 25;
                 }
-                if ((save_mouse_press != 1) || (y - 4 == win_ypos))
+                if ((save_mouse_press != 1) || ((y - 4 == win_ypos) && (x > 3 + win_xpos + str_len(win_title) * 8) && (x < win_xpos + win_width - 10)))
                     vga->PutPixel(x, y - 4, 0x7);
             }
         }
