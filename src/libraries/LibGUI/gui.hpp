@@ -1,5 +1,6 @@
 #ifndef GUI_HPP
 #define GUI_HPP
+#include "../../kernel/Hardware/Drivers/cmos.hpp"
 #include "../../kernel/Hardware/Drivers/keyboard.hpp"
 #include "../../kernel/Hardware/Drivers/mouse.hpp"
 #include "../../kernel/Hardware/Drivers/vga.hpp"
@@ -151,6 +152,7 @@ private:
     int widget_ypos;
     int widget_width = 14;
     int widget_height = 14;
+    int state_locked = -1;
 
     uint8_t border_color = 0x7;
     uint8_t normal_color = 0x8;
@@ -172,6 +174,7 @@ private:
     int widget_xpos;
     int widget_ypos;
     int widget_width;
+    int mouse_offset_x;
 
     int knob_width = 8;
     int knob_height = 16;

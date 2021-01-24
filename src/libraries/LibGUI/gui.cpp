@@ -335,17 +335,19 @@ void CheckBox::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parent
         for (int x = 0; x < widget_width; x++) {
             int x_t = twidget_xpos + x;
             int y_t = twidget_ypos + y;
-            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t))
-                if (mouse->GetMousePress() == 1) {
+            if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t)) {
+                if ((state_locked == -1) && (mouse->GetMousePress() == 1)) {
                     if (state == 1) {
-                        klog("state is now 0");
                         state = 0;
-                    }
-                    if (state == 0) {
-                        klog("state is now 1");
+                    } else {
                         state = 1;
                     }
+                    state_locked = TimeDriver::time->GetSecond();
                 }
+                if (TimeDriver::time->GetSecond() != state_locked) {
+                    state_locked = -1;
+                }
+            }
             if (state == 1)
                 vga->PutPixel(x_t, y_t, active_color);
             if (state == 0)
@@ -365,7 +367,7 @@ void Slider::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
     int twidget_xpos = widget_xpos + parentPosX;
     int twidget_ypos = widget_ypos + parentPosY;
 
-    for (int y = 0; y < slider_height; y++)
+    for (int y = 0; y < slider_height; y++) {
         for (int x = 0; x < widget_width + knob_width; x++) {
             int x_t = twidget_xpos + x;
             int y_t = twidget_ypos + y;
@@ -373,8 +375,9 @@ void Slider::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
             vga->PutPixel(x_t, y_t, slider_color);
             vga->PutPixel(x_t + 1, y_t + 1, 0x0);
         }
+    }
 
-    for (int y = 0; y < knob_height; y++)
+    for (int y = 0; y < knob_height; y++) {
         for (int x = 0; x < knob_width; x++) {
             int x_t = twidget_xpos + x;
             int y_t = twidget_ypos + y - knob_height / 3;
@@ -382,17 +385,18 @@ void Slider::Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPo
             vga->PutPixel(x_t + valueInPixels, y_t, knob_color);
             vga->PutPixel(x_t + 1 + valueInPixels, y_t + 1, 0x0);
         }
+    }
 
-    for (int y = 0; y < knob_height; y++)
+    for (int y = 0; y < knob_height; y++) {
         for (int x = 0; x < widget_width + 2; x++) {
             int x_t = twidget_xpos - 1 + x;
             int y_t = twidget_ypos + y - knob_height / 3;
 
             if ((mouse->GetMouseX() == x_t) && (mouse->GetMouseY() == y_t))
-                if (mouse->GetMousePress() == 1) {
-                    valueInPixels = mouse->GetMouseX() - widget_xpos;
-                }
+                if (mouse->GetMousePress() == 1)
+                    valueInPixels = mouse->GetMouseX() - twidget_xpos;
         }
+    }
 }
 
 Window::Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t wb)
