@@ -15,24 +15,20 @@ private:
     int widget_width;
     int widget_height;
     short int* bitmap;
-    short int image_data[640 * 480]; // Fixed size, dynamically allocate without memory leak? FIXME
+    short int image_data[640 * 480];
+    bool is_rendered = 0;
 
 public:
     Image(int width, int height, short int* bmp);
     ~Image()
     {
-        if (bitmap != 0)
+        if ((is_rendered == 0) && (bitmap != 0))
             kfree(bitmap);
     }
 
     void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
     void ImageRenderer(unsigned char* data);
-    uint16_t GetColor(int index)
-    {
-        if (bitmap == 0)
-            return image_data[index];
-        return bitmap[index];
-    }
+    uint16_t GetColor(int index);
 };
 
 class Input {
@@ -134,7 +130,6 @@ private:
     uint8_t text_color = 0xF;
 
     uint8_t show_text = 1;
-
     float progress = 0;
 
 public:
@@ -233,7 +228,7 @@ private:
 
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
-    uint8_t Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, uint8_t active);
+    uint8_t Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
 
     template<class T>
     void AddWidget(T* data)
@@ -289,6 +284,16 @@ public:
     int GetPosY() { return win_ypos; }
 };
 
+static bool is_mouse = 1;
+static void ms_enable()
+{
+    is_mouse = 1;
+}
+static void ms_disable()
+{
+    is_mouse = 0;
+}
+
 class Desktop {
 private:
     int win_index;
@@ -312,15 +317,17 @@ public:
     void Draw();
     int AddWin(int count, ...);
     int AppendWin(Window* win);
+    void SetWallpaper(Image* img);
+    void WinDestroy(int index) { children[index] = 0; }
+
     void MouseRelease(uint32_t MouseX, uint32_t MouseY, int b);
     void MousePress(uint32_t MouseX, uint32_t MouseY, int b);
     void DrawMouse(int32_t x, int32_t y);
-    void SetWallpaper(Image* img);
-    void WinDestroy(int index) { children[index] = 0; }
 
     Graphics* GetVGA() { return vga; }
     MouseDriver* GetMouse() { return mouse; };
     KeyboardDriver* GetKeyboard() { return keyboard; };
 };
 };
+
 #endif
