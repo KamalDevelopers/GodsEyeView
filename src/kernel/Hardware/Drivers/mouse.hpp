@@ -22,7 +22,7 @@ class MouseDriver : public InterruptHandler
 
 public:
     MouseDriver(InterruptManager* manager, int screenw, int screenh);
-    virtual ~MouseDriver();
+    ~MouseDriver();
     virtual void SetRes(int width, int height)
     {
         w = width;
