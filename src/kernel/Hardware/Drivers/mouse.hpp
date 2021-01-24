@@ -22,19 +22,19 @@ class MouseDriver : public InterruptHandler
 
 public:
     MouseDriver(InterruptManager* manager, int screenw, int screenh);
-    ~MouseDriver();
+    virtual ~MouseDriver();
     virtual void SetRes(int width, int height)
     {
         w = width;
         h = height;
     }
-    virtual uint32_t HandleInterrupt(uint32_t esp);
+    virtual uint32_t HandleInterrupt(uint32_t esp) override;
     virtual void OnMouseMove(int x, int y);
-    virtual void OnMouseUp(int b);
+    virtual void OnMouseUp();
     virtual void OnMouseDown(int b);
-    virtual int GetMouseY() { return MouseY; }
-    virtual int GetMouseX() { return MouseX; }
-    virtual int GetMousePress() { return MousePress; }
+    virtual int GetMouseY() const { return MouseY; }
+    virtual int GetMouseX() const { return MouseX; }
+    virtual int GetMousePress() const { return MousePress; }
 };
 
 #endif
