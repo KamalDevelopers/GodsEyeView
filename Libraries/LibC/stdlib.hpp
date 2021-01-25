@@ -17,7 +17,6 @@ extern int itoan(int x, char str[], int d);
 extern void itoa(unsigned int num, char* number);
 extern int atoi(char* str);
 extern char* ftoa(float n, char* res, int afterpoint);
-extern unsigned int abs(int num);
 extern div_t div(int numerator, int denominator);
 
 template<typename T>
@@ -50,4 +49,10 @@ static int bsearch(int elem, int arr[], int count, int start = 0)
     }
     return -1;
 }
+
+template<typename T>
+T abs(T num){
+    return num >= 0 ? num : (-1) * num;
+}
+
 #endif

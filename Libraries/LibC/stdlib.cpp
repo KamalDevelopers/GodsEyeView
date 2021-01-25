@@ -114,13 +114,6 @@ char* ftoa(float n, char* res, int afterpoint)
     return res;
 }
 
-unsigned int abs(int num)
-{
-    if (num >= 0)
-        return num;
-    return num - (num * 2);
-}
-
 div_t div(int numerator, int denominator)
 {
     div_t res;
