@@ -1,3 +1,4 @@
-/src/compile_flags.txt
-/src/out
+out
+.out
 hdd.tar
+compile_flags.txt
