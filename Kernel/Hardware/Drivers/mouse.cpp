@@ -59,7 +59,7 @@ void MouseDriver::OnMouseMove(int x, int y)
     MouseY = newMouseY;
 }
 
-void MouseDriver::OnMouseUp(int b)
+void MouseDriver::OnMouseUp()
 {
     //gui->MouseRelease(MouseX, MouseY, b);
     MousePress = 0;
@@ -68,7 +68,13 @@ void MouseDriver::OnMouseUp(int b)
 void MouseDriver::OnMouseDown(int b)
 {
     //gui->MousePress(MouseX, MouseY, b);
-    MousePress = 1;
+    if (b == 9) { //Left Click
+        MousePress = 1;
+    } else if (b == 10) { //Right Click
+        MousePress = 2;
+    } else if (b == 12) { //Middle Click
+        MousePress = 3;
+    }
 }
 
 uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
@@ -87,10 +93,10 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
 
         for (uint8_t i = 0; i < 3; i++) {
             if ((buffer[0] & (0x1 << i)) != (buttons & (0x1 << i))) {
-                if (buttons & (0x1 << i)) //Todo
-                    OnMouseUp(i + 1);
+                if (buttons & (0x1 << i))
+                    OnMouseUp();
                 else
-                    OnMouseDown(i + 1);
+                    OnMouseDown(buffer[0]);
             }
         }
 
