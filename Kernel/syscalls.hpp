@@ -1,6 +1,7 @@
-#ifndef SYSCALLS_H
-#define SYSCALLS_H
+#ifndef SYSCALLS_HPP
+#define SYSCALLS_HPP
 
+#include "Hardware/Drivers/pcspk.hpp"
 #include "Hardware/interrupts.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"

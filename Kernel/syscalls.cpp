@@ -28,8 +28,13 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     case 4:
         sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
         break;
+
     case 162:
         sleep((uint32_t)cpu->ebx);
+        break;
+
+    case 400:
+        PCS::beep((uint32_t)cpu->ebx, (uint32_t)cpu->ecx);
         break;
 
     default:

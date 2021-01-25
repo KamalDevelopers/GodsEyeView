@@ -22,6 +22,7 @@ filesC = [
     './Kernel/Hardware/Drivers/ata.cpp',
     './Kernel/Hardware/Drivers/driver.cpp',
     './Kernel/Hardware/Drivers/amd79.cpp',
+    './Kernel/Hardware/Drivers/pcspk.cpp',
     './Kernel/Hardware/interrupts.cpp',
     './Kernel/Hardware/pci.cpp',
     './Kernel/Mem/paging.cpp',
@@ -39,7 +40,8 @@ filesC = [
     './Libraries/LibC/stdio.cpp',
     './Libraries/LibC/stdlib.cpp',
     './Libraries/LibGUI/gui.cpp',
-    ]
+]
+
 filesA = ['./Kernel/Hardware/interruptstubs.s']
 objectfiles = []
 
