@@ -51,7 +51,8 @@ static int bsearch(int elem, int arr[], int count, int start = 0)
 }
 
 template<typename T>
-T abs(T num){
+T abs(T num)
+{
     return num >= 0 ? num : (-1) * num;
 }
 
