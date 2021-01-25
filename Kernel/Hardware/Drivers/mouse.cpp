@@ -1,16 +1,12 @@
 #include "mouse.hpp"
 
-MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh) //, Graphics* v)
+MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)
     : InterruptHandler(manager, 0x2C)
     , dataport(0x60)
     , commandport(0x64)
 {
-    //vga = v;
-    //gui = d;
     offset = 0;
     buttons = 0;
-    //w = v->GetScreenW();
-    //h = v->GetScreenH();
     w = screenw;
     h = screenh;
 
@@ -34,46 +30,35 @@ void MouseDriver::OnMouseMove(int x, int y)
     //x /= 2;
     //y /= 2;
 
-    int32_t newMouseX = MouseX + x;
-    if (newMouseX < 0)
-        newMouseX = 0;
-    if (newMouseX >= w - 2)
-        newMouseX = w - 2;
+    int32_t new_mouse_x = mouse_x + x;
+    if (new_mouse_x < 0)
+        new_mouse_x = 0;
+    if (new_mouse_x >= w - 2)
+        new_mouse_x = w - 2;
 
-    int32_t newMouseY = MouseY + y;
-    if (newMouseY < 0)
-        newMouseY = 0;
-    if (newMouseY >= h - 20)
-        newMouseY = h - 20;
+    int32_t new_mouse_y = mouse_y + y;
+    if (new_mouse_y < 0)
+        new_mouse_y = 0;
+    if (new_mouse_y >= h - 20)
+        new_mouse_y = h - 20;
 
-    //for (int t_y = 0; t_y < 10; t_y++)
-    //    vga->PutPixel(MouseX, MouseY+t_y, 0x1);
-
-    //for (int t_x = 0; t_x < 5; t_x++)
-    //    vga->PutPixel(MouseX+t_x, MouseY+5, 0x1);
-
-    //for (int t_x = 0; t_x < 5; t_x++)
-    //    vga->PutPixel(MouseX-t_x, MouseY+5, 0x1);
-
-    MouseX = newMouseX;
-    MouseY = newMouseY;
+    mouse_x = new_mouse_x;
+    mouse_y = new_mouse_y;
 }
 
 void MouseDriver::OnMouseUp()
 {
-    //gui->MouseRelease(MouseX, MouseY, b);
-    MousePress = 0;
+    mouse_press = 0;
 }
 
 void MouseDriver::OnMouseDown(int b)
 {
-    //gui->MousePress(MouseX, MouseY, b);
-    if (b == 9) { //Left Click
-        MousePress = 1;
-    } else if (b == 10) { //Right Click
-        MousePress = 2;
-    } else if (b == 12) { //Middle Click
-        MousePress = 3;
+    if (b == 9) {
+        mouse_press = 1; //Left Click
+    } else if (b == 10) {
+        mouse_press = 2; //Right Click
+    } else if (b == 12) {
+        mouse_press = 3; //Middle Click
     }
 }
 

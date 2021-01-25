@@ -18,7 +18,7 @@ class MouseDriver : public InterruptHandler
 
     uint8_t x, y;
     int32_t w, h;
-    uint32_t MouseX, MouseY, MousePress;
+    uint32_t mouse_x, mouse_y, mouse_press;
 
 public:
     MouseDriver(InterruptManager* manager, int screenw, int screenh);
@@ -32,9 +32,9 @@ public:
     virtual void OnMouseMove(int x, int y);
     virtual void OnMouseUp();
     virtual void OnMouseDown(int b);
-    virtual int GetMouseY() const { return MouseY; }
-    virtual int GetMouseX() const { return MouseX; }
-    virtual int GetMousePress() const { return MousePress; }
+    virtual int GetMouseY() const { return mouse_y; }
+    virtual int GetMouseX() const { return mouse_x; }
+    virtual int GetMousePress() const { return mouse_press; }
 };
 
 #endif
