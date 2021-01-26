@@ -9,6 +9,8 @@
 #include "multitasking.hpp"
 #include "tty.hpp"
 
+extern "C" int shutdown();
+
 class SyscallHandler : public InterruptHandler {
 public:
     SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber);

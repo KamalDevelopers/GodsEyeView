@@ -35,7 +35,6 @@ extern "C" uint32_t kernel_end;
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 
-extern "C" int shutdown();
 extern "C" void callConstructors()
 {
     for (constructor* i = &start_ctors; i != &end_ctors; i++)
@@ -47,19 +46,16 @@ multiboot_info_t* multiboot_info_ptr;
 
 void poweroff()
 {
-    shutdown();
-    Port16Bit qemu_power(0x604);
-    qemu_power.Write(0x2000);
-
-    Port16Bit vbox_power(0x4004);
-    vbox_power.Write(0x3400);
+    asm("int $0x80"
+        :
+        : "a"(88), "b"(1));
 }
 
 void reboot()
 {
-        asm volatile("int $0x80"
-                 :
-                 : "a"(88));
+    asm("int $0x80"
+        :
+        : "a"(88), "b"(0));
 }
 
 struct DriverObjects {

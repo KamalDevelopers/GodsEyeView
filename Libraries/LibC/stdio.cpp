@@ -152,17 +152,33 @@ void clear()
 
 void outb(uint16_t port, uint8_t data)
 {
-    __asm__ volatile("outb %0, %1"
-                     :
-                     : "a"(data), "Nd"(port));
+    asm volatile("outb %0, %1"
+                 :
+                 : "a"(data), "Nd"(port));
 }
 
 uint8_t inb(uint16_t port)
 {
     uint8_t result;
-    __asm__ volatile("inb %1, %0"
-                     : "=a"(result)
-                     : "Nd"(port));
+    asm volatile("inb %1, %0"
+                 : "=a"(result)
+                 : "Nd"(port));
+    return result;
+}
+
+void outbw(uint16_t port, uint16_t data)
+{
+    asm volatile("outw %0, %1"
+                 :
+                 : "a"(data), "Nd"(port));
+}
+
+uint16_t inbw(uint16_t port)
+{
+    uint16_t result;
+    asm volatile("inw %1, %0"
+                 : "=a"(result)
+                 : "Nd"(port));
     return result;
 }
 

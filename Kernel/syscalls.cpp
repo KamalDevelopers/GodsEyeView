@@ -20,6 +20,24 @@ void sys_write(int file_handle, char* data, int len)
     kfree(buffer);
 }
 
+void sys_reboot(int arg)
+{
+    switch (arg) {
+    case 1:
+        outbw(0x604, 0x2000);
+        outbw(0x4004, 0x3400);
+        shutdown();
+        return;
+
+    default:
+        uint8_t reboot = 0x02;
+        while (reboot & 0x02)
+            reboot = inb(0x64);
+        outb(0x64, 0xFE);
+        return;
+    }
+}
+
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 {
     CPUState* cpu = (CPUState*)esp;
@@ -30,15 +48,9 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         break;
 
     case 88:
-    {
-    	//reboot
-    	uint8_t good = 0x02;
-        while (good & 0x02)
-            good = inb(0x64);
-        outb(0x64, 0xFE);
-    	break;
-    }
-    
+        sys_reboot((int)cpu->ebx);
+        break;
+
     case 162:
         sleep((uint32_t)cpu->ebx);
         break;
