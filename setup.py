@@ -2,7 +2,7 @@ import time
 import os
 import sys
 
-WRITEDISK = True
+WRITEDISK = False 
 GCCPATH = '$HOME/opt/cross/bin/i686-elf-g++'
 GPPPARAMS = '-ILibraries -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings'
 QEMUPARAMS = '-cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=../hdd.tar'
