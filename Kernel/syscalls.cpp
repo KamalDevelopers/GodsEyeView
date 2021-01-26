@@ -29,6 +29,16 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
         break;
 
+    case 88:
+    {
+    	//reboot
+    	uint8_t good = 0x02;
+        while (good & 0x02)
+            good = inb(0x64);
+        outb(0x64, 0xFE);
+    	break;
+    }
+    
     case 162:
         sleep((uint32_t)cpu->ebx);
         break;
