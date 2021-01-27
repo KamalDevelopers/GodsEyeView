@@ -63,7 +63,8 @@ struct DriverObjects {
     KeyboardDriver* keyboard;
 } static drivers;
 
-void desktopEnvironment(uint8_t* wallpaper_data)
+static uint8_t* wallpaper_data;
+void desktopEnvironment()
 {
     Graphics vga;
 
@@ -175,7 +176,6 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     fs_tar.Mount();
 
     uint8_t* fdata = new uint8_t[640 * 480];
-    uint8_t* wallpaper_data;
     fs_tar.ReadFile("root/wallpaper", fdata);
     memcpy((void*)wallpaper_data, (void*)fdata, 640 * 480);
     kfree(fdata);
@@ -198,12 +198,13 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     int elfexec = Loader::load->Exec(elfdata);
     kfree(elfdata);
 
-    /* Schedule the programs TODO: Kill idle programs */
-    //Task ProgramT(&gdt, elfexec);
-    //tasksmgr.AppendTasks(1, &ProgramT);
+    int dexec = (int)&desktopEnvironment;
+
+    Task ProgramDemo(&gdt, "Demo", elfexec);
+    Task Desktop(&gdt, "Desktop", dexec);
+    tasksmgr.AppendTasks(2, &ProgramDemo, &Desktop);
 
     interrupts.Activate();
-    desktopEnvironment(wallpaper_data);
     while (1)
         ;
 }

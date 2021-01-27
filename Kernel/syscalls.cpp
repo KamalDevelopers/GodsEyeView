@@ -43,6 +43,10 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     CPUState* cpu = (CPUState*)esp;
 
     switch (cpu->eax) {
+    case 1:
+        TaskManager::active->Kill();
+        break;
+
     case 4:
         sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
         break;

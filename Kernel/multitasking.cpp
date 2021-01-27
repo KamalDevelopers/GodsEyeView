@@ -1,7 +1,13 @@
 #include "multitasking.hpp"
 
-Task::Task(GlobalDescriptorTable* gdt, uint32_t entrypoint)
+TaskManager* TaskManager::active = 0;
+Task::Task(GlobalDescriptorTable* gdt, char* task_name, uint32_t entrypoint)
 {
+    if (strlen(task_name) > 20)
+        task_name = "GevProcess";
+    memcpy(name, task_name, strlen(task_name));
+    name[strlen(task_name)] = '\0';
+
     cpustate = (CPUState*)(stack + 4096 - sizeof(CPUState));
     cpustate->eax = 0;
     cpustate->ebx = 0;
@@ -13,6 +19,27 @@ Task::Task(GlobalDescriptorTable* gdt, uint32_t entrypoint)
     cpustate->eip = entrypoint;
     cpustate->cs = gdt->CodeSegmentSelector();
     cpustate->eflags = 0x202;
+
+    state = 0;
+    pid = ++lpid;
+}
+
+void Task::Notify(int signal)
+{
+    switch (signal) {
+    case SIG_ILL:
+        Suicide();
+        break;
+    case SIG_TERM:
+        Suicide();
+        break;
+    case SIG_SEGV:
+        Suicide();
+        break;
+    default:
+        klog("Received unknown signal");
+        return;
+    }
 }
 
 Task::~Task()
@@ -21,6 +48,7 @@ Task::~Task()
 
 TaskManager::TaskManager()
 {
+    active = this;
     numTasks = 0;
     currentTask = -1;
 }
@@ -48,6 +76,32 @@ bool TaskManager::AppendTasks(int count, ...)
     return true;
 }
 
+void TaskManager::Kill(int pid)
+{
+    if (pid >= numTasks)
+        return;
+
+    if (pid == -1)
+        pid = tasks[currentTask]->pid;
+
+    for (int i = 0; i < numTasks; i++)
+        if (tasks[i]->pid == pid)
+            tasks[i]->Suicide();
+}
+
+void TaskManager::SendSig(int sig, int pid)
+{
+    if (pid >= numTasks)
+        return;
+
+    if (pid == -1)
+        pid = tasks[currentTask]->pid;
+
+    for (int i = 0; i < numTasks; i++)
+        if (tasks[i]->pid == pid)
+            tasks[i]->Notify(sig);
+}
+
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
     if (numTasks <= 0)
@@ -57,6 +111,17 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
         tasks[currentTask]->cpustate = cpustate;
 
     if (++currentTask >= numTasks)
-        currentTask %= numTasks;
+        currentTask = 0;
+
+    if (tasks[currentTask]->state == 1) {
+        //printf("\nKilled Zombie PID: 0x%x NAME: %s", tasks[currentTask]->pid, tasks[currentTask]->name);
+        klog("Zombie Killed");
+
+        deleteElement(currentTask, numTasks, tasks);
+        numTasks--;
+        currentTask++;
+        if (currentTask >= numTasks)
+            currentTask = 0;
+    }
     return tasks[currentTask]->cpustate;
 }
