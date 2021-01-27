@@ -28,18 +28,23 @@ void Task::Notify(int signal)
 {
     switch (signal) {
     case SIG_ILL:
-        Suicide();
+        Suicide(SIG_ILL);
         break;
     case SIG_TERM:
-        Suicide();
+        Suicide(SIG_TERM);
         break;
     case SIG_SEGV:
-        Suicide();
+        Suicide(SIG_SEGV);
         break;
     default:
         klog("Received unknown signal");
         return;
     }
+}
+
+void Task::Suicide(int error_code)
+{
+    state = 1;
 }
 
 Task::~Task()
@@ -86,10 +91,10 @@ void TaskManager::Kill(int pid)
 
     for (int i = 0; i < numTasks; i++)
         if (tasks[i]->pid == pid)
-            tasks[i]->Suicide();
+            tasks[i]->Suicide(SIG_TERM);
 }
 
-void TaskManager::SendSig(int sig, int pid)
+void TaskManager::SendSignal(int sig, int pid)
 {
     if (pid >= numTasks)
         return;

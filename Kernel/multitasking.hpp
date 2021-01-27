@@ -44,7 +44,7 @@ private:
 
 public:
     void Notify(int signal);
-    void Suicide() { state = 1; }
+    void Suicide(int error_code);
     Task(GlobalDescriptorTable* gdt, char* task_name, uint32_t entrypoint);
     ~Task();
 };
@@ -66,7 +66,10 @@ public:
 
     CPUState* Schedule(CPUState* cpustate);
 
-    void SendSig(int sig, int pid=-1);
+    int GetPid() { return tasks[currentTask]->pid; }
+    char* GetName() { return tasks[currentTask]->name; }
+
+    void SendSignal(int sig, int pid=-1);
     void Kill(int pid=-1); 
     bool AppendTasks(int count, ...);
 };
