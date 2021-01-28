@@ -9,15 +9,32 @@ SyscallHandler::~SyscallHandler()
 {
 }
 
+void sys_read(int file_handle, char* data, int len)
+{
+    char* buffer;
+    VFS::read(file_handle, (uint8_t*)buffer);
+    for (int i = 0; i < len; i++)
+        *data++ = buffer[i];
+}
+
 void sys_write(int file_handle, char* data, int len)
 {
     char* buffer = new char[len];
+    memcpy(buffer, data, len);
     if (file_handle == 1) {
-        memcpy(buffer, data, len);
         buffer[len] = '\0';
         write_string(buffer);
+    } else {
+        /* FIXME: Cannot overwrite existing file */
+        VFS::write(file_handle, (uint8_t*)&buffer, len);
     }
     kfree(buffer);
+}
+
+int sys_open(char* file_name)
+{
+    int descriptor = VFS::open(file_name);
+    return descriptor;
 }
 
 void sys_reboot(int arg)
@@ -47,8 +64,22 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         TaskManager::active->Kill();
         break;
 
+    case 3:
+        sys_read((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+
     case 4:
         sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+        break;
+
+    case 5:
+        /* TODO: Support mode and flags, return descriptor */
+        int desc;
+        desc = sys_open((char*)cpu->ebx);
+        cpu->eax = desc;
+        break;
+
+    case 6:
+        VFS::close((int)cpu->ebx);
         break;
 
     case 88:

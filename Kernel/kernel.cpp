@@ -17,6 +17,7 @@
 #include "Filesystem/fat.hpp"
 #include "Filesystem/part.hpp"
 #include "Filesystem/tar.hpp"
+#include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/cmos.hpp"
@@ -155,6 +156,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr;
     TimeDriver time;
+    VirtualFilesystem vfs;
 
     Paging::p_init();
     mm_init(kernel_end);
@@ -175,8 +177,12 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
 
+    vfs.Mount(&fs_tar);
+
     uint8_t* fdata = new uint8_t[640 * 480];
-    fs_tar.ReadFile("root/wallpaper", fdata);
+    int d_wallpaper = VFS::open("root/wallpaper");
+    VFS::read(d_wallpaper, fdata);
+    VFS::close(d_wallpaper);
     memcpy((void*)wallpaper_data, (void*)fdata, 640 * 480);
     kfree(fdata);
 
@@ -193,15 +199,18 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Loader mloader;
     mloader.Add(&elf_load);
 
-    uint8_t* elfdata = new uint8_t[fs_tar.GetSize("root/demo")];
-    fs_tar.ReadFile("root/demo", elfdata);
-    int elfexec = Loader::load->Exec(elfdata);
+    int d_demo = VFS::open("root/demo");
+    int size = VFS::size(d_demo);
+    uint8_t* elfdata = new uint8_t[size];
+    VFS::read(d_demo, elfdata);
+    VFS::close(d_demo);
+    int demo_exec = Loader::load->Exec(elfdata);
     kfree(elfdata);
 
-    int dexec = (int)&desktopEnvironment;
+    int desktop_exec = (int)&desktopEnvironment;
 
-    Task ProgramDemo(&gdt, "Demo", elfexec);
-    Task Desktop(&gdt, "Desktop", dexec);
+    Task ProgramDemo(&gdt, "Demo", demo_exec);
+    Task Desktop(&gdt, "Desktop", desktop_exec);
     tasksmgr.AppendTasks(2, &ProgramDemo, &Desktop);
 
     interrupts.Activate();

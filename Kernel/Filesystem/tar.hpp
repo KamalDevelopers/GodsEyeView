@@ -7,10 +7,11 @@
 #include "LibC/stdio.hpp"
 #include "LibC/stdlib.hpp"
 #include "LibC/string.hpp"
+#include "vfs.hpp"
 
 #define SB_OFFSET 1024
 #define MAX_FILES 200
-#define MAX_DIRS 100
+#define MAX_DIRS  100
 #define MAGIC "ustar"
 
 struct posix_header {   /* byte offset */
@@ -33,7 +34,7 @@ struct posix_header {   /* byte offset */
                         /* 500 - zeros padding */
 };
 
-class Tar {
+class Tar : public Filesystem {
 
 private:
     AdvancedTechnologyAttachment* hd;

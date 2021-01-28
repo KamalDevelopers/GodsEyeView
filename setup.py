@@ -2,7 +2,7 @@ import time
 import os
 import sys
 
-WRITEDISK = False 
+WRITEDISK = True 
 GCCPATH = '$HOME/opt/cross/bin/i686-elf-g++'
 GPPPARAMS = '-ILibraries -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings'
 QEMUPARAMS = '-cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=../hdd.tar'
@@ -36,6 +36,7 @@ filesC = [
     './Kernel/Filesystem/tar.cpp',
     './Kernel/Filesystem/fat.cpp',
     './Kernel/Filesystem/part.cpp',
+    './Kernel/Filesystem/vfs.cpp',
     './Libraries/LibC/string.cpp',
     './Libraries/LibC/stdio.cpp',
     './Libraries/LibC/stdlib.cpp',

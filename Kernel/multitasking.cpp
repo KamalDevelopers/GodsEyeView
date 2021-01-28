@@ -54,8 +54,8 @@ Task::~Task()
 TaskManager::TaskManager()
 {
     active = this;
-    numTasks = 0;
-    currentTask = -1;
+    num_tasks = 0;
+    current_task = -1;
 }
 
 TaskManager::~TaskManager()
@@ -64,9 +64,9 @@ TaskManager::~TaskManager()
 
 bool TaskManager::AddTask(Task* task)
 {
-    if (numTasks >= 256)
+    if (num_tasks >= 256)
         return false;
-    tasks[numTasks++] = task;
+    tasks[num_tasks++] = task;
     return true;
 }
 
@@ -83,50 +83,50 @@ bool TaskManager::AppendTasks(int count, ...)
 
 void TaskManager::Kill(int pid)
 {
-    if (pid >= numTasks)
+    if (pid >= num_tasks)
         return;
 
     if (pid == -1)
-        pid = tasks[currentTask]->pid;
+        pid = tasks[current_task]->pid;
 
-    for (int i = 0; i < numTasks; i++)
+    for (int i = 0; i < num_tasks; i++)
         if (tasks[i]->pid == pid)
             tasks[i]->Suicide(SIG_TERM);
 }
 
 void TaskManager::SendSignal(int sig, int pid)
 {
-    if (pid >= numTasks)
+    if (pid >= num_tasks)
         return;
 
     if (pid == -1)
-        pid = tasks[currentTask]->pid;
+        pid = tasks[current_task]->pid;
 
-    for (int i = 0; i < numTasks; i++)
+    for (int i = 0; i < num_tasks; i++)
         if (tasks[i]->pid == pid)
             tasks[i]->Notify(sig);
 }
 
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
-    if (numTasks <= 0)
+    if (num_tasks <= 0)
         return cpustate;
 
-    if (currentTask >= 0)
-        tasks[currentTask]->cpustate = cpustate;
+    if (current_task >= 0)
+        tasks[current_task]->cpustate = cpustate;
 
-    if (++currentTask >= numTasks)
-        currentTask = 0;
+    if (++current_task >= num_tasks)
+        current_task = 0;
 
-    if (tasks[currentTask]->state == 1) {
-        //printf("\nKilled Zombie PID: 0x%x NAME: %s", tasks[currentTask]->pid, tasks[currentTask]->name);
-        klog("Zombie Killed");
+    if (tasks[current_task]->state == 1) {
+        //printf("\nKilled Zombie PID: 0x%x NAME: %s", tasks[current_task]->pid, tasks[currentTask]->name);
+        klog("Zombie Process Killed");
 
-        deleteElement(currentTask, numTasks, tasks);
-        numTasks--;
-        currentTask++;
-        if (currentTask >= numTasks)
-            currentTask = 0;
+        deleteElement(current_task, num_tasks, tasks);
+        num_tasks--;
+        current_task++;
+        if (current_task >= num_tasks)
+            current_task = 0;
     }
-    return tasks[currentTask]->cpustate;
+    return tasks[current_task]->cpustate;
 }

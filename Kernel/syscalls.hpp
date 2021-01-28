@@ -3,6 +3,7 @@
 
 #include "Hardware/Drivers/pcspk.hpp"
 #include "Hardware/interrupts.hpp"
+#include "Filesystem/vfs.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"
 #include "Mem/mm.hpp"

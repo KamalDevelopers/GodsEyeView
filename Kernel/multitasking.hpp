@@ -54,8 +54,8 @@ static uint32_t lpid = 0;
 class TaskManager {
 private:
     bool AddTask(Task* task);
-    int numTasks;
-    int currentTask;
+    int num_tasks;
+    int current_task;
     Task* tasks[256];
 
 public:
@@ -66,11 +66,11 @@ public:
 
     CPUState* Schedule(CPUState* cpustate);
 
-    int GetPid() { return tasks[currentTask]->pid; }
-    char* GetName() { return tasks[currentTask]->name; }
+    int GetPid() { return tasks[current_task]->pid; }
+    char* GetName() { return tasks[current_task]->name; }
 
-    void SendSignal(int sig, int pid=-1);
-    void Kill(int pid=-1); 
+    void SendSignal(int sig, int pid = -1);
+    void Kill(int pid = -1); 
     bool AppendTasks(int count, ...);
 };
 
