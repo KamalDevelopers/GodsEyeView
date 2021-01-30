@@ -1,5 +1,94 @@
 #include "keyboard.hpp"
 
+/* Currently Swedish Layout */
+
+enum KEYCODE {
+    NULL_KEY = 0,
+    Q_PRESSED = 0x10,
+    Q_RELEASED = 0x90,
+    W_PRESSED = 0x11,
+    W_RELEASED = 0x91,
+    E_PRESSED = 0x12,
+    E_RELEASED = 0x92,
+    R_PRESSED = 0x13,
+    R_RELEASED = 0x93,
+    T_PRESSED = 0x14,
+    T_RELEASED = 0x94,
+    Z_PRESSED = 0x15,
+    Z_RELEASED = 0x95,
+    U_PRESSED = 0x16,
+    U_RELEASED = 0x96,
+    I_PRESSED = 0x17,
+    I_RELEASED = 0x97,
+    O_PRESSED = 0x18,
+    O_RELEASED = 0x98,
+    P_PRESSED = 0x19,
+    P_RELEASED = 0x99,
+    A_PRESSED = 0x1E,
+    A_RELEASED = 0x9E,
+    S_PRESSED = 0x1F,
+    S_RELEASED = 0x9F,
+    D_PRESSED = 0x20,
+    D_RELEASED = 0xA0,
+    F_PRESSED = 0x21,
+    F_RELEASED = 0xA1,
+    G_PRESSED = 0x22,
+    G_RELEASED = 0xA2,
+    H_PRESSED = 0x23,
+    H_RELEASED = 0xA3,
+    J_PRESSED = 0x24,
+    J_RELEASED = 0xA4,
+    K_PRESSED = 0x25,
+    K_RELEASED = 0xA5,
+    L_PRESSED = 0x26,
+    L_RELEASED = 0xA6,
+    Y_PRESSED = 0x2C,
+    Y_RELEASED = 0xAC,
+    X_PRESSED = 0x2D,
+    X_RELEASED = 0xAD,
+    C_PRESSED = 0x2E,
+    C_RELEASED = 0xAE,
+    V_PRESSED = 0x2F,
+    V_RELEASED = 0xAF,
+    B_PRESSED = 0x30,
+    B_RELEASED = 0xB0,
+    N_PRESSED = 0x31,
+    N_RELEASED = 0xB1,
+    M_PRESSED = 0x32,
+    M_RELEASED = 0xB2,
+
+    ZERO_PRESSED = 0x0B,
+    ONE_PRESSED = 0x2,
+    NINE_PRESSED = 0xA,
+    PLUS_PRESSED = 0x0C,
+    PLUS_RELEASED = 0x8C,
+
+    POINT_PRESSED = 0x34,
+    POINT_RELEASED = 0xB4,
+
+    SLASH_RELEASED = 0xB5,
+
+    BACKSPACE_PRESSED = 0xE,
+    BACKSPACE_RELEASED = 0x8E,
+    SPACE_PRESSED = 0x39,
+    SPACE_RELEASED = 0xB9,
+    ENTER_PRESSED = 0x1C,
+    ENTER_RELEASED = 0x9C,
+
+    SHIFT_PRESSED = 0x2A,
+    SHIFT_RELEASED = 0xAA
+};
+
+/* Mapping */
+static char* u_l1 = "QWERTYUIOP";
+static char* u_l2 = "ASDFGHJKL";
+static char* u_l3 = "YXCVBNM";
+static char* u_nm = "!\"#¤%&/()=";
+static char* l_l1 = "qwertyuiop";
+static char* l_l2 = "asdfghjkl";
+static char* l_l3 = "yxcvbnm";
+static char* l_nm = "123456789";
+
 KeyboardDriver::KeyboardDriver(InterruptManager* manager)
     : InterruptHandler(manager, 0x21)
     , dataport(0x60)
@@ -19,181 +108,101 @@ KeyboardDriver::~KeyboardDriver()
 {
 }
 
-void KeyboardDriver::ScreenOutput(int i, uint8_t color_index, int xo, int yo, Graphics* g)
+/* TODO: English layout & more character support */
+uint8_t KeyboardDriver::KeyA(uint8_t key)
 {
-    color = color_index;
-    vga = g;
-    outp = i;
-    x_offset = xo;
-    y_offset = yo;
-}
+    if (key == ENTER_PRESSED)
+        return '\n';
 
-char* KeyboardDriver::GetKeys()
-{
-    return keys;
-}
+    if (key == SPACE_PRESSED)
+        return ' ';
 
-char KeyboardDriver::GetLastKey()
-{
-    return keys[key_press_index - 1];
-}
+    if (key == BACKSPACE_PRESSED)
+        return '\r';
 
-void KeyboardDriver::on_key(char keypress, int out_screen)
-{
-    keys[key_press_index] = keypress;
-    key_press_index++;
-    /*if (out_screen == 1) {
-        if (keypress != '~')
-            putc(keypress);
+    if (key == POINT_RELEASED) {
+        if (is_shift)
+            return '.';
+        return ':';
     }
-    if (out_screen == 2) {
-        if (keypress == '~') {
-            vga->Print("/~", 0x0);
-            return;
-        }
-        vga->RenderBitMap(font_basic[keypress], color, x_offset, y_offset);
-        //vga->PutPixel(10, 10, 0x6);
-    }*/
+
+    if (key == SLASH_RELEASED) {
+        if (is_shift)
+            return '_';
+        return '-';
+    }
+
+    if (key == ZERO_PRESSED)
+        return '0';
+
+    if (key == PLUS_PRESSED) {
+        if (is_shift)
+            return '?';
+        return '+';
+    }
+
+    /* Row 1 */
+    if (key >= ONE_PRESSED && key <= NINE_PRESSED) {
+        if (is_shift)
+            return u_nm[key - ONE_PRESSED];
+        return l_nm[key - ONE_PRESSED];
+    }
+
+    /* Row 2 */
+    if (key >= Q_PRESSED && key <= ENTER_PRESSED) {
+        if (is_shift)
+            return u_l1[key - Q_PRESSED];
+        return l_l1[key - Q_PRESSED];
+    }
+
+    /* Row 3 */
+    else if (key >= A_PRESSED && key <= L_PRESSED) {
+        if (is_shift)
+            return u_l2[key - A_PRESSED];
+        return l_l2[key - A_PRESSED];
+    }
+
+    /* Row 4 */
+    else if (key >= Y_PRESSED && key <= M_PRESSED) {
+        if (is_shift)
+            return u_l3[key - Y_PRESSED];
+        return l_l3[key - Y_PRESSED];
+    }
+    return 0;
+}
+
+int KeyboardDriver::GetKeyPresses(int raw)
+{
+    if (raw == 1)
+        return keys_pressed_raw;
+    return keys_pressed;
+}
+
+char KeyboardDriver::GetLastKey(int raw)
+{
+    if (raw == 1)
+        return last_key_raw;
+    return last_key;
+}
+
+void KeyboardDriver::OnKey(uint8_t keypress)
+{
+    if (keypress == SHIFT_PRESSED)
+        is_shift = 1;
+    if (keypress == SHIFT_RELEASED)
+        is_shift = 0;
+
+    if (KeyA(keypress) != 0) {
+        last_key = KeyA(keypress);
+        keys_pressed++;
+    }
+    last_key_raw = keypress;
+    keys_pressed_raw++;
 }
 
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
 {
     uint8_t key = dataport.Read();
-    if (key < 0x80) {
-        switch (key) {
-        case 0x02:
-            on_key('1', outp);
-            break;
-        case 0x03:
-            on_key('2', outp);
-            break;
-        case 0x04:
-            on_key('3', outp);
-            break;
-        case 0x05:
-            on_key('4', outp);
-            break;
-        case 0x06:
-            on_key('5', outp);
-            break;
-        case 0x07:
-            on_key('6', outp);
-            break;
-        case 0x08:
-            on_key('7', outp);
-            break;
-        case 0x09:
-            on_key('8', outp);
-            break;
-        case 0x0A:
-            on_key('9', outp);
-            break;
-        case 0x0B:
-            on_key('0', outp);
-            break;
-        case 0x10:
-            on_key('q', outp);
-            break;
-        case 0x11:
-            on_key('w', outp);
-            break;
-        case 0x12:
-            on_key('e', outp);
-            break;
-        case 0x13:
-            on_key('r', outp);
-            break;
-        case 0x14:
-            on_key('t', outp);
-            break;
-        case 0x15:
-            on_key('y', outp);
-            break;
-        case 0x16:
-            on_key('u', outp);
-            break;
-        case 0x17:
-            on_key('i', outp);
-            break;
-        case 0x18:
-            on_key('o', outp);
-            break;
-        case 0x19:
-            on_key('p', outp);
-            break;
-        case 0x1E:
-            on_key('a', outp);
-            break;
-        case 0x1F:
-            on_key('s', outp);
-            break;
-        case 0x20:
-            on_key('d', outp);
-            break;
-        case 0x21:
-            on_key('f', outp);
-            break;
-        case 0x22:
-            on_key('g', outp);
-            break;
-        case 0x23:
-            on_key('h', outp);
-            break;
-        case 0x24:
-            on_key('j', outp);
-            break;
-        case 0x25:
-            on_key('k', outp);
-            break;
-        case 0x26:
-            on_key('l', outp);
-            break;
-        case 0x2C:
-            on_key('z', outp);
-            break;
-        case 0x2D:
-            on_key('x', outp);
-            break;
-        case 0x2E:
-            on_key('c', outp);
-            break;
-        case 0x2F:
-            on_key('v', outp);
-            break;
-        case 0x30:
-            on_key('b', outp);
-            break;
-        case 0x31:
-            on_key('n', outp);
-            break;
-        case 0x32:
-            on_key('m', outp);
-            break;
-        case 0x33:
-            on_key(',', outp);
-            break;
-        case 0x34:
-            on_key('.', outp);
-            break;
-        case 0x35:
-            on_key('-', outp);
-            break;
-        case 0x1C:
-            on_key('\n', outp);
-            break;
-        case 0x39:
-            on_key(' ', outp);
-            break;
-        case 0x0E:
-            printf("\b%s\b", " ");
-            on_key('*', outp);
-            break;
-
-        default: {
-            printf("%x", key);
-            break;
-        }
-        }
-    }
+    OnKey(key);
     return esp;
 }

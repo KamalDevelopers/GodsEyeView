@@ -14,26 +14,28 @@ class KeyboardDriver : public InterruptHandler
     Port8Bit dataport;
     Port8Bit commandport;
 
-public:
-    KeyboardDriver(InterruptManager* manager);
-    ~KeyboardDriver();
-    virtual uint32_t HandleInterrupt(uint32_t esp);
-    virtual char* GetKeys();
-    virtual char GetLastKey();
-    virtual uint8_t GetIndex() { return key_press_index; };
-    virtual void ScreenOutput(int i, uint8_t color_index, int x_offset, int y_offset, Graphics* g);
-
 private:
     int x_offset;
     int y_offset;
 
-    Graphics* vga;
-    uint8_t is_changed = 0;
-    uint16_t key_press_index = 0;
-    char keys[100];
-    void on_key(char keypress, int out_screen);
-    int outp = 0;
-    uint8_t color = 0x1;
+    int keys_pressed = 0;
+    int keys_pressed_raw = 0;
+
+    char last_key;
+    uint8_t last_key_raw;
+    bool is_shift = 0;
+
+    //uint8_t key_cache[100];
+
+    void OnKey(uint8_t keypress);
+    uint8_t KeyA(uint8_t key);
+
+public:
+    KeyboardDriver(InterruptManager* manager);
+    ~KeyboardDriver();
+    virtual uint32_t HandleInterrupt(uint32_t esp);
+    virtual char GetLastKey(int raw = 0);
+    virtual int GetKeyPresses(int raw = 0);
 };
 
 #endif

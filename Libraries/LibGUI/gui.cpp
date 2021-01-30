@@ -134,12 +134,12 @@ void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int
                 if ((mouse->GetMouseY() < parentPosY + parentHeight) && (mouse->GetMouseY() > parentPosY) && (mouse->GetMousePress() == 1))
                     active_input = 1;
 
-            if (input_text_index != keyboard->GetIndex() - backslashoffset - enteroffset) {
+            if (input_text_index != keyboard->GetKeyPresses() - backslashoffset - enteroffset) {
                 if (active_input == 1) {
-                    /*if ((keyboard->GetLastKey() == '*') && (input_text_index != 0)){
+                    if ((keyboard->GetLastKey() == '\b') && (input_text_index != 0)) {
                         input_text[input_text_index - backslashoffset - 1] = ' ';
                         backslashoffset++;
-                    }else*/
+                    }
                     if ((keyboard->GetLastKey() != '\n') && (keyboard->GetLastKey() != '*')) {
                         if (((input_text_index * 8) + (str_len(widget_text) * 8)) < widget_width) {
                             input_text[input_text_index - backslashoffset] = keyboard->GetLastKey();
@@ -150,7 +150,6 @@ void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int
                     if (keyboard->GetLastKey() == '\n') {
                         strcpy(out_data, input_text);
                         //on_press(out_data);
-                        klog(out_data);
 
                         for (int i = 0; i < input_text_index; i++)
                             input_text[i] = '\0';

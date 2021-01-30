@@ -11,6 +11,9 @@ SyscallHandler::~SyscallHandler()
 
 void sys_read(int file_handle, char* data, int len)
 {
+    if (len <= 0)
+        return;
+
     char* buffer;
     VFS::read(file_handle, (uint8_t*)buffer);
     for (int i = 0; i < len; i++)
@@ -19,15 +22,24 @@ void sys_read(int file_handle, char* data, int len)
 
 void sys_write(int file_handle, char* data, int len)
 {
+    if (len <= 0)
+        return;
+
     char* buffer = new char[len];
     memcpy(buffer, data, len);
-    if (file_handle == 1) {
+
+    switch (file_handle) {
+    case 1:
         buffer[len] = '\0';
         write_string(buffer);
-    } else {
+        break;
+
+    default:
         /* FIXME: Cannot overwrite existing file */
         VFS::write(file_handle, (uint8_t*)&buffer, len);
+        break;
     }
+
     kfree(buffer);
 }
 

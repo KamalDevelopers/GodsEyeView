@@ -12,11 +12,16 @@ void write_string(char* str)
         return;
     }
     for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] != 10)
-            write_char(str[i]);
-        else {
-            write_char(10);
+        if (str[i] == '\r') {
+            if (VideoMemoryIndex <= 0)
+                continue;
+            VideoMemoryIndex--;
+            write_char(' ');
+            VideoMemoryIndex--;
+            continue;
         }
+
+        write_char(str[i]);
     }
 }
 

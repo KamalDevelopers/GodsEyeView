@@ -34,7 +34,10 @@ VirtualFilesystem::VirtualFilesystem()
     num_mounts = 0;
     current_mount = 0;
 
-    /* Descriptor 1, 2, 3 reserved */
+    /* Descriptors:
+     * 1 : stdin
+     * 2 : stdout 
+     * 3 : stderr */
     num_open_files = 0;
     file_descriptors = 4;
     active = this;
