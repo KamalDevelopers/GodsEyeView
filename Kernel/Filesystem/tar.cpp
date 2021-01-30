@@ -100,7 +100,7 @@ int Tar::Chmod(char* file_name, char* permissions)
 /* Returns the index of fname */
 int Tar::FindFile(char* file_name)
 {
-    char fn[101];
+    char fn[100];
     for (int i = 0; i < file_index; i++) {
         strcpy(fn, files[i].name);
         fn[strlen(files[i].name)] = '\0';
@@ -403,8 +403,10 @@ void Tar::Mount()
 
         /* Skip the file data and reach the next header */
         if (OctBin((char*)&meta_head.typeflag, 1) == 0) {
-            sector_offset = sector_offset + (OctBin((char*)&meta_head.size, 11) / 512); // Skip data
-            sector_offset++;
+            int data_size = OctBin((char*)&meta_head.size, 11);
+            sector_offset = sector_offset + (data_size / 512);
+            if (data_size % 512 != 0)
+                sector_offset++;
         }
         sector_offset++;
     }
