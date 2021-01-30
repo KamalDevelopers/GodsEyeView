@@ -1,6 +1,7 @@
 #ifndef SYSCALLS_HPP
 #define SYSCALLS_HPP
 
+#include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/pcspk.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Filesystem/vfs.hpp"

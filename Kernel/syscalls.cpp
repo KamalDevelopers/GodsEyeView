@@ -15,7 +15,17 @@ void sys_read(int file_handle, char* data, int len)
         return;
 
     char* buffer;
-    VFS::read(file_handle, (uint8_t*)buffer);
+
+    switch (file_handle) {
+    case 2:
+        KeyboardDriver::active->ReadKeys(len, buffer);
+        break;
+
+    default:
+        VFS::read(file_handle, (uint8_t*)buffer);
+        break;
+    }
+
     for (int i = 0; i < len; i++)
         *data++ = buffer[i];
 }

@@ -89,11 +89,14 @@ static char* l_l2 = "asdfghjkl";
 static char* l_l3 = "yxcvbnm";
 static char* l_nm = "123456789";
 
+KeyboardDriver* KeyboardDriver::active = 0;
+
 KeyboardDriver::KeyboardDriver(InterruptManager* manager)
     : InterruptHandler(manager, 0x21)
     , dataport(0x60)
     , commandport(0x64)
 {
+    active = this;
     while (commandport.Read() & 0x1)
         dataport.Read();
     commandport.Write(0xae); // activate interrupts
@@ -118,7 +121,7 @@ uint8_t KeyboardDriver::KeyA(uint8_t key)
         return ' ';
 
     if (key == BACKSPACE_PRESSED)
-        return '\r';
+        return '\b';
 
     if (key == POINT_RELEASED) {
         if (is_shift)
@@ -178,11 +181,62 @@ int KeyboardDriver::GetKeyPresses(int raw)
     return keys_pressed;
 }
 
+uint8_t KeyboardDriver::ReadKey()
+{
+    uint8_t lastkey = 0;
+    if (commandport.Read() & 1)
+        lastkey = dataport.Read();
+    return lastkey;
+}
+
+char KeyboardDriver::GetKey()
+{
+    char c = 0;
+    while (c == 0)
+        c = ReadKey();
+    if (KeyA(c) != 0)
+        return KeyA(c);
+    return 0;
+}
+
 char KeyboardDriver::GetLastKey(int raw)
 {
     if (raw == 1)
         return last_key_raw;
     return last_key;
+}
+
+void KeyboardDriver::ReadKeys(int len, char* data)
+{
+    /* Disable Mouse */
+    outb(0x64, 0xD4);
+    outb(0x60, 0xF5);
+
+    char c = 0;
+    int key_stroke = 0;
+    char* buffer;
+
+    while (c != 10) {
+        while (!(c = KeyboardDriver::active->GetKey()))
+            ;
+        if (c == '\b') {
+            if (key_stroke > 0)
+                key_stroke--;
+        } else {
+            buffer[key_stroke] = c;
+            key_stroke++;
+        }
+        printf("%c", c);
+    }
+    len -= len - key_stroke;
+    buffer[key_stroke + 1] = '\0';
+
+    strncpy(data, buffer, len);
+    data[len] = '\0';
+
+    /* Enable Mouse */
+    outb(0x64, 0xD4);
+    outb(0x60, 0xF3);
 }
 
 void KeyboardDriver::OnKey(uint8_t keypress)

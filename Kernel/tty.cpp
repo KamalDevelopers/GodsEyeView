@@ -12,7 +12,7 @@ void write_string(char* str)
         return;
     }
     for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '\r') {
+        if (str[i] == '\b') {
             if (VideoMemoryIndex <= 0)
                 continue;
             VideoMemoryIndex--;
