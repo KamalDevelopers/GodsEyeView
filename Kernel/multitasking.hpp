@@ -56,6 +56,7 @@ private:
     bool AddTask(Task* task);
     int num_tasks;
     int current_task;
+    int is_running = 1;
     Task* tasks[256];
 
 public:
@@ -66,6 +67,8 @@ public:
 
     CPUState* Schedule(CPUState* cpustate);
 
+    void Activate() { is_running = 1; }
+    void Deactivate() { is_running = 0; }
     int GetPid() { return tasks[current_task]->pid; }
     char* GetName() { return tasks[current_task]->name; }
 

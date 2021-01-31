@@ -4,7 +4,7 @@ TaskManager* TaskManager::active = 0;
 Task::Task(GlobalDescriptorTable* gdt, char* task_name, uint32_t entrypoint)
 {
     if (strlen(task_name) > 20)
-        task_name = "GevProcess";
+        task_name = "Unknown";
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
 
@@ -109,7 +109,7 @@ void TaskManager::SendSignal(int sig, int pid)
 
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
-    if (num_tasks <= 0)
+    if ((num_tasks <= 0) || (is_running == 0))
         return cpustate;
 
     if (current_task >= 0)

@@ -29,20 +29,18 @@ static int isalpha(int c)
     return 0;
 }
 
-int tolower(int c)
+static int tolower(int c)
 {
-    if(c >= 'A' && c <= 'Z')
+    if (c >= 'A' && c <= 'Z')
     	return ('a' + c - 'A');
-    else
-    	return c;
+    return c;
 }
 
-int toupper(int c)
+static int toupper(int c)
 {
-        if(c >= 'a' && c <= 'z')
-                return ('A' + c - 'a');
-        else
-                return c;
+    if (c >= 'a' && c <= 'z')
+        return ('A' + c - 'a');
+    return c;
 }
 
 #endif
