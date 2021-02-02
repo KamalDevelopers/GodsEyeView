@@ -10,12 +10,12 @@
 #define MAX_FILE_NAME 100
 #define MAX_MOUNTS 5
 
-typedef struct file_entry {
+struct file_entry {
     int descriptor;
     int mountfs;
     char file_name[MAX_FILE_NAME]; 
     int size;
-} file_entry_t;
+};
 
 class Filesystem {
 public:
@@ -31,7 +31,7 @@ public:
 class VirtualFilesystem {
 private:
     Filesystem* mounts[MAX_MOUNTS];
-    file_entry_t* files[MAX_OPENFILES];
+    file_entry files[MAX_OPENFILES];
 
     int Search(int descriptor);
 

@@ -52,9 +52,9 @@ void VirtualFilesystem::Mount(Filesystem* fs)
 
 int VirtualFilesystem::Open(char* file_name)
 {
-    for (int i = 0; i < num_open_files; i++)
-        if (strcmp(file_name, files[i]->file_name) == 0)
-            return i;
+    //for (int i = 0; i < num_open_files; i++)
+    //if (strcmp(file_name, files[i].file_name) == 0)
+    //return i;
 
     int mount = -1;
     for (int i = 0; i < num_mounts; i++)
@@ -64,11 +64,11 @@ int VirtualFilesystem::Open(char* file_name)
     if (mount == -1)
         return -1;
 
-    file_entry_t* file;
-    strcpy(file->file_name, file_name);
-    file->mountfs = mount;
-    file->descriptor = file_descriptors;
-    file->size = mounts[mount]->GetSize(file_name);
+    file_entry file;
+    strcpy(file.file_name, file_name);
+    file.mountfs = mount;
+    file.descriptor = file_descriptors;
+    file.size = mounts[mount]->GetSize(file_name);
     files[num_open_files] = file;
 
     num_open_files++;
@@ -79,23 +79,23 @@ int VirtualFilesystem::Open(char* file_name)
 
 int VirtualFilesystem::Close(int descriptor)
 {
-    int index = -1;
-    for (int i = 0; i < num_open_files; i++)
-        if (files[i]->descriptor == descriptor)
-            index = i;
+    int index = Search(descriptor);
     if (index == -1)
         return -1;
 
-    deleteElement(index, num_open_files, files);
+    for (int j = index; j < num_open_files; j++)
+        files[j] = files[j + 1];
+
     num_open_files--;
     return 0;
 }
 
 int VirtualFilesystem::Search(int descriptor)
 {
-    for (int i = 0; i < num_open_files; i++)
-        if (files[i]->descriptor == descriptor)
+    for (int i = 0; i < num_open_files; i++) {
+        if (files[i].descriptor == descriptor)
             return i;
+    }
     return -1;
 }
 
@@ -104,15 +104,16 @@ int VirtualFilesystem::WriteFile(int descriptor, uint8_t* data, int data_length)
     int index = Search(descriptor);
     if (index == -1)
         return -1;
-    return mounts[files[index]->mountfs]->WriteFile(files[index]->file_name, data, data_length);
+    return mounts[files[index].mountfs]->WriteFile(files[index].file_name, data, data_length);
 }
 
 int VirtualFilesystem::ReadFile(int descriptor, uint8_t* data)
 {
     int index = Search(descriptor);
-    if (index == -1)
+    if (index == -1) {
         return -1;
-    return mounts[files[index]->mountfs]->ReadFile(files[index]->file_name, data);
+    }
+    return mounts[files[index].mountfs]->ReadFile(files[index].file_name, data);
 }
 
 int VirtualFilesystem::FileSize(int descriptor)
@@ -120,5 +121,5 @@ int VirtualFilesystem::FileSize(int descriptor)
     int index = Search(descriptor);
     if (index == -1)
         return -1;
-    return mounts[files[index]->mountfs]->GetSize(files[index]->file_name);
+    return mounts[files[index].mountfs]->GetSize(files[index].file_name);
 }

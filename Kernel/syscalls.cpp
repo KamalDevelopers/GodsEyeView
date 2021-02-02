@@ -26,8 +26,8 @@ void sys_read(int file_handle, char* data, int len)
         break;
     }
 
-    for (int i = 0; i < len; i++)
-        *data++ = buffer[i];
+    memcpy(data, buffer, len);
+    data[len] = '\0';
 }
 
 void sys_write(int file_handle, char* data, int len)
@@ -88,6 +88,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 
     case 3:
         sys_read((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+        break;
 
     case 4:
         sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
