@@ -33,12 +33,14 @@ void InterruptManager::SetInterruptDescriptorTableEntry(uint8_t interrupt,
     interruptDescriptorTable[interrupt].reserved = 0;
 }
 
+InterruptManager* InterruptManager::active = 0;
 InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable* globalDescriptorTable, TaskManager* taskManager)
     : programmableInterruptControllerMasterCommandPort(0x20)
     , programmableInterruptControllerMasterDataPort(0x21)
     , programmableInterruptControllerSlaveCommandPort(0xA0)
     , programmableInterruptControllerSlaveDataPort(0xA1)
 {
+    active = this;
     this->taskManager = taskManager;
     this->hardwareInterruptOffset = hardwareInterruptOffset;
     uint32_t CodeSegment = globalDescriptorTable->CodeSegmentSelector();

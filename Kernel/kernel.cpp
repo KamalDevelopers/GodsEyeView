@@ -213,7 +213,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Task Desktop(&gdt, "Desktop", desktop_exec);
     tasksmgr.AppendTasks(2, &ProgramDemo, &Desktop);
 
-    interrupts.Activate();
+    IRQ::activate();
     while (1)
         ;
 }

@@ -110,9 +110,8 @@ int VirtualFilesystem::WriteFile(int descriptor, uint8_t* data, int data_length)
 int VirtualFilesystem::ReadFile(int descriptor, uint8_t* data)
 {
     int index = Search(descriptor);
-    if (index == -1) {
+    if (index == -1)
         return -1;
-    }
     return mounts[files[index].mountfs]->ReadFile(files[index].file_name, data);
 }
 

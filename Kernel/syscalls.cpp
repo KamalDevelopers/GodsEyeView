@@ -18,6 +18,7 @@ void sys_read(int file_handle, char* data, int len)
 
     switch (file_handle) {
     case 2:
+        /* FIXME: This should not freeze every process */
         KeyboardDriver::active->ReadKeys(len, buffer);
         break;
 
