@@ -38,14 +38,11 @@ char* pmalloc(size_t size)
 
 void pfree(void* mem)
 {
-    /* Determine which page */
     uint32_t ad = (uint32_t)mem;
     ad -= pheap_begin;
     ad /= 4096;
-    /* Check if ad is out of range */
     if (ad < 0 || ad > MAX_PAGE_ALIGNED_ALLOCS)
         return;
-    /* Now, ad has the id of the page */
     pheap_desc[ad] = 0;
     return;
 }

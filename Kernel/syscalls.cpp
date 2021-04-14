@@ -14,7 +14,7 @@ void sys_read(int file_handle, char* data, int len)
     if (len <= 0)
         return;
 
-    char* buffer;
+    char* buffer = new char[len];
 
     switch (file_handle) {
     case 2:
@@ -27,8 +27,9 @@ void sys_read(int file_handle, char* data, int len)
         break;
     }
 
+    buffer[len] = '\0';
     memcpy(data, buffer, len);
-    data[len] = '\0';
+    kfree(buffer);
 }
 
 void sys_write(int file_handle, char* data, int len)
@@ -42,7 +43,7 @@ void sys_write(int file_handle, char* data, int len)
     switch (file_handle) {
     case 1:
         buffer[len] = '\0';
-        write_string(buffer);
+        write_string(data); // buffer
         break;
 
     default:

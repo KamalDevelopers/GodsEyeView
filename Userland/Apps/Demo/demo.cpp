@@ -31,7 +31,4 @@ int main()
     asm volatile("int $0x80"
                  :
                  : "a"(1), "b"(0));
-
-    while (1)
-        ;
 }

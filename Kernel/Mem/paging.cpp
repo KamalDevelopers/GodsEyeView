@@ -4,6 +4,11 @@ static uint32_t* page_directory = 0;
 static uint32_t page_dir_loc = 0;
 static uint32_t* last_page = 0;
 
+/* 
+ * FIXME: Rewrite paging to enable switching between page tables.
+ *        This will enable us to run processes with their own page tables.
+*/
+
 /* Map page, virtual to physical */
 void Paging::p_map_page(uint32_t virt, uint32_t phys)
 {
@@ -14,6 +19,22 @@ void Paging::p_map_page(uint32_t virt, uint32_t phys)
     }
     page_directory[id] = ((uint32_t)last_page) | 3;
     last_page = (uint32_t*)(((uint32_t)last_page) + 4096);
+}
+
+void Paging::p_copy_page_directory(uint32_t* destination)
+{
+    // FIXME
+    for (int i = 0; i < 1024; i++) {
+        destination[i] = page_directory[i];
+    }
+}
+
+void Paging::p_switch_page_directory(uint32_t* page_dir)
+{
+    // FIXME
+    for (int i = 0; i < 1024; i++) {
+        page_directory[i] = page_dir[i];
+    }
 }
 
 void Paging::p_enable()

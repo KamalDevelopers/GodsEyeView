@@ -83,7 +83,7 @@ enum KEYCODE {
 static char* u_l1 = "QWERTYUIOP";
 static char* u_l2 = "ASDFGHJKL";
 static char* u_l3 = "YXCVBNM";
-static char* u_nm = "!\"#¤%&/()=";
+static char* u_nm = "!#¤%&/()=";
 static char* l_l1 = "qwertyuiop";
 static char* l_l2 = "asdfghjkl";
 static char* l_l3 = "yxcvbnm";
@@ -191,9 +191,14 @@ uint8_t KeyboardDriver::ReadKey()
 
 char KeyboardDriver::GetKey()
 {
-    char c = 0;
-    while (c == 0)
+    uint8_t c = 0;
+    while (c == 0) {
         c = ReadKey();
+        if (c == SHIFT_PRESSED)
+            is_shift = 1;
+        if (c == SHIFT_RELEASED)
+            is_shift = 0;
+    }
     if (KeyA(c) != 0)
         return KeyA(c);
     return 0;
@@ -232,7 +237,7 @@ void KeyboardDriver::ReadKeys(int len, char* data)
     buffer[key_stroke + 1] = '\0';
 
     strncpy(data, buffer, len);
-    data[len] = '\0';
+    data[len - 1] = '\0';
 
     /* Enable Mouse */
     outb(0x64, 0xD4);

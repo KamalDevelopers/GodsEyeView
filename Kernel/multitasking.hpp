@@ -1,6 +1,8 @@
 #ifndef MULTITASKING_H
 #define MULTITASKING_H
 
+#include "Mem/paging.hpp"
+#include "Mem/mm.hpp"
 #include "GDT/gdt.hpp"
 #include "LibC/types.hpp"
 #include "LibC/stdio.hpp"
@@ -31,7 +33,7 @@ struct CPUState {
 
 
 class Task {
-    friend class TaskManager;
+friend class TaskManager;
 
 private:
     uint8_t stack[4096]; // 4 KiB
@@ -45,11 +47,12 @@ private:
 public:
     void Notify(int signal);
     void Suicide(int error_code);
-    Task(GlobalDescriptorTable* gdt, char* task_name, uint32_t entrypoint);
+    Task(char* task_name, uint32_t entrypoint);
     ~Task();
 };
 
 static uint32_t lpid = 0;
+static GlobalDescriptorTable* gdt = 0;
 
 class TaskManager {
 private:
@@ -60,7 +63,7 @@ private:
     Task* tasks[256];
 
 public:
-    TaskManager();
+    TaskManager(GlobalDescriptorTable* dgdt);
     ~TaskManager();
 
     static TaskManager* active;

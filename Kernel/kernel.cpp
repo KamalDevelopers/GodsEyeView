@@ -154,7 +154,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     klog("Kernel started");
 
     GlobalDescriptorTable gdt;
-    TaskManager tasksmgr;
+    TaskManager tasksmgr(&gdt);
     TimeDriver time;
     VirtualFilesystem vfs;
 
@@ -209,9 +209,9 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
 
     int desktop_exec = (int)&desktopEnvironment;
 
-    Task ProgramDemo(&gdt, "Demo", demo_exec);
-    Task Desktop(&gdt, "Desktop", desktop_exec);
-    tasksmgr.AppendTasks(2, &ProgramDemo, &Desktop);
+    Task Demo("Demo", demo_exec);
+    Task Desktop("GUI", desktop_exec);
+    tasksmgr.AppendTasks(2, &Desktop, &Demo);
 
     IRQ::activate();
     while (1)

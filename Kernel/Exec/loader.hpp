@@ -28,6 +28,7 @@ public:
     ~Loader();
 
     static Loader* load;
+
     void Add(Execf* l);
     int Exec(uint8_t* file_buffer, char* loader_name = 0);
     int Probe(uint8_t* file_buffer, char* loader_name);

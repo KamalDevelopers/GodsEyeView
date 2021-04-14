@@ -33,12 +33,13 @@ VirtualFilesystem::VirtualFilesystem()
 {
     num_mounts = 0;
     current_mount = 0;
+    num_open_files = 0;
 
     /* Descriptors:
      * 1 : stdin
      * 2 : stdout 
      * 3 : stderr */
-    num_open_files = 0;
+
     file_descriptors = 4;
     active = this;
 }
@@ -83,7 +84,7 @@ int VirtualFilesystem::Close(int descriptor)
     if (index == -1)
         return -1;
 
-    for (int j = index; j < num_open_files; j++)
+    for (int j = index; j < num_open_files - 1; j++)
         files[j] = files[j + 1];
 
     num_open_files--;

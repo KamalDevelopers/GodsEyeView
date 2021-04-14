@@ -4,6 +4,7 @@
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/pcspk.hpp"
 #include "Hardware/interrupts.hpp"
+#include "Exec/loader.hpp"
 #include "Filesystem/vfs.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"

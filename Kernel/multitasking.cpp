@@ -1,10 +1,10 @@
 #include "multitasking.hpp"
 
-TaskManager* TaskManager::active = 0;
-Task::Task(GlobalDescriptorTable* gdt, char* task_name, uint32_t entrypoint)
+Task::Task(char* task_name, uint32_t entrypoint)
 {
     if (strlen(task_name) > 20)
         task_name = "Unknown";
+
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
 
@@ -19,6 +19,8 @@ Task::Task(GlobalDescriptorTable* gdt, char* task_name, uint32_t entrypoint)
     cpustate->eip = entrypoint;
     cpustate->cs = gdt->CodeSegmentSelector();
     cpustate->eflags = 0x202;
+
+    // Paging::p_copy_page_directory(page_directory);
 
     state = 0;
     pid = ++lpid;
@@ -51,13 +53,15 @@ Task::~Task()
 {
 }
 
-TaskManager::TaskManager()
+TaskManager::TaskManager(GlobalDescriptorTable* dgdt)
 {
+    gdt = dgdt;
     active = this;
     num_tasks = 0;
     current_task = -1;
 }
 
+TaskManager* TaskManager::active = 0;
 TaskManager::~TaskManager()
 {
 }
@@ -66,7 +70,9 @@ bool TaskManager::AddTask(Task* task)
 {
     if (num_tasks >= 256)
         return false;
+    is_running = 0;
     tasks[num_tasks++] = task;
+    is_running = 1;
     return true;
 }
 
@@ -119,7 +125,6 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
         current_task = 0;
 
     if (tasks[current_task]->state == 1) {
-        //printf("\nKilled Zombie PID: 0x%x NAME: %s", tasks[current_task]->pid, tasks[currentTask]->name);
         klog("Zombie Process Killed");
 
         deleteElement(current_task, num_tasks, tasks);
@@ -128,5 +133,7 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
         if (current_task >= num_tasks)
             current_task = 0;
     }
+
+    // Paging::p_switch_page_directory(tasks[current_task]->page_directory);
     return tasks[current_task]->cpustate;
 }
