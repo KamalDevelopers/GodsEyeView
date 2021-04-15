@@ -113,6 +113,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         cpu->eax = pid;
         break;
 
+    case 37:
+        int ret;
+        ret = TaskManager::active->SendSignal((int)cpu->ebx, (int)cpu->ecx);
+        cpu->eax = ret;
+        break;
+
     case 88:
         sys_reboot((int)cpu->ebx);
         break;

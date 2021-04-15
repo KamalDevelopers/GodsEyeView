@@ -209,7 +209,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Task Demo("Demo", demo_exec);
 
     int desktop_exec = (int)&desktopEnvironment;
-    Task Desktop("GUI", desktop_exec);
+    Task Desktop("GUI", desktop_exec, 1);
 
     tasksmgr.AppendTasks(2, &Desktop, &Demo);
 

@@ -1,6 +1,6 @@
 #include "multitasking.hpp"
 
-Task::Task(char* task_name, uint32_t entrypoint)
+Task::Task(char* task_name, uint32_t entrypoint, uint8_t priv)
 {
     if (strlen(task_name) > 20)
         task_name = "Unknown";
@@ -23,10 +23,11 @@ Task::Task(char* task_name, uint32_t entrypoint)
     Paging::p_copy_page_directory(page_directory);
 
     state = 0;
+    privelege = priv;
     pid = ++lpid;
 }
 
-void Task::Notify(int signal)
+int8_t Task::Notify(int signal)
 {
     switch (signal) {
     case SIG_ILL:
@@ -40,8 +41,9 @@ void Task::Notify(int signal)
         break;
     default:
         klog("Received unknown signal");
-        return;
+        return -1;
     }
+    return 0;
 }
 
 void Task::Suicide(int error_code)
@@ -87,30 +89,18 @@ bool TaskManager::AppendTasks(int count, ...)
     return true;
 }
 
-void TaskManager::Kill(int pid)
+void TaskManager::Kill()
 {
-    if (pid >= num_tasks)
-        return;
-
-    if (pid == -1)
-        pid = tasks[current_task]->pid;
-
-    for (int i = 0; i < num_tasks; i++)
-        if (tasks[i]->pid == pid)
-            tasks[i]->Suicide(SIG_TERM);
+    tasks[current_task]->Suicide(SIG_TERM);
 }
 
-void TaskManager::SendSignal(int sig, int pid)
+int8_t TaskManager::SendSignal(int pid, int sig)
 {
-    if (pid >= num_tasks)
-        return;
-
-    if (pid == -1)
-        pid = tasks[current_task]->pid;
-
     for (int i = 0; i < num_tasks; i++)
         if (tasks[i]->pid == pid)
-            tasks[i]->Notify(sig);
+            if (tasks[i]->privelege <= tasks[current_task]->privelege)
+                return tasks[i]->Notify(sig);
+    return -1;
 }
 
 void TaskManager::KillZombieTasks()

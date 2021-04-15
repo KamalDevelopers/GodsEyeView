@@ -41,14 +41,15 @@ private:
     CPUState* cpustate;
 
     int pid;
-    uint16_t state;
     char name[20];
+    uint16_t state;
+    uint8_t privelege;
     void (*notify)(int);
 
 public:
-    void Notify(int signal);
+    int8_t Notify(int signal);
     void Suicide(int error_code);
-    Task(char* task_name, uint32_t entrypoint);
+    Task(char* task_name, uint32_t entrypoint, uint8_t priv=0);
     ~Task();
 };
 
@@ -76,10 +77,10 @@ public:
     int GetPid() { return tasks[current_task]->pid; }
     char* GetName() { return tasks[current_task]->name; }
 
-    void SendSignal(int sig, int pid = -1);
-    void Kill(int pid = -1); 
-    void KillZombieTasks();
     bool AppendTasks(int count, ...);
+    int8_t SendSignal(int pid, int sig);
+    void Kill(); 
+    void KillZombieTasks();
 };
 
 #endif
