@@ -107,6 +107,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         VFS::close((int)cpu->ebx);
         break;
 
+    case 20:
+        int pid;
+        pid = TaskManager::active->GetPid();
+        cpu->eax = pid;
+        break;
+
     case 88:
         sys_reboot((int)cpu->ebx);
         break;
