@@ -43,7 +43,7 @@ void sys_write(int file_handle, char* data, int len)
     switch (file_handle) {
     case 1:
         buffer[len] = '\0';
-        write_string(data); // buffer
+        write_string(data);
         break;
 
     default:
@@ -97,7 +97,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         break;
 
     case 5:
-        /* TODO: Support mode and flags, return descriptor */
+        /* TODO: Support mode and flags */
         int desc;
         desc = sys_open((char*)cpu->ebx);
         cpu->eax = desc;

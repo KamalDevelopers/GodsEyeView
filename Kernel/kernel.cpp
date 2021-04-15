@@ -206,11 +206,11 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     VFS::close(d_demo);
     int demo_exec = Loader::load->Exec(elfdata);
     kfree(elfdata);
+    Task Demo("Demo", demo_exec);
 
     int desktop_exec = (int)&desktopEnvironment;
-
-    Task Demo("Demo", demo_exec);
     Task Desktop("GUI", desktop_exec);
+
     tasksmgr.AppendTasks(2, &Desktop, &Demo);
 
     IRQ::activate();

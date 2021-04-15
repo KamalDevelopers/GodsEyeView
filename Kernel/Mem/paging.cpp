@@ -31,10 +31,12 @@ void Paging::p_copy_page_directory(uint32_t* destination)
 
 void Paging::p_switch_page_directory(uint32_t* page_dir)
 {
-    // FIXME
+    page_directory = (uint32_t*)0x400000;
     for (int i = 0; i < 1024; i++) {
         page_directory[i] = page_dir[i];
     }
+    page_dir_loc = (uint32_t)page_directory;
+    p_enable();
 }
 
 void Paging::p_enable()

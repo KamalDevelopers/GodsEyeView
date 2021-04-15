@@ -20,7 +20,7 @@ Task::Task(char* task_name, uint32_t entrypoint)
     cpustate->cs = gdt->CodeSegmentSelector();
     cpustate->eflags = 0x202;
 
-    // Paging::p_copy_page_directory(page_directory);
+    Paging::p_copy_page_directory(page_directory);
 
     state = 0;
     pid = ++lpid;
@@ -113,8 +113,20 @@ void TaskManager::SendSignal(int sig, int pid)
             tasks[i]->Notify(sig);
 }
 
+void TaskManager::KillZombieTasks()
+{
+    for (int i = 0; i < num_tasks; i++) {
+        if (tasks[i]->state == 1) {
+            klog("Zombie Process Killed");
+            deleteElement(i, num_tasks, tasks);
+            num_tasks--;
+        }
+    }
+}
+
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
+    //Paging::p_copy_page_directory(tasks[current_task]->page_directory);
     if ((num_tasks <= 0) || (is_running == 0))
         return cpustate;
 
@@ -124,16 +136,10 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
     if (++current_task >= num_tasks)
         current_task = 0;
 
-    if (tasks[current_task]->state == 1) {
-        klog("Zombie Process Killed");
+    KillZombieTasks();
+    if (current_task >= num_tasks)
+        current_task = 0;
 
-        deleteElement(current_task, num_tasks, tasks);
-        num_tasks--;
-        current_task++;
-        if (current_task >= num_tasks)
-            current_task = 0;
-    }
-
-    // Paging::p_switch_page_directory(tasks[current_task]->page_directory);
+    Paging::p_switch_page_directory(tasks[current_task]->page_directory);
     return tasks[current_task]->cpustate;
 }

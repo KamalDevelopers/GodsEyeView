@@ -37,6 +37,7 @@ friend class TaskManager;
 
 private:
     uint8_t stack[4096]; // 4 KiB
+    uint32_t page_directory[1024];
     CPUState* cpustate;
 
     int pid;
@@ -77,6 +78,7 @@ public:
 
     void SendSignal(int sig, int pid = -1);
     void Kill(int pid = -1); 
+    void KillZombieTasks();
     bool AppendTasks(int count, ...);
 };
 
