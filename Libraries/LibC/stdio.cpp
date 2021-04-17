@@ -109,7 +109,7 @@ void vprintf(const char* format, va_list v)
             if (format[i + 1] == 's')
                 puts(va_arg(v, char*));
 
-            if (format[i + 1] == 'd')
+            if ((format[i + 1] == 'd') || (format[i + 1] == 'i'))
                 puti(va_arg(v, int));
 
             if (format[i + 1] == 'f')

@@ -1,7 +1,8 @@
 #ifndef STDLIB_HPP
 #define STDLIB_HPP
 
-#include "LibC/types.hpp"
+#include "types.hpp"
+#include "liballoc.hpp"
 #include "cmath.hpp"
 
 typedef struct {

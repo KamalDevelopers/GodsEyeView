@@ -114,13 +114,21 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         break;
 
     case 37:
-        int ret;
-        ret = TaskManager::active->SendSignal((int)cpu->ebx, (int)cpu->ecx);
-        cpu->eax = ret;
+        cpu->eax = TaskManager::active->SendSignal((int)cpu->ebx, (int)cpu->ecx);
         break;
 
     case 88:
         sys_reboot((int)cpu->ebx);
+        break;
+
+    case 90:
+        /* Incomplete implementation */
+        cpu->eax = (uint32_t)pmalloc((size_t)cpu->ecx);
+        break;
+
+    case 91:
+        /* Incomplete implementation */
+        pfree((void*)cpu->ebx, (size_t)cpu->ecx);
         break;
 
     case 162:
