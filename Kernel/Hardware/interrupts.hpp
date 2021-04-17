@@ -1,5 +1,5 @@
-#ifndef INTERRUPTS_HPP 
-#define INTERRUPTS_HPP 
+#ifndef INTERRUPTS_HPP
+#define INTERRUPTS_HPP
 
 #include "../GDT/gdt.hpp"
 #include "../multitasking.hpp"
@@ -104,7 +104,7 @@ public:
     InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable* globalDescriptorTable, TaskManager* taskManager);
     ~InterruptManager();
 
-    static InterruptManager* active; 
+    static InterruptManager* active;
 
     uint16_t HardwareInterruptOffset();
     void Activate();
@@ -112,15 +112,17 @@ public:
 };
 
 namespace IRQ {
-    static void activate() {
-        if (InterruptManager::active != 0)
-            InterruptManager::active->Activate();
-    }
+static void activate()
+{
+    if (InterruptManager::active != 0)
+        InterruptManager::active->Activate();
+}
 
-    static void deactivate() {
-        if (InterruptManager::active != 0)
-            InterruptManager::active->Deactivate();
-    }
+static void deactivate()
+{
+    if (InterruptManager::active != 0)
+        InterruptManager::active->Deactivate();
+}
 };
 
 #endif

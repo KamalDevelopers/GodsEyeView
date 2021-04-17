@@ -96,13 +96,12 @@ public:
     virtual uint8_t GetFrameStart() { return is_ready; }
 };
 
-static void vmemset(unsigned char *s, unsigned c, unsigned n)
+static void vmemset(unsigned char* s, unsigned c, unsigned n)
 {
-	for(; n != 0; n--)
-	{
-		*s = c;
-		s++;
-	}
+    for (; n != 0; n--) {
+        *s = c;
+        s++;
+    }
 }
 
 #endif

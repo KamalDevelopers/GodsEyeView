@@ -1,9 +1,9 @@
 #ifndef STDLIB_HPP
 #define STDLIB_HPP
 
-#include "types.hpp"
-#include "liballoc.hpp"
 #include "cmath.hpp"
+#include "liballoc.hpp"
+#include "types.hpp"
 
 typedef struct {
     int quot, rem;

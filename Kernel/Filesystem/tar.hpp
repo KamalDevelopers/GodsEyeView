@@ -11,7 +11,7 @@
 
 #define SB_OFFSET 1024
 #define MAX_FILES 200
-#define MAX_DIRS  100
+#define MAX_DIRS 100
 #define MAGIC "ustar"
 
 struct posix_header {   /* byte offset */

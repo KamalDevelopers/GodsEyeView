@@ -1,14 +1,14 @@
 #ifndef MULTITASKING_H
 #define MULTITASKING_H
 
-#include "Mem/paging.hpp"
-#include "Mem/mm.hpp"
 #include "GDT/gdt.hpp"
-#include "LibC/types.hpp"
 #include "LibC/stdio.hpp"
+#include "LibC/types.hpp"
+#include "Mem/mm.hpp"
+#include "Mem/paging.hpp"
 #include <stdarg.h>
 
-#define SIG_ILL  1
+#define SIG_ILL 1
 #define SIG_TERM 2
 #define SIG_SEGV 3
 
@@ -31,9 +31,8 @@ struct CPUState {
     uint32_t ss;
 } __attribute__((packed));
 
-
 class Task {
-friend class TaskManager;
+    friend class TaskManager;
 
 private:
     uint8_t stack[4096]; // 4 KiB
@@ -49,7 +48,7 @@ private:
 public:
     int8_t Notify(int signal);
     void Suicide(int error_code);
-    Task(char* task_name, uint32_t entrypoint, uint8_t priv=0);
+    Task(char* task_name, uint32_t entrypoint, uint8_t priv = 0);
     ~Task();
 };
 
@@ -79,7 +78,7 @@ public:
 
     bool AppendTasks(int count, ...);
     int8_t SendSignal(int pid, int sig);
-    void Kill(); 
+    void Kill();
     void KillZombieTasks();
 };
 

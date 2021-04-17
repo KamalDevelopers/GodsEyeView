@@ -18,9 +18,9 @@ static int isalpha(int c)
 {
     char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                       "abcdefghijklmnopqrstuvwxyz";
-    char *letter = alphabet;
+    char* letter = alphabet;
 
-    while(*letter != '\0' && *letter != c)
+    while (*letter != '\0' && *letter != c)
         ++letter;
 
     if (*letter)
@@ -32,7 +32,7 @@ static int isalpha(int c)
 static int tolower(int c)
 {
     if (c >= 'A' && c <= 'Z')
-    	return ('a' + c - 'A');
+        return ('a' + c - 'A');
     return c;
 }
 

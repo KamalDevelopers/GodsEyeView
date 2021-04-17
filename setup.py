@@ -3,6 +3,7 @@ import os
 import sys
 
 WRITEDISK = True 
+CLANG_FORMAT = True
 GCCPATH = '$HOME/opt/cross/bin/i686-elf-g++'
 GPPPARAMS = '-ILibraries -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings'
 QEMUPARAMS = '-cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=../hdd.tar'
@@ -113,7 +114,9 @@ def clean():
         os.system('rm -rf ../hdd.tar')
 
 def all():
-    os.system("find ./ -iname *.hpp -o -iname *.cpp | xargs clang-format -i")
+    if CLANG_FORMAT:
+        os.system("find $directory -type f -name '*.cpp' | xargs clang-format -i")
+        os.system("find $directory -type f -name '*.hpp' | xargs clang-format -i")
     os.system("python setup.py make kernel")
     os.system("python setup.py make loader")
     os.system("python setup.py link")

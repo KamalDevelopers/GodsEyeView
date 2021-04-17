@@ -40,7 +40,6 @@ public:
     virtual char GetKey();
     virtual uint8_t ReadKey();
     virtual void ReadKeys(int len, char* data);
-
 };
 
 #endif

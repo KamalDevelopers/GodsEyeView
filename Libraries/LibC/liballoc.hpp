@@ -5,15 +5,14 @@
 // skip the define.
 #ifndef _ALLOC_SKIP_DEFINE
 
-#ifndef _HAVE_SIZE_T
-#define _HAVE_SIZE_T
-typedef	long unsigned int	size_t;
-#endif
+#    ifndef _HAVE_SIZE_T
+#        define _HAVE_SIZE_T
+typedef long unsigned int size_t;
+#    endif
 
-
-#ifndef	NULL
-#define NULL		0
-#endif
+#    ifndef NULL
+#        define NULL 0
+#    endif
 
 #endif
 
@@ -21,28 +20,23 @@ typedef	long unsigned int	size_t;
 extern "C" {
 #endif
 
-
 /** This is a boundary tag which is prepended to the
  * page or section of a page which we have allocated. It is
  * used to identify valid memory blocks that the
  * application is trying to free.
  */
-struct	boundary_tag
-{
-	unsigned int magic;			//< It's a kind of ...
-	unsigned int size; 			//< Requested size.
-	unsigned int real_size;		//< Actual size.
-	int index;					//< Location in the page table.
+struct boundary_tag {
+    unsigned int magic;     //< It's a kind of ...
+    unsigned int size;      //< Requested size.
+    unsigned int real_size; //< Actual size.
+    int index;              //< Location in the page table.
 
-	struct boundary_tag *split_left;	//< Linked-list info for broken pages.	
-	struct boundary_tag *split_right;	//< The same.
-	
-	struct boundary_tag *next;	//< Linked list info.
-	struct boundary_tag *prev;	//< Linked list info.
+    struct boundary_tag* split_left;  //< Linked-list info for broken pages.
+    struct boundary_tag* split_right; //< The same.
+
+    struct boundary_tag* next; //< Linked list info.
+    struct boundary_tag* prev; //< Linked list info.
 };
-
-
- 
 
 /** This function is supposed to lock the memory data structures. It
  * could be as simple as disabling interrupts or acquiring a spinlock.
@@ -70,14 +64,15 @@ inline int liballoc_unlock() { return 0; } // FIXME
  */
 inline void* liballoc_alloc(int pages)
 {
-	unsigned int size = pages * 4096;
-    char* p2;	
+    unsigned int size = pages * 4096;
+    char* p2;
     asm("int $0x80"
         : "=a"(p2)
         : "a"(90), "b"(0), "c"(size));
 
-	if (!p2) return NULL;
-	return p2;
+    if (!p2)
+        return NULL;
+    return p2;
 }
 
 /** This frees previously allocated memory. The void* parameter passed
@@ -97,12 +92,10 @@ inline int liballoc_free(void* ptr, int pages)
     return 0;
 }
 
-       
-void     *malloc(size_t);				//< The standard function.
-void     *realloc(void *, size_t);		//< The standard function.
-void     *calloc(size_t, size_t);		//< The standard function.
-void      free(void *);					//< The standard function.
-
+void* malloc(size_t);         //< The standard function.
+void* realloc(void*, size_t); //< The standard function.
+void* calloc(size_t, size_t); //< The standard function.
+void free(void*);             //< The standard function.
 
 #ifdef __cplusplus
 }

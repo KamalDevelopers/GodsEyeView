@@ -1,19 +1,19 @@
 #ifndef VFS_HPP
 #define VFS_HPP
 
-#include "LibC/types.hpp"
-#include "LibC/string.hpp"
-#include "LibC/stdlib.hpp"
 #include "LibC/stdio.hpp"
+#include "LibC/stdlib.hpp"
+#include "LibC/string.hpp"
+#include "LibC/types.hpp"
 
-#define MAX_OPENFILES 200 
+#define MAX_OPENFILES 200
 #define MAX_FILE_NAME 100
 #define MAX_MOUNTS 5
 
 struct file_entry {
     int descriptor;
     int mountfs;
-    char file_name[MAX_FILE_NAME]; 
+    char file_name[MAX_FILE_NAME];
     int size;
 };
 
@@ -57,17 +57,18 @@ public:
 
 namespace VFS {
 
-static int close(int descriptor) 
+static int close(int descriptor)
 {
     return VirtualFilesystem::active->Close(descriptor);
 }
 
-static int open(char* file_name) 
+static int open(char* file_name)
 {
     return VirtualFilesystem::active->Open(file_name);
 }
 
-static int write(int descriptor, uint8_t* data, int data_length) {
+static int write(int descriptor, uint8_t* data, int data_length)
+{
     return VirtualFilesystem::active->WriteFile(descriptor, data, data_length);
 }
 
