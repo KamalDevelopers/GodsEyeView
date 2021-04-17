@@ -12,7 +12,7 @@ typedef struct {
     uint32_t size;
 } alloc_t;
 
-extern void pfree(void* mem);
+extern void pfree(void* mem, size_t size);
 extern void mm_init(uint32_t kernel_end);
 extern char* pmalloc(size_t size);
 extern char* kmalloc(size_t size);

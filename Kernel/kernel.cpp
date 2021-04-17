@@ -176,7 +176,6 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
-
     vfs.Mount(&fs_tar);
 
     uint8_t* fdata = new uint8_t[640 * 480];
@@ -212,8 +211,8 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Task Desktop("GUI", desktop_exec, 1);
 
     tasksmgr.AppendTasks(2, &Desktop, &Demo);
-
     IRQ::activate();
+
     while (1)
         ;
 }

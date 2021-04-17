@@ -19,35 +19,44 @@ void mm_init(uint32_t kernel_end)
     pheap_desc = (uint8_t*)kmalloc(MAX_PAGE_ALIGNED_ALLOCS);
 }
 
-/* Allocate a page */
 char* pmalloc(size_t size)
 {
-    if (size > 4096)
+    if (size % 4096 != 0) {
+        klog("pmalloc: not page aligned");
         return 0;
-
-    /* Page alloc */
-    for (int i = 0; i < MAX_PAGE_ALIGNED_ALLOCS; i++) {
-        if (pheap_desc[i])
-            continue;
-        pheap_desc[i] = 1;
-        return (char*)(pheap_begin + i * 4096);
     }
-    klog("pmalloc Error");
+
+    uint32_t pages = size / 4096;
+    for (int i = 0; i < MAX_PAGE_ALIGNED_ALLOCS; i++) {
+        if (pheap_desc[i] == 1)
+            continue;
+
+        for (int j = 0; j < pages; j++) {
+            pheap_desc[i + j] = 1;
+        }
+        return (char*)(pheap_begin + i * size);
+    }
+    klog("pmalloc: no more memory");
     return 0;
 }
 
-void pfree(void* mem)
+void pfree(void* mem, size_t size)
 {
+    uint32_t pages = size / 4096;
     uint32_t ad = (uint32_t)mem;
     ad -= pheap_begin;
     ad /= 4096;
-    if (ad < 0 || ad > MAX_PAGE_ALIGNED_ALLOCS)
+
+    if (ad < 0 || ad > MAX_PAGE_ALIGNED_ALLOCS) {
+        klog("pfree: failed to free memory");
         return;
-    pheap_desc[ad] = 0;
+    }
+
+    for (int i = 0; i < pages; i++)
+        pheap_desc[ad + i] = 0;
     return;
 }
 
-/* FIXME clean up */
 char* kmalloc(size_t size)
 {
     if (!size)

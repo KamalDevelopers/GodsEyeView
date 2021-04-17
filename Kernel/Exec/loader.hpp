@@ -17,7 +17,6 @@ public:
 };
 
 class Loader {
-
 private:
     uint32_t location;
     uint32_t loader_num;
