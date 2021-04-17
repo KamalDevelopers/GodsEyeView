@@ -139,6 +139,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         PCS::beep((uint32_t)cpu->ebx, (uint32_t)cpu->ecx);
         break;
 
+    case 401:
+        /* Temporary, instead of futex */
+        if ((uint32_t)cpu->ebx == 0)
+            TaskManager::active->Deactivate();
+        else
+            TaskManager::active->Activate();
     default:
         break;
     }

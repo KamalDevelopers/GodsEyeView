@@ -45,7 +45,13 @@ struct boundary_tag {
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
  */
-inline int liballoc_lock() { return 0; } // FIXME
+inline int liballoc_lock()
+{
+    asm("int $0x80"
+        :
+        : "a"(401), "b"(0));
+    return 0;
+}
 
 /** This function unlocks what was previously locked by the liballoc_lock
  * function.  If it disabled interrupts, it enables interrupts. If it
@@ -53,7 +59,13 @@ inline int liballoc_lock() { return 0; } // FIXME
  *
  * \return 0 if the lock was successfully released.
  */
-inline int liballoc_unlock() { return 0; } // FIXME
+inline int liballoc_unlock()
+{
+    asm("int $0x80"
+        :
+        : "a"(401), "b"(1));
+    return 0;
+}
 
 /** This is the hook into the local system which allocates pages. It
  * accepts an integer parameter which is the number of pages

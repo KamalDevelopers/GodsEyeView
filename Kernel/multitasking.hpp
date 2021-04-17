@@ -78,8 +78,8 @@ public:
 
     bool AppendTasks(int count, ...);
     int8_t SendSignal(int pid, int sig);
-    void Kill();
     void KillZombieTasks();
+    void Kill();
 };
 
 #endif
