@@ -60,7 +60,8 @@ private:
     bool AddTask(Task* task);
     int num_tasks;
     int current_task;
-    int is_running = 1;
+    int8_t is_running = 1;
+    int16_t locked = -1;
     Task* tasks[256];
 
 public:
@@ -80,6 +81,9 @@ public:
     int8_t SendSignal(int pid, int sig);
     void KillZombieTasks();
     void Kill();
+
+    void Lock() { locked = 0; }
+    void Unlock() { locked = -1; }
 };
 
 #endif

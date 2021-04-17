@@ -117,6 +117,15 @@ void TaskManager::KillZombieTasks()
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
     //Paging::p_copy_page_directory(tasks[current_task]->page_directory);
+    if (locked != -1) {
+        locked++;
+        if (locked > 10) {
+            tasks[current_task]->Suicide(SIG_TERM);
+            locked = -1;
+        }
+        return cpustate;
+    }
+
     if ((num_tasks <= 0) || (is_running == 0))
         return cpustate;
 

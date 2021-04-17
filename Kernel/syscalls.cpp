@@ -142,9 +142,9 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     case 401:
         /* Temporary, instead of futex */
         if ((uint32_t)cpu->ebx == 0)
-            TaskManager::active->Deactivate();
+            TaskManager::active->Lock();
         else
-            TaskManager::active->Activate();
+            TaskManager::active->Unlock();
     default:
         break;
     }
