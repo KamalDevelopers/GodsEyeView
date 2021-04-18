@@ -1,0 +1,5 @@
+rule demo
+    command = cd ./Demo && ninja && ninja move && cd ../
+    description = building demo application
+
+build demo: demo
