@@ -1,9 +1,6 @@
 rule run
     pool = console
-    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=hdd.tar 
-
-rule clean
-    command = ninja -t clean
+    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=hdd.tar
 
 rule format
     pool = console
@@ -55,6 +52,5 @@ build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.s
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
 build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/fat.o Kernel/Filesystem/part.o Kernel/Filesystem/vfs.o Libraries/LibC/string.o Libraries/LibC/stdio.o Libraries/LibC/stdlib.o Libraries/LibC/liballoc.o Libraries/LibGUI/gui.o Kernel/Hardware/interruptstubs.o Arch/i386/Boot/boot.o
 build run: run
-build clean: clean
 build format: format
 default ./.out/kernel.bin
