@@ -182,7 +182,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     int d_wallpaper = VFS::open("root/wallpaper");
     VFS::read(d_wallpaper, fdata);
     VFS::close(d_wallpaper);
-    memcpy((void*)wallpaper_data, (void*)fdata, 640 * 480);
+    wallpaper_data = fdata;
     kfree(fdata);
 
     DriverManager drvManager;

@@ -10,6 +10,8 @@ Image::Image(int width, int height, short int* bmp)
     if (bmp != 0) {
         bitmap = new short int[width * height];
         memcpy((void*)bitmap, (void*)bmp, (width * height) * sizeof(short int));
+    } else {
+        memchr(image_data, '\0', width * height);
     }
 }
 
