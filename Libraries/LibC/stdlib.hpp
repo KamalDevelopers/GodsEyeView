@@ -12,6 +12,7 @@ typedef struct {
 unsigned rand(unsigned int seed = 918, unsigned int max = 36000);
 unsigned int random(unsigned int seed, unsigned int max);
 
+extern void exit(int status);
 extern void* memcpy(void* dst, const void* src, unsigned int cnt);
 extern void* memset(void* b, char c, int len);
 extern int itoan(int x, char str[], int d);

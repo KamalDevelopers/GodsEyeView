@@ -1,5 +1,11 @@
 #include "LibC/stdlib.hpp"
+#include "unistd.hpp"
 #include "utility.hpp"
+
+void exit(int status)
+{
+    _exit(status);
+}
 
 unsigned rand(unsigned int seed, unsigned int max)
 {

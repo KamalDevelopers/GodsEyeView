@@ -1,32 +1,19 @@
+#include "LibC/stdlib.hpp"
 #include "LibC/stdio.hpp"
+#include "LibC/unistd.hpp"
 
 int main()
 {
     int result;
     char buffer[22];
 
-    /* syscall 5: open() */
-    asm volatile("int $0x80"
-                 : "=a"(result)
-                 : "a"(5), "b"("root/welcome"));
-
-    /* syscall 3: read() */
-    asm volatile("int $0x80"
-                 :
-                 : "a"(3), "b"(result), "c"(buffer), "d"(22));
-
-    /* syscall 6: close() */
-    asm volatile("int $0x80"
-                 :
-                 : "a"(6), "b"(result));
-
+    result = open((char*)"root/welcome");
+    read(result, buffer, 22);
+    close(result);
     printf("%s", buffer);
 
-    /* syscall 1: exit() */
-    asm volatile("xor %eax, %eax\n");
-    asm volatile("int $0x80"
-                 :
-                 : "a"(1), "b"(0));
+    exit(0);
+
     while (1)
         ;
 }
