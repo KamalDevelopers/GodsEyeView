@@ -4,3 +4,4 @@ hdd.tar
 compile_flags.txt
 .ninja_log
 .autogen
+libc.a

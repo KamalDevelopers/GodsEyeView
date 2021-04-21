@@ -1,8 +1,7 @@
-//static const char* text = "Hello GevOS! (^:";
+#include "LibC/stdio.hpp"
 
 int main()
 {
-
     int result;
     char buffer[22];
 
@@ -21,10 +20,7 @@ int main()
                  :
                  : "a"(6), "b"(result));
 
-    /* syscall 4: write() */
-    asm volatile("int $0x80"
-                 :
-                 : "a"(4), "b"(1), "c"(buffer), "d"(22));
+    printf("%s", buffer);
 
     /* syscall 1: exit() */
     asm volatile("xor %eax, %eax\n");

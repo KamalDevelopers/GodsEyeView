@@ -1,11 +1,14 @@
+rule format
+    pool = console
+    command = @find $directory -type f -name '*.cpp' | xargs clang-format -i && find $directory -type f -name '*.hpp' | xargs clang-format -i
+
 rule run
     pool = console
     command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=hdd.tar
 
-rule format
+rule disk
     pool = console
-    command = find $directory -type f -name '*.cpp' | xargs clang-format -i && find $directory -type f -name '*.hpp' | xargs clang-format -i
-    description = formatting code
+    command = cd Base && tar cf ../hdd.tar root
 
 rule cpp
     command = ~/opt/cross/bin/i686-elf-g++ -ILibraries -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -c $in -o $out
@@ -14,7 +17,7 @@ rule asm
     command = as --32 $in -o $out
 
 rule link
-    command = ld -melf_i386 -T linker.ld -o $out $in
+    command = ld -melf_i386 -T linker.ld -o $out $in ./Libraries/libc.a
 
 build Kernel/kernel.o: cpp ./Kernel/kernel.cpp
 build Kernel/multitasking.o: cpp ./Kernel/multitasking.cpp
@@ -43,14 +46,11 @@ build Kernel/Filesystem/tar.o: cpp ./Kernel/Filesystem/tar.cpp
 build Kernel/Filesystem/fat.o: cpp ./Kernel/Filesystem/fat.cpp
 build Kernel/Filesystem/part.o: cpp ./Kernel/Filesystem/part.cpp
 build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
-build Libraries/LibC/string.o: cpp ./Libraries/LibC/string.cpp
-build Libraries/LibC/stdio.o: cpp ./Libraries/LibC/stdio.cpp
-build Libraries/LibC/stdlib.o: cpp ./Libraries/LibC/stdlib.cpp
-build Libraries/LibC/liballoc.o: cpp ./Libraries/LibC/liballoc.cpp
 build Libraries/LibGUI/gui.o: cpp ./Libraries/LibGUI/gui.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.s
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/fat.o Kernel/Filesystem/part.o Kernel/Filesystem/vfs.o Libraries/LibC/string.o Libraries/LibC/stdio.o Libraries/LibC/stdlib.o Libraries/LibC/liballoc.o Libraries/LibGUI/gui.o Kernel/Hardware/interruptstubs.o Arch/i386/Boot/boot.o
-build run: run
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/fat.o Kernel/Filesystem/part.o Kernel/Filesystem/vfs.o Libraries/LibGUI/gui.o Kernel/Hardware/interruptstubs.o Arch/i386/Boot/boot.o
 build format: format
+build run: run
+build disk: disk
 default ./.out/kernel.bin

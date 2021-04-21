@@ -1,15 +1,10 @@
 rule move
     pool = console
     command = mv ./demo ../../../Base/root/ && ninja -t clean
-    description = moving files
 
 rule cpp
-    command = ~/opt/cross/bin/i686-elf-g++ -c $in -o $out -ffreestanding -O2 -Wall -Wextra
+    command = ~/opt/cross/bin/i686-elf-g++ -T link.ld -o demo $in ../../../Libraries/libc.a -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -O2 -I../../../Libraries -lgcc
 
-rule link
-    command = ~/opt/cross/bin/i686-elf-g++ -T link.ld -o $out -ffreestanding -O2 -nostdlib $in -lgcc
-
-build demo.o: cpp ./demo.cpp
-build ./demo: link demo.o
+build ./demo demo.o: cpp ./demo.cpp
 build move: move
 default ./demo
