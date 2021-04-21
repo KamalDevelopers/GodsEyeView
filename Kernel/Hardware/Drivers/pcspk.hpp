@@ -1,6 +1,7 @@
 #ifndef PCSPK_HPP
 #define PCSPK_HPP
 
+#include "../port.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"
 

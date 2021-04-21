@@ -1,5 +1,55 @@
 #include "tty.hpp"
 
+void init_serial()
+{
+    outb(COMPORT + 1, 0x00);
+    outb(COMPORT + 3, 0x80);
+    outb(COMPORT + 0, 0x03);
+    outb(COMPORT + 1, 0x00);
+    outb(COMPORT + 3, 0x03);
+    outb(COMPORT + 2, 0xC7);
+    outb(COMPORT + 4, 0x0B);
+}
+
+int transmit_empty()
+{
+    return inb(COMPORT + 5) & 0x20;
+}
+
+void log_putc(char c)
+{
+    while (transmit_empty() == 0)
+        ;
+    outb(COMPORT, c);
+}
+
+void klog(char* str)
+{
+    for (int i = 0; i < strlen(datacolorblue); i++)
+        log_putc(datacolorblue[i]); //color on
+    for (int i = 0; str[i] != '\0'; i++) {
+        log_putc(str[i]);
+    }
+    log_putc('\n');
+    for (int i = 0; i < strlen(datacoloroff); i++)
+        log_putc(datacoloroff[i]); //color off
+}
+
+void klog(int num)
+{
+    char str[20];
+    itoa(num, str);
+
+    for (int i = 0; i < strlen(datacolorblue); i++)
+        log_putc(datacolorblue[i]); //color on
+    for (int i = 0; str[i] != '\0'; i++) {
+        log_putc(str[i]);
+    }
+    log_putc('\n');
+    for (int i = 0; i < strlen(datacoloroff); i++)
+        log_putc(datacoloroff[i]); //color off
+}
+
 void kprintf(char* str)
 {
     write_string(str);

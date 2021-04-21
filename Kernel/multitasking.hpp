@@ -6,6 +6,7 @@
 #include "LibC/types.hpp"
 #include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
+#include "tty.hpp"
 #include <stdarg.h>
 
 #define SIG_ILL 1

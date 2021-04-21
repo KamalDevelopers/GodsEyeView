@@ -1,55 +1,5 @@
 #include "LibC/stdio.hpp"
 
-void init_serial()
-{
-    outb(COMPORT + 1, 0x00);
-    outb(COMPORT + 3, 0x80);
-    outb(COMPORT + 0, 0x03);
-    outb(COMPORT + 1, 0x00);
-    outb(COMPORT + 3, 0x03);
-    outb(COMPORT + 2, 0xC7);
-    outb(COMPORT + 4, 0x0B);
-}
-
-int transmit_empty()
-{
-    return inb(COMPORT + 5) & 0x20;
-}
-
-void log_putc(char c)
-{
-    while (transmit_empty() == 0)
-        ;
-    outb(COMPORT, c);
-}
-
-void klog(char* str)
-{
-    for (int i = 0; i < str_len(datacolorblue); i++)
-        log_putc(datacolorblue[i]); //color on
-    for (int i = 0; str[i] != '\0'; i++) {
-        log_putc(str[i]);
-    }
-    log_putc('\n');
-    for (int i = 0; i < str_len(datacoloroff); i++)
-        log_putc(datacoloroff[i]); //color off
-}
-
-void klog(int num)
-{
-    char str[20];
-    itoa(num, str);
-
-    for (int i = 0; i < str_len(datacolorblue); i++)
-        log_putc(datacolorblue[i]); //color on
-    for (int i = 0; str[i] != '\0'; i++) {
-        log_putc(str[i]);
-    }
-    log_putc('\n');
-    for (int i = 0; i < str_len(datacoloroff); i++)
-        log_putc(datacoloroff[i]); //color off
-}
-
 void puts(char* str)
 {
     int len = strlen(str);
@@ -161,22 +111,6 @@ uint8_t inb(uint16_t port)
 {
     uint8_t result;
     asm volatile("inb %1, %0"
-                 : "=a"(result)
-                 : "Nd"(port));
-    return result;
-}
-
-void outbw(uint16_t port, uint16_t data)
-{
-    asm volatile("outw %0, %1"
-                 :
-                 : "a"(data), "Nd"(port));
-}
-
-uint16_t inbw(uint16_t port)
-{
-    uint16_t result;
-    asm volatile("inw %1, %0"
                  : "=a"(result)
                  : "Nd"(port));
     return result;

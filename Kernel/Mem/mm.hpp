@@ -1,6 +1,7 @@
 #ifndef MM_HPP
 #define MM_HPP
 
+#include "../tty.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/stdlib.hpp"
 #include "paging.hpp"

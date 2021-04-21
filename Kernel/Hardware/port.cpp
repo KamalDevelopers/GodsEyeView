@@ -1,5 +1,21 @@
 #include "port.hpp"
 
+void outbw(uint16_t port, uint16_t data)
+{
+    asm volatile("outw %0, %1"
+                 :
+                 : "a"(data), "Nd"(port));
+}
+
+uint16_t inbw(uint16_t port)
+{
+    uint16_t result;
+    asm volatile("inw %1, %0"
+                 : "=a"(result)
+                 : "Nd"(port));
+    return result;
+}
+
 Port::Port(uint16_t portnumber)
 {
     this->portnumber = portnumber;
