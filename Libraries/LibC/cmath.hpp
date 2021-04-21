@@ -63,4 +63,10 @@ static double modf(double x, int* integer)
     return x - *integer;
 }
 
+static double sin(double x) {
+    double result;
+    asm("fsin" : "=t"(result) : "0"(x));
+    return result;
+}
+
 #endif
