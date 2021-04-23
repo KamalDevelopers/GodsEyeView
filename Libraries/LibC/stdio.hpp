@@ -6,6 +6,7 @@
 
 #include "LibC/stdlib.hpp"
 #include "LibC/string.hpp"
+#include "LibC/unistd.hpp"
 #include <stdarg.h>
 
 extern void puts(char* str);

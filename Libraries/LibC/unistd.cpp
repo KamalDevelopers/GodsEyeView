@@ -17,10 +17,17 @@ int close(int descriptor)
 
 int read(int descriptor, void* buffer, int length)
 {
-    /* syscall 3: read() */
     asm volatile("int $0x80"
                  :
                  : "a"(3), "b"(descriptor), "c"(buffer), "d"(length));
+    return 0;
+}
+
+int write(int descriptor, char* buffer, int length)
+{
+    asm volatile("int $0x80"
+                 :
+                 : "a"(4), "b"(descriptor), "c"(buffer), "d"(length));
     return 0;
 }
 

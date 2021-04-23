@@ -1,6 +1,6 @@
 rule format
     pool = console
-    command = @find $directory -type f -name '*.cpp' | xargs clang-format -i && find $directory -type f -name '*.hpp' | xargs clang-format -i
+    command = find $directory -type f -name '*.cpp' | xargs clang-format -i && find $directory -type f -name '*.hpp' | xargs clang-format -i
 
 rule run
     pool = console
