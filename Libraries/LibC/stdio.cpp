@@ -30,11 +30,30 @@ void putf(float f)
 
 void putx(int c)
 {
-    char* f = "00";
-    char* hex = "0123456789ABCDEF";
-    f[0] = hex[(c >> 4) & 0xF];
-    f[1] = hex[c & 0xF];
-    puts(f);
+    char hex[20];
+    char res[20];
+
+    int i = 0;
+    while (c != 0) {
+        int temp = 0;
+        temp = c % 16;
+        if (temp < 10) {
+            hex[i] = temp + 48;
+            i++;
+        } else {
+            hex[i] = temp + 55;
+            i++;
+        }
+        c = c / 16;
+    }
+
+    int iteration = 0;
+    for (int j = i - 1; j >= 0; j--) {
+        res[iteration] = hex[j];
+        iteration += 1;
+    }
+    res[iteration] = '\0';
+    puts(res);
 }
 
 void vprintf(const char* format, va_list v)
