@@ -6,8 +6,10 @@
 #define MAX_COLS 80
 
 #include "Hardware/port.hpp"
+#include "LibC/stdio.hpp"
 #include "LibC/stdlib.hpp"
 #include "LibC/string.hpp"
+#include <stdarg.h>
 
 static char* datacolorblue = "\033[01;34m[GevOS]: ";
 static char* datacoloroff = "\033[0m";
@@ -23,8 +25,9 @@ static uint16_t* VideoMemory = (unsigned short*)0xb8000;
 static int VideoMemoryIndex = 0;
 static int NewLineIndex = 0;
 
-void kprintf(char* str);
+void kprintf(const char* format, ...);
 void write_string(char* str);
 void write_char(int c);
 void clear_screen();
+
 #endif

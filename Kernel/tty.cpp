@@ -1,5 +1,16 @@
 #include "tty.hpp"
 
+void kprintf(const char* format, ...)
+{
+    va_list arg;
+
+    puts_hook(write_string);
+    va_start(arg, format);
+    vprintf(format, arg);
+    va_end(arg);
+    puts_hook(0);
+}
+
 void init_serial()
 {
     outb(COMPORT + 1, 0x00);
@@ -48,11 +59,6 @@ void klog(int num)
     log_putc('\n');
     for (int i = 0; i < strlen(datacoloroff); i++)
         log_putc(datacoloroff[i]); //color off
-}
-
-void kprintf(char* str)
-{
-    write_string(str);
 }
 
 void write_string(char* str)

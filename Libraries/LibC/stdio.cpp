@@ -1,9 +1,18 @@
 #include "LibC/stdio.hpp"
 
+void puts_hook(void (*t)(char*))
+{
+    hwrite = t;
+}
+
 void puts(char* str)
 {
     int len = strlen(str);
-    write(1, str, len);
+    if (hwrite == 0) {
+        write(1, str, len);
+    } else {
+        hwrite(str);
+    }
 }
 
 void putc(int c)
@@ -105,7 +114,6 @@ void vprintf(const char* format, va_list v)
 void printf(const char* format, ...)
 {
     va_list arg;
-    int done;
 
     va_start(arg, format);
     vprintf(format, arg);

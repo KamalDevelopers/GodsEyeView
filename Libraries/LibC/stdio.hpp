@@ -9,6 +9,9 @@
 #include "LibC/unistd.hpp"
 #include <stdarg.h>
 
+static void (*hwrite)(char*) = 0;
+extern void puts_hook(void (*t)(char*));
+
 extern void puts(char* str);
 extern void puti(int num);
 extern void putc(int c);
