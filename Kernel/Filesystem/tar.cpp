@@ -125,11 +125,7 @@ int Tar::ReadDir(char* dirname, char** file_ids)
 
 void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t* databuffer = (uint8_t*)kmalloc(sizeof(uint8_t) * count); //= new uint8_t[count];
     uint8_t buffer[513];
-
-    if (databuffer == 0)
-        klog("Not enough heap memory!");
 
     int SIZE = count;
     int sector_offset = 0;
@@ -139,15 +135,12 @@ void Tar::ReadData(uint32_t sector_start, uint8_t* fdata, int count)
     for (; SIZE > 0; SIZE -= 512) {
         hd->Read28(sector_start + sector_offset, buffer, 512);
         for (int i = 0; i < 512; i++) {
-            databuffer[data_index] = buffer[i];
+            fdata[data_index] = buffer[i];
             data_index++;
         }
         buffer[SIZE > 512 ? 512 : SIZE] = '\0';
         sector_offset++;
     }
-
-    memcpy(fdata, databuffer, count);
-    kfree(databuffer);
 }
 
 void Tar::WriteData(uint32_t sector_start, uint8_t* fdata, int count)

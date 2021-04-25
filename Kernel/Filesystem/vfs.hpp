@@ -57,27 +57,27 @@ public:
 
 namespace VFS {
 
-static int close(int descriptor)
+inline int close(int descriptor)
 {
     return VirtualFilesystem::active->Close(descriptor);
 }
 
-static int open(char* file_name)
+inline int open(char* file_name)
 {
     return VirtualFilesystem::active->Open(file_name);
 }
 
-static int write(int descriptor, uint8_t* data, int data_length)
+inline int write(int descriptor, uint8_t* data, int data_length)
 {
     return VirtualFilesystem::active->WriteFile(descriptor, data, data_length);
 }
 
-static int read(int descriptor, uint8_t* data)
+inline int read(int descriptor, uint8_t* data)
 {
     return VirtualFilesystem::active->ReadFile(descriptor, data);
 }
 
-static int size(int descriptor)
+inline int size(int descriptor)
 {
     return VirtualFilesystem::active->FileSize(descriptor);
 }
