@@ -225,13 +225,15 @@ void KeyboardDriver::ReadKeys(int len, char* data)
         while (!(c = KeyboardDriver::active->GetKey()))
             ;
         if (c == '\b') {
-            if (key_stroke > 0)
+            if (key_stroke > 0) {
                 key_stroke--;
+                printf("%c", c);
+            }
         } else {
             buffer[key_stroke] = c;
             key_stroke++;
+            printf("%c", c);
         }
-        printf("%c", c);
     }
     len -= len - key_stroke;
     buffer[key_stroke + 1] = '\0';
