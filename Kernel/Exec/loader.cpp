@@ -44,11 +44,12 @@ int Loader::Exec(uint8_t* file_buffer, char* loader_name)
     for (int i = 0; i < loader_num; i++) {
         if (loader_name) {
             if (strcmp(loader_name, execfs[i]->Name()) == 0) {
-                location += 0x400000;
+                /* FIXME: memory area for the program should be created */
+                location += 0x10000;
                 return execfs[i]->Exec(file_buffer, location);
             }
         } else if (execfs[i]->Probe(file_buffer) == 1) {
-            location += 0x400000;
+            location += 0x10000;
             return execfs[i]->Exec(file_buffer, location);
         }
     }

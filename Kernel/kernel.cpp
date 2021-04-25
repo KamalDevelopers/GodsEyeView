@@ -112,19 +112,19 @@ void desktopEnvironment()
     terminal.SetHidden(1);
     desktop.AddWin(1, &terminal);
 
-    GUI::Window shutdownModal(200, 170, 235, 80, 0x7, 0);
+    GUI::Window shutdown_modal(200, 170, 235, 80, 0x7, 0);
     GUI::Label shutdown_label(30, 25, 10, 5, 0x0, 0x7, "Shutdown confirmation");
     GUI::Button shutdown_button(5, 55, 10, 20, "Shutdown", poweroff);
     shutdown_button.Color(0xC);
     GUI::Button reboot_button(85, 55, 20, 20, "Reboot", reboot);
     GUI::Button cancel_button(160, 55, 20, 20, "Cancel", close_shutdown);
-    shutdownModal.Border(1, 0x8);
-    shutdownModal.AddWidget(&shutdown_button);
-    shutdownModal.AddWidget(&reboot_button);
-    shutdownModal.AddWidget(&cancel_button);
-    shutdownModal.AddWidget(&shutdown_label);
-    desktop.AddWin(1, &shutdownModal);
-    shutdownModal.SetHidden(1);
+    shutdown_modal.Border(1, 0x8);
+    shutdown_modal.AddWidget(&shutdown_button);
+    shutdown_modal.AddWidget(&reboot_button);
+    shutdown_modal.AddWidget(&cancel_button);
+    shutdown_modal.AddWidget(&shutdown_label);
+    desktop.AddWin(1, &shutdown_modal);
+    shutdown_modal.SetHidden(1);
 
     GUI::Image wallpaper(640, 480, 0x0);
     wallpaper.ImageRenderer(wallpaper_data);
@@ -136,10 +136,10 @@ void desktopEnvironment()
             terminal.SetHidden(0);
         } else if (shutdown_hook == 1) {
             shutdown_hook = 0;
-            shutdownModal.SetHidden(0);
+            shutdown_modal.SetHidden(0);
         } else if (shutdown_cancel == 1) {
             shutdown_cancel = 0;
-            shutdownModal.SetHidden(1);
+            shutdown_modal.SetHidden(1);
         } else {
             clock_label.SetText(TimeDriver::time->GetFullTime());
         }
@@ -159,7 +159,10 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     VirtualFilesystem vfs;
 
     Paging::p_init();
-    mm_init(kernel_end);
+    kernel_end = 10 * 1024 * 2;
+    uint32_t* memupper = (uint32_t*)(&multiboot_info_ptr->mem_upper);
+    MemoryManager memorymgr(kernel_end, (*memupper) * 1024);
+    MM->dump();
 
     klog("Initializing input drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &tasksmgr);
