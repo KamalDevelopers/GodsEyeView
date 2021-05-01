@@ -46,7 +46,7 @@ int Elf::Exec(uint8_t* file_data, uint32_t phys_loc)
     if (Probe(file_data) != 1)
         return 0;
 
-    Elf32_Phdr* elf_program_header = (Elf32_Phdr*)kmalloc(sizeof(Elf32_Phdr) * elf_header->e_phnum);
+    Elf32_Phdr* elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
     elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
@@ -66,7 +66,6 @@ int Elf::Exec(uint8_t* file_data, uint32_t phys_loc)
         }
     }
 
-    kfree(elf_program_header);
     return elf_header->e_entry + elf_program_header->p_vaddr;
 }
 
