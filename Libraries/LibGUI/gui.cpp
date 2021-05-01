@@ -142,7 +142,7 @@ void Input::Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int
                         input_text[input_text_index - backslashoffset - 1] = ' ';
                         backslashoffset++;
                     }
-                    if ((keyboard->GetLastKey() != '\n') && (keyboard->GetLastKey() != '*')) {
+                    if ((keyboard->GetLastKey() != '\n') && (keyboard->GetLastKey() != '\b')) {
                         if (((input_text_index * 8) + (str_len(widget_text) * 8)) < widget_width) {
                             input_text[input_text_index - backslashoffset] = keyboard->GetLastKey();
                             input_text[input_text_index - backslashoffset + 1] = '\0';

@@ -31,17 +31,14 @@ Driver* PCIcontroller::GetDriver(PCIcontrollerDeviceDescriptor dev, InterruptMan
                 new (driver) AmdDriver(&dev, interrupts);
             }
             return driver;
-            break;
         }
-        break;
-    case 0x8086:
         break;
     }
 
     switch (dev.class_id) {
-    case 0x03: // graphics
+    case 0x03:
         switch (dev.subclass_id) {
-        case 0x00: // VGA
+        case 0x00:
             break;
         }
         break;

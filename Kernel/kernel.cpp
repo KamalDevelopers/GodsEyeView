@@ -154,24 +154,22 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     clear_screen(VGA16::WHITE, VGA16::BLACK);
 
     GlobalDescriptorTable gdt;
-    TaskManager tasksmgr(&gdt);
+    TaskManager task_manager(&gdt);
     TimeDriver time;
     VirtualFilesystem vfs;
 
     Paging::p_init();
     kernel_end = 10 * 1024 * 2;
     uint32_t* memupper = (uint32_t*)(&multiboot_info_ptr->mem_upper);
-    MemoryManager memorymgr(kernel_end, (*memupper) * 1024);
+    MemoryManager memory_manager(kernel_end, (*memupper) * 1024);
     MM->dump();
 
     klog("Initializing input drivers and syscalls");
-    InterruptManager interrupts(0x20, &gdt, &tasksmgr);
+    InterruptManager interrupts(0x20, &gdt, &task_manager);
     SyscallHandler syscalls(&interrupts, 0x80);
-    MouseDriver m(&interrupts, 640, 480);
-    KeyboardDriver k(&interrupts);
 
-    drivers.mouse = &m;
-    drivers.keyboard = &k;
+    drivers.mouse = new MouseDriver(&interrupts, 640, 480);
+    drivers.keyboard = new KeyboardDriver(&interrupts);
 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
@@ -188,13 +186,13 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     wallpaper_data = fdata;
     kfree(fdata);
 
-    DriverManager drvManager;
     klog("Starting PCI and activating drivers");
+    DriverManager driver_manager;
     PCIcontroller PCI;
-    drvManager.AddDriver(drivers.keyboard);
-    drvManager.AddDriver(drivers.mouse);
-    PCI.SelectDrivers(&drvManager, &interrupts);
-    drvManager.ActivateAll();
+    driver_manager.AddDriver(drivers.keyboard);
+    driver_manager.AddDriver(drivers.mouse);
+    PCI.SelectDrivers(&driver_manager, &interrupts);
+    driver_manager.ActivateAll();
 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");
@@ -213,7 +211,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     int desktop_exec = (int)&desktopEnvironment;
     Task Desktop("GUI", desktop_exec, 1);
 
-    tasksmgr.AppendTasks(2, &Desktop, &Demo);
+    task_manager.AppendTasks(2, &Desktop, &Demo);
     IRQ::activate();
 
     while (1)

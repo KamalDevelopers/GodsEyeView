@@ -14,12 +14,11 @@ public:
 class DriverManager {
 public:
     Driver* drivers[265];
-    int numDrivers;
+    int num_drivers;
 
 public:
     DriverManager();
     void AddDriver(Driver*);
-
     void ActivateAll();
 };
 
