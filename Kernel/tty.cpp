@@ -61,6 +61,16 @@ void klog(int num)
         log_putc(datacoloroff[i]); //color off
 }
 
+static inline uint8_t vga_entry_color(uint8_t fg, uint8_t bg)
+{
+    return fg | bg << 4;
+}
+
+static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
+{
+    return (uint16_t)uc | (uint16_t)color << 8;
+}
+
 void write_string(char* str)
 {
     if (strcmp(str, "\33[H\33[2J") == 0) {
@@ -69,11 +79,11 @@ void write_string(char* str)
     }
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] == '\b') {
-            if (VideoMemoryIndex <= 0)
+            if (video_memory_index <= 0)
                 continue;
-            VideoMemoryIndex--;
+            video_memory_index--;
             write_char(' ');
-            VideoMemoryIndex--;
+            video_memory_index--;
             continue;
         }
 
@@ -84,35 +94,45 @@ void write_string(char* str)
 void write_char(int c)
 {
     if (c == 10) {
-        NewLineIndex++;
-        VideoMemoryIndex = 0;
+        new_line_index++;
+        video_memory_index = 0;
     } else {
-        VideoMemory[80 * NewLineIndex + VideoMemoryIndex] = (VideoMemory[VideoMemoryIndex] & 0xff00) | c;
-        VideoMemoryIndex++;
+        //video_memory[80 * new_line_index + video_memory_index] = (video_memory[video_memory_index] & 0xff00) | c;
+        video_memory[80 * new_line_index + video_memory_index] = vga_entry(c, color);
+        video_memory_index++;
     }
 
-    if (NewLineIndex >= MAX_ROWS) {
+    if (new_line_index >= MAX_ROWS) {
         for (int y = 0; y < MAX_ROWS; y++) {
             for (int x = 0; x < MAX_COLS; x++) {
-                VideoMemory[80 * y + x] = VideoMemory[80 * (y + 1) + x];
+                video_memory[80 * y + x] = video_memory[80 * (y + 1) + x];
             }
         }
 
-        VideoMemoryIndex = 0;
-        NewLineIndex = MAX_ROWS - 1;
+        video_memory_index = 0;
+        new_line_index = MAX_ROWS - 1;
     }
 
-    if (VideoMemoryIndex >= MAX_COLS) {
-        VideoMemoryIndex = 0;
-        NewLineIndex++;
+    if (video_memory_index >= MAX_COLS) {
+        video_memory_index = 0;
+        new_line_index++;
     }
 }
 
-void clear_screen()
+void clear_screen(int fg, int bg)
 {
-    VideoMemoryIndex = 0;
-    NewLineIndex = 0;
+    if ((fg != -1) && (bg != -1))
+        set_color(fg, bg);
+
+    video_memory_index = 0;
+    new_line_index = 0;
     for (int i = 0; i < 2200; i++) {
-        VideoMemory[i] = (VideoMemory[i] & 0xff00) | ' ';
+        video_memory[i] = (video_memory[i] & 0xff00) | ' ';
+        video_memory[i] = vga_entry(' ', color);
     }
+}
+
+void set_color(uint8_t fg, uint8_t bg)
+{
+    color = vga_entry_color(fg, bg);
 }

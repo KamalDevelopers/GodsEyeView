@@ -149,9 +149,9 @@ void desktopEnvironment()
 
 extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
 {
-    clear_screen();
     init_serial();
     klog("Kernel started");
+    clear_screen(VGA16::WHITE, VGA16::BLACK);
 
     GlobalDescriptorTable gdt;
     TaskManager tasksmgr(&gdt);

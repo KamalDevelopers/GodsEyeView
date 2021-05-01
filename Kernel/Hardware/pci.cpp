@@ -10,8 +10,8 @@ PCIcontrollerDeviceDescriptor::~PCIcontrollerDeviceDescriptor()
 }
 
 PCIcontroller::PCIcontroller()
-    : dataPort(0xCFC)
-    , commandPort(0xCF8)
+    : dataport(0xCFC)
+    , commandport(0xCF8)
 {
 }
 
@@ -87,8 +87,8 @@ uint32_t PCIcontroller::Read(uint16_t bus, uint16_t device, uint16_t function, u
         | ((function & 0x07) << 8)
         | (registerOfsset & 0xFC);
 
-    commandPort.Write(id);
-    uint32_t result = dataPort.Read();
+    commandport.Write(id);
+    uint32_t result = dataport.Read();
     return result >> (8 * (registerOfsset % 4));
 }
 
@@ -99,8 +99,8 @@ void PCIcontroller::Write(uint16_t bus, uint16_t device, uint16_t function, uint
         | ((device & 0x1F) << 11)
         | ((function & 0x07) << 8)
         | (registerOfsset & 0xFC);
-    commandPort.Write(id);
-    dataPort.Write(value);
+    commandport.Write(id);
+    dataport.Write(value);
 }
 
 bool PCIcontroller::DeviceHasFunctions(uint16_t bus, uint16_t device)
@@ -122,7 +122,7 @@ void PCIcontroller::SelectDrivers(DriverManager* driverManager, InterruptManager
                 for (int barNum = 0; barNum < 6; barNum++) {
                     BaseAddressRegister bar = GetBaseAddressRegister(bus, device, function, barNum);
                     if (bar.address && (bar.type == InputOutput))
-                        dev.portBase = (uint32_t)bar.address;
+                        dev.port_base = (uint32_t)bar.address;
                 }
 
                 Driver* driver = GetDriver(dev, interrupts);

@@ -23,7 +23,7 @@ public:
 
 class PCIcontrollerDeviceDescriptor {
 public:
-    uint32_t portBase;
+    uint32_t port_base;
     uint32_t interrupt;
 
     uint16_t bus;
@@ -44,8 +44,8 @@ public:
 };
 
 class PCIcontroller {
-    Port32Bit dataPort;
-    Port32Bit commandPort;
+    Port32Bit dataport;
+    Port32Bit commandport;
     PCIcontrollerDeviceDescriptor dev;
 
 public:
