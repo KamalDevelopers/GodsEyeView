@@ -30,16 +30,13 @@ static double pow(double x, double y)
     return temp;
 }
 
-static int sqrt(int x)
+static double sqrt(double x)
 {
-    int z = 1;
-    while (z != 10000) {
-        if (x / z == z) {
-            break;
-        }
-        z += 1;
-    }
-    return z;
+    double result;
+    asm("fsqrt"
+        : "=t"(result)
+        : "0"(x));
+    return result;
 }
 
 static double floor(double x)
