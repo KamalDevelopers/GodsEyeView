@@ -146,7 +146,6 @@ bool Graphics::Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_
         for (int32_t x = 0; x < width; x++)
             PutPixel(x, y, colorindex);
     RenderScreen(1);
-
     return true;
 }
 
@@ -263,6 +262,32 @@ void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
     }
 }
 
+void Graphics::SlowDraw(uint32_t x, uint32_t y, uint8_t colorIndex)
+{
+    if (screen_colordepth == 16) {
+        unsigned mask, p, pmask;
+        unsigned wd_x = x / 8;
+        unsigned wd_in_bytes = screen_width / 8;
+        uint8_t* pixelAddress = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
+
+        x = (x & 7) * 1;
+        mask = 0x80 >> x;
+        pmask = 1;
+        for (p = 0; p < 4; p++) {
+            SetPlane(p);
+            if (pmask & colorIndex)
+                *pixelAddress = *pixelAddress | mask;
+            else
+                *pixelAddress = *pixelAddress & ~mask;
+            pmask <<= 1;
+        }
+    }
+    if (screen_colordepth == 256) {
+        uint8_t* pixelAddress = (uint8_t*)0xA0000 + screen_width * y + x;
+        *pixelAddress = colorIndex;
+    }
+}
+
 void Graphics::FillRectangle(int x, int y, int wd, int ht, uint8_t colorindex)
 {
     unsigned char p, pmask;
@@ -273,32 +298,42 @@ void Graphics::FillRectangle(int x, int y, int wd, int ht, uint8_t colorindex)
         FillPlane(x, y, wd, ht, colorindex & pmask);
         pmask <<= 1;
     }
+
+    for (int a = y; a < ht; a++) {
+        for (int b = x; b < wd; b++) {
+            old_vga_buffer[a * 640 + b] = colorindex;
+            vga_buffer[a * 640 + b] = colorindex;
+        }
+    }
 }
 
 void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorindex)
 {
-    vga_buffer[y][x] = colorindex;
+    vga_buffer[y * 640 + x] = colorindex;
 }
 
-void Graphics::RenderScreen(uint8_t i)
+void Graphics::SetBackground(int x, int y, uint8_t colorindex)
 {
-    if (i == 1) {
-        FillRectangle(0, 0, 640, 480, 0x0);
+    background[y * 640 + x] = colorindex;
+}
+
+void Graphics::RenderScreen(uint8_t refresh)
+{
+    if (refresh == 1) {
+        FillRectangle(0, 0, 640, 480, VGA16::BLACK);
         return;
     }
 
-    for (int l = 0; l < 4; l++) {
-        SetPlane(l);
-        for (int y = 0; y < screen_height; y++) {
-            for (int x = 0; x < screen_width; x++) {
-                if ((old_vga_buffer[y][x] != vga_buffer[y][x])) { //&& (vga_buffer[y][x] != 0x0)) {
-                    VgaDraw(x, y, vga_buffer[y][x], l);
-                }
+    for (int y = 0; y < screen_height; y++) {
+        for (int x = 0; x < screen_width; x++) {
+            if (vga_buffer[y * 640 + x] != old_vga_buffer[y * 640 + x]) {
+                SlowDraw(x, y, vga_buffer[y * 640 + x]);
             }
         }
     }
 
-    memcpy(old_vga_buffer, &vga_buffer, sizeof(uint8_t) * 640 * 480);
+    memcpy(&old_vga_buffer, &vga_buffer, sizeof(uint8_t) * 640 * 480);
+    memcpy(&vga_buffer, &background, sizeof(uint8_t) * 640 * 480);
 }
 
 uint8_t Graphics::GetColorIndex(uint8_t r, uint8_t g, uint8_t b)

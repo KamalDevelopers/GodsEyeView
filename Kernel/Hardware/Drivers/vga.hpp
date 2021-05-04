@@ -31,14 +31,6 @@ static uint8_t BRIGHT_WHITE = 0xF;
 
 static uint8_t vga_on = 0;
 
-typedef struct RectangleRender {
-    int x;
-    int y;
-    int wd;
-    int ht;
-    uint8_t c;
-} rec_t;
-
 class Graphics {
 protected:
     Port8Bit miscPort;
@@ -56,11 +48,14 @@ protected:
     void WriteRegisters(uint8_t* registers);
     uint8_t* GetFrameBufferSegment();
     void VgaDraw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle);
+    void SlowDraw(uint32_t x, uint32_t y, uint8_t colorIndex);
 
     virtual uint8_t GetColorIndex(uint8_t r, uint8_t g, uint8_t b);
 
-    uint8_t vga_buffer[480][640];
-    uint8_t old_vga_buffer[480][640];
+    uint8_t vga_buffer[480 * 640];
+    uint8_t old_vga_buffer[480 * 640];
+    uint8_t background[480 * 640];
+
     uint8_t is_ready = 0;
 
 private:
@@ -80,7 +75,8 @@ public:
     virtual void FillRectangle(int x, int y, int wd, int ht, uint8_t colorindex);
     virtual void FillPlane(int x, int y, int wd, int ht, unsigned c);
 
-    virtual void RenderScreen(uint8_t i = 0);
+    virtual void SetBackground(int x, int y, uint8_t colorindex);
+    virtual void RenderScreen(uint8_t refresh = 0);
     virtual void PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
     virtual uint8_t* GetPixelColor(int x, int y);
     virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorindex);

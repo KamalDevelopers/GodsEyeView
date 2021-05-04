@@ -42,7 +42,8 @@ int Tar::Unlink(char* file_name, bool update)
             continue;
         files[i - 1] = files[i];
     }
-    /* Removes file from hd */
+
+    /* Removes file from drive */
     if (update == 1)
         Update(sector_links_file[file_id], file_size);
     return 0;
@@ -97,7 +98,7 @@ int Tar::Chmod(char* file_name, char* permissions)
     return 0;
 }
 
-/* Returns the index of fname */
+/* Returns the index of file_name */
 int Tar::FindFile(char* file_name)
 {
     for (int i = 0; i < file_index; i++) {

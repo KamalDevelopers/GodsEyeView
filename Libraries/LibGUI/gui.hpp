@@ -16,7 +16,7 @@ private:
     int widget_width;
     int widget_height;
     short int* bitmap;
-    short int image_data[640 * 480];
+    uint8_t image_data[640 * 480];
     bool is_rendered = 0;
 
 public:
@@ -231,6 +231,7 @@ private:
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
     uint8_t Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
+    void BeginChildren(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
 
     template<class T>
     void AddWidget(T* data)
