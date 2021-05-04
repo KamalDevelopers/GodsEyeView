@@ -15,6 +15,7 @@ class MouseDriver : public InterruptHandler
     uint8_t buffer[3];
     uint8_t offset;
     uint8_t buttons;
+    uint8_t active = 1;
 
     uint8_t x, y;
     int32_t w, h;
@@ -28,7 +29,11 @@ public:
         w = width;
         h = height;
     }
+
     virtual uint32_t HandleInterrupt(uint32_t esp) override;
+    virtual void Start() { active = 1; }
+    virtual void Stop() { active = 0; }
+
     virtual void OnMouseMove(int x, int y);
     virtual void OnMouseUp();
     virtual void OnMouseDown(int b);

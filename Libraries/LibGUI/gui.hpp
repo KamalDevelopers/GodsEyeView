@@ -302,10 +302,9 @@ private:
     int win_index;
     int desk_height;
     int desk_width;
-    int old_mouse_x;
-    int old_mouse_y;
-    uint8_t old_mouse_color;
-    uint8_t render_wallpapaper = 0;
+    int old_mouse_x = 0;
+    int old_mouse_y = 0;
+    uint8_t old_mouse_color = 0;
     uint8_t active_window = 0;
 
     Image* desk_wallpaper;

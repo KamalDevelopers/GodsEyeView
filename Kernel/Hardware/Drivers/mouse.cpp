@@ -9,6 +9,8 @@ MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)
     buttons = 0;
     w = screenw;
     h = screenh;
+    mouse_x = w / 2;
+    mouse_y = h / 2;
 
     commandport.Write(0xA8);
     commandport.Write(0x20);
@@ -27,20 +29,17 @@ MouseDriver::~MouseDriver()
 
 void MouseDriver::OnMouseMove(int x, int y)
 {
-    //x /= 2;
-    //y /= 2;
-
     int32_t new_mouse_x = mouse_x + x;
+    int32_t new_mouse_y = mouse_y + y;
+
     if (new_mouse_x < 0)
         new_mouse_x = 0;
     if (new_mouse_x >= w - 2)
-        new_mouse_x = w - 2;
-
-    int32_t new_mouse_y = mouse_y + y;
+        new_mouse_x = w - 3;
     if (new_mouse_y < 0)
         new_mouse_y = 0;
     if (new_mouse_y >= h - 20)
-        new_mouse_y = h - 20;
+        new_mouse_y = h - 21;
 
     mouse_x = new_mouse_x;
     mouse_y = new_mouse_y;
@@ -55,17 +54,22 @@ void MouseDriver::OnMouseDown(int b)
 {
     if (b == 9) {
         mouse_press = 1; //Left Click
-    } else if (b == 10) {
+        return;
+    }
+    if (b == 10) {
         mouse_press = 2; //Right Click
-    } else if (b == 12) {
+        return;
+    }
+    if (b == 12) {
         mouse_press = 3; //Middle Click
+        return;
     }
 }
 
 uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
 {
     uint8_t status = commandport.Read();
-    if (!(status & 0x20))
+    if (!(status & 0x20) || (active == 0))
         return esp;
 
     buffer[offset] = dataport.Read();

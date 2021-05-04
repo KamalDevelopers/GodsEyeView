@@ -590,7 +590,6 @@ void Desktop::DrawMouse(int32_t x, int32_t y)
 void Desktop::SetWallpaper(Image* img)
 {
     desk_wallpaper = img;
-    //render_wallpapaper = 1;
     for (int y = 0; y < 480; y++)
         for (int x = 0; x < 640; x++)
             vga->SetBackground(x, y, desk_wallpaper->GetColor(y * 640 + x));
