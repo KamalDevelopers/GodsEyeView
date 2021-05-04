@@ -324,7 +324,6 @@ public:
 
     void MouseRelease(uint32_t MouseX, uint32_t MouseY, int b);
     void MousePress(uint32_t MouseX, uint32_t MouseY, int b);
-    void DrawMouse(int32_t x, int32_t y);
 
     Graphics* GetVGA() { return vga; }
     MouseDriver* GetMouse() { return mouse; };

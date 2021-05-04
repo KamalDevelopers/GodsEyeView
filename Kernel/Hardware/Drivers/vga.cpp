@@ -332,8 +332,8 @@ void Graphics::RenderScreen(uint8_t refresh)
         }
     }
 
-    memcpy(&old_vga_buffer, &vga_buffer, sizeof(uint8_t) * 640 * 480);
-    memcpy(&vga_buffer, &background, sizeof(uint8_t) * 640 * 480);
+    memcpy(old_vga_buffer, vga_buffer, sizeof(uint8_t) * 640 * 480);
+    memcpy(vga_buffer, background, sizeof(uint8_t) * 640 * 480);
 }
 
 uint8_t Graphics::GetColorIndex(uint8_t r, uint8_t g, uint8_t b)
@@ -362,8 +362,11 @@ void Graphics::RenderBitMap(int bitmap[], uint8_t colorindex, int x_offset, int 
     for (x = 0; x < 8; x++) {
         for (y = 0; y < 8; y++) {
             set = bitmap[x] & 1 << y;
-            if (set != 0)
-                PutPixel(x_offset + vga_x_offset + y, y_offset + x, colorindex);
+            if (set != 0) {
+                old_vga_buffer[(y_offset + x) * 640 + (x_offset + vga_x_offset + y)] = colorindex;
+                vga_buffer[(y_offset + x) * 640 + (x_offset + vga_x_offset + y)] = colorindex;
+                SlowDraw(x_offset + vga_x_offset + y, y_offset + x, colorindex);
+            }
         }
     }
     vga_x_offset += 8;
@@ -381,4 +384,19 @@ void Graphics::Print(char* str, uint8_t colorindex, int x_offset, int y_offset)
     int size = str_len(str);
     for (int i = 0; i < size; i++)
         RenderBitMap(font_basic[str[i]], colorindex, x_offset, y_offset);
+}
+
+void Graphics::RenderMouse(short int bitmap[], int mx, int my)
+{
+    int index = 0;
+    for (int y = 0; y < 11; y++) {
+        for (int x = 0; x < 8; x++) {
+            if (mouse_bitmap[index] != -1) {
+                old_vga_buffer[(y + my) * 640 + (x + mx)] = mouse_bitmap[index];
+                vga_buffer[(y + my) * 640 + (x + mx)] = mouse_bitmap[index];
+                SlowDraw(x + mx, y + my, mouse_bitmap[index]);
+            }
+            index++;
+        }
+    }
 }

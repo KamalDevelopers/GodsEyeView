@@ -79,6 +79,7 @@ public:
     virtual void RenderScreen(uint8_t refresh = 0);
     virtual void PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
     virtual uint8_t* GetPixelColor(int x, int y);
+    virtual void RenderMouse(short int bitmap[], int mx, int my);
     virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorindex);
     virtual void RenderBitMap(int bitmap[], uint8_t colorindex, int x_offset = 0, int y_offset = 0);
     virtual void Print(char* str, uint8_t colorindex, int x_offset = 0, int y_offset = 0);

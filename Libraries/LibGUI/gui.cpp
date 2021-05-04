@@ -481,9 +481,9 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
             }
 
             if ((mouse->GetMousePress() == 0) && (save_mouse_press == 1)) {
-                ms_enable();
                 vga->FillRectangle(win_xpos + 1, win_ypos + 8, win_width - 2, win_height - 9, win_color);
                 save_mouse_press = 0;
+                ms_enable();
             }
 
             if (save_mouse_press == 1) {
@@ -521,7 +521,6 @@ uint8_t Window::Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboar
 
     vga->ResetOffset();
     vga->Print(win_title, 0x0, win_xpos + 5, win_ypos - 2);
-
     BeginChildren(vga, mouse, keyboard);
     return 1;
 }
@@ -573,20 +572,6 @@ void Desktop::MousePress(uint32_t x, uint32_t y, int b)
         children[i]->MousePress(x, y, b, vga);
 }
 
-void Desktop::DrawMouse(int32_t x, int32_t y)
-{
-    uint8_t tempc;
-
-    if ((old_mouse_x != x) or (old_mouse_y != y)) {
-        tempc = *vga->GetPixelColor(x, y);
-        vga->PutPixel(x, y, 0x6);
-        vga->PutPixel(old_mouse_x, old_mouse_y, old_mouse_color);
-        old_mouse_color = tempc;
-    }
-    old_mouse_x = x;
-    old_mouse_y = y;
-}
-
 void Desktop::SetWallpaper(Image* img)
 {
     desk_wallpaper = img;
@@ -622,8 +607,8 @@ int Desktop::AppendWin(Window* win)
 
 void Desktop::Draw()
 {
-    auto MouseDisable = []() { is_mouse = 0; return; };
-    auto MouseEnable = []() { is_mouse = 1; return; };
+    auto MouseDisable = []() { is_mouse = 0; };
+    auto MouseEnable = []() { is_mouse = 1; };
 
     for (int i = 0; i < win_index; i++) {
         if (children[i]->GetDestroy() == 1) {
@@ -633,19 +618,7 @@ void Desktop::Draw()
             children[i]->Begin(vga, mouse, keyboard);
     }
 
-    int index = 0;
-    for (int y = 0; y < 11; y++) {
-        for (int x = 0; x < 8; x++) {
-            if (mouse_bitmap[index] != -1) {
-                if (mouse->GetMouseX() + 8 < vga->GetScreenW())
-                    vga->PutPixel(x + mouse->GetMouseX(), y + mouse->GetMouseY(), mouse_bitmap[index]);
-                else
-                    vga->PutPixel(x + vga->GetScreenW() - 8, y + mouse->GetMouseY(), mouse_bitmap[index]);
-            }
-            index++;
-        }
-    }
-
+    vga->RenderMouse(mouse_bitmap, mouse->GetMouseX(), mouse->GetMouseY());
     vga->RenderScreen();
 }
 
