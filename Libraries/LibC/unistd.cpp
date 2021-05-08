@@ -7,6 +7,20 @@ void _exit(int status)
                  : "a"(1), "b"(0));
 }
 
+void _shutdown()
+{
+    asm volatile("int $0x80"
+                 :
+                 : "a"(88), "b"(1));
+}
+
+void _reboot()
+{
+    asm volatile("int $0x80"
+                 :
+                 : "a"(88), "b"(0));
+}
+
 int close(int descriptor)
 {
     asm volatile("int $0x80"

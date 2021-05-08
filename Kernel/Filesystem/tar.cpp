@@ -109,6 +109,14 @@ int Tar::FindFile(char* file_name)
     return -1;
 }
 
+int Tar::Exists(char* dirname)
+{
+    for (int i = 0; i < dir_index; i++)
+        if (strcmp(dirs[i].name, dirname) == 0)
+            return 0;
+    return 1;
+}
+
 int Tar::ReadDir(char* dirname, char** file_ids)
 {
     /* Iterate through file names */

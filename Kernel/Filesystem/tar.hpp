@@ -65,6 +65,7 @@ public:
     int RenameFile(char* file_name, char* new_file_name);
     int Unlink(char* path, bool update = 1);
     int ReadDir(char* dirname, char** file_ids);
+    int Exists(char* dirname);
     int Chmod(char* file_name, char* permissions);
 
     void SectorSwap(int sector_src, int sector_dest);

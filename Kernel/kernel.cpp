@@ -29,6 +29,7 @@
 #include "Hardware/pci.hpp"
 
 #include "multitasking.hpp"
+#include "panic.hpp"
 #include "syscalls.hpp"
 
 typedef void (*constructor)();
@@ -41,30 +42,17 @@ extern "C" void callConstructors()
     for (constructor* i = &start_ctors; i != &end_ctors; i++)
         (*i)();
 }
+
 extern "C" {
 multiboot_info_t* multiboot_info_ptr;
-}
-
-void poweroff()
-{
-    asm("int $0x80"
-        :
-        : "a"(88), "b"(1));
-}
-
-void reboot()
-{
-    asm("int $0x80"
-        :
-        : "a"(88), "b"(0));
 }
 
 struct DriverObjects {
     MouseDriver* mouse;
     KeyboardDriver* keyboard;
 } static drivers;
-
 static uint8_t* wallpaper_data;
+
 void desktopEnvironment()
 {
     Graphics vga;
@@ -114,9 +102,9 @@ void desktopEnvironment()
 
     GUI::Window shutdown_modal(200, 170, 235, 80, 0x7, 0);
     GUI::Label shutdown_label(30, 25, 10, 5, 0x0, 0x7, "Shutdown confirmation");
-    GUI::Button shutdown_button(5, 55, 10, 20, "Shutdown", poweroff);
+    GUI::Button shutdown_button(5, 55, 10, 20, "Shutdown", _shutdown);
     shutdown_button.Color(0xC);
-    GUI::Button reboot_button(85, 55, 20, 20, "Reboot", reboot);
+    GUI::Button reboot_button(85, 55, 20, 20, "Reboot", _reboot);
     GUI::Button cancel_button(160, 55, 20, 20, "Cancel", close_shutdown);
     shutdown_modal.Border(1, 0x8);
     shutdown_modal.AddWidget(&shutdown_button);
@@ -177,6 +165,8 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
+    if (fs_tar.Exists("root/") == 1)
+        panic("Could not mount the filesystem");
     vfs.Mount(&fs_tar);
 
     uint8_t* fdata = new uint8_t[640 * 480];

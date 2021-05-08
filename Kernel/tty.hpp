@@ -13,6 +13,7 @@
 
 static char* datacolorblue = "\033[01;34m[GevOS]: ";
 static char* datacoloroff = "\033[0m";
+static uint8_t serial_enabled = 0;
 
 /* Serials */
 extern void init_serial();

@@ -20,6 +20,7 @@ void init_serial()
     outb(COMPORT + 3, 0x03);
     outb(COMPORT + 2, 0xC7);
     outb(COMPORT + 4, 0x0B);
+    serial_enabled = 1;
 }
 
 int transmit_empty()
@@ -36,6 +37,9 @@ void log_putc(char c)
 
 void klog(char* str)
 {
+    if (serial_enabled == 0)
+        return;
+
     for (int i = 0; i < strlen(datacolorblue); i++)
         log_putc(datacolorblue[i]); //color on
     for (int i = 0; str[i] != '\0'; i++) {
@@ -48,6 +52,9 @@ void klog(char* str)
 
 void klog(int num)
 {
+    if (serial_enabled == 0)
+        return;
+
     char str[20];
     itoa(num, str);
 
