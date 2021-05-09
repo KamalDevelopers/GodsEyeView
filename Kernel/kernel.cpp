@@ -166,7 +166,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
     if (fs_tar.Exists("root/") == 1)
-        panic("Could not mount the filesystem");
+        PANIC("Could not mount the filesystem");
     vfs.Mount(&fs_tar);
 
     uint8_t* fdata = new uint8_t[640 * 480];
