@@ -243,7 +243,7 @@ void KeyboardDriver::ReadKeys(int len, char* data)
 
     /* Enable Mouse */
     outb(0x64, 0xD4);
-    outb(0x60, 0xF3);
+    outb(0x60, 0xF4);
 }
 
 void KeyboardDriver::OnKey(uint8_t keypress)
