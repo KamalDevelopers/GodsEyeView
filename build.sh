@@ -34,6 +34,9 @@ else
     fi
 fi
 
-ninja -t clean
-cd Libraries/
-ninja -t clean
+if [ "$1" != "norun" ]
+then
+    ninja -t clean
+    cd Libraries/
+    ninja -t clean
+fi
