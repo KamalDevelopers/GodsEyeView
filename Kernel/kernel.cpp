@@ -129,7 +129,9 @@ void desktopEnvironment()
             shutdown_cancel = 0;
             shutdown_modal.SetHidden(1);
         } else {
-            clock_label.SetText(TimeDriver::time->GetFullTime());
+            char* time;
+            TimeDriver::time->GetFullTime(':', time);
+            clock_label.SetText(time);
         }
         desktop.Draw();
     }

@@ -50,7 +50,7 @@ public:
     virtual unsigned char GetMonth();
     virtual unsigned int GetYear();
     virtual unsigned int GetTime();
-    virtual char* GetFullTime(char seperator = ':');
+    virtual void GetFullTime(char seperator, char* time);
 };
 
 #endif
