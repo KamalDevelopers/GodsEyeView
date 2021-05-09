@@ -25,6 +25,7 @@ extern void klog(int num);
 static uint16_t* video_memory = (unsigned short*)0xb8000;
 static int video_memory_index = 0;
 static int new_line_index = 0;
+static uint32_t default_color;
 static uint32_t color;
 
 void kprintf(const char* format, ...);
@@ -32,5 +33,6 @@ void write_string(char* str);
 void write_char(int c);
 void clear_screen(int fg = -1, int bg = -1);
 void set_color(uint8_t fg, uint8_t bg);
+void update_cursor();
 
 #endif

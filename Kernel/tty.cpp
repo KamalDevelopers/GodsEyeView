@@ -80,10 +80,6 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
 
 void write_string(char* str)
 {
-    if (strcmp(str, "\33[H\33[2J") == 0) {
-        clear_screen();
-        return;
-    }
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] == '\b') {
             if (video_memory_index <= 0)
@@ -91,6 +87,7 @@ void write_string(char* str)
             video_memory_index--;
             write_char(' ');
             video_memory_index--;
+            update_cursor();
             continue;
         }
 
@@ -98,13 +95,39 @@ void write_string(char* str)
     }
 }
 
+static int8_t esc_flag = 0;
 void write_char(int c)
 {
+    if (c == '\33') {
+        esc_flag = 1;
+        return;
+    }
+
+    if (esc_flag == 1) {
+        esc_flag = 0;
+        switch (c) {
+        case 1:
+            clear_screen();
+            return;
+        case 2:
+            esc_flag = 2;
+            return;
+        case 3:
+            color = default_color;
+            return;
+        }
+    }
+
+    if (esc_flag == 2) {
+        esc_flag = 0;
+        set_color(c, 0);
+        return;
+    }
+
     if (c == 10) {
         new_line_index++;
         video_memory_index = 0;
     } else {
-        //video_memory[80 * new_line_index + video_memory_index] = (video_memory[video_memory_index] & 0xff00) | c;
         video_memory[80 * new_line_index + video_memory_index] = vga_entry(c, color);
         video_memory_index++;
     }
@@ -124,12 +147,16 @@ void write_char(int c)
         video_memory_index = 0;
         new_line_index++;
     }
+
+    update_cursor();
 }
 
 void clear_screen(int fg, int bg)
 {
-    if ((fg != -1) && (bg != -1))
+    if ((fg != -1) && (bg != -1)) {
         set_color(fg, bg);
+        default_color = color;
+    }
 
     video_memory_index = 0;
     new_line_index = 0;
@@ -142,4 +169,13 @@ void clear_screen(int fg, int bg)
 void set_color(uint8_t fg, uint8_t bg)
 {
     color = vga_entry_color(fg, bg);
+}
+
+void update_cursor()
+{
+    uint32_t pos = new_line_index * 80 + video_memory_index;
+    outb(0x3D4, 15);
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D4, 14);
+    outb(0x3D5, (uint8_t)(pos >> 8) & 0xFF);
 }
