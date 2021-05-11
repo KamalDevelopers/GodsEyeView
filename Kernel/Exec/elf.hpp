@@ -114,7 +114,7 @@ typedef struct {
 
 class Elf : public Execf {
 private:
-    char* format_name;
+    char format_name[100];
 
 public:
     Elf(char* n);

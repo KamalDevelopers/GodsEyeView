@@ -3,7 +3,6 @@
 Elf::Elf(char* n)
     : Execf(n)
 {
-    format_name = new char[strlen(n)];
     strcpy(format_name, n);
 }
 
@@ -33,6 +32,7 @@ int Elf::Probe(uint8_t* file_data)
 
     if ((valid) && (executable))
         return 1;
+
     if (valid)
         return 0;
 

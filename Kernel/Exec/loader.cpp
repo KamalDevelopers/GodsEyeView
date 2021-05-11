@@ -45,11 +45,11 @@ int Loader::Exec(uint8_t* file_buffer, char* loader_name)
         if (loader_name) {
             if (strcmp(loader_name, execfs[i]->Name()) == 0) {
                 /* FIXME: memory area for the program should be created */
-                location += 0x10000;
+                location += 0x40000;
                 return execfs[i]->Exec(file_buffer, location);
             }
         } else if (execfs[i]->Probe(file_buffer) == 1) {
-            location += 0x10000;
+            location += 0x40000;
             return execfs[i]->Exec(file_buffer, location);
         }
     }
