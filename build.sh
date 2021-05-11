@@ -7,6 +7,14 @@ ninja
 cd ..
 ninja
 
+if [ "$1" != "nousr" ]
+then
+    cd Userland/Apps
+    ninja
+    cd ../..
+    ninja disk
+fi
+
 if [ "$#" -eq  "0" ]
 then
     ninja run
@@ -31,6 +39,11 @@ else
 
         qemu-system-x86_64 -cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=../hdd.tar
         cd ../
+    else
+        if [ "$1" != "norun" ]
+        then
+            ninja run
+        fi
     fi
 fi
 
