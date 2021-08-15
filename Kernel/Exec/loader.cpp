@@ -13,7 +13,7 @@ int Execf::Probe(uint8_t* file_data)
     return 0;
 }
 
-int Execf::Exec(uint8_t* file_data, uint32_t phys_loc)
+int Execf::Exec(uint8_t* file_data)
 {
     return 0;
 }
@@ -46,11 +46,11 @@ int Loader::Exec(uint8_t* file_buffer, char* loader_name)
             if (strcmp(loader_name, execfs[i]->Name()) == 0) {
                 /* FIXME: memory area for the program should be created */
                 location += 0x40000;
-                return execfs[i]->Exec(file_buffer, location);
+                return execfs[i]->Exec(file_buffer);
             }
         } else if (execfs[i]->Probe(file_buffer) == 1) {
             location += 0x40000;
-            return execfs[i]->Exec(file_buffer, location);
+            return execfs[i]->Exec(file_buffer);
         }
     }
     return -1;

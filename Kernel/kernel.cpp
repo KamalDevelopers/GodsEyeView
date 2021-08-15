@@ -53,7 +53,7 @@ struct Drivers {
 } static drivers;
 static uint8_t* p_wallpaper_data;
 
-void desktopEnvironment()
+void gui()
 {
     Graphics vga;
 
@@ -148,7 +148,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     TimeDriver time;
     VirtualFilesystem vfs;
 
-    Paging::p_init();
+    Paging::init();
     kernel_end = 10 * 1024 * 2;
     uint32_t* memupper = (uint32_t*)(&multiboot_info_ptr->mem_upper);
     MemoryManager memory_manager(kernel_end, (*memupper) * 1024);
@@ -197,12 +197,12 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     VFS::close(d_demo);
     int demo_exec = Loader::load->Exec(elfdata);
     kfree(elfdata);
-    Task Demo("Demo", demo_exec);
+    Task demo("Demo", demo_exec);
 
-    int desktop_exec = (int)&desktopEnvironment;
-    Task Desktop("GUI", desktop_exec, 1);
+    int desktop_exec = (int)&gui;
+    Task desktop("GUI", desktop_exec, 1);
 
-    task_manager.AppendTasks(2, &Desktop, &Demo);
+    task_manager.AppendTasks(2, &desktop, &demo);
     IRQ::activate();
 
     while (1)

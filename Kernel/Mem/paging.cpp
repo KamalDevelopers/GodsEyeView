@@ -5,7 +5,7 @@ static uint32_t page_dir_loc = 0;
 static uint32_t* last_page = 0;
 
 /* Map page, virtual to physical */
-void Paging::p_map_page(uint32_t virt, uint32_t phys)
+void Paging::map_page(uint32_t virt, uint32_t phys)
 {
     uint16_t id = virt >> 22;
     for (int i = 0; i < 1024; i++) {
@@ -16,7 +16,7 @@ void Paging::p_map_page(uint32_t virt, uint32_t phys)
     last_page = (uint32_t*)(((uint32_t)last_page) + 4096);
 }
 
-void Paging::p_copy_page_directory(uint32_t* destination)
+void Paging::copy_page_directory(uint32_t* destination)
 {
     // FIXME
     for (int i = 0; i < 1024; i++) {
@@ -24,17 +24,17 @@ void Paging::p_copy_page_directory(uint32_t* destination)
     }
 }
 
-void Paging::p_switch_page_directory(uint32_t* page_dir)
+void Paging::switch_page_directory(uint32_t* page_dir)
 {
     page_directory = (uint32_t*)0x400000;
     for (int i = 0; i < 1024; i++) {
         page_directory[i] = page_dir[i];
     }
     page_dir_loc = (uint32_t)page_directory;
-    p_enable();
+    enable();
 }
 
-void Paging::p_enable()
+void Paging::enable()
 {
     /* Put page directory into CR3 */
     asm volatile("mov %%eax, %%cr3"
@@ -45,7 +45,7 @@ void Paging::p_enable()
     asm volatile("mov %eax, %cr0");
 }
 
-void Paging::p_init()
+void Paging::init()
 {
     page_directory = (uint32_t*)0x400000;
     page_dir_loc = (uint32_t)page_directory;
@@ -53,7 +53,7 @@ void Paging::p_init()
     for (int i = 0; i < 1024; i++) {
         page_directory[i] = 0 | 2;
     }
-    Paging::p_map_page(0, 0);
-    Paging::p_map_page(0x400000, 0x400000);
-    Paging::p_enable();
+    Paging::map_page(0, 0);
+    Paging::map_page(0x400000, 0x400000);
+    Paging::enable();
 }

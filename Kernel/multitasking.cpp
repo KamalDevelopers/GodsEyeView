@@ -20,7 +20,7 @@ Task::Task(char* task_name, uint32_t entrypoint, uint8_t priv)
     cpustate->cs = gdt->CodeSegmentSelector();
     cpustate->eflags = 0x202;
 
-    Paging::p_copy_page_directory(page_directory);
+    Paging::copy_page_directory(page_directory);
 
     state = 0;
     privelege = priv;
@@ -116,7 +116,7 @@ void TaskManager::KillZombieTasks()
 
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
-    //Paging::p_copy_page_directory(tasks[current_task]->page_directory);
+    //Paging::copy_page_directory(tasks[current_task]->page_directory);
     if (locked != -1) {
         locked++;
         if (locked > 10) {
@@ -139,6 +139,6 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
     if (current_task >= num_tasks)
         current_task = 0;
 
-    Paging::p_switch_page_directory(tasks[current_task]->page_directory);
+    Paging::switch_page_directory(tasks[current_task]->page_directory);
     return tasks[current_task]->cpustate;
 }

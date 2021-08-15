@@ -9,6 +9,10 @@
 #define ELF_NIDENT 16
 #define EM_386 (3)     /* x86 Machine Type */
 #define EV_CURRENT (1) /* Current Version */
+#define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
+#define PF_X 0x1
+#define PF_W 0x2
+#define PF_R 0x4
 
 /* e_ident[] magic number */
 #define ELFMAG0 0x7f     /* e_ident[EI_MAG0] */
@@ -120,7 +124,7 @@ public:
     Elf(char* n);
     ~Elf();
     int Probe(uint8_t* file_data);
-    int Exec(uint8_t* file_data, uint32_t phys_loc);
+    int Exec(uint8_t* file_data);
     char* Name();
 };
 

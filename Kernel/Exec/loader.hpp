@@ -12,7 +12,7 @@ public:
     ~Execf();
 
     virtual int Probe(uint8_t* file_data);
-    virtual int Exec(uint8_t* file_data, uint32_t phys_loc);
+    virtual int Exec(uint8_t* file_data);
     virtual char* Name();
 };
 
