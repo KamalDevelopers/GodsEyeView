@@ -37,7 +37,7 @@ extern "C" uint32_t kernel_end;
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 
-extern "C" void callConstructors()
+extern "C" void call_constructors()
 {
     for (constructor* i = &start_ctors; i != &end_ctors; i++)
         (*i)();
@@ -47,11 +47,11 @@ extern "C" {
 multiboot_info_t* multiboot_info_ptr;
 }
 
-struct DriverObjects {
+struct Drivers {
     MouseDriver* mouse;
     KeyboardDriver* keyboard;
 } static drivers;
-static uint8_t* wallpaper_data;
+static uint8_t* p_wallpaper_data;
 
 void desktopEnvironment()
 {
@@ -115,7 +115,7 @@ void desktopEnvironment()
     shutdown_modal.SetHidden(1);
 
     GUI::Image wallpaper(640, 480, 0x0);
-    wallpaper.ImageRenderer(wallpaper_data);
+    wallpaper.ImageRenderer(p_wallpaper_data);
     desktop.SetWallpaper(&wallpaper);
 
     while (1) {
@@ -167,16 +167,15 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     ata1s.Identify();
     Tar fs_tar(&ata1s);
     fs_tar.Mount();
-    if (fs_tar.Exists("root/") == 1)
+    if (fs_tar.Exists("welcome") == 1)
         PANIC("Could not mount the filesystem");
     vfs.Mount(&fs_tar);
 
-    uint8_t* fdata = new uint8_t[640 * 480];
-    int d_wallpaper = VFS::open("root/wallpaper");
-    VFS::read(d_wallpaper, fdata);
+    uint8_t* wallpaper_data = new uint8_t[640 * 480];
+    int d_wallpaper = VFS::open("wallpaper");
+    VFS::read(d_wallpaper, wallpaper_data);
     VFS::close(d_wallpaper);
-    wallpaper_data = fdata;
-    kfree(fdata);
+    p_wallpaper_data = wallpaper_data;
 
     klog("Starting PCI and activating drivers");
     DriverManager driver_manager;
@@ -191,7 +190,7 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     Loader mloader;
     mloader.Add(&elf_load);
 
-    int d_demo = VFS::open("root/demo");
+    int d_demo = VFS::open("demo");
     int size = VFS::size(d_demo);
     uint8_t* elfdata = new uint8_t[size];
     VFS::read(d_demo, elfdata);

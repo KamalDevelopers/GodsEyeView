@@ -8,10 +8,10 @@ rule run
 
 rule disk
     pool = console
-    command = cd Base && tar cf ../hdd.tar root
+    command = cd Base/root && tar cf ../../hdd.tar *
 
 rule cpp
-    command = ~/opt/cross/bin/i686-elf-g++ -ILibraries -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -c $in -o $out
+    command = i686-elf-g++ -ILibraries -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -fno-omit-frame-pointer -c $in -o $out
 
 rule asm
     command = as --32 $in -o $out

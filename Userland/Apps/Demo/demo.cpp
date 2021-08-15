@@ -7,7 +7,7 @@ int main()
     int result;
     char buffer[22];
 
-    result = open((char*)"root/welcome");
+    result = open((char*)"welcome");
     read(result, buffer, 22);
     close(result);
     printf("%s", buffer);

@@ -1,5 +1,5 @@
 rule cpp
-    command = ~/opt/cross/bin/i686-elf-g++ -c $in -o $out -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -I./
+    command = i686-elf-g++ -c $in -o $out -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -I./
 
 rule libc
     command = ar ruv $out $in && ranlib $out
@@ -8,5 +8,4 @@ build LibC/unistd.o: cpp ./LibC/unistd.cpp
 build LibC/string.o: cpp ./LibC/string.cpp
 build LibC/stdio.o: cpp ./LibC/stdio.cpp
 build LibC/stdlib.o: cpp ./LibC/stdlib.cpp
-build LibC/liballoc.o: cpp ./LibC/liballoc.cpp
-build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/liballoc.o
+build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o

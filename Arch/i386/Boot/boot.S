@@ -25,7 +25,7 @@
 
 .section .text
 .extern kernelMain
-.extern callConstructors
+.extern call_constructors
 .global loader
 
 .extern multiboot_info_ptr
@@ -40,7 +40,7 @@ loader:
     movl %ebx, multiboot_info_ptr
 
     mov $kernel_stack, %esp
-    call callConstructors
+    call call_constructors
     call kernelMain
 
 
