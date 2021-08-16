@@ -124,6 +124,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     case 90:
         /* Incomplete implementation */
         cpu->eax = (uint32_t)pmalloc((size_t)cpu->ecx);
+        Paging::map_page(cpu->eax, cpu->eax);
         break;
 
     case 91:
@@ -139,12 +140,6 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         PCS::beep((uint32_t)cpu->ebx, (uint32_t)cpu->ecx);
         break;
 
-    case 401:
-        /* Temporary, instead of futex */
-        if ((uint32_t)cpu->ebx == 0)
-            TaskManager::active->Lock();
-        else
-            TaskManager::active->Unlock();
     default:
         break;
     }

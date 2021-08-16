@@ -48,14 +48,14 @@ int Elf::Exec(uint8_t* file_data)
 
     Elf32_Phdr* elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
     elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
-    uint32_t phys_loc;
+    uint32_t phys_location;
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
         switch (elf_program_header->p_type) {
         case 1:
             if (elf_program_header->p_filesz != 0) {
-                phys_loc = (uint32_t)pmalloc(ROUND_UP(elf_program_header->p_filesz, 4096));
-                Paging::map_page(elf_program_header->p_vaddr, phys_loc);
+                phys_location = (uint32_t)pmalloc(ROUND_UP(elf_program_header->p_filesz, 4096));
+                Paging::map_page(elf_program_header->p_vaddr, phys_location);
             }
 
             memcpy((void*)elf_program_header->p_vaddr, file_data + elf_program_header->p_offset, elf_program_header->p_filesz);

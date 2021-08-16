@@ -1,31 +1,87 @@
-#include "liballoc.hpp"
-
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
-void printf(const char* format, ...);
+//void printf(const char* format, ...);
 
-// #define DEBUG
+#include "LibC/liballoc.hpp"
 
 #define LIBALLOC_MAGIC 0xc001c0de
 #define MAXCOMPLETE 5
 #define MAXEXP 32
 #define MINEXP 8
+#define PAGESIZE 4096
+#define PAGECOUNT 16
 
 #define MODE_BEST 0
 #define MODE_INSTANT 1
-
 #define MODE MODE_BEST
 
+void printf(const char* format, ...);
 struct boundary_tag* l_freePages[MAXEXP]; //< Allowing for 2^MAXEXP blocks
 int l_completePages[MAXEXP];              //< Allowing for 2^MAXEXP blocks
 
 #ifdef DEBUG
-unsigned int l_allocated = 0; //< The real amount of memory allocated.
-unsigned int l_inuse = 0;     //< The amount of memory in use (malloc'ed).
+unsigned int l_allocated; //< The real amount of memory allocated.
+unsigned int l_inuse;     //< The amount of memory in use (malloc'ed).
 #endif
 
-static int l_initialized = 0; //< Flag to indicate initialization.
-static int l_pageSize = 4096; //< Individual page size
-static int l_pageCount = 16;  //< Minimum number of pages to allocate.
+/** This function is supposed to lock the memory data structures. It
+ * could be as simple as disabling interrupts or acquiring a spinlock.
+ * It's up to you to decide. 
+ *
+ * \return 0 if the lock was acquired successfully. Anything else is
+ * failure.
+ */
+int liballoc_lock()
+{
+    return 0;
+}
+
+/** This function unlocks what was previously locked by the liballoc_lock
+ * function.  If it disabled interrupts, it enables interrupts. If it
+ * had acquiried a spinlock, it releases the spinlock. etc.
+ *
+ * \return 0 if the lock was successfully released.
+ */
+int liballoc_unlock()
+{
+    return 0;
+}
+
+/** This is the hook into the local system which allocates pages. It
+ * accepts an integer parameter which is the number of pages
+ * required.  The page size was set up in the liballoc_init function.
+ *
+ * \return NULL if the pages were not allocated.
+ * \return A pointer to the allocated memory.
+ */
+void* liballoc_alloc(int pages)
+{
+    unsigned int size = pages * 4096;
+    char* p2;
+    asm("int $0x80"
+        : "=a"(p2)
+        : "a"(90), "b"(0), "c"(size));
+
+    if (!p2)
+        return NULL;
+    return p2;
+}
+
+/** This frees previously allocated memory. The void* parameter passed
+ * to the function is the exact same value returned from a previous
+ * liballoc_alloc call.
+ *
+ * The integer value is the number of pages to free.
+ *
+ * \return 0 if the memory was successfully freed.
+ */
+int liballoc_free(void* ptr, int pages)
+{
+    unsigned int size = pages * 4096;
+    asm("int $0x80"
+        :
+        : "a"(91), "b"(ptr), "c"(size));
+    return 0;
+}
 
 // ***********   HELPER FUNCTIONS  *******************************
 
@@ -33,7 +89,7 @@ static int l_pageCount = 16;  //< Minimum number of pages to allocate.
  *
  *  Returns n where  2^n <= size < 2^(n+1)
  */
-static inline int getexp(unsigned int size)
+static int getexp(unsigned int size)
 {
     if (size < (1 << MINEXP)) {
 #ifdef DEBUG
@@ -118,7 +174,7 @@ static void dump_array()
 }
 #endif
 
-static inline void insert_tag(struct boundary_tag* tag, int index)
+static void insert_tag(struct boundary_tag* tag, int index)
 {
     int realIndex;
 
@@ -139,7 +195,7 @@ static inline void insert_tag(struct boundary_tag* tag, int index)
     l_freePages[realIndex] = tag;
 }
 
-static inline void remove_tag(struct boundary_tag* tag)
+static void remove_tag(struct boundary_tag* tag)
 {
     if (l_freePages[tag->index] == tag)
         l_freePages[tag->index] = tag->next;
@@ -154,7 +210,7 @@ static inline void remove_tag(struct boundary_tag* tag)
     tag->index = -1;
 }
 
-static inline struct boundary_tag* melt_left(struct boundary_tag* tag)
+static struct boundary_tag* melt_left(struct boundary_tag* tag)
 {
     struct boundary_tag* left = tag->split_left;
 
@@ -167,7 +223,7 @@ static inline struct boundary_tag* melt_left(struct boundary_tag* tag)
     return left;
 }
 
-static inline struct boundary_tag* absorb_right(struct boundary_tag* tag)
+static struct boundary_tag* absorb_right(struct boundary_tag* tag)
 {
     struct boundary_tag* right = tag->split_right;
 
@@ -220,13 +276,13 @@ static struct boundary_tag* allocate_new_tag(unsigned int size)
     usage = size + sizeof(struct boundary_tag);
 
     // Perfect amount of space
-    pages = usage / l_pageSize;
-    if ((usage % l_pageSize) != 0)
+    pages = usage / PAGESIZE;
+    if ((usage % PAGESIZE) != 0)
         pages += 1;
 
     // Make sure it's >= the minimum size.
-    if (pages < l_pageCount)
-        pages = l_pageCount;
+    if (pages < PAGECOUNT)
+        pages = PAGECOUNT;
 
     tag = (struct boundary_tag*)liballoc_alloc(pages);
 
@@ -235,7 +291,7 @@ static struct boundary_tag* allocate_new_tag(unsigned int size)
 
     tag->magic = LIBALLOC_MAGIC;
     tag->size = size;
-    tag->real_size = pages * l_pageSize;
+    tag->real_size = pages * PAGESIZE;
     tag->index = -1;
 
     tag->next = NULL;
@@ -244,9 +300,9 @@ static struct boundary_tag* allocate_new_tag(unsigned int size)
     tag->split_right = NULL;
 
 #ifdef DEBUG
-    printf("Resource allocated %x of %i pages (%i bytes) for %i size.\n", tag, pages, pages * l_pageSize, size);
+    printf("Resource allocated %x of %i pages (%i bytes) for %i size.\n", tag, pages, pages * PAGESIZE, size);
 
-    l_allocated += pages * l_pageSize;
+    l_allocated += pages * PAGESIZE;
 
     printf("Total memory usage = %i KB\n", (int)((l_allocated / (1024))));
 #endif
@@ -398,17 +454,17 @@ void free(void* ptr)
 
         if (l_completePages[index] == MAXCOMPLETE) {
             // Too many standing by to keep. Free this one.
-            unsigned int pages = tag->real_size / l_pageSize;
+            unsigned int pages = tag->real_size / PAGESIZE;
 
-            if ((tag->real_size % l_pageSize) != 0)
+            if ((tag->real_size % PAGESIZE) != 0)
                 pages += 1;
-            if (pages < l_pageCount)
-                pages = l_pageCount;
+            if (pages < PAGECOUNT)
+                pages = PAGECOUNT;
 
             liballoc_free(tag, pages);
 
 #ifdef DEBUG
-            l_allocated -= pages * l_pageSize;
+            l_allocated -= pages * PAGESIZE;
             printf("Resource freeing %x of %i pages\n", tag, pages);
             dump_array();
 #endif
