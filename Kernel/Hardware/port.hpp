@@ -20,24 +20,24 @@ public:
     Port8Bit(uint16_t portnumber);
     ~Port8Bit();
 
-    virtual uint8_t Read();
-    virtual void Write(uint8_t data);
+    virtual uint8_t read();
+    virtual void write(uint8_t data);
 
 protected:
-    static inline uint8_t Read8(uint16_t _port)
+    static inline uint8_t read8(uint16_t port)
     {
         uint8_t result;
         __asm__ volatile("inb %1, %0"
                          : "=a"(result)
-                         : "Nd"(_port));
+                         : "Nd"(port));
         return result;
     }
 
-    static inline void Write8(uint16_t _port, uint8_t _data)
+    static inline void write8(uint16_t port, uint8_t data)
     {
         __asm__ volatile("outb %0, %1"
                          :
-                         : "a"(_data), "Nd"(_port));
+                         : "a"(data), "Nd"(port));
     }
 };
 
@@ -46,14 +46,14 @@ public:
     Port8BitSlow(uint16_t portnumber);
     ~Port8BitSlow();
 
-    virtual void Write(uint8_t data);
+    virtual void write(uint8_t data);
 
 protected:
-    static inline void Write8Slow(uint16_t _port, uint8_t _data)
+    static inline void write8slow(uint16_t port, uint8_t data)
     {
         __asm__ volatile("outb %0, %1\njmp 1f\n1: jmp 1f\n1:"
                          :
-                         : "a"(_data), "Nd"(_port));
+                         : "a"(data), "Nd"(port));
     }
 };
 
@@ -62,24 +62,24 @@ public:
     Port16Bit(uint16_t portnumber);
     ~Port16Bit();
 
-    virtual uint16_t Read();
-    virtual void Write(uint16_t data);
+    virtual uint16_t read();
+    virtual void write(uint16_t data);
 
 protected:
-    static inline uint16_t Read16(uint16_t _port)
+    static inline uint16_t read16(uint16_t port)
     {
         uint16_t result;
         __asm__ volatile("inw %1, %0"
                          : "=a"(result)
-                         : "Nd"(_port));
+                         : "Nd"(port));
         return result;
     }
 
-    static inline void Write16(uint16_t _port, uint16_t _data)
+    static inline void write16(uint16_t port, uint16_t data)
     {
         __asm__ volatile("outw %0, %1"
                          :
-                         : "a"(_data), "Nd"(_port));
+                         : "a"(data), "Nd"(port));
     }
 };
 
@@ -88,24 +88,25 @@ public:
     Port32Bit(uint16_t portnumber);
     ~Port32Bit();
 
-    virtual uint32_t Read();
-    virtual void Write(uint32_t data);
+    virtual uint32_t read();
+    virtual void write(uint32_t data);
 
 protected:
-    static inline uint32_t Read32(uint16_t _port)
+    static inline uint32_t read32(uint16_t port)
     {
         uint32_t result;
         __asm__ volatile("inl %1, %0"
                          : "=a"(result)
-                         : "Nd"(_port));
+                         : "Nd"(port));
         return result;
     }
 
-    static inline void Write32(uint16_t _port, uint32_t _data)
+    static inline void write32(uint16_t port, uint32_t data)
     {
         __asm__ volatile("outl %0, %1"
                          :
-                         : "a"(_data), "Nd"(_port));
+                         : "a"(data), "Nd"(port));
     }
 };
+
 #endif

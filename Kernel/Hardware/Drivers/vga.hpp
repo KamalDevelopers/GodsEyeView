@@ -11,22 +11,22 @@
 #include "LibC/types.hpp"
 
 namespace VGA16 {
-static uint8_t BLACK = 0x0;
-static uint8_t BLUE = 0x1;
-static uint8_t GREEN = 0x2;
-static uint8_t CYAN = 0x3;
-static uint8_t RED = 0x4;
-static uint8_t MAGENTA = 0x5;
-static uint8_t BROWN = 0x6;
-static uint8_t WHITE = 0x7;
-static uint8_t GRAY = 0x8;
-static uint8_t LIGHT_BLUE = 0x9;
-static uint8_t LIGHT_GREEN = 0xA;
-static uint8_t LIGHT_CYAN = 0xB;
-static uint8_t LIGHT_RED = 0xC;
-static uint8_t LIGHT_MAGENTA = 0xD;
-static uint8_t YELLOW = 0xE;
-static uint8_t BRIGHT_WHITE = 0xF;
+static uint8_t black = 0x0;
+static uint8_t blue = 0x1;
+static uint8_t green = 0x2;
+static uint8_t cyan = 0x3;
+static uint8_t red = 0x4;
+static uint8_t magenta = 0x5;
+static uint8_t brown = 0x6;
+static uint8_t white = 0x7;
+static uint8_t gray = 0x8;
+static uint8_t light_blue = 0x9;
+static uint8_t light_green = 0xA;
+static uint8_t light_cyan = 0xB;
+static uint8_t light_red = 0xC;
+static uint8_t light_magenta = 0xD;
+static uint8_t yellow = 0xE;
+static uint8_t bright_white = 0xF;
 };
 
 static uint8_t vga_on = 0;
@@ -45,12 +45,10 @@ protected:
     Port8Bit attributeControllerWritePort;
     Port8Bit attributeControllerResetPort;
 
-    void WriteRegisters(uint8_t* registers);
-    uint8_t* GetFrameBufferSegment();
-    void VgaDraw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle);
-    void SlowDraw(uint32_t x, uint32_t y, uint8_t colorIndex);
-
-    virtual uint8_t GetColorIndex(uint8_t r, uint8_t g, uint8_t b);
+    void write_registers(uint8_t* registers);
+    uint8_t* get_frame_buffer_segment();
+    void vga_draw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle);
+    void slow_draw(uint32_t x, uint32_t y, uint8_t color_index);
 
     uint8_t vga_buffer[480 * 640];
     uint8_t old_vga_buffer[480 * 640];
@@ -69,28 +67,27 @@ public:
     Graphics();
     ~Graphics();
 
-    virtual bool Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex);
-    virtual bool SetMode(uint32_t width, uint32_t height, uint32_t colordepth);
+    bool init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex);
+    bool set_mode(uint32_t width, uint32_t height, uint32_t colordepth);
 
-    virtual void FillRectangle(int x, int y, int wd, int ht, uint8_t colorindex);
-    virtual void FillPlane(int x, int y, int wd, int ht, unsigned c);
+    void fill_rectangle(int x, int y, int wd, int ht, uint8_t colorindex);
+    void fill_plane(int x, int y, int wd, int ht, unsigned c);
 
-    virtual void SetBackground(int x, int y, uint8_t colorindex);
-    virtual void RenderScreen(uint8_t refresh = 0);
-    virtual void PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
-    virtual uint8_t* GetPixelColor(int x, int y);
-    virtual void RenderMouse(short int bitmap[], int mx, int my);
-    virtual void PutPixel(uint32_t x, uint32_t y, uint8_t colorindex);
-    virtual void RenderBitMap(int bitmap[], uint8_t colorindex, int x_offset = 0, int y_offset = 0);
-    virtual void Print(char* str, uint8_t colorindex, int x_offset = 0, int y_offset = 0);
-    virtual void ResetOffset();
-    virtual void DecreaseOffset(int x) { vga_x_offset -= x; }
-    virtual void SetPlane(unsigned p);
-    virtual int GetScreenH() { return screen_height; }
-    virtual int GetScreenW() { return screen_width; }
-    virtual int GetScreenC() { return screen_colordepth; }
-    virtual void FrameStart(uint8_t i) { is_ready = i; }
-    virtual uint8_t GetFrameStart() { return is_ready; }
+    void set_background(int x, int y, uint8_t colorindex);
+    void render_screen(uint8_t refresh = 0);
+    uint8_t* get_pixel_color(int x, int y);
+    void render_mouse(short int bitmap[], int mx, int my);
+    void put_pixel(uint32_t x, uint32_t y, uint8_t colorindex);
+    void render_bit_map(int bitmap[], uint8_t colorindex, int x_offset = 0, int y_offset = 0);
+    void print(char* str, uint8_t colorindex, int x_offset = 0, int y_offset = 0);
+    void reset_offset();
+    void decrease_offset(int x) { vga_x_offset -= x; }
+    void set_plane(unsigned p);
+    int get_screen_h() { return screen_height; }
+    int get_screen_w() { return screen_width; }
+    int get_screen_c() { return screen_colordepth; }
+    void frame_start(uint8_t i) { is_ready = i; }
+    uint8_t get_frame_start() { return is_ready; }
 };
 
 static void vmemset(unsigned char* s, unsigned c, unsigned n)

@@ -11,12 +11,12 @@ AddressResolutionProtocol::~AddressResolutionProtocol()
 {
 }
 
-bool AddressResolutionProtocol::OnEtherFrameReceived(uint8_t* etherframePayload, uint32_t size)
+bool AddressResolutionProtocol::OnEtherFrameReceived(uint8_t* etherframe_payload, uint32_t size)
 {
     if (size < sizeof(AddressResolutionProtocolMessage))
         return false;
 
-    AddressResolutionProtocolMessage* arp = (AddressResolutionProtocolMessage*)etherframePayload;
+    AddressResolutionProtocolMessage* arp = (AddressResolutionProtocolMessage*)etherframe_payload;
     if (arp->hardwareType == 0x0100) {
         if (arp->protocol == 0x0008
             && arp->hardwareAddressSize == 6
@@ -45,7 +45,7 @@ bool AddressResolutionProtocol::OnEtherFrameReceived(uint8_t* etherframePayload,
     return false;
 }
 
-void AddressResolutionProtocol::RequestMACAddress(uint32_t IP_BE)
+void AddressResolutionProtocol::RequestMACAddress(uint32_t ip_be)
 {
     AddressResolutionProtocolMessage arp;
     arp.hardwareType = 0x0100;   // ethernet
@@ -57,27 +57,27 @@ void AddressResolutionProtocol::RequestMACAddress(uint32_t IP_BE)
     arp.srcMAC = backend->GetMACAddress();
     arp.srcIP = backend->GetIPAddress();
     arp.dstMAC = 0xFFFFFFFFFFFF; // broadcast
-    arp.dstIP = IP_BE;
+    arp.dstIP = ip_be;
 
     this->Send(arp.dstMAC, (uint8_t*)&arp, sizeof(AddressResolutionProtocolMessage));
 }
 
-uint64_t AddressResolutionProtocol::GetMACFromCache(uint32_t IP_BE)
+uint64_t AddressResolutionProtocol::GetMACFromCache(uint32_t ip_be)
 {
     for (int i = 0; i < numCacheEntries; i++)
-        if (IPcache[i] == IP_BE)
+        if (IPcache[i] == ip_be)
             return MACcache[i];
     return 0xFFFFFFFFFFFF; // broadcast address
 }
 
-uint64_t AddressResolutionProtocol::Resolve(uint32_t IP_BE)
+uint64_t AddressResolutionProtocol::Resolve(uint32_t ip_be)
 {
-    uint64_t result = GetMACFromCache(IP_BE);
+    uint64_t result = GetMACFromCache(ip_be);
     if (result == 0xFFFFFFFFFFFF)
-        RequestMACAddress(IP_BE);
+        RequestMACAddress(ip_be);
 
     while (result == 0xFFFFFFFFFFFF) // possible infinite loop
-        result = GetMACFromCache(IP_BE);
+        result = GetMACFromCache(ip_be);
 
     return result;
 }

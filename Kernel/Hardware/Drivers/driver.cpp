@@ -8,16 +8,16 @@ Driver::~Driver()
 {
 }
 
-void Driver::Activate()
+void Driver::activate()
 {
 }
 
-int Driver::Reset()
+int Driver::reset()
 {
     return 0;
 }
 
-void Driver::Deactivate()
+void Driver::deactivate()
 {
 }
 
@@ -26,14 +26,14 @@ DriverManager::DriverManager()
     num_drivers = 0;
 }
 
-void DriverManager::AddDriver(Driver* drv)
+void DriverManager::add_driver(Driver* drv)
 {
     drivers[num_drivers] = drv;
     num_drivers++;
 }
 
-void DriverManager::ActivateAll()
+void DriverManager::activate_all()
 {
     for (int i = 0; i < num_drivers; i++)
-        drivers[i]->Activate();
+        drivers[i]->activate();
 }

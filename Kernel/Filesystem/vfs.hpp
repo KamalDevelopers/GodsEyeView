@@ -22,10 +22,10 @@ public:
     Filesystem();
     ~Filesystem();
 
-    virtual int GetSize(char* file_name);
-    virtual int WriteFile(char* file_name, uint8_t* data, int data_length);
-    virtual int ReadFile(char* file_name, uint8_t* data);
-    virtual int FindFile(char* file_name);
+    virtual int get_size(char* file_name);
+    virtual int write_file(char* file_name, uint8_t* data, int data_length);
+    virtual int read_file(char* file_name, uint8_t* data);
+    virtual int find_file(char* file_name);
 };
 
 class VirtualFilesystem {
@@ -33,7 +33,7 @@ private:
     Filesystem* mounts[MAX_MOUNTS];
     file_entry files[MAX_OPENFILES];
 
-    int Search(int descriptor);
+    int search(int descriptor);
 
     int num_open_files;
     int file_descriptors;
@@ -46,40 +46,40 @@ public:
     ~VirtualFilesystem();
 
     static VirtualFilesystem* active;
-    void Mount(Filesystem* fs);
+    void mount(Filesystem* fs);
 
-    int Open(char* file_name);
-    int Close(int descriptor);
-    int WriteFile(int descriptor, uint8_t* data, int data_length);
-    int ReadFile(int descriptor, uint8_t* data);
-    int FileSize(int descriptor);
+    int open(char* file_name);
+    int close(int descriptor);
+    int write_file(int descriptor, uint8_t* data, int data_length);
+    int read_file(int descriptor, uint8_t* data);
+    int file_size(int descriptor);
 };
 
 namespace VFS {
 
 inline int close(int descriptor)
 {
-    return VirtualFilesystem::active->Close(descriptor);
+    return VirtualFilesystem::active->close(descriptor);
 }
 
 inline int open(char* file_name)
 {
-    return VirtualFilesystem::active->Open(file_name);
+    return VirtualFilesystem::active->open(file_name);
 }
 
 inline int write(int descriptor, uint8_t* data, int data_length)
 {
-    return VirtualFilesystem::active->WriteFile(descriptor, data, data_length);
+    return VirtualFilesystem::active->write_file(descriptor, data, data_length);
 }
 
 inline int read(int descriptor, uint8_t* data)
 {
-    return VirtualFilesystem::active->ReadFile(descriptor, data);
+    return VirtualFilesystem::active->read_file(descriptor, data);
 }
 
 inline int size(int descriptor)
 {
-    return VirtualFilesystem::active->FileSize(descriptor);
+    return VirtualFilesystem::active->file_size(descriptor);
 }
 
 /* TODO */

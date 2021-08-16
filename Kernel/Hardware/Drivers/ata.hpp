@@ -22,13 +22,13 @@ protected:
     bool master;
 
 public:
-    AdvancedTechnologyAttachment(bool master, uint16_t portBase);
+    AdvancedTechnologyAttachment(bool master, uint16_t port_base);
     ~AdvancedTechnologyAttachment();
 
-    void Identify();
-    uint8_t* Read28(uint32_t sectorNum, uint8_t* data, int count = 512);
-    void Write28(uint32_t sectorNum, uint8_t* data, uint32_t count);
-    void Flush();
+    void identify();
+    uint8_t* read28(uint32_t sector_num, uint8_t* data, int count = 512);
+    void write28(uint32_t sector_num, uint8_t* data, uint32_t count);
+    void flush();
 };
 
 #endif

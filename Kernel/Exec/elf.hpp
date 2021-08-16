@@ -51,11 +51,11 @@
 #define ELFOSABI_ARM 97         /* ARM */
 #define ELFOSABI_STANDALONE 255 /* Standalone (embedded) application */
 
-typedef uint16_t Elf32_Half;
-typedef uint32_t Elf32_Off;
-typedef uint32_t Elf32_Addr;
-typedef uint32_t Elf32_Word;
-typedef int32_t Elf32_Sword;
+typedef uint16_t elf32_half;
+typedef uint32_t elf32_off;
+typedef uint32_t elf32_addr;
+typedef uint32_t elf32_word;
+typedef int32_t elf32_sword;
 
 typedef struct {
     uint32_t sig;
@@ -68,53 +68,53 @@ typedef struct {
     uint8_t ei_elfver;
     uint8_t ei_abi;
     unsigned char ei_unused[8];
-} Elf_ident_t;
+} elf_ident_t;
 
 /* ELF Header */
 typedef struct elfhdr {
-    Elf_ident_t e_ident;
-    Elf32_Half e_type;      /* object file type */
-    Elf32_Half e_machine;   /* machine */
-    Elf32_Word e_version;   /* object file version */
-    Elf32_Addr e_entry;     /* virtual entry point */
-    Elf32_Off e_phoff;      /* program header table offset */
-    Elf32_Off e_shoff;      /* section header table offset */
-    Elf32_Word e_flags;     /* processor-specific flags */
-    Elf32_Half e_ehsize;    /* ELF header size */
-    Elf32_Half e_phentsize; /* program header entry size */
-    Elf32_Half e_phnum;     /* number of program header entries */
-    Elf32_Half e_shentsize; /* section header entry size */
-    Elf32_Half e_shnum;     /* number of section header entries */
-    Elf32_Half e_shstrndx;  /* section header table's "section
+    elf_ident_t e_ident;
+    elf32_half e_type;      /* object file type */
+    elf32_half e_machine;   /* machine */
+    elf32_word e_version;   /* object file version */
+    elf32_addr e_entry;     /* virtual entry point */
+    elf32_off e_phoff;      /* program header table offset */
+    elf32_off e_shoff;      /* section header table offset */
+    elf32_word e_flags;     /* processor-specific flags */
+    elf32_half e_ehsize;    /* ELF header size */
+    elf32_half e_phentsize; /* program header entry size */
+    elf32_half e_phnum;     /* number of program header entries */
+    elf32_half e_shentsize; /* section header entry size */
+    elf32_half e_shnum;     /* number of section header entries */
+    elf32_half e_shstrndx;  /* section header table's "section
 					   header string table" entry offset */
-} Elf32_Ehdr;
+} elf32_ehdr;
 
 /* Section Header */
 typedef struct {
-    Elf32_Word sh_name;      /* name - index into section header
+    elf32_word sh_name;      /* name - index into section header
 					   string table section */
-    Elf32_Word sh_type;      /* type */
-    Elf32_Word sh_flags;     /* flags */
-    Elf32_Addr sh_addr;      /* address */
-    Elf32_Off sh_offset;     /* file offset */
-    Elf32_Word sh_size;      /* section size */
-    Elf32_Word sh_link;      /* section header table index link */
-    Elf32_Word sh_info;      /* extra information */
-    Elf32_Word sh_addralign; /* address alignment */
-    Elf32_Word sh_entsize;   /* section entry size */
-} Elf32_Shdr;
+    elf32_word sh_type;      /* type */
+    elf32_word sh_flags;     /* flags */
+    elf32_addr sh_addr;      /* address */
+    elf32_off sh_offset;     /* file offset */
+    elf32_word sh_size;      /* section size */
+    elf32_word sh_link;      /* section header table index link */
+    elf32_word sh_info;      /* extra information */
+    elf32_word sh_addralign; /* address alignment */
+    elf32_word sh_entsize;   /* section entry size */
+} elf32_shdr;
 
 /* Program Header */
 typedef struct {
-    Elf32_Word p_type;   /* segment type */
-    Elf32_Off p_offset;  /* segment offset */
-    Elf32_Addr p_vaddr;  /* virtual address of segment */
-    Elf32_Addr p_paddr;  /* physical address - ignored? */
-    Elf32_Word p_filesz; /* number of bytes in file for seg. */
-    Elf32_Word p_memsz;  /* number of bytes in mem. for seg. */
-    Elf32_Word p_flags;  /* flags */
-    Elf32_Word p_align;  /* memory alignment */
-} Elf32_Phdr;
+    elf32_word p_type;   /* segment type */
+    elf32_off p_offset;  /* segment offset */
+    elf32_addr p_vaddr;  /* virtual address of segment */
+    elf32_addr p_paddr;  /* physical address - ignored? */
+    elf32_word p_filesz; /* number of bytes in file for seg. */
+    elf32_word p_memsz;  /* number of bytes in mem. for seg. */
+    elf32_word p_flags;  /* flags */
+    elf32_word p_align;  /* memory alignment */
+} elf32_phdr;
 
 class Elf : public Execf {
 private:
@@ -123,9 +123,9 @@ private:
 public:
     Elf(char* n);
     ~Elf();
-    int Probe(uint8_t* file_data);
-    int Exec(uint8_t* file_data);
-    char* Name();
+    int probe(uint8_t* file_data);
+    int exec(uint8_t* file_data);
+    char* name();
 };
 
 #endif

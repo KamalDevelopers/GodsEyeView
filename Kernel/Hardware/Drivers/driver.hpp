@@ -6,9 +6,9 @@ public:
     Driver();
     ~Driver();
 
-    virtual void Activate();
-    virtual int Reset();
-    virtual void Deactivate();
+    virtual void activate();
+    virtual int reset();
+    virtual void deactivate();
 };
 
 class DriverManager {
@@ -18,8 +18,8 @@ public:
 
 public:
     DriverManager();
-    void AddDriver(Driver*);
-    void ActivateAll();
+    void add_driver(Driver*);
+    void activate_all();
 };
 
 #endif

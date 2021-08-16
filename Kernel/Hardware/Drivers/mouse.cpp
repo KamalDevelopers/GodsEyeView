@@ -12,22 +12,22 @@ MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)
     mouse_x = w / 2;
     mouse_y = h / 2;
 
-    commandport.Write(0xA8);
-    commandport.Write(0x20);
-    uint8_t status = dataport.Read() | 2;
-    commandport.Write(0x60);
-    dataport.Write(status);
+    commandport.write(0xA8);
+    commandport.write(0x20);
+    uint8_t status = dataport.read() | 2;
+    commandport.write(0x60);
+    dataport.write(status);
 
-    commandport.Write(0xD4);
-    dataport.Write(0xF4);
-    dataport.Read();
+    commandport.write(0xD4);
+    dataport.write(0xF4);
+    dataport.read();
 }
 
 MouseDriver::~MouseDriver()
 {
 }
 
-void MouseDriver::OnMouseMove(int x, int y)
+void MouseDriver::on_mouse_move(int x, int y)
 {
     int32_t new_mouse_x = mouse_x + x;
     int32_t new_mouse_y = mouse_y + y;
@@ -45,12 +45,12 @@ void MouseDriver::OnMouseMove(int x, int y)
     mouse_y = new_mouse_y;
 }
 
-void MouseDriver::OnMouseUp()
+void MouseDriver::on_mouse_up()
 {
     mouse_press = 0;
 }
 
-void MouseDriver::OnMouseDown(int b)
+void MouseDriver::on_mouse_down(int b)
 {
     if (b == 9) {
         mouse_press = 1; //Left Click
@@ -68,24 +68,24 @@ void MouseDriver::OnMouseDown(int b)
 
 uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
 {
-    uint8_t status = commandport.Read();
+    uint8_t status = commandport.read();
     if (!(status & 0x20) || (active == 0))
         return esp;
 
-    buffer[offset] = dataport.Read();
+    buffer[offset] = dataport.read();
     offset = (offset + 1) % 3;
 
     if (offset == 0) {
         if (buffer[1] != 0 || buffer[2] != 0) {
-            OnMouseMove((int8_t)buffer[1], -((int8_t)buffer[2]));
+            on_mouse_move((int8_t)buffer[1], -((int8_t)buffer[2]));
         }
 
         for (uint8_t i = 0; i < 3; i++) {
             if ((buffer[0] & (0x1 << i)) != (buttons & (0x1 << i))) {
                 if (buttons & (0x1 << i))
-                    OnMouseUp();
+                    on_mouse_up();
                 else
-                    OnMouseDown(buffer[0]);
+                    on_mouse_down(buffer[0]);
             }
         }
 

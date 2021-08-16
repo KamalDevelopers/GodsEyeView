@@ -11,14 +11,13 @@ public:
     Execf(char* n);
     ~Execf();
 
-    virtual int Probe(uint8_t* file_data);
-    virtual int Exec(uint8_t* file_data);
-    virtual char* Name();
+    virtual int probe(uint8_t* file_data);
+    virtual int exec(uint8_t* file_data);
+    virtual char* name();
 };
 
 class Loader {
 private:
-    uint32_t location;
     uint32_t loader_num;
     Execf* execfs[MAX_LOADERS];
 
@@ -28,10 +27,9 @@ public:
 
     static Loader* load;
 
-    void Add(Execf* l);
-    int Exec(uint8_t* file_buffer, char* loader_name = 0);
-    int Probe(uint8_t* file_buffer, char* loader_name);
-    uint32_t Location();
+    void add(Execf* l);
+    int exec(uint8_t* file_buffer, char* loader_name = 0);
+    int probe(uint8_t* file_buffer, char* loader_name);
 };
 
 #endif

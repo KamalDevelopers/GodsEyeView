@@ -31,7 +31,7 @@ protected:
     Port8Bit cmos_address;
     Port8Bit cmos_data;
 
-    unsigned char get_RTC_register(int reg);
+    unsigned char get_rtc_register(int reg);
     int get_update_in_progress_flag();
 
 public:
@@ -40,17 +40,17 @@ public:
 
     static TimeDriver* time;
     virtual void read_rtc();
-    virtual void SetTimezoneOffset(uint16_t t_offset);
+    virtual void set_timezone_offset(uint16_t t_offset);
 
-    virtual unsigned char GetSecond();
-    virtual unsigned char GetMinute();
-    virtual unsigned char GetHour(uint16_t t_offset = 0);
+    virtual unsigned char get_second();
+    virtual unsigned char get_minute();
+    virtual unsigned char get_hour(uint16_t t_offset = 0);
 
-    virtual unsigned char GetDay();
-    virtual unsigned char GetMonth();
-    virtual unsigned int GetYear();
-    virtual unsigned int GetTime();
-    virtual void GetFullTime(char seperator, char* time);
+    virtual unsigned char get_day();
+    virtual unsigned char get_month();
+    virtual unsigned int get_year();
+    virtual unsigned int get_time();
+    virtual void get_full_time(char seperator, char* time);
 };
 
 #endif

@@ -44,14 +44,12 @@ build Kernel/Net/ipv4.o: cpp ./Kernel/Net/ipv4.cpp
 build Kernel/Exec/loader.o: cpp ./Kernel/Exec/loader.cpp
 build Kernel/Exec/elf.o: cpp ./Kernel/Exec/elf.cpp
 build Kernel/Filesystem/tar.o: cpp ./Kernel/Filesystem/tar.cpp
-build Kernel/Filesystem/fat.o: cpp ./Kernel/Filesystem/fat.cpp
-build Kernel/Filesystem/part.o: cpp ./Kernel/Filesystem/part.cpp
 build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Libraries/LibGUI/gui.o: cpp ./Libraries/LibGUI/gui.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/fat.o Kernel/Filesystem/part.o Kernel/Filesystem/vfs.o Libraries/LibGUI/gui.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Libraries/LibGUI/gui.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build format: format
 build run: run
 build disk: disk

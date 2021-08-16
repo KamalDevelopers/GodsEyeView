@@ -45,7 +45,7 @@ bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size)
     bool sendBack = false;
 
     if (frame->dstMAC_BE == 0xFFFFFFFFFFFF
-        || frame->dstMAC_BE == backend->GetMACAddress()) {
+        || frame->dstMAC_BE == backend->get_mac_address()) {
         if (handlers[frame->etherType_BE] != 0)
             sendBack = handlers[frame->etherType_BE]->OnEtherFrameReceived(
                 buffer + sizeof(EtherFrameHeader), size - sizeof(EtherFrameHeader));
@@ -53,7 +53,7 @@ bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size)
 
     if (sendBack) {
         frame->dstMAC_BE = frame->srcMAC_BE;
-        frame->srcMAC_BE = backend->GetMACAddress();
+        frame->srcMAC_BE = backend->get_mac_address();
     }
 
     return sendBack;
@@ -65,7 +65,7 @@ void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t
     EtherFrameHeader* frame = (EtherFrameHeader*)buffer2;
 
     frame->dstMAC_BE = dstMAC_BE;
-    frame->srcMAC_BE = backend->GetMACAddress();
+    frame->srcMAC_BE = backend->get_mac_address();
     frame->etherType_BE = etherType_BE;
 
     uint8_t* src = buffer;
@@ -73,16 +73,16 @@ void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t
     for (uint32_t i = 0; i < size; i++)
         dst[i] = src[i];
 
-    backend->Send(buffer2, size + sizeof(EtherFrameHeader));
+    backend->send(buffer2, size + sizeof(EtherFrameHeader));
     kfree(buffer2);
 }
 
 uint32_t EtherFrameProvider::GetIPAddress()
 {
-    return backend->GetIPAddress();
+    return backend->get_ip_address();
 }
 
 uint64_t EtherFrameProvider::GetMACAddress()
 {
-    return backend->GetMACAddress();
+    return backend->get_mac_address();
 }

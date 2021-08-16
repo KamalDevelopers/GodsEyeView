@@ -8,7 +8,7 @@ Task::Task(char* task_name, uint32_t entrypoint, uint8_t priv)
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
 
-    cpustate = (CPUState*)(stack + 4096 - sizeof(CPUState));
+    cpustate = (cpu_state*)(stack + 4096 - sizeof(cpu_state));
     cpustate->eax = 0;
     cpustate->ebx = 0;
     cpustate->ecx = 0;
@@ -17,27 +17,27 @@ Task::Task(char* task_name, uint32_t entrypoint, uint8_t priv)
     cpustate->edi = 0;
     cpustate->ebp = 0;
     cpustate->eip = entrypoint;
-    cpustate->cs = gdt->CodeSegmentSelector();
+    cpustate->cs = g_gdt->code_segment_selector();
     cpustate->eflags = 0x202;
 
     Paging::copy_page_directory(page_directory);
 
     state = 0;
     privelege = priv;
-    pid = ++lpid;
+    pid = ++g_lpid;
 }
 
-int8_t Task::Notify(int signal)
+int8_t Task::notify(int signal)
 {
     switch (signal) {
     case SIG_ILL:
-        Suicide(SIG_ILL);
+        suicide(SIG_ILL);
         break;
     case SIG_TERM:
-        Suicide(SIG_TERM);
+        suicide(SIG_TERM);
         break;
     case SIG_SEGV:
-        Suicide(SIG_SEGV);
+        suicide(SIG_SEGV);
         break;
     default:
         klog("Received unknown signal");
@@ -46,7 +46,7 @@ int8_t Task::Notify(int signal)
     return 0;
 }
 
-void Task::Suicide(int error_code)
+void Task::suicide(int error_code)
 {
     state = 1;
 }
@@ -55,9 +55,9 @@ Task::~Task()
 {
 }
 
-TaskManager::TaskManager(GlobalDescriptorTable* dgdt)
+TaskManager::TaskManager(GDT* gdt)
 {
-    gdt = dgdt;
+    g_gdt = gdt;
     active = this;
     num_tasks = 0;
     current_task = -1;
@@ -68,7 +68,7 @@ TaskManager::~TaskManager()
 {
 }
 
-bool TaskManager::AddTask(Task* task)
+bool TaskManager::add_task(Task* task)
 {
     if (num_tasks >= 256)
         return false;
@@ -78,49 +78,49 @@ bool TaskManager::AddTask(Task* task)
     return true;
 }
 
-bool TaskManager::AppendTasks(int count, ...)
+bool TaskManager::append_tasks(int count, ...)
 {
     va_list list;
     va_start(list, count);
 
     for (int i = 0; i < count; i++)
-        AddTask(va_arg(list, Task*));
+        add_task(va_arg(list, Task*));
     va_end(list);
     return true;
 }
 
-void TaskManager::Kill()
+void TaskManager::kill()
 {
-    tasks[current_task]->Suicide(SIG_TERM);
+    tasks[current_task]->suicide(SIG_TERM);
 }
 
-int8_t TaskManager::SendSignal(int pid, int sig)
+int8_t TaskManager::send_signal(int pid, int sig)
 {
     for (int i = 0; i < num_tasks; i++)
         if (tasks[i]->pid == pid)
             if (tasks[i]->privelege <= tasks[current_task]->privelege)
-                return tasks[i]->Notify(sig);
+                return tasks[i]->notify(sig);
     return -1;
 }
 
-void TaskManager::KillZombieTasks()
+void TaskManager::kill_zombie_tasks()
 {
     for (int i = 0; i < num_tasks; i++) {
         if (tasks[i]->state == 1) {
             klog("Zombie Process Killed");
-            deleteElement(i, num_tasks, tasks);
+            delete_element(i, num_tasks, tasks);
             num_tasks--;
         }
     }
 }
 
-CPUState* TaskManager::Schedule(CPUState* cpustate)
+cpu_state* TaskManager::schedule(cpu_state* cpustate)
 {
     //Paging::copy_page_directory(tasks[current_task]->page_directory);
     if (locked != -1) {
         locked++;
         if (locked > 10) {
-            tasks[current_task]->Suicide(SIG_TERM);
+            tasks[current_task]->suicide(SIG_TERM);
             locked = -1;
         }
         return cpustate;
@@ -135,7 +135,7 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
     if (++current_task >= num_tasks)
         current_task = 0;
 
-    KillZombieTasks();
+    kill_zombie_tasks();
     if (current_task >= num_tasks)
         current_task = 0;
 

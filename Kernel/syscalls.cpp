@@ -19,7 +19,7 @@ void sys_read(int file_handle, char* data, int len)
     switch (file_handle) {
     case 2:
         /* FIXME: This should not freeze every process */
-        KeyboardDriver::active->ReadKeys(len, buffer);
+        KeyboardDriver::active->read_keys(len, buffer);
         break;
 
     default:
@@ -81,11 +81,11 @@ void sys_reboot(int arg)
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 {
-    CPUState* cpu = (CPUState*)esp;
+    cpu_state* cpu = (cpu_state*)esp;
 
     switch (cpu->eax) {
     case 1:
-        TaskManager::active->Kill();
+        TaskManager::active->kill();
         break;
 
     case 3:
@@ -109,12 +109,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 
     case 20:
         int pid;
-        pid = TaskManager::active->GetPid();
+        pid = TaskManager::active->get_pid();
         cpu->eax = pid;
         break;
 
     case 37:
-        cpu->eax = TaskManager::active->SendSignal((int)cpu->ebx, (int)cpu->ecx);
+        cpu->eax = TaskManager::active->send_signal((int)cpu->ebx, (int)cpu->ecx);
         break;
 
     case 88:

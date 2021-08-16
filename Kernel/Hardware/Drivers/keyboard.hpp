@@ -25,8 +25,8 @@ private:
     uint8_t last_key_raw;
     bool is_shift = 0;
 
-    void OnKey(uint8_t keypress);
-    uint8_t KeyA(uint8_t key);
+    void on_key(uint8_t keypress);
+    uint8_t key_a(uint8_t key);
 
 public:
     KeyboardDriver(InterruptManager* manager);
@@ -35,11 +35,11 @@ public:
     static KeyboardDriver* active;
 
     virtual uint32_t HandleInterrupt(uint32_t esp);
-    virtual char GetLastKey(int raw = 0);
-    virtual int GetKeyPresses(int raw = 0);
-    virtual char GetKey();
-    virtual uint8_t ReadKey();
-    virtual void ReadKeys(int len, char* data);
+    virtual char get_last_key(int raw = 0);
+    virtual int get_key_presses(int raw = 0);
+    virtual char get_key();
+    virtual uint8_t read_key();
+    virtual void read_keys(int len, char* data);
 };
 
 #endif

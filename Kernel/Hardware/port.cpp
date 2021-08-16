@@ -34,14 +34,14 @@ Port8Bit::~Port8Bit()
 {
 }
 
-void Port8Bit::Write(uint8_t data)
+void Port8Bit::write(uint8_t data)
 {
-    Write8(portnumber, data);
+    write8(portnumber, data);
 }
 
-uint8_t Port8Bit::Read()
+uint8_t Port8Bit::read()
 {
-    return Read8(portnumber);
+    return read8(portnumber);
 }
 
 Port8BitSlow::Port8BitSlow(uint16_t portnumber)
@@ -53,9 +53,9 @@ Port8BitSlow::~Port8BitSlow()
 {
 }
 
-void Port8BitSlow::Write(uint8_t data)
+void Port8BitSlow::write(uint8_t data)
 {
-    Write8Slow(portnumber, data);
+    write8slow(portnumber, data);
 }
 
 Port16Bit::Port16Bit(uint16_t portnumber)
@@ -67,14 +67,14 @@ Port16Bit::~Port16Bit()
 {
 }
 
-void Port16Bit::Write(uint16_t data)
+void Port16Bit::write(uint16_t data)
 {
-    Write16(portnumber, data);
+    write16(portnumber, data);
 }
 
-uint16_t Port16Bit::Read()
+uint16_t Port16Bit::read()
 {
-    return Read16(portnumber);
+    return read16(portnumber);
 }
 
 Port32Bit::Port32Bit(uint16_t portnumber)
@@ -86,12 +86,12 @@ Port32Bit::~Port32Bit()
 {
 }
 
-void Port32Bit::Write(uint32_t data)
+void Port32Bit::write(uint32_t data)
 {
-    Write32(portnumber, data);
+    write32(portnumber, data);
 }
 
-uint32_t Port32Bit::Read()
+uint32_t Port32Bit::read()
 {
-    return Read32(portnumber);
+    return read32(portnumber);
 }

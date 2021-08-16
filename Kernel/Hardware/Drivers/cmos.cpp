@@ -8,16 +8,19 @@ TimeDriver::TimeDriver()
     time = this;
 }
 
-void TimeDriver::SetTimezoneOffset(uint16_t t_offset) { timezone_offset = t_offset; }
+void TimeDriver::set_timezone_offset(uint16_t t_offset)
+{
+    timezone_offset = t_offset;
+}
 
-void TimeDriver::GetFullTime(char seperator, char* time)
+void TimeDriver::get_full_time(char seperator, char* time)
 {
     char format[10];
     char sec[3], min[3], hour[3], middle[3];
 
-    itoa(GetSecond(), sec);
-    itoa(GetMinute(), min);
-    itoa(GetHour(), hour);
+    itoa(get_second(), sec);
+    itoa(get_minute(), min);
+    itoa(get_hour(), hour);
 
     memset(format, '\0', 9);
     format[2] = seperator;
@@ -49,48 +52,48 @@ void TimeDriver::GetFullTime(char seperator, char* time)
     strcpy(time, format);
 }
 
-unsigned int TimeDriver::GetTime()
+unsigned int TimeDriver::get_time()
 {
-    unsigned int yeardata = ((GetYear() - 1970)) * SECONDS_YEAR;
-    unsigned int monthdata = GetMonth() * SECONDS_MONTH;
-    unsigned int daydata = GetDay() * SECONDS_DAY;
-    unsigned int hourdata = GetHour() * SECONDS_HOUR;
-    unsigned int mindata = GetMinute() * SECONDS_MIN;
+    unsigned int yeardata = ((get_year() - 1970)) * SECONDS_YEAR;
+    unsigned int monthdata = get_month() * SECONDS_MONTH;
+    unsigned int daydata = get_day() * SECONDS_DAY;
+    unsigned int hourdata = get_hour() * SECONDS_HOUR;
+    unsigned int mindata = get_minute() * SECONDS_MIN;
 
-    return yeardata + monthdata + daydata + hourdata + mindata + GetSecond();
+    return yeardata + monthdata + daydata + hourdata + mindata + get_second();
 }
 
-unsigned char TimeDriver::GetSecond()
+unsigned char TimeDriver::get_second()
 {
     read_rtc();
     return second;
 }
 
-unsigned char TimeDriver::GetMinute()
+unsigned char TimeDriver::get_minute()
 {
     read_rtc();
     return minute;
 }
 
-unsigned char TimeDriver::GetHour(uint16_t t_offset)
+unsigned char TimeDriver::get_hour(uint16_t t_offset)
 {
     read_rtc();
     return hour + t_offset;
 }
 
-unsigned char TimeDriver::GetDay()
+unsigned char TimeDriver::get_day()
 {
     read_rtc();
     return day;
 }
 
-unsigned char TimeDriver::GetMonth()
+unsigned char TimeDriver::get_month()
 {
     read_rtc();
     return month;
 }
 
-unsigned int TimeDriver::GetYear()
+unsigned int TimeDriver::get_year()
 {
     read_rtc();
     return year;
@@ -98,14 +101,14 @@ unsigned int TimeDriver::GetYear()
 
 int TimeDriver::get_update_in_progress_flag()
 {
-    cmos_address.Write(0x0A);
-    return (cmos_data.Read() & 0x80);
+    cmos_address.write(0x0A);
+    return (cmos_data.read() & 0x80);
 }
 
-unsigned char TimeDriver::get_RTC_register(int reg)
+unsigned char TimeDriver::get_rtc_register(int reg)
 {
-    cmos_address.Write(reg);
-    return cmos_data.Read();
+    cmos_address.write(reg);
+    return cmos_data.read();
 }
 
 void TimeDriver::read_rtc()
@@ -118,18 +121,18 @@ void TimeDriver::read_rtc()
     unsigned char last_month;
     unsigned char last_year;
     unsigned char last_century;
-    unsigned char registerB;
+    unsigned char register_b;
 
     while (get_update_in_progress_flag())
         ;
-    second = get_RTC_register(0x00);
-    minute = get_RTC_register(0x02);
-    hour = get_RTC_register(0x04);
-    day = get_RTC_register(0x07);
-    month = get_RTC_register(0x08);
-    year = get_RTC_register(0x09);
+    second = get_rtc_register(0x00);
+    minute = get_rtc_register(0x02);
+    hour = get_rtc_register(0x04);
+    day = get_rtc_register(0x07);
+    month = get_rtc_register(0x08);
+    year = get_rtc_register(0x09);
     if (century_register != 0) {
-        century = get_RTC_register(century_register);
+        century = get_rtc_register(century_register);
     }
 
     do {
@@ -143,20 +146,20 @@ void TimeDriver::read_rtc()
 
         while (get_update_in_progress_flag())
             ;
-        second = get_RTC_register(0x00);
-        minute = get_RTC_register(0x02);
-        hour = get_RTC_register(0x04);
-        day = get_RTC_register(0x07);
-        month = get_RTC_register(0x08);
-        year = get_RTC_register(0x09);
+        second = get_rtc_register(0x00);
+        minute = get_rtc_register(0x02);
+        hour = get_rtc_register(0x04);
+        day = get_rtc_register(0x07);
+        month = get_rtc_register(0x08);
+        year = get_rtc_register(0x09);
         if (century_register != 0) {
-            century = get_RTC_register(century_register);
+            century = get_rtc_register(century_register);
         }
     } while ((last_second != second) || (last_minute != minute) || (last_hour != hour) || (last_day != day) || (last_month != month) || (last_year != year) || (last_century != century));
 
-    registerB = get_RTC_register(0x0B);
+    register_b = get_rtc_register(0x0B);
 
-    if (!(registerB & 0x04)) {
+    if (!(register_b & 0x04)) {
         second = (second & 0x0F) + ((second / 16) * 10);
         minute = (minute & 0x0F) + ((minute / 16) * 10);
         hour = ((hour & 0x0F) + (((hour & 0x70) / 16) * 10)) | (hour & 0x80);
@@ -168,7 +171,7 @@ void TimeDriver::read_rtc()
         }
     }
 
-    if (!(registerB & 0x02) && (hour & 0x80)) {
+    if (!(register_b & 0x02) && (hour & 0x80)) {
         hour = ((hour & 0x7F) + 12) % 24;
     }
 

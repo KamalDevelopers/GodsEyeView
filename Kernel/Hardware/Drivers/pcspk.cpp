@@ -1,14 +1,14 @@
 #include "pcspk.hpp"
 
-void PCS::play_sound(uint32_t nFrequence)
+void PCS::play_sound(uint32_t frequence)
 {
-    uint32_t Div;
+    uint32_t div;
     uint8_t tmp;
 
-    Div = 1193180 / nFrequence;
+    div = 1193180 / frequence;
     outb(0x43, 0xb6);
-    outb(0x42, (uint8_t)(Div));
-    outb(0x42, (uint8_t)(Div >> 8));
+    outb(0x42, (uint8_t)(div));
+    outb(0x42, (uint8_t)(div >> 8));
 
     tmp = inb(0x61);
     if (tmp != (tmp | 3)) {

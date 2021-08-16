@@ -15,44 +15,44 @@ Graphics::Graphics()
 {
 }
 
-void Graphics::WriteRegisters(uint8_t* registers)
+void Graphics::write_registers(uint8_t* registers)
 {
-    miscPort.Write(*(registers++));
+    miscPort.write(*(registers++));
 
     for (uint8_t i = 0; i < 5; i++) {
-        sequencerIndexPort.Write(i);
-        sequencerDataPort.Write(*(registers++));
+        sequencerIndexPort.write(i);
+        sequencerDataPort.write(*(registers++));
     }
 
-    crtcIndexPort.Write(0x03);
-    crtcDataPort.Write(crtcDataPort.Read() | 0x80);
-    crtcIndexPort.Write(0x11);
-    crtcDataPort.Write(crtcDataPort.Read() & ~0x80);
+    crtcIndexPort.write(0x03);
+    crtcDataPort.write(crtcDataPort.read() | 0x80);
+    crtcIndexPort.write(0x11);
+    crtcDataPort.write(crtcDataPort.read() & ~0x80);
 
     registers[0x03] = registers[0x03] | 0x80;
     registers[0x11] = registers[0x11] & ~0x80;
 
     for (uint8_t i = 0; i < 25; i++) {
-        crtcIndexPort.Write(i);
-        crtcDataPort.Write(*(registers++));
+        crtcIndexPort.write(i);
+        crtcDataPort.write(*(registers++));
     }
 
     for (uint8_t i = 0; i < 9; i++) {
-        graphicsControllerIndexPort.Write(i);
-        graphicsControllerDataPort.Write(*(registers++));
+        graphicsControllerIndexPort.write(i);
+        graphicsControllerDataPort.write(*(registers++));
     }
 
     for (uint8_t i = 0; i < 21; i++) {
-        attributeControllerResetPort.Read();
-        attributeControllerIndexPort.Write(i);
-        attributeControllerWritePort.Write(*(registers++));
+        attributeControllerResetPort.read();
+        attributeControllerIndexPort.write(i);
+        attributeControllerWritePort.write(*(registers++));
     }
 
-    attributeControllerResetPort.Read();
-    attributeControllerIndexPort.Write(0x20);
+    attributeControllerResetPort.read();
+    attributeControllerIndexPort.write(0x20);
 }
 
-bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
+bool Graphics::set_mode(uint32_t width, uint32_t height, uint32_t colordepth)
 {
     vga_on = 1;
     // clang-format off
@@ -120,17 +120,17 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
     screen_colordepth = colordepth;
 
     if ((width == 720) && (height = 480) && (colordepth == 16)) {
-        WriteRegisters(g_720x480x16);
+        write_registers(g_720x480x16);
         return true;
     }
 
     if ((width == 640) && (height = 480) && (colordepth == 16)) {
-        WriteRegisters(g_640x480x16);
+        write_registers(g_640x480x16);
         return true;
     }
 
     if ((width == 320) && (height = 200) && (colordepth == 256)) {
-        WriteRegisters(g_320x200x256);
+        write_registers(g_320x200x256);
         return true;
     }
     write_string("VGA Error: Mode not supported.");
@@ -138,22 +138,22 @@ bool Graphics::SetMode(uint32_t width, uint32_t height, uint32_t colordepth)
     return false;
 }
 
-bool Graphics::Init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex)
+bool Graphics::init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex)
 {
-    SetMode(width, height, colordepth);
+    set_mode(width, height, colordepth);
 
     for (int32_t y = 0; y < height; y++)
         for (int32_t x = 0; x < width; x++)
-            PutPixel(x, y, colorindex);
-    RenderScreen(1);
+            put_pixel(x, y, colorindex);
+    render_screen(1);
     return true;
 }
 
-uint8_t* Graphics::GetFrameBufferSegment()
+uint8_t* Graphics::get_frame_buffer_segment()
 {
-    graphicsControllerIndexPort.Write(0x06);
-    uint8_t segmentNumber = graphicsControllerDataPort.Read() & (3 << 2);
-    switch (segmentNumber) {
+    graphicsControllerIndexPort.write(0x06);
+    uint8_t segment_number = graphicsControllerDataPort.read() & (3 << 2);
+    switch (segment_number) {
     default:
     case 0 << 2:
         return (uint8_t*)0x00000;
@@ -166,21 +166,21 @@ uint8_t* Graphics::GetFrameBufferSegment()
     }
 }
 
-uint8_t* Graphics::GetPixelColor(int x, int y)
+uint8_t* Graphics::get_pixel_color(int x, int y)
 {
-    uint8_t* pixelAddress;
+    uint8_t* pixel_address;
     //uint16_t wd_in_bytes = screen_width / 8;
     //uint16_t wd_x = x / 8;
 
     /*if (screen_colordepth == 16)
-        pixelAddress = 0xA0000 + wd_in_bytes * y + wd_x;
+        pixel_address = 0xA0000 + wd_in_bytes * y + wd_x;
     else
-        pixelAddress = 0xA0000 + screen_width * y + x;*/
-    pixelAddress = (uint8_t*)0x00000 + screen_width * y + x;
-    return pixelAddress;
+        pixel_address = 0xA0000 + screen_width * y + x;*/
+    pixel_address = (uint8_t*)0x00000 + screen_width * y + x;
+    return pixel_address;
 }
 
-void Graphics::FillPlane(int x, int y, int wd, int ht, unsigned c)
+void Graphics::fill_plane(int x, int y, int wd, int ht, unsigned c)
 {
     unsigned w, wd_in_bytes, off;
     unsigned char lmask, rmask;
@@ -223,7 +223,7 @@ void Graphics::FillPlane(int x, int y, int wd, int ht, unsigned c)
     }
 }
 
-void Graphics::SetPlane(unsigned p)
+void Graphics::set_plane(unsigned p)
 {
     static unsigned curr_p = -1u;
     unsigned char pmask;
@@ -234,17 +234,17 @@ void Graphics::SetPlane(unsigned p)
     curr_p = p;
     pmask = 1 << p;
 
-    graphicsControllerIndexPort.Write((p << 8) | 4);
-    sequencerIndexPort.Write((pmask << 8) | 2);
+    graphicsControllerIndexPort.write((p << 8) | 4);
+    sequencerIndexPort.write((pmask << 8) | 2);
 }
 
-void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
+void Graphics::vga_draw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
 {
     if (screen_colordepth == 16) {
         unsigned mask, p, pmask;
         unsigned wd_x = x / 8;
         unsigned wd_in_bytes = screen_width / 8;
-        uint8_t* pixelAddress = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
+        uint8_t* pixel_address = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
 
         x = (x & 7) * 1;
         mask = 0x80 >> x;
@@ -252,50 +252,50 @@ void Graphics::VgaDraw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
 
         pmask <<= cycle;
         if (pmask & colorindex)
-            *pixelAddress = *pixelAddress | mask;
+            *pixel_address = *pixel_address | mask;
         else
-            *pixelAddress = *pixelAddress & ~mask;
+            *pixel_address = *pixel_address & ~mask;
     }
     if (screen_colordepth == 256) {
-        uint8_t* pixelAddress = (uint8_t*)0xA0000 + screen_width * y + x;
-        *pixelAddress = colorindex;
+        uint8_t* pixel_address = (uint8_t*)0xA0000 + screen_width * y + x;
+        *pixel_address = colorindex;
     }
 }
 
-void Graphics::SlowDraw(uint32_t x, uint32_t y, uint8_t colorIndex)
+void Graphics::slow_draw(uint32_t x, uint32_t y, uint8_t color_index)
 {
     if (screen_colordepth == 16) {
         unsigned mask, p, pmask;
         unsigned wd_x = x / 8;
         unsigned wd_in_bytes = screen_width / 8;
-        uint8_t* pixelAddress = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
+        uint8_t* pixel_address = (uint8_t*)0xA0000 + wd_in_bytes * y + wd_x;
 
         x = (x & 7) * 1;
         mask = 0x80 >> x;
         pmask = 1;
         for (p = 0; p < 4; p++) {
-            SetPlane(p);
-            if (pmask & colorIndex)
-                *pixelAddress = *pixelAddress | mask;
+            set_plane(p);
+            if (pmask & color_index)
+                *pixel_address = *pixel_address | mask;
             else
-                *pixelAddress = *pixelAddress & ~mask;
+                *pixel_address = *pixel_address & ~mask;
             pmask <<= 1;
         }
     }
     if (screen_colordepth == 256) {
-        uint8_t* pixelAddress = (uint8_t*)0xA0000 + screen_width * y + x;
-        *pixelAddress = colorIndex;
+        uint8_t* pixel_address = (uint8_t*)0xA0000 + screen_width * y + x;
+        *pixel_address = color_index;
     }
 }
 
-void Graphics::FillRectangle(int x, int y, int wd, int ht, uint8_t colorindex)
+void Graphics::fill_rectangle(int x, int y, int wd, int ht, uint8_t colorindex)
 {
     unsigned char p, pmask;
 
     pmask = 1;
     for (p = 0; p < 4; p++) {
-        SetPlane(p);
-        FillPlane(x, y, wd, ht, colorindex & pmask);
+        set_plane(p);
+        fill_plane(x, y, wd, ht, colorindex & pmask);
         pmask <<= 1;
     }
 
@@ -307,27 +307,27 @@ void Graphics::FillRectangle(int x, int y, int wd, int ht, uint8_t colorindex)
     }
 }
 
-void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t colorindex)
+void Graphics::put_pixel(uint32_t x, uint32_t y, uint8_t colorindex)
 {
     vga_buffer[y * 640 + x] = colorindex;
 }
 
-void Graphics::SetBackground(int x, int y, uint8_t colorindex)
+void Graphics::set_background(int x, int y, uint8_t colorindex)
 {
     background[y * 640 + x] = colorindex;
 }
 
-void Graphics::RenderScreen(uint8_t refresh)
+void Graphics::render_screen(uint8_t refresh)
 {
     if (refresh == 1) {
-        FillRectangle(0, 0, 640, 480, VGA16::BLACK);
+        fill_rectangle(0, 0, 640, 480, VGA16::black);
         return;
     }
 
     for (int y = 0; y < screen_height; y++) {
         for (int x = 0; x < screen_width; x++) {
             if (vga_buffer[y * 640 + x] != old_vga_buffer[y * 640 + x]) {
-                SlowDraw(x, y, vga_buffer[y * 640 + x]);
+                slow_draw(x, y, vga_buffer[y * 640 + x]);
             }
         }
     }
@@ -336,24 +336,12 @@ void Graphics::RenderScreen(uint8_t refresh)
     memcpy(vga_buffer, background, sizeof(uint8_t) * 640 * 480);
 }
 
-uint8_t Graphics::GetColorIndex(uint8_t r, uint8_t g, uint8_t b)
-{
-    if (r == 0x00, g == 0x00, b == 0xA8)
-        return 0x01;
-    return 0x00;
-}
-
-void Graphics::PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
-{
-    PutPixel(x, y, GetColorIndex(r, g, b));
-}
-
-void Graphics::ResetOffset()
+void Graphics::reset_offset()
 {
     vga_x_offset = 0;
 }
 
-void Graphics::RenderBitMap(int bitmap[], uint8_t colorindex, int x_offset, int y_offset)
+void Graphics::render_bit_map(int bitmap[], uint8_t colorindex, int x_offset, int y_offset)
 {
     int x, y;
     int set;
@@ -365,28 +353,28 @@ void Graphics::RenderBitMap(int bitmap[], uint8_t colorindex, int x_offset, int 
             if (set != 0) {
                 old_vga_buffer[(y_offset + x) * 640 + (x_offset + vga_x_offset + y)] = colorindex;
                 vga_buffer[(y_offset + x) * 640 + (x_offset + vga_x_offset + y)] = colorindex;
-                SlowDraw(x_offset + vga_x_offset + y, y_offset + x, colorindex);
+                slow_draw(x_offset + vga_x_offset + y, y_offset + x, colorindex);
             }
         }
     }
     vga_x_offset += 8;
 }
 
-void Graphics::Print(char* str, uint8_t colorindex, int x_offset, int y_offset)
+void Graphics::print(char* str, uint8_t color_index, int x_offset, int y_offset)
 {
     if ((str[0] == '/') && (str[1] == '~')) {
         vga_x_offset -= 8;
-        RenderBitMap(font_basic[127], colorindex);
+        render_bit_map(font_basic[127], color_index);
         vga_x_offset -= 8;
         return;
     }
 
     int size = str_len(str);
     for (int i = 0; i < size; i++)
-        RenderBitMap(font_basic[str[i]], colorindex, x_offset, y_offset);
+        render_bit_map(font_basic[str[i]], color_index, x_offset, y_offset);
 }
 
-void Graphics::RenderMouse(short int bitmap[], int mx, int my)
+void Graphics::render_mouse(short int bitmap[], int mx, int my)
 {
     int index = 0;
     for (int y = 0; y < 11; y++) {
@@ -394,7 +382,7 @@ void Graphics::RenderMouse(short int bitmap[], int mx, int my)
             if (mouse_bitmap[index] != -1) {
                 old_vga_buffer[(y + my) * 640 + (x + mx)] = mouse_bitmap[index];
                 vga_buffer[(y + my) * 640 + (x + mx)] = mouse_bitmap[index];
-                SlowDraw(x + mx, y + my, mouse_bitmap[index]);
+                slow_draw(x + mx, y + my, mouse_bitmap[index]);
             }
             index++;
         }

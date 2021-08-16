@@ -21,7 +21,7 @@ public:
     BaseAddressRegisterType type;
 };
 
-class PCIcontrollerDeviceDescriptor {
+class DeviceDescriptor {
 public:
     uint32_t port_base;
     uint32_t interrupt;
@@ -39,28 +39,28 @@ public:
 
     uint8_t revision;
 
-    PCIcontrollerDeviceDescriptor();
-    ~PCIcontrollerDeviceDescriptor();
+    DeviceDescriptor();
+    ~DeviceDescriptor();
 };
 
-class PCIcontroller {
+class PCI {
     Port32Bit dataport;
     Port32Bit commandport;
-    PCIcontrollerDeviceDescriptor dev;
+    DeviceDescriptor dev;
 
 public:
-    PCIcontroller();
-    ~PCIcontroller();
+    PCI();
+    ~PCI();
 
-    uint32_t Read(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset);
-    void Write(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset, uint32_t value);
-    bool DeviceHasFunctions(uint16_t bus, uint16_t device);
+    uint32_t read(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset);
+    void write(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset, uint32_t value);
+    bool device_has_functions(uint16_t bus, uint16_t device);
 
-    void SelectDrivers(DriverManager* driverManager, InterruptManager* interrupts);
-    PCIcontrollerDeviceDescriptor GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function);
-    PCIcontrollerDeviceDescriptor* GetDescriptor();
-    Driver* GetDriver(PCIcontrollerDeviceDescriptor dev, InterruptManager* interrupts);
-    BaseAddressRegister GetBaseAddressRegister(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
+    void select_drivers(DriverManager* driver_manager, InterruptManager* interrupts);
+    DeviceDescriptor get_device_descriptor(uint16_t bus, uint16_t device, uint16_t function);
+    DeviceDescriptor* get_descriptor();
+    Driver* get_driver(DeviceDescriptor dev, InterruptManager* interrupts);
+    BaseAddressRegister get_base_address_register(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
 };
 
 #endif

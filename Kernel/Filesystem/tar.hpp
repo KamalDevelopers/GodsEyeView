@@ -46,34 +46,35 @@ private:
     uint32_t sector_links_dir[MAX_DIRS];   // Sector index of directories
     uint32_t sector_links_file[MAX_FILES]; // Sector index of files
 
-    int OctBin(char* str, int size);
-    int BinOct(int decimal_num);
-    int GetMode(int file_id, int utype);
+    int oct_bin(char* str, int size);
+    int bin_oct(int decimal_num);
+    int get_mode(int file_id, int utype);
 
 public:
     Tar(AdvancedTechnologyAttachment* ata);
     ~Tar();
 
-    void Mount();
-    void Update(int uentry, int uentry_size);
+    void mount();
+    void update(int uentry, int uentry_size);
 
-    int WriteFile(char* file_name, uint8_t* data, int data_length);
-    int ReadFile(int file_id, uint8_t* data);
-    int ReadFile(char* file_name, uint8_t* data);
-    int FindFile(char* file_name);
-    int GetSize(char* file_name);
-    int RenameFile(char* file_name, char* new_file_name);
-    int Unlink(char* path, bool update = 1);
-    int ReadDir(char* dirname, char** file_ids);
-    int Exists(char* name);
-    int Chmod(char* file_name, char* permissions);
+    int write_file(char* file_name, uint8_t* data, int data_length);
+    int read_file(int file_id, uint8_t* data);
+    int read_file(char* file_name, uint8_t* data);
+    int find_file(char* file_name);
+    int get_size(char* file_name);
 
-    void SectorSwap(int sector_src, int sector_dest);
-    void WriteData(uint32_t sector_start, uint8_t* fdata, int count);
-    void ReadData(uint32_t sector_start, uint8_t* fdata, int count);
+    int rename_file(char* file_name, char* new_file_name);
+    int unlink(char* path, bool should_update = 1);
+    int read_dir(char* dirname, char** file_ids);
+    int exists(char* name);
+    int chmod(char* file_name, char* permissions);
 
-    posix_header* FileCalculateChecksum(posix_header* header_data);
-    int CalculateChecksum(posix_header* header_data);
+    void sector_swap(int sector_src, int sector_dest);
+    void write_data(uint32_t sector_start, uint8_t* fdata, int count);
+    void read_data(uint32_t sector_start, uint8_t* fdata, int count);
+
+    posix_header* file_calculate_checksum(posix_header* header_data);
+    int calculate_checksum(posix_header* header_data);
 };
 
 #endif

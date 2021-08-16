@@ -11,12 +11,12 @@ Elf::~Elf()
     kfree(format_name);
 }
 
-int Elf::Probe(uint8_t* file_data)
+int Elf::probe(uint8_t* file_data)
 {
     uint8_t executable = 0;
     uint8_t valid = 0;
 
-    Elf32_Ehdr elf_header;
+    elf32_ehdr elf_header;
     memcpy((uint8_t*)&elf_header, file_data, sizeof(elf_header));
 
     char* magic_elf;
@@ -39,15 +39,15 @@ int Elf::Probe(uint8_t* file_data)
     return -1;
 }
 
-int Elf::Exec(uint8_t* file_data)
+int Elf::exec(uint8_t* file_data)
 {
-    Elf32_Ehdr* elf_header = (Elf32_Ehdr*)file_data;
+    elf32_ehdr* elf_header = (elf32_ehdr*)file_data;
 
-    if (Probe(file_data) != 1)
+    if (probe(file_data) != 1)
         return 0;
 
-    Elf32_Phdr* elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
-    elf_program_header = (Elf32_Phdr*)(file_data + elf_header->e_phoff);
+    elf32_phdr* elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
+    elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
     uint32_t phys_location;
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
@@ -69,7 +69,7 @@ int Elf::Exec(uint8_t* file_data)
     return elf_header->e_entry + elf_program_header->p_vaddr;
 }
 
-char* Elf::Name()
+char* Elf::name()
 {
     return format_name;
 }

@@ -34,7 +34,7 @@ void InterruptManager::SetInterruptDescriptorTableEntry(uint8_t interrupt,
 }
 
 InterruptManager* InterruptManager::active = 0;
-InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable* globalDescriptorTable, TaskManager* taskManager)
+InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GDT* globalDescriptorTable, TaskManager* taskManager)
     : programmableInterruptControllerMasterCommandPort(0x20)
     , programmableInterruptControllerMasterDataPort(0x21)
     , programmableInterruptControllerSlaveCommandPort(0xA0)
@@ -43,7 +43,7 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
     active = this;
     this->taskManager = taskManager;
     this->hardwareInterruptOffset = hardwareInterruptOffset;
-    uint32_t CodeSegment = globalDescriptorTable->CodeSegmentSelector();
+    uint32_t CodeSegment = globalDescriptorTable->code_segment_selector();
 
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
     for (uint8_t i = 255; i > 0; --i) {
@@ -92,21 +92,21 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
     SetInterruptDescriptorTableEntry(hardwareInterruptOffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 0, IDT_INTERRUPT_GATE);
 
-    programmableInterruptControllerMasterCommandPort.Write(0x11);
-    programmableInterruptControllerSlaveCommandPort.Write(0x11);
+    programmableInterruptControllerMasterCommandPort.write(0x11);
+    programmableInterruptControllerSlaveCommandPort.write(0x11);
 
     // remap
-    programmableInterruptControllerMasterDataPort.Write(hardwareInterruptOffset);
-    programmableInterruptControllerSlaveDataPort.Write(hardwareInterruptOffset + 8);
+    programmableInterruptControllerMasterDataPort.write(hardwareInterruptOffset);
+    programmableInterruptControllerSlaveDataPort.write(hardwareInterruptOffset + 8);
 
-    programmableInterruptControllerMasterDataPort.Write(0x04);
-    programmableInterruptControllerSlaveDataPort.Write(0x02);
+    programmableInterruptControllerMasterDataPort.write(0x04);
+    programmableInterruptControllerSlaveDataPort.write(0x02);
 
-    programmableInterruptControllerMasterDataPort.Write(0x01);
-    programmableInterruptControllerSlaveDataPort.Write(0x01);
+    programmableInterruptControllerMasterDataPort.write(0x01);
+    programmableInterruptControllerSlaveDataPort.write(0x01);
 
-    programmableInterruptControllerMasterDataPort.Write(0x00);
-    programmableInterruptControllerSlaveDataPort.Write(0x00);
+    programmableInterruptControllerMasterDataPort.write(0x00);
+    programmableInterruptControllerSlaveDataPort.write(0x00);
 
     InterruptDescriptorTablePointer idt_pointer;
     idt_pointer.size = 256 * sizeof(GateDescriptor) - 1;
@@ -159,14 +159,14 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     }
 
     if (interrupt == hardwareInterruptOffset) {
-        esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
+        esp = (uint32_t)taskManager->schedule((cpu_state*)esp);
     }
 
     // hardware interrupts must be acknowledged
     if (hardwareInterruptOffset <= interrupt && interrupt < hardwareInterruptOffset + 16) {
-        programmableInterruptControllerMasterCommandPort.Write(0x20);
+        programmableInterruptControllerMasterCommandPort.write(0x20);
         if (hardwareInterruptOffset + 8 <= interrupt)
-            programmableInterruptControllerSlaveCommandPort.Write(0x20);
+            programmableInterruptControllerSlaveCommandPort.write(0x20);
     }
 
     return esp;

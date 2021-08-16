@@ -14,8 +14,6 @@
 #include "Net/etherframe.hpp"
 #include "Net/ipv4.hpp"
 
-#include "Filesystem/fat.hpp"
-#include "Filesystem/part.hpp"
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/amd79.hpp"
@@ -47,7 +45,7 @@ extern "C" {
 multiboot_info_t* multiboot_info_ptr;
 }
 
-struct Drivers {
+struct drivers_t {
     MouseDriver* mouse;
     KeyboardDriver* keyboard;
 } static drivers;
@@ -58,7 +56,7 @@ void gui()
     Graphics vga;
 
     GUI::Desktop desktop(640, 480, &vga, drivers.mouse, drivers.keyboard);
-    vga.Init(640, 480, 16, 0x0);
+    vga.init(640, 480, 16, 0x0);
 
     GUI::Window window(0, 0, 640, 22, 0x7, 0);
     GUI::Window* win = &window;
@@ -80,70 +78,70 @@ void gui()
     GUI::Label clock_label(630 - (str_len(user_name) * 8) - 80, 7, 0, 10, 0x0, 0x7, "clock");
     GUI::Label user_label(630 - (str_len(user_name) * 8), 7, 0, 10, 0x0, 0x7, user_name);
 
-    power_button.AddImage(&power_image);
-    win->AddWidget(&power_button);
-    win->AddWidget(&terminal_button);
-    win->AddWidget(&clock_label);
-    win->AddWidget(&user_label);
-    desktop.AddWin(1, win);
+    power_button.add_image(&power_image);
+    win->add_widget(&power_button);
+    win->add_widget(&terminal_button);
+    win->add_widget(&clock_label);
+    win->add_widget(&user_label);
+    desktop.add_win(1, win);
 
     GUI::Window terminal(22, 42, 250, 150, 0x0, 1);
-    terminal.Border(1, 0x7);
-    terminal.SetTitle("Terminal");
+    terminal.border(1, 0x7);
+    terminal.set_title("Terminal");
 
-    GUI::Input TerminalInput(5, 15, 240, 20, 0xF, 0x0, "Terry@Gev>");
-    GUI::Label TerminalOutput(5, 35, 100, 100, 0xF, 0x0, "");
-    TerminalInput.HitboxExpand(1);
+    GUI::Input terminal_input(5, 15, 240, 20, 0xF, 0x0, "Terry@Gev>");
+    GUI::Label terminal_output(5, 35, 100, 100, 0xF, 0x0, "");
+    terminal_input.set_hitbox_expand(1);
 
-    terminal.AddWidget(&TerminalOutput);
-    terminal.AddWidget(&TerminalInput);
-    terminal.SetHidden(1);
-    desktop.AddWin(1, &terminal);
+    terminal.add_widget(&terminal_output);
+    terminal.add_widget(&terminal_input);
+    terminal.set_hidden(1);
+    desktop.add_win(1, &terminal);
 
     GUI::Window shutdown_modal(200, 170, 235, 80, 0x7, 0);
     GUI::Label shutdown_label(30, 25, 10, 5, 0x0, 0x7, "Shutdown confirmation");
     GUI::Button shutdown_button(5, 55, 10, 20, "Shutdown", _shutdown);
-    shutdown_button.Color(0xC);
+    shutdown_button.color(0xC);
     GUI::Button reboot_button(85, 55, 20, 20, "Reboot", _reboot);
     GUI::Button cancel_button(160, 55, 20, 20, "Cancel", close_shutdown);
-    shutdown_modal.Border(1, 0x8);
-    shutdown_modal.AddWidget(&shutdown_button);
-    shutdown_modal.AddWidget(&reboot_button);
-    shutdown_modal.AddWidget(&cancel_button);
-    shutdown_modal.AddWidget(&shutdown_label);
-    desktop.AddWin(1, &shutdown_modal);
-    shutdown_modal.SetHidden(1);
+    shutdown_modal.border(1, 0x8);
+    shutdown_modal.add_widget(&shutdown_button);
+    shutdown_modal.add_widget(&reboot_button);
+    shutdown_modal.add_widget(&cancel_button);
+    shutdown_modal.add_widget(&shutdown_label);
+    desktop.add_win(1, &shutdown_modal);
+    shutdown_modal.set_hidden(1);
 
     GUI::Image wallpaper(640, 480, 0x0);
-    wallpaper.ImageRenderer(p_wallpaper_data);
-    desktop.SetWallpaper(&wallpaper);
+    wallpaper.image_renderer(p_wallpaper_data);
+    desktop.set_wallpaper(&wallpaper);
 
     while (1) {
         if (open_term_hook == 1) {
             open_term_hook = 0;
-            terminal.SetHidden(0);
+            terminal.set_hidden(0);
         } else if (shutdown_hook == 1) {
             shutdown_hook = 0;
-            shutdown_modal.SetHidden(0);
+            shutdown_modal.set_hidden(0);
         } else if (shutdown_cancel == 1) {
             shutdown_cancel = 0;
-            shutdown_modal.SetHidden(1);
+            shutdown_modal.set_hidden(1);
         } else {
             char* time;
-            TimeDriver::time->GetFullTime(':', time);
-            clock_label.SetText(time);
+            TimeDriver::time->get_full_time(':', time);
+            clock_label.set_text(time);
         }
-        desktop.Draw();
+        desktop.draw();
     }
 }
 
-extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int magicnumber)
+extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int magicnumber)
 {
     init_serial();
     klog("Kernel started");
-    clear_screen(VGA16::WHITE, VGA16::BLACK);
+    clear_screen(VGA16::white, VGA16::black);
 
-    GlobalDescriptorTable gdt;
+    GDT gdt;
     TaskManager task_manager(&gdt);
     TimeDriver time;
     VirtualFilesystem vfs;
@@ -164,12 +162,12 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
 
-    ata1s.Identify();
+    ata1s.identify();
     Tar fs_tar(&ata1s);
-    fs_tar.Mount();
-    if (fs_tar.Exists("welcome") == 1)
+    fs_tar.mount();
+    if (fs_tar.exists("welcome") == 1)
         PANIC("Could not mount the filesystem");
-    vfs.Mount(&fs_tar);
+    vfs.mount(&fs_tar);
 
     uint8_t* wallpaper_data = new uint8_t[640 * 480];
     int d_wallpaper = VFS::open("wallpaper");
@@ -178,31 +176,32 @@ extern "C" [[noreturn]] void kernelMain(void* multiboot_structure, unsigned int 
     p_wallpaper_data = wallpaper_data;
 
     klog("Starting PCI and activating drivers");
+    PCI pci;
     DriverManager driver_manager;
-    PCIcontroller PCI;
-    driver_manager.AddDriver(drivers.keyboard);
-    driver_manager.AddDriver(drivers.mouse);
-    PCI.SelectDrivers(&driver_manager, &interrupts);
-    driver_manager.ActivateAll();
+
+    driver_manager.add_driver(drivers.keyboard);
+    driver_manager.add_driver(drivers.mouse);
+    pci.select_drivers(&driver_manager, &interrupts);
+    driver_manager.activate_all();
 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");
-    Loader mloader;
-    mloader.Add(&elf_load);
+    Loader loader;
+    loader.add(&elf_load);
 
     int d_demo = VFS::open("demo");
     int size = VFS::size(d_demo);
     uint8_t* elfdata = new uint8_t[size];
     VFS::read(d_demo, elfdata);
     VFS::close(d_demo);
-    int demo_exec = Loader::load->Exec(elfdata);
+    int demo_exec = Loader::load->exec(elfdata);
     kfree(elfdata);
     Task demo("Demo", demo_exec);
 
     int desktop_exec = (int)&gui;
     Task desktop("GUI", desktop_exec, 1);
 
-    task_manager.AppendTasks(2, &desktop, &demo);
+    task_manager.append_tasks(2, &desktop, &demo);
     IRQ::activate();
 
     while (1)

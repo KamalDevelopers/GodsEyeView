@@ -3,25 +3,25 @@
 RawDataHandler::RawDataHandler(AmdDriver* backend)
 {
     this->backend = backend;
-    backend->SetHandler(this);
+    backend->set_handler(this);
 }
 
 RawDataHandler::~RawDataHandler()
 {
-    backend->SetHandler(0);
+    backend->set_handler(0);
 }
 
-bool RawDataHandler::OnRawDataReceived(uint8_t* buffer, uint32_t size)
+bool RawDataHandler::on_raw_data_received(uint8_t* buffer, uint32_t size)
 {
     return false;
 }
 
-void RawDataHandler::Send(uint8_t* buffer, uint32_t size)
+void RawDataHandler::send(uint8_t* buffer, uint32_t size)
 {
-    backend->Send(buffer, size);
+    backend->send(buffer, size);
 }
 
-AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* interrupts)
+AmdDriver::AmdDriver(DeviceDescriptor* dev, InterruptManager* interrupts)
     : Driver()
     , InterruptHandler(interrupts, dev->interrupt + interrupts->HardwareInterruptOffset())
     , MACAddress0Port(dev->port_base)
@@ -36,27 +36,27 @@ AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* inter
     currentSendBuffer = 0;
     currentRecvBuffer = 0;
 
-    uint64_t MAC0 = MACAddress0Port.Read() % 256;
-    uint64_t MAC1 = MACAddress0Port.Read() / 256;
-    uint64_t MAC2 = MACAddress2Port.Read() % 256;
-    uint64_t MAC3 = MACAddress2Port.Read() / 256;
-    uint64_t MAC4 = MACAddress4Port.Read() % 256;
-    uint64_t MAC5 = MACAddress4Port.Read() / 256;
+    uint64_t mac0 = MACAddress0Port.read() % 256;
+    uint64_t mac1 = MACAddress0Port.read() / 256;
+    uint64_t mac2 = MACAddress2Port.read() % 256;
+    uint64_t mac3 = MACAddress2Port.read() / 256;
+    uint64_t mac4 = MACAddress4Port.read() % 256;
+    uint64_t mac5 = MACAddress4Port.read() / 256;
 
-    uint64_t MAC = MAC5 << 40
-        | MAC4 << 32
-        | MAC3 << 24
-        | MAC2 << 16
-        | MAC1 << 8
-        | MAC0;
+    uint64_t mac = mac5 << 40
+        | mac4 << 32
+        | mac3 << 24
+        | mac2 << 16
+        | mac1 << 8
+        | mac0;
 
     // 32 bit mode
-    registerAddressPort.Write(20);
-    busControlRegisterDataPort.Write(0x102);
+    registerAddressPort.write(20);
+    busControlRegisterDataPort.write(0x102);
 
     // STOP reset
-    registerAddressPort.Write(0);
-    registerDataPort.Write(0x04);
+    registerAddressPort.write(0);
+    registerDataPort.write(0x04);
 
     // initBlock
     initBlock.mode = 0x0000; // promiscuous mode = false
@@ -64,14 +64,14 @@ AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* inter
     initBlock.numSendBuffers = 3;
     initBlock.reserved2 = 0;
     initBlock.numRecvBuffers = 3;
-    initBlock.physicalAddress = MAC;
+    initBlock.physicalAddress = mac;
     initBlock.reserved3 = 0;
     initBlock.logicalAddress = 0;
 
-    sendBufferDescr = (BufferDescriptor*)((((uint32_t)&sendBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
-    initBlock.sendBufferDescrAddress = (uint32_t)sendBufferDescr;
-    recvBufferDescr = (BufferDescriptor*)((((uint32_t)&recvBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
-    initBlock.recvBufferDescrAddress = (uint32_t)recvBufferDescr;
+    sendBufferDescr = (buffer_descriptor*)((((uint32_t)&sendBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
+    initBlock.send_buffer_descr_address = (uint32_t)sendBufferDescr;
+    recvBufferDescr = (buffer_descriptor*)((((uint32_t)&recvBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
+    initBlock.recv_buffer_descr_address = (uint32_t)recvBufferDescr;
 
     for (uint8_t i = 0; i < 8; i++) {
         sendBufferDescr[i].address = (((uint32_t)&sendBuffers[i]) + 15) & ~(uint32_t)0xF;
@@ -87,26 +87,26 @@ AmdDriver::AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* inter
         sendBufferDescr[i].avail = 0;
     }
 
-    registerAddressPort.Write(1);
-    registerDataPort.Write((uint32_t)(&initBlock) & 0xFFFF);
-    registerAddressPort.Write(2);
-    registerDataPort.Write(((uint32_t)(&initBlock) >> 16) & 0xFFFF);
+    registerAddressPort.write(1);
+    registerDataPort.write((uint32_t)(&initBlock) & 0xFFFF);
+    registerAddressPort.write(2);
+    registerDataPort.write(((uint32_t)(&initBlock) >> 16) & 0xFFFF);
 }
 
 AmdDriver::~AmdDriver()
 {
 }
 
-void AmdDriver::Send(uint8_t* buffer, int size)
+void AmdDriver::send(uint8_t* buffer, int size)
 {
-    int sendDescriptor = currentSendBuffer;
+    int send_descriptor = currentSendBuffer;
     currentSendBuffer = (currentSendBuffer + 1) % 8;
 
     if (size > 1518)
         size = 1518;
 
     for (uint8_t *src = buffer + size - 1,
-                 *dst = (uint8_t*)(sendBufferDescr[sendDescriptor].address + size - 1);
+                 *dst = (uint8_t*)(sendBufferDescr[send_descriptor].address + size - 1);
          src >= buffer; src--, dst--)
         *dst = *src;
 
@@ -116,15 +116,15 @@ void AmdDriver::Send(uint8_t* buffer, int size)
         printf(" ");
     }
 
-    sendBufferDescr[sendDescriptor].avail = 0;
-    sendBufferDescr[sendDescriptor].flags2 = 0;
-    sendBufferDescr[sendDescriptor].flags = 0x8300F000
+    sendBufferDescr[send_descriptor].avail = 0;
+    sendBufferDescr[send_descriptor].flags2 = 0;
+    sendBufferDescr[send_descriptor].flags = 0x8300F000
         | ((uint16_t)((-size) & 0xFFF));
-    registerAddressPort.Write(0);
-    registerDataPort.Write(0x48);
+    registerAddressPort.write(0);
+    registerDataPort.write(0x48);
 }
 
-void AmdDriver::Receive()
+void AmdDriver::receive()
 {
     for (; (recvBufferDescr[currentRecvBuffer].flags & 0x80000000) == 0;
          currentRecvBuffer = (currentRecvBuffer + 1) % 8) {
@@ -139,8 +139,8 @@ void AmdDriver::Receive()
             uint8_t* buffer = (uint8_t*)(recvBufferDescr[currentRecvBuffer].address);
 
             if (handler != 0)
-                if (handler->OnRawDataReceived(buffer, size))
-                    Send(buffer, size);
+                if (handler->on_raw_data_received(buffer, size))
+                    send(buffer, size);
 
             printf("\nData Received: ");
             size = 64;
@@ -155,44 +155,44 @@ void AmdDriver::Receive()
     }
 }
 
-void AmdDriver::SetHandler(RawDataHandler* handler)
+void AmdDriver::set_handler(RawDataHandler* handler)
 {
     this->handler = handler;
 }
 
-uint64_t AmdDriver::GetMACAddress()
+uint64_t AmdDriver::get_mac_address()
 {
     return initBlock.physicalAddress;
 }
 
-void AmdDriver::SetIPAddress(uint32_t ip)
+void AmdDriver::set_ip_address(uint32_t ip)
 {
     initBlock.logicalAddress = ip;
 }
 
-uint32_t AmdDriver::GetIPAddress()
+uint32_t AmdDriver::get_ip_address()
 {
     return initBlock.logicalAddress;
 }
 
-void AmdDriver::Activate()
+void AmdDriver::activate()
 {
-    registerAddressPort.Write(0);
-    registerDataPort.Write(0x41);
+    registerAddressPort.write(0);
+    registerDataPort.write(0x41);
 
-    registerAddressPort.Write(4);
-    uint32_t temp = registerDataPort.Read();
-    registerAddressPort.Write(4);
-    registerDataPort.Write(temp | 0xC00);
+    registerAddressPort.write(4);
+    uint32_t temp = registerDataPort.read();
+    registerAddressPort.write(4);
+    registerDataPort.write(temp | 0xC00);
 
-    registerAddressPort.Write(0);
-    registerDataPort.Write(0x42);
+    registerAddressPort.write(0);
+    registerDataPort.write(0x42);
 }
 
-int AmdDriver::Reset()
+int AmdDriver::reset()
 {
-    resetPort.Read();
-    resetPort.Write(0);
+    resetPort.read();
+    resetPort.write(0);
     return 10;
 }
 
@@ -200,8 +200,8 @@ uint32_t AmdDriver::HandleInterrupt(uint32_t esp)
 {
     printf("%s", "\nINTERRUPT FROM AMD am79c973\n");
 
-    registerAddressPort.Write(0);
-    uint32_t temp = registerDataPort.Read();
+    registerAddressPort.write(0);
+    uint32_t temp = registerDataPort.read();
 
     if ((temp & 0x8000) == 0x8000)
         printf("\nAMD am79c973 ERROR\n");
@@ -212,13 +212,12 @@ uint32_t AmdDriver::HandleInterrupt(uint32_t esp)
     if ((temp & 0x0800) == 0x0800)
         printf("\nAMD am79c973 MEMORY ERROR\n");
     if ((temp & 0x0400) == 0x0400)
-        Receive();
+        receive();
     if ((temp & 0x0200) == 0x0200)
         printf("\nAMD am79c973 DATA SENT\n");
 
-    // acknoledge
-    registerAddressPort.Write(0);
-    registerDataPort.Write(temp);
+    registerAddressPort.write(0);
+    registerDataPort.write(temp);
 
     if ((temp & 0x0100) == 0x0100)
         printf("\nAMD am79c973 INIT DONE\n");

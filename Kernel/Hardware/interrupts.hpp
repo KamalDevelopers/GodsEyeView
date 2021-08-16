@@ -101,7 +101,7 @@ protected:
     Port8BitSlow programmableInterruptControllerSlaveDataPort;
 
 public:
-    InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable* globalDescriptorTable, TaskManager* taskManager);
+    InterruptManager(uint16_t hardwareInterruptOffset, GDT* globalDescriptorTable, TaskManager* taskManager);
     ~InterruptManager();
 
     static InterruptManager* active;

@@ -27,9 +27,9 @@ public:
             kfree(bitmap);
     }
 
-    void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    void ImageRenderer(unsigned char* data);
-    uint16_t GetColor(int index);
+    void add(Graphics* vga, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    void image_renderer(unsigned char* data);
+    uint16_t get_color(int index);
 };
 
 class Input {
@@ -55,10 +55,10 @@ private:
 
 public:
     Input(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text);
-    void Add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    int GetType() { return 4; }
-    void HitboxExpand(int value) { hitbox_expand = value; }
-    void SetListener(void (*op)(char*)) { on_press = op; }
+    void add(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    int get_type() { return 4; }
+    void set_hitbox_expand(int value) { hitbox_expand = value; }
+    void set_listener(void (*op)(char*)) { on_press = op; }
 };
 
 class Button {
@@ -80,12 +80,12 @@ private:
 
 public:
     Button(int xpos, int ypos, int width, int height, char* text, void (*op)(void));
-    void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    void AddImage(Image* img);
-    void Color(uint8_t color) { box_color = color; }
-    void ShadowColor(uint8_t scolor) { shadow_color = scolor; }
-    void ShadowOffset(int soffset) { shadow_offset = soffset; }
-    int GetType() { return 3; }
+    void add(Graphics* vga, MouseDriver* mouse, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    void add_image(Image* img);
+    void color(uint8_t color) { box_color = color; }
+    void set_shadow_color(uint8_t scolor) { shadow_color = scolor; }
+    void set_shadow_offset(int soffset) { shadow_offset = soffset; }
+    int get_type() { return 3; }
 };
 
 class Panel {
@@ -98,8 +98,8 @@ private:
 
 public:
     Panel(int xpos, int ypos, int width, int height, uint8_t color);
-    void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    int GetType() { return 2; }
+    void add(Graphics* vga, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    int get_type() { return 2; }
 };
 
 class Label {
@@ -114,9 +114,9 @@ private:
 
 public:
     Label(int xpos, int ypos, int width, int height, uint8_t fcolor, uint8_t bcolor, char* text);
-    void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    void SetText(char* new_text) { widget_text = new_text; }
-    int GetType() { return 1; }
+    void add(Graphics* vga, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    void set_text(char* new_text) { widget_text = new_text; }
+    int get_type() { return 1; }
 };
 
 class ProgressBar {
@@ -135,15 +135,15 @@ private:
 
 public:
     ProgressBar(int xpos, int ypos, int length);
-    void Add(Graphics* vga, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    void SetProgress(float percentage) { progress = percentage; }
-    float GetProgress() { return progress; }
-    void Color(uint8_t c) { widget_color = c; }
-    void BorderColor(uint8_t c) { border_color = c; }
-    void BarColor(uint8_t c) { bar_color = c; }
-    void TextColor(uint8_t c) { text_color = c; }
-    void ShowText(uint8_t s) { show_text = s; }
-    int GetType() { return 5; }
+    void add(Graphics* vga, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    void set_progress(float percentage) { progress = percentage; }
+    float get_progress() { return progress; }
+    void color(uint8_t c) { widget_color = c; }
+    void set_border_color(uint8_t c) { border_color = c; }
+    void set_bar_color(uint8_t c) { bar_color = c; }
+    void set_text_color(uint8_t c) { text_color = c; }
+    void set_show_text(uint8_t s) { show_text = s; }
+    int get_type() { return 5; }
 };
 
 class CheckBox {
@@ -162,11 +162,11 @@ private:
 public:
     uint8_t state = 0;
     CheckBox(int xpos, int ypos);
-    void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    void BorderColor(uint8_t c) { border_color = c; }
-    void NormalColor(uint8_t c) { normal_color = c; }
-    void ActiveColor(uint8_t c) { active_color = c; }
-    int GetType() { return 6; }
+    void add(Graphics* vga, MouseDriver* mouse, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    void set_border_color(uint8_t c) { border_color = c; }
+    void set_normal_color(uint8_t c) { normal_color = c; }
+    void set_active_color(uint8_t c) { active_color = c; }
+    int get_type() { return 6; }
 };
 
 class Slider {
@@ -184,14 +184,14 @@ private:
     uint8_t slider_color = 0x8;
 
     float value = 40;
-    int valueInPixels;
+    int value_in_pixels;
 
 public:
     Slider(int xpos, int ypos, int width);
-    void Add(Graphics* vga, MouseDriver* mouse, int parentPosX, int parentPosY, int parentWidth, int parentHeight);
-    void SetValue(float v) { value = v; }
-    float GetValue() { return value; }
-    int GetType() { return 7; }
+    void add(Graphics* vga, MouseDriver* mouse, int parent_pos_x, int parent_pos_y, int parent_width, int parent_height);
+    void set_value(float v) { value = v; }
+    float get_value() { return value; }
+    int get_type() { return 7; }
 };
 
 class Window {
@@ -230,13 +230,13 @@ private:
 
 public:
     Window(int xpos, int ypos, int w, int h, uint8_t color, uint8_t win_bar = 1);
-    uint8_t Begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
-    void BeginChildren(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
+    uint8_t begin(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
+    void begin_children(Graphics* vga, MouseDriver* mouse, KeyboardDriver* keyboard);
 
     template<class T>
-    void AddWidget(T* data)
+    void add_widget(T* data)
     {
-        switch (data->GetType()) {
+        switch (data->get_type()) {
         case 1:
             childrenLabel[widget_indexLabel] = (Label*)data;
             widget_indexLabel++;
@@ -268,23 +268,23 @@ public:
         }
     }
 
-    void Border(uint8_t thickness, uint8_t color);
-    void SetTitle(char* wt) { win_title = wt; }
+    void border(uint8_t thickness, uint8_t color);
+    void set_title(char* wt) { win_title = wt; }
 
-    void MousePress(uint32_t x, uint32_t y, int b, Graphics* vga);
-    void MouseRelease(uint32_t x, uint32_t y, int b);
+    void mouse_press(uint32_t x, uint32_t y, int b, Graphics* vga);
+    void mouse_release(uint32_t x, uint32_t y, int b);
 
-    void SetHidden(uint8_t hide) { win_hidden = hide; }
+    void set_hidden(uint8_t hide) { win_hidden = hide; }
 
-    void Revive() { destroy_win = 0; }
-    void Destroy() { destroy_win = 1; }
+    void revive() { destroy_win = 0; }
+    void destroy() { destroy_win = 1; }
 
-    int GetDestroy() { return destroy_win; }
-    int GetHidden() { return win_hidden; }
-    int GetWidth() { return win_width; }
-    int GetHeight() { return win_height; }
-    int GetPosX() { return win_xpos; }
-    int GetPosY() { return win_ypos; }
+    int get_destroy() { return destroy_win; }
+    int get_hidden() { return win_hidden; }
+    int get_width() { return win_width; }
+    int get_height() { return win_height; }
+    int get_pos_x() { return win_xpos; }
+    int get_pos_y() { return win_ypos; }
 };
 
 static bool is_mouse = 1;
@@ -315,19 +315,19 @@ private:
 
 public:
     Desktop(int w, int h, Graphics* g, MouseDriver* m, KeyboardDriver* k);
-    void Start();
-    void Draw();
-    int AddWin(int count, ...);
-    int AppendWin(Window* win);
-    void SetWallpaper(Image* img);
-    void WinDestroy(int index) { children[index] = 0; }
+    void start();
+    void draw();
+    int add_win(int count, ...);
+    int append_win(Window* win);
+    void set_wallpaper(Image* img);
+    void win_destroy(int index) { children[index] = 0; }
 
-    void MouseRelease(uint32_t MouseX, uint32_t MouseY, int b);
-    void MousePress(uint32_t MouseX, uint32_t MouseY, int b);
+    void mouse_release(uint32_t mouse_x, uint32_t mouse_y, int b);
+    void mouse_press(uint32_t mouse_x, uint32_t mouse_y, int b);
 
-    Graphics* GetVGA() { return vga; }
-    MouseDriver* GetMouse() { return mouse; };
-    KeyboardDriver* GetKeyboard() { return keyboard; };
+    Graphics* get_vga() { return vga; }
+    MouseDriver* get_mouse() { return mouse; };
+    KeyboardDriver* get_keyboard() { return keyboard; };
 };
 };
 

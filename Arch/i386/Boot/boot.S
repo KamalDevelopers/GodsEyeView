@@ -24,7 +24,7 @@
 
 
 .section .text
-.extern kernelMain
+.extern kernel_main 
 .extern call_constructors
 .global loader
 
@@ -41,7 +41,7 @@ loader:
 
     mov $kernel_stack, %esp
     call call_constructors
-    call kernelMain
+    call kernel_main 
 
 
 _stop:

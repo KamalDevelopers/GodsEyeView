@@ -17,13 +17,13 @@ public:
     RawDataHandler(AmdDriver* backend);
     ~RawDataHandler();
 
-    virtual bool OnRawDataReceived(uint8_t* buffer, uint32_t size);
-    void Send(uint8_t* buffer, uint32_t size);
+    virtual bool on_raw_data_received(uint8_t* buffer, uint32_t size);
+    void send(uint8_t* buffer, uint32_t size);
 };
 
 class AmdDriver : public Driver
     , public InterruptHandler {
-    struct InitializationBlock {
+    struct initialization_block {
         uint16_t mode;
         unsigned reserved1 : 4;
         unsigned numSendBuffers : 4;
@@ -32,11 +32,11 @@ class AmdDriver : public Driver
         uint64_t physicalAddress : 48;
         uint16_t reserved3;
         uint64_t logicalAddress;
-        uint32_t recvBufferDescrAddress;
-        uint32_t sendBufferDescrAddress;
+        uint32_t recv_buffer_descr_address;
+        uint32_t send_buffer_descr_address;
     } __attribute__((packed));
 
-    struct BufferDescriptor {
+    struct buffer_descriptor {
         uint32_t address;
         uint32_t flags;
         uint32_t flags2;
@@ -51,32 +51,32 @@ class AmdDriver : public Driver
     Port16Bit resetPort;
     Port16Bit busControlRegisterDataPort;
 
-    InitializationBlock initBlock;
+    initialization_block initBlock;
 
-    BufferDescriptor* sendBufferDescr;
+    buffer_descriptor* sendBufferDescr;
     uint8_t sendBufferDescrMemory[2048 + 15];
     uint8_t sendBuffers[2 * 1024 + 15][8];
     uint8_t currentSendBuffer;
 
-    BufferDescriptor* recvBufferDescr;
+    buffer_descriptor* recvBufferDescr;
     uint8_t recvBufferDescrMemory[2048 + 15];
     uint8_t recvBuffers[2 * 1024 + 15][8];
     uint8_t currentRecvBuffer;
     RawDataHandler* handler;
 
 public:
-    AmdDriver(PCIcontrollerDeviceDescriptor* dev, InterruptManager* interrupts);
+    AmdDriver(DeviceDescriptor* dev, InterruptManager* interrupts);
     ~AmdDriver();
 
-    void Activate();
-    int Reset();
+    void activate();
+    int reset();
     uint32_t HandleInterrupt(uint32_t esp);
-    void Send(uint8_t* buffer, int count);
-    void Receive();
-    void SetHandler(RawDataHandler* handler);
-    uint64_t GetMACAddress();
-    void SetIPAddress(uint32_t);
-    uint32_t GetIPAddress();
+    void send(uint8_t* buffer, int count);
+    void receive();
+    void set_handler(RawDataHandler* handler);
+    uint64_t get_mac_address();
+    void set_ip_address(uint32_t);
+    uint32_t get_ip_address();
 };
 
 #endif

@@ -13,7 +13,7 @@
 #define SIG_TERM 2
 #define SIG_SEGV 3
 
-struct CPUState {
+struct cpu_state {
     uint32_t eax;
     uint32_t ebx;
     uint32_t ecx;
@@ -38,27 +38,27 @@ class Task {
 private:
     uint8_t stack[4096]; // 4 KiB
     uint32_t page_directory[1024];
-    CPUState* cpustate;
+    cpu_state* cpustate;
 
     int pid;
     char name[20];
     uint16_t state;
     uint8_t privelege;
-    void (*notify)(int);
+    void (*notify_callback)(int);
 
 public:
-    int8_t Notify(int signal);
-    void Suicide(int error_code);
+    int8_t notify(int signal);
+    void suicide(int error_code);
     Task(char* task_name, uint32_t entrypoint, uint8_t priv = 0);
     ~Task();
 };
 
-static uint32_t lpid = 0;
-static GlobalDescriptorTable* gdt = 0;
+static uint32_t g_lpid = 0;
+static GDT* g_gdt = 0;
 
 class TaskManager {
 private:
-    bool AddTask(Task* task);
+    bool add_task(Task* task);
     int num_tasks;
     int current_task;
     int8_t is_running = 1;
@@ -66,25 +66,25 @@ private:
     Task* tasks[256];
 
 public:
-    TaskManager(GlobalDescriptorTable* dgdt);
+    TaskManager(GDT* gdt);
     ~TaskManager();
 
     static TaskManager* active;
 
-    CPUState* Schedule(CPUState* cpustate);
+    cpu_state* schedule(cpu_state* cpustate);
 
-    void Activate() { is_running = 1; }
-    void Deactivate() { is_running = 0; }
-    int GetPid() { return tasks[current_task]->pid; }
-    char* GetName() { return tasks[current_task]->name; }
+    void activate() { is_running = 1; }
+    void deactivate() { is_running = 0; }
+    int get_pid() { return tasks[current_task]->pid; }
+    char* get_name() { return tasks[current_task]->name; }
 
-    bool AppendTasks(int count, ...);
-    int8_t SendSignal(int pid, int sig);
-    void KillZombieTasks();
-    void Kill();
+    bool append_tasks(int count, ...);
+    int8_t send_signal(int pid, int sig);
+    void kill_zombie_tasks();
+    void kill();
 
-    void Lock() { locked = 0; }
-    void Unlock() { locked = -1; }
+    void lock() { locked = 0; }
+    void unlock() { locked = -1; }
 };
 
 #endif

@@ -22,7 +22,7 @@ extern char* ftoa(float n, char* res, int afterpoint);
 extern div_t div(int numerator, int denominator);
 
 template<typename T>
-static void deleteElement(int x, int size, T* arr[])
+static void delete_element(int x, int size, T* arr[])
 {
     for (int j = x; j < size; j++)
         arr[j] = arr[j + 1];

@@ -97,14 +97,14 @@ KeyboardDriver::KeyboardDriver(InterruptManager* manager)
     , commandport(0x64)
 {
     active = this;
-    while (commandport.Read() & 0x1)
-        dataport.Read();
-    commandport.Write(0xae); // activate interrupts
-    commandport.Write(0x20); // command 0x20 = read controller command byte
-    uint8_t status = (dataport.Read() | 1) & ~0x10;
-    commandport.Write(0x60); // command 0x60 = set controller command byte
-    dataport.Write(status);
-    dataport.Write(0xf4);
+    while (commandport.read() & 0x1)
+        dataport.read();
+    commandport.write(0xae); // activate interrupts
+    commandport.write(0x20); // command 0x20 = read controller command byte
+    uint8_t status = (dataport.read() | 1) & ~0x10;
+    commandport.write(0x60); // command 0x60 = set controller command byte
+    dataport.write(status);
+    dataport.write(0xf4);
 }
 
 KeyboardDriver::~KeyboardDriver()
@@ -112,7 +112,7 @@ KeyboardDriver::~KeyboardDriver()
 }
 
 /* TODO: English layout & more character support */
-uint8_t KeyboardDriver::KeyA(uint8_t key)
+uint8_t KeyboardDriver::key_a(uint8_t key)
 {
     if (key == ENTER_PRESSED)
         return '\n';
@@ -174,44 +174,44 @@ uint8_t KeyboardDriver::KeyA(uint8_t key)
     return 0;
 }
 
-int KeyboardDriver::GetKeyPresses(int raw)
+int KeyboardDriver::get_key_presses(int raw)
 {
     if (raw == 1)
         return keys_pressed_raw;
     return keys_pressed;
 }
 
-uint8_t KeyboardDriver::ReadKey()
+uint8_t KeyboardDriver::read_key()
 {
     uint8_t lastkey = 0;
-    if (commandport.Read() & 1)
-        lastkey = dataport.Read();
+    if (commandport.read() & 1)
+        lastkey = dataport.read();
     return lastkey;
 }
 
-char KeyboardDriver::GetKey()
+char KeyboardDriver::get_key()
 {
     uint8_t c = 0;
     while (c == 0) {
-        c = ReadKey();
+        c = read_key();
         if (c == SHIFT_PRESSED)
             is_shift = 1;
         if (c == SHIFT_RELEASED)
             is_shift = 0;
     }
-    if (KeyA(c) != 0)
-        return KeyA(c);
+    if (key_a(c) != 0)
+        return key_a(c);
     return 0;
 }
 
-char KeyboardDriver::GetLastKey(int raw)
+char KeyboardDriver::get_last_key(int raw)
 {
     if (raw == 1)
         return last_key_raw;
     return last_key;
 }
 
-void KeyboardDriver::ReadKeys(int len, char* data)
+void KeyboardDriver::read_keys(int len, char* data)
 {
     /* Disable Mouse */
     outb(0x64, 0xD4);
@@ -222,7 +222,7 @@ void KeyboardDriver::ReadKeys(int len, char* data)
     char* buffer;
 
     while (c != 10) {
-        while (!(c = KeyboardDriver::active->GetKey()))
+        while (!(c = KeyboardDriver::active->get_key()))
             ;
         if (c == '\b') {
             if (key_stroke > 0) {
@@ -246,15 +246,15 @@ void KeyboardDriver::ReadKeys(int len, char* data)
     outb(0x60, 0xF4);
 }
 
-void KeyboardDriver::OnKey(uint8_t keypress)
+void KeyboardDriver::on_key(uint8_t keypress)
 {
     if (keypress == SHIFT_PRESSED)
         is_shift = 1;
     if (keypress == SHIFT_RELEASED)
         is_shift = 0;
 
-    if (KeyA(keypress) != 0) {
-        last_key = KeyA(keypress);
+    if (key_a(keypress) != 0) {
+        last_key = key_a(keypress);
         keys_pressed++;
     }
     last_key_raw = keypress;
@@ -263,7 +263,7 @@ void KeyboardDriver::OnKey(uint8_t keypress)
 
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
 {
-    uint8_t key = dataport.Read();
-    OnKey(key);
+    uint8_t key = dataport.read();
+    on_key(key);
     return esp;
 }

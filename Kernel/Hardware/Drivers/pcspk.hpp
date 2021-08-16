@@ -6,7 +6,7 @@
 #include "LibC/types.hpp"
 
 namespace PCS {
-void play_sound(uint32_t nFrequence);
+void play_sound(uint32_t frequency);
 void nosound();
 void beep(uint32_t ms_time, uint32_t frequency);
 };
