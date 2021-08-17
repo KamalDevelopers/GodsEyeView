@@ -26,6 +26,10 @@ void putc(int c)
 
 void puti(int num)
 {
+    if (num < 0) {
+        num = -num;
+        puts("-");
+    }
     char str[20];
     itoa(num, str);
     puts(str);
@@ -33,6 +37,10 @@ void puti(int num)
 
 void putf(float f)
 {
+    if (f < 0.0f) {
+        f = -f;
+        puts("-");
+    }
     char* str;
     ftoa(f, str, 2);
     puts(str);
