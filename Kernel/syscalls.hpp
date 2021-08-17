@@ -19,6 +19,12 @@ struct utsname {
     char release[6];
 };
 
+struct stat {
+    int st_uid;
+    int st_gid;
+    int st_size;
+};
+
 class SyscallHandler : public InterruptHandler {
 public:
     SyscallHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number);

@@ -242,8 +242,8 @@ int Tar::get_size(char* file_name)
     int file_id = find_file(file_name);
     if ((file_id > file_index) || (file_id == -1))
         return -1;
-    int data_size = (oct_bin(files[file_id].size, 11) / 512) + 1; // Get sector index
-    return data_size * 512;                                       // Convert sectors into bytes
+    int data_size = oct_bin(files[file_id].size, 11);
+    return data_size;
 }
 
 int Tar::get_uid(char* file_name)

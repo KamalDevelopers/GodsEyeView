@@ -61,6 +61,14 @@ int sys_open(char* file_name)
     return descriptor;
 }
 
+int sys_stat(int descriptor, stat* buffer)
+{
+    buffer->st_uid = VFS::uid(descriptor);
+    buffer->st_gid = VFS::gid(descriptor);
+    buffer->st_size = VFS::size(descriptor);
+    return (buffer->st_size == -1) ? -1 : 0;
+}
+
 void sys_reboot(int arg)
 {
     switch (arg) {
@@ -82,6 +90,8 @@ void sys_reboot(int arg)
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
+    int desc;
+    int pid;
 
     switch (cpu->eax) {
     case 1:
@@ -97,8 +107,6 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         break;
 
     case 5:
-        /* TODO: Support mode and flags */
-        int desc;
         desc = sys_open((char*)cpu->ebx);
         cpu->eax = desc;
         break;
@@ -107,10 +115,19 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         VFS::close((int)cpu->ebx);
         break;
 
+    case 18:
+        desc = VFS::open((char*)cpu->ebx);
+        cpu->eax = sys_stat(desc, (stat*)cpu->ecx);
+        VFS::close(desc);
+        break;
+
     case 20:
-        int pid;
         pid = TaskManager::active->get_pid();
         cpu->eax = pid;
+        break;
+
+    case 28:
+        cpu->eax = sys_stat((int)cpu->ebx, (stat*)cpu->ecx);
         break;
 
     case 37:

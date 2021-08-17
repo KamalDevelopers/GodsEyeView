@@ -1,20 +1,24 @@
+#include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/unistd.hpp>
 
 int main()
 {
-    int result;
-    char* buffer = (char*)malloc(sizeof(char) * 22);
+    int file_descriptor;
+    struct stat statbuffer;
 
-    result = open((char*)"welcome");
-    read(result, buffer, 22);
-    close(result);
+    file_descriptor = open((char*)"welcome");
+    fstat(file_descriptor, &statbuffer);
+    char* buffer = (char*)malloc(sizeof(char) * statbuffer.st_size);
+
+    read(file_descriptor, buffer, statbuffer.st_size);
+    close(file_descriptor);
     printf("%s", buffer);
 
     free(buffer);
-    exit(0);
 
+    exit(0);
     while (1)
         ;
 }
