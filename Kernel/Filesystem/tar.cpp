@@ -313,7 +313,8 @@ int Tar::write_file(char* file_name, uint8_t* data, int data_length)
     int newfile_offset = data_offset + data_size + 1;
 
     /* Create the header data */
-    posix_header meta_head;
+    posix_header* p_meta_head = new posix_header;
+    posix_header meta_head = *p_meta_head;
     for (int i = 0; i < 99; i++)
         meta_head.name[i] = '\0';
     strcpy(meta_head.name, file_name);
@@ -351,6 +352,7 @@ int Tar::write_file(char* file_name, uint8_t* data, int data_length)
         hd->write28(data_offset + data_size + 1 + i, (uint8_t*)"\0", 1);
     hd->write28(data_offset + data_size + 1, (uint8_t*)&meta_head, sizeof(posix_header));
     write_data(data_offset + data_size + 2, data, data_length);
+    kfree(p_meta_head);
     return 0;
 }
 
