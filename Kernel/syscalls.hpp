@@ -14,9 +14,14 @@
 
 extern "C" int shutdown();
 
+struct utsname {
+    char sysname[6];
+    char release[6];
+};
+
 class SyscallHandler : public InterruptHandler {
 public:
-    SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber);
+    SyscallHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number);
     ~SyscallHandler();
 
     virtual uint32_t HandleInterrupt(uint32_t esp);

@@ -1,7 +1,7 @@
 #include "syscalls.hpp"
 
-SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber)
-    : InterruptHandler(interruptManager, InterruptNumber + interruptManager->HardwareInterruptOffset())
+SyscallHandler::SyscallHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number)
+    : InterruptHandler(interrupt_manager, interrupt_number + interrupt_manager->HardwareInterruptOffset())
 {
 }
 
@@ -130,6 +130,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     case 91:
         /* Incomplete implementation */
         pfree((void*)cpu->ebx, (size_t)cpu->ecx);
+        break;
+
+    case 109:
+        strcpy(((utsname*)cpu->ebx)->sysname, "GevOS");
+        strcpy(((utsname*)cpu->ebx)->release, "0.1.0");
+        cpu->eax = 0;
         break;
 
     case 162:
