@@ -1,5 +1,7 @@
 #ifndef STRING_HPP
 #define STRING_HPP
+
+#include "LibC/ctype.hpp"
 #include "LibC/types.hpp"
 
 extern int len(const char* arr);
@@ -16,6 +18,8 @@ extern char* strtok(char* str, char* delimiter);
 extern char strpbrk(char* str, char* cmp);
 extern float stof(const char* str);
 extern void* memchr(const void* str, int c, size_t n);
+void uppercase(char* str);
+void lowercase(char* str);
 
 extern char* findchar(const char* str, int c);
 extern void memcpy(char* dest, char* src, int count);

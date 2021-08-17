@@ -5,7 +5,6 @@
 #define MAX_COLS 80
 
 #include "LibC/stdlib.hpp"
-#include "LibC/string.hpp"
 #include "LibC/unistd.hpp"
 #include <stdarg.h>
 

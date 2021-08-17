@@ -245,3 +245,15 @@ void int_to_ascii(int n, char str[])
         str[i++] = '-';
     str[i] = '\0';
 }
+
+void uppercase(char* str)
+{
+    for (int i = 0; i < strlen(str); i++)
+        str[i] = toupper(str[i]);
+}
+
+void lowercase(char* str)
+{
+    for (int i = 0; i < strlen(str); i++)
+        str[i] = tolower(str[i]);
+}
