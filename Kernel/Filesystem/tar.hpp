@@ -62,6 +62,8 @@ public:
     int read_file(char* file_name, uint8_t* data);
     int find_file(char* file_name);
     int get_size(char* file_name);
+    int get_uid(char* file_name);
+    int get_gid(char* file_name);
 
     int rename_file(char* file_name, char* new_file_name);
     int unlink(char* path, bool should_update = 1);

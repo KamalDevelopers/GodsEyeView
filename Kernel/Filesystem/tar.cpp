@@ -242,9 +242,26 @@ int Tar::get_size(char* file_name)
     int file_id = find_file(file_name);
     if ((file_id > file_index) || (file_id == -1))
         return -1;
-    int data_offset = sector_links_file[file_id] + 1;             // File data sector index
     int data_size = (oct_bin(files[file_id].size, 11) / 512) + 1; // Get sector index
     return data_size * 512;                                       // Convert sectors into bytes
+}
+
+int Tar::get_uid(char* file_name)
+{
+    int file_id = find_file(file_name);
+    if ((file_id > file_index) || (file_id == -1))
+        return -1;
+    int uid = oct_bin(files[file_id].uid, 7);
+    return uid;
+}
+
+int Tar::get_gid(char* file_name)
+{
+    int file_id = find_file(file_name);
+    if ((file_id > file_index) || (file_id == -1))
+        return -1;
+    int gid = oct_bin(files[file_id].gid, 7);
+    return gid;
 }
 
 /* Checksum write in octal */

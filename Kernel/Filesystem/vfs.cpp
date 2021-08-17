@@ -8,26 +8,6 @@ Filesystem::~Filesystem()
 {
 }
 
-int Filesystem::get_size(char* file_name)
-{
-    return 0;
-}
-
-int Filesystem::read_file(char* file_name, uint8_t* data)
-{
-    return 0;
-}
-
-int Filesystem::write_file(char* file_name, uint8_t* data, int data_length)
-{
-    return 0;
-}
-
-int Filesystem::find_file(char* file_name)
-{
-    return 0;
-}
-
 VirtualFilesystem* VirtualFilesystem::active = 0;
 VirtualFilesystem::VirtualFilesystem()
 {
@@ -122,4 +102,20 @@ int VirtualFilesystem::file_size(int descriptor)
     if (index == -1)
         return -1;
     return mounts[files[index].mountfs]->get_size(files[index].file_name);
+}
+
+int VirtualFilesystem::file_uid(int descriptor)
+{
+    int index = search(descriptor);
+    if (index == -1)
+        return -1;
+    return mounts[files[index].mountfs]->get_uid(files[index].file_name);
+}
+
+int VirtualFilesystem::file_gid(int descriptor)
+{
+    int index = search(descriptor);
+    if (index == -1)
+        return -1;
+    return mounts[files[index].mountfs]->get_gid(files[index].file_name);
 }

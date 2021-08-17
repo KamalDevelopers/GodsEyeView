@@ -22,10 +22,12 @@ public:
     Filesystem();
     ~Filesystem();
 
-    virtual int get_size(char* file_name);
-    virtual int write_file(char* file_name, uint8_t* data, int data_length);
-    virtual int read_file(char* file_name, uint8_t* data);
-    virtual int find_file(char* file_name);
+    virtual int get_gid(char* file_name) { return 0; }
+    virtual int get_uid(char* file_name) { return 0; }
+    virtual int get_size(char* file_name) { return 0; }
+    virtual int write_file(char* file_name, uint8_t* data, int data_length) { return 0; }
+    virtual int read_file(char* file_name, uint8_t* data) { return 0; }
+    virtual int find_file(char* file_name) { return 0; }
 };
 
 class VirtualFilesystem {
@@ -53,6 +55,8 @@ public:
     int write_file(int descriptor, uint8_t* data, int data_length);
     int read_file(int descriptor, uint8_t* data);
     int file_size(int descriptor);
+    int file_uid(int descriptor);
+    int file_gid(int descriptor);
 };
 
 namespace VFS {
@@ -80,6 +84,16 @@ inline int read(int descriptor, uint8_t* data)
 inline int size(int descriptor)
 {
     return VirtualFilesystem::active->file_size(descriptor);
+}
+
+inline int uid(int descriptor)
+{
+    return VirtualFilesystem::active->file_uid(descriptor);
+}
+
+inline int gid(int descriptor)
+{
+    return VirtualFilesystem::active->file_gid(descriptor);
 }
 
 /* TODO */
