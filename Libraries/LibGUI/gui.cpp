@@ -343,9 +343,9 @@ void CheckBox::add(Graphics* vga, MouseDriver* mouse, int parent_pos_x, int pare
                     } else {
                         state = 1;
                     }
-                    state_locked = TimeDriver::time->get_second();
+                    state_locked = Time->get_second();
                 }
-                if (TimeDriver::time->get_second() != state_locked) {
+                if (Time->get_second() != state_locked) {
                     state_locked = -1;
                 }
             }

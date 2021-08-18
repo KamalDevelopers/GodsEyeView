@@ -128,7 +128,7 @@ void gui()
             shutdown_modal.set_hidden(1);
         } else {
             char* time;
-            TimeDriver::time->get_full_time(':', time);
+            Time->get_full_time(':', time);
             clock_label.set_text(time);
         }
         desktop.draw();

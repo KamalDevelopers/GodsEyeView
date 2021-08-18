@@ -1,11 +1,11 @@
 #include "cmos.hpp"
 
-TimeDriver* TimeDriver::time = 0;
+TimeDriver* TimeDriver::active = 0;
 TimeDriver::TimeDriver()
     : cmos_address(0x70)
     , cmos_data(0x71)
 {
-    time = this;
+    active = this;
 }
 
 void TimeDriver::set_timezone_offset(uint16_t t_offset)

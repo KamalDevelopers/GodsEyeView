@@ -15,6 +15,7 @@
 #define SECONDS_DAY 86400
 #define SECONDS_HOUR 3600
 #define SECONDS_MIN 60
+#define Time TimeDriver::active
 
 class TimeDriver {
 protected:
@@ -38,7 +39,7 @@ public:
     TimeDriver();
     ~TimeDriver();
 
-    static TimeDriver* time;
+    static TimeDriver* active;
     virtual void read_rtc();
     virtual void set_timezone_offset(uint16_t t_offset);
 
