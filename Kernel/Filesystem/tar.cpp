@@ -395,7 +395,7 @@ void Tar::update(int uentry, int uentry_size)
 }
 
 /* Stores all files and directories in RAM */
-void Tar::mount()
+int Tar::mount()
 {
     int sector_offset = 0;
     char magic[6] = MAGIC;
@@ -432,4 +432,8 @@ void Tar::mount()
         sector_offset++;
     }
     tar_end = sector_offset - 1;
+
+    if (dir_index <= 0 && file_index <= 0)
+        return -1;
+    return 0;
 }

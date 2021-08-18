@@ -54,7 +54,7 @@ public:
     Tar(AdvancedTechnologyAttachment* ata);
     ~Tar();
 
-    void mount();
+    int mount();
     void update(int uentry, int uentry_size);
 
     int write_file(char* file_name, uint8_t* data, int data_length);

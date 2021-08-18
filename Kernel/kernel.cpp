@@ -164,8 +164,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     ata1s.identify();
     Tar fs_tar(&ata1s);
-    fs_tar.mount();
-    if (fs_tar.exists("welcome") == 1)
+    if (fs_tar.mount() != 0)
         PANIC("Could not mount the filesystem");
     vfs.mount(&fs_tar);
 
