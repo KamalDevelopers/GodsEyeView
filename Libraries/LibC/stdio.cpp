@@ -131,7 +131,7 @@ void printf(const char* format, ...)
 
 void clear()
 {
-    puts("\33[H\33[2J");
+    puts("\33\x1");
 }
 
 void outb(uint16_t port, uint8_t data)
