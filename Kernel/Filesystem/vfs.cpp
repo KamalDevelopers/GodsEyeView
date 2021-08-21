@@ -16,9 +16,9 @@ VirtualFilesystem::VirtualFilesystem()
     num_open_files = 0;
 
     /* Descriptors:
-     * 1 : stdin
-     * 2 : stdout 
-     * 3 : stderr */
+     * 0 : stdin
+     * 1 : stdout 
+     * 2 : stderr */
 
     file_descriptors = 4;
     active = this;
