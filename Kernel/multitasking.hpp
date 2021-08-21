@@ -62,7 +62,6 @@ private:
     int num_tasks;
     int current_task;
     int8_t is_running = 1;
-    int16_t locked = -1;
     Task* tasks[256];
 
 public:
@@ -82,9 +81,6 @@ public:
     int8_t send_signal(int pid, int sig);
     void kill_zombie_tasks();
     void kill();
-
-    void lock() { locked = 0; }
-    void unlock() { locked = -1; }
 };
 
 #endif
