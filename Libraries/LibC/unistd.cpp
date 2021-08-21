@@ -25,7 +25,7 @@ int close(int descriptor)
 {
     asm volatile("int $0x80"
                  :
-                 : "a"(descriptor));
+                 : "a"(6), "b"(descriptor));
     return 0;
 }
 

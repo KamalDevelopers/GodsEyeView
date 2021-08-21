@@ -116,9 +116,6 @@ void TaskManager::kill_zombie_tasks()
 
 cpu_state* TaskManager::schedule(cpu_state* cpustate)
 {
-    if ((num_tasks <= 0) || (is_running == 0))
-        return cpustate;
-
     if (current_task >= 0)
         tasks[current_task]->cpustate = cpustate;
 
@@ -128,6 +125,9 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     kill_zombie_tasks();
     if (current_task >= num_tasks)
         current_task = 0;
+
+    if ((num_tasks <= 0) || (is_running == 0))
+        return cpustate;
 
     Paging::switch_page_directory(tasks[current_task]->page_directory);
     return tasks[current_task]->cpustate;

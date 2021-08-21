@@ -359,32 +359,3 @@ void Graphics::render_bit_map(int bitmap[], uint8_t colorindex, int x_offset, in
     }
     vga_x_offset += 8;
 }
-
-void Graphics::print(char* str, uint8_t color_index, int x_offset, int y_offset)
-{
-    if ((str[0] == '/') && (str[1] == '~')) {
-        vga_x_offset -= 8;
-        render_bit_map(font_basic[127], color_index);
-        vga_x_offset -= 8;
-        return;
-    }
-
-    int size = str_len(str);
-    for (int i = 0; i < size; i++)
-        render_bit_map(font_basic[str[i]], color_index, x_offset, y_offset);
-}
-
-void Graphics::render_mouse(short int bitmap[], int mx, int my)
-{
-    int index = 0;
-    for (int y = 0; y < 11; y++) {
-        for (int x = 0; x < 8; x++) {
-            if (mouse_bitmap[index] != -1) {
-                old_vga_buffer[(y + my) * 640 + (x + mx)] = mouse_bitmap[index];
-                vga_buffer[(y + my) * 640 + (x + mx)] = mouse_bitmap[index];
-                slow_draw(x + mx, y + my, mouse_bitmap[index]);
-            }
-            index++;
-        }
-    }
-}
