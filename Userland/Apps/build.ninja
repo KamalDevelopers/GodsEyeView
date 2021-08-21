@@ -2,4 +2,9 @@ rule demo
     command = cd ./Demo && ninja && ninja move && cd ../
     description = building demo application
 
+rule shell
+    command = cd ./Shell && ninja && ninja move && cd ../
+    description = building shell application
+
 build demo: demo
+build shell: shell

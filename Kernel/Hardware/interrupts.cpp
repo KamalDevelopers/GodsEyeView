@@ -1,4 +1,5 @@
 #include "interrupts.hpp"
+#include "../panic.hpp"
 
 InterruptHandler::InterruptHandler(InterruptManager* interruptManager, uint8_t InterruptNumber)
 {
@@ -155,6 +156,8 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     if (handlers[interrupt] != 0) {
         esp = handlers[interrupt]->HandleInterrupt(esp);
     } else if (interrupt != hardwareInterruptOffset) {
+        if (interrupt == 0x0D)
+            PANIC("General protection fault");
         //printf("UNHANDLED INTERRUPT %x", interrupt);
     }
 

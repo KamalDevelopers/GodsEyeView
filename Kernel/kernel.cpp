@@ -54,13 +54,13 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TimeDriver time;
     VirtualFilesystem vfs;
 
+    klog("Starting memory management and paging");
     Paging::init();
     kernel_end = 10 * 1024 * 2;
     uint32_t* memupper = (uint32_t*)(&multiboot_info_ptr->mem_upper);
     MemoryManager memory_manager(kernel_end, (*memupper) * 1024);
-    MM->dump();
 
-    klog("Initializing input drivers and syscalls");
+    klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);
     SyscallHandler syscalls(&interrupts, 0x80);
 
@@ -90,16 +90,21 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Loader loader;
     loader.add(&elf_load);
 
-    int d_demo = VFS::open("demo");
-    int size = VFS::size(d_demo);
+    int shell_file_descriptor = VFS::open("shell");
+    int size = VFS::size(shell_file_descriptor);
     uint8_t* elfdata = new uint8_t[size];
-    VFS::read(d_demo, elfdata);
-    VFS::close(d_demo);
-    int demo_exec = Loader::load->exec(elfdata);
-    kfree(elfdata);
-    Task demo("Demo", demo_exec);
+    VFS::read(shell_file_descriptor, elfdata);
+    VFS::close(shell_file_descriptor);
 
-    task_manager.append_tasks(1, &demo);
+    int shell_execute = Loader::load->exec(elfdata);
+    kfree(elfdata);
+
+    kprintf("Spawning interactive shell...\n\n");
+    Task shell("Demo", shell_execute);
+    task_manager.append_tasks(1, &shell);
+
+    /* FIXME: General protection interrupt (0xD)? */
+    usleep(2000);
     IRQ::activate();
 
     while (1)
