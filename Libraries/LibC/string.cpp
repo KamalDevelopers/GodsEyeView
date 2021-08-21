@@ -160,8 +160,11 @@ char* strtok(char* str, char* delimiter)
     static char* s;
     int start = pos;
 
-    if (str != 0)
+    if (str != 0) {
+        pos = 0;
+        start = 0;
         s = str;
+    }
 
     int j = 0;
     while (s[pos] != '\0') {
