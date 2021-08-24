@@ -61,7 +61,7 @@ int main()
     lowercase(uname_struct.sysname);
 
     while (1) {
-        printf(ps1, uname_struct.sysname, user, path);
+        printf(ps1, user, uname_struct.sysname, path);
 
         char input[100];
         read(0, input, 99);

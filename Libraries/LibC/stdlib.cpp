@@ -20,10 +20,10 @@ unsigned int random(unsigned int seed, unsigned int max)
 
 void* memcpy(void* dst, const void* src, unsigned int cnt)
 {
-    char* pszDest = (char*)dst;
-    const char* pszSource = (const char*)src;
+    char* psz_dest = (char*)dst;
+    const char* psz_source = (const char*)src;
     while (cnt) {
-        *(pszDest++) = *(pszSource++);
+        *(psz_dest++) = *(psz_source++);
         --cnt;
     }
     return dst;
