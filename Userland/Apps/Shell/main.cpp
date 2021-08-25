@@ -11,23 +11,23 @@ int command(char* input)
     if (strcmp(program, "uname") == 0) {
         utsname uname_struct;
         uname(&uname_struct);
-        printf("%s\n", uname_struct.sysname);
+        printf("%s", uname_struct.sysname);
         return 1;
     }
 
     if (strcmp(program, "stat") == 0) {
         char* file = strtok(NULL, (char*)" ");
         if (!file) {
-            printf("Missing file argument\n");
+            printf("Missing file argument");
             return 1;
         }
         struct stat statbuffer;
 
         stat(file, &statbuffer);
         if (statbuffer.st_size == -1) {
-            printf("Could not stat '%s'\n", file);
+            printf("Could not stat '%s'", file);
         } else {
-            printf("Uid: (%d) Gid: (%d) \nName: %s\nSize: %d\n",
+            printf("Uid: (%d) Gid: (%d) \nName: %s\nSize: %d",
                 statbuffer.st_uid, statbuffer.st_gid, file, statbuffer.st_size);
         }
         return 1;
@@ -35,7 +35,7 @@ int command(char* input)
 
     if (strcmp(program, "clear") == 0) {
         clear();
-        return 1;
+        return 2;
     }
 
     if (strcmp(program, "shutdown") == 0) {
@@ -45,6 +45,9 @@ int command(char* input)
     if (strcmp(program, "reboot") == 0) {
         _reboot();
     }
+
+    if (spawn(input) != -1)
+        return 1;
 
     return 0;
 }
@@ -69,8 +72,11 @@ int main()
         if (!strlen(input))
             continue;
 
-        if (command(input) == 0)
-            printf("Unknown command '%s'\n", input);
+        int result = command(input);
+        if (result == 0)
+            printf("Unknown command '%s'", input);
+        if (result != 2)
+            printf("\n");
     }
 
     exit(0);
