@@ -12,7 +12,7 @@ int main()
     fstat(file_descriptor, &statbuffer);
     char* buffer = (char*)malloc(sizeof(char) * statbuffer.st_size);
 
-    read(file_descriptor, buffer, statbuffer.st_size);
+    read(file_descriptor, buffer, statbuffer.st_size - 1);
     close(file_descriptor);
     printf("%s", buffer);
 
