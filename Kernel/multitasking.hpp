@@ -1,6 +1,8 @@
 #ifndef MULTITASKING_H
 #define MULTITASKING_H
 
+#include "Exec/loader.hpp"
+#include "Filesystem/vfs.hpp"
 #include "GDT/gdt.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"
@@ -41,7 +43,9 @@ private:
     cpu_state* cpustate;
 
     int pid;
+    int execute;
     char name[20];
+    char execfile[20];
     uint16_t state;
     uint8_t privelege;
     void (*notify_callback)(int);
@@ -77,6 +81,8 @@ public:
     int get_pid() { return tasks[current_task]->pid; }
     char* get_name() { return tasks[current_task]->name; }
 
+    int execute(char* file);
+    int spawn(char* file);
     bool append_tasks(int count, ...);
     int8_t send_signal(int pid, int sig);
     void kill_zombie_tasks();

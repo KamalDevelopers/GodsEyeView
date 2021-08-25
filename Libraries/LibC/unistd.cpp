@@ -7,6 +7,15 @@ void _exit(int status)
                  : "a"(1), "b"(0));
 }
 
+int kill(int pid, int sig)
+{
+    int res;
+    asm volatile("int $0x80"
+                 : "=a"(res)
+                 : "a"(37), "b"(pid), "c"(sig));
+    return res;
+}
+
 void _shutdown()
 {
     asm volatile("int $0x80"
@@ -52,4 +61,18 @@ int open(char* file_name)
                  : "=a"(descriptor)
                  : "a"(5), "b"(file_name));
     return descriptor;
+}
+
+int spawn(char* file_name)
+{
+    int pid;
+    asm volatile("int $0x80"
+                 : "=a"(pid)
+                 : "a"(401), "b"(file_name));
+
+    if (pid != -1)
+        while (kill(pid, 0) != -1)
+            ;
+
+    return pid;
 }

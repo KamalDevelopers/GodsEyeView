@@ -163,6 +163,10 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         PCS::beep((uint32_t)cpu->ebx, (uint32_t)cpu->ecx);
         break;
 
+    case 401:
+        cpu->eax = TaskManager::active->spawn((char*)cpu->ebx);
+        break;
+
     default:
         break;
     }
