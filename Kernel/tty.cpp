@@ -78,10 +78,11 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
     return (uint16_t)uc | (uint16_t)color << 8;
 }
 
+static int8_t esc_flag = 0;
 void write_string(char* str)
 {
     for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '\b') {
+        if (str[i] == '\b' && !esc_flag) {
             if (video_memory_index <= 0)
                 continue;
             video_memory_index--;
@@ -95,10 +96,9 @@ void write_string(char* str)
     }
 }
 
-static int8_t esc_flag = 0;
 void write_char(int c)
 {
-    if (c == '\33') {
+    if (c == '\33' && !esc_flag) {
         esc_flag = 1;
         return;
     }
