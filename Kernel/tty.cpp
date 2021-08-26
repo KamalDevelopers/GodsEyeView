@@ -115,12 +115,30 @@ void write_char(int c)
         case 3:
             color = default_color;
             return;
+        case 4:
+            esc_flag = 3;
+            return;
+        case 5:
+            esc_flag = 4;
+            return;
         }
     }
 
     if (esc_flag == 2) {
         esc_flag = 0;
         set_color(c, 0);
+        return;
+    }
+
+    if (esc_flag == 3) {
+        esc_flag = 0;
+        video_memory_index = c - 1;
+        return;
+    }
+
+    if (esc_flag == 4) {
+        esc_flag = 0;
+        new_line_index = c - 1;
         return;
     }
 
