@@ -57,6 +57,7 @@ enum KEYCODE {
     M_PRESSED = 0x32,
     M_RELEASED = 0xB2,
 
+    COMMA_PRESSED = 0xB3,
     ZERO_PRESSED = 0x0B,
     ONE_PRESSED = 0x2,
     NINE_PRESSED = 0xA,
@@ -82,11 +83,11 @@ enum KEYCODE {
 /* Mapping */
 static char* u_l1 = "QWERTYUIOP";
 static char* u_l2 = "ASDFGHJKL";
-static char* u_l3 = "YXCVBNM";
+static char* u_l3 = "ZXCVBNM";
 static char* u_nm = "!#¤%&/()=";
 static char* l_l1 = "qwertyuiop";
 static char* l_l2 = "asdfghjkl";
-static char* l_l3 = "yxcvbnm";
+static char* l_l3 = "zxcvbnm";
 static char* l_nm = "123456789";
 
 KeyboardDriver* KeyboardDriver::active = 0;
@@ -125,8 +126,14 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
 
     if (key == POINT_RELEASED) {
         if (is_shift)
-            return '.';
-        return ':';
+            return ':';
+        return '.';
+    }
+
+    if (key == COMMA_PRESSED) {
+        if (is_shift)
+            return ';';
+        return ',';
     }
 
     if (key == SLASH_RELEASED) {
