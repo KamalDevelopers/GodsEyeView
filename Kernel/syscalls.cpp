@@ -164,7 +164,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         break;
 
     case 401:
-        cpu->eax = TaskManager::active->spawn((char*)cpu->ebx);
+        cpu->eax = TaskManager::active->spawn((char*)cpu->ebx, (char*)cpu->ecx);
         break;
 
     default:

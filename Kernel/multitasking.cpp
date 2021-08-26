@@ -113,12 +113,13 @@ int TaskManager::execute(char* file)
 
     int program_exec = Loader::load->exec(elfdata);
     tasks[current_task]->cpustate->eip = program_exec;
+    strcpy((char*)tasks[current_task]->cpustate->ebx, (char*)tasks[current_task]->arguments);
     kfree(elfdata);
 
     return 0;
 }
 
-int TaskManager::spawn(char* file)
+int TaskManager::spawn(char* file, char* args)
 {
     int is_file = VFS::open(file);
     VFS::close(is_file);
@@ -133,6 +134,7 @@ int TaskManager::spawn(char* file)
     child->execute = 1;
 
     add_task(child);
+    strcpy(child->arguments, args);
     return child->pid;
 }
 

@@ -63,12 +63,12 @@ int open(char* file_name)
     return descriptor;
 }
 
-int spawn(char* file_name)
+int spawn(char* file_name, char* args)
 {
     int pid;
     asm volatile("int $0x80"
                  : "=a"(pid)
-                 : "a"(401), "b"(file_name));
+                 : "a"(401), "b"(file_name), "c"(args));
 
     if (pid != -1)
         while (kill(pid, 0) != -1)

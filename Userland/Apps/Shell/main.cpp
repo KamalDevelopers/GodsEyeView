@@ -46,7 +46,18 @@ int command(char* input)
         _reboot();
     }
 
-    if (spawn(input) != -1)
+    char arguments[100];
+    memset(arguments, '\0', 99);
+    char* arg = strtok(NULL, (char*)" ");
+
+    while (arg) {
+        strcat(arguments, arg);
+        arg = strtok(NULL, (char*)" ");
+        if (arg)
+            strcat(arguments, (char*)" ");
+    }
+
+    if (spawn(program, arguments) != -1)
         return 1;
 
     return 0;

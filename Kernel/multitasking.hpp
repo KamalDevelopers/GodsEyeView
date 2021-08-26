@@ -46,6 +46,7 @@ private:
     int execute;
     char name[20];
     char execfile[20];
+    char arguments[100];
     uint16_t state;
     uint8_t privelege;
     void (*notify_callback)(int);
@@ -82,7 +83,7 @@ public:
     char* get_name() { return tasks[current_task]->name; }
 
     int execute(char* file);
-    int spawn(char* file);
+    int spawn(char* file, char* args);
     bool append_tasks(int count, ...);
     int8_t send_signal(int pid, int sig);
     void kill_zombie_tasks();
