@@ -40,19 +40,13 @@ void draw(char* buffer)
     printf("\n%s", img);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    char* val;
-    asm("movl %%ebx, %0;"
-        : "=r"(val));
-
     const char* default_msg = "I'm Tony the dog!\0";
-    if (strlen(val) && strlen(val) < 50)
-        draw(val);
+    if (argc && strlen(argv[0]) < 50)
+        draw(argv[0]);
     else
         draw((char*)default_msg);
 
-    exit(0);
-    while (1)
-        ;
+    return 0;
 }

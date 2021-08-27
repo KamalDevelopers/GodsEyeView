@@ -17,8 +17,5 @@ int main()
     printf("%s", buffer);
 
     free(buffer);
-
-    exit(0);
-    while (1)
-        ;
+    return 0;
 }

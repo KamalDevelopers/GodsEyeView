@@ -63,7 +63,7 @@ int command(char* input)
     return 0;
 }
 
-int main()
+int main(int argc, char** argv)
 {
     const char ps1[] = "\33\x2\x9%s\33\x3@\33\x2\x0C%s\33\x3:\33\x2\xA%s\33\x3# ";
 
@@ -90,7 +90,5 @@ int main()
             printf("\n");
     }
 
-    exit(0);
-    while (1)
-        ;
+    return 0;
 }
