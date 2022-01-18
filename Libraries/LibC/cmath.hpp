@@ -18,10 +18,6 @@
 #    define M_SQRT1_2 0.707106781186547524401
 #endif
 
-/*Not a C function, but still usefull*/
-//template <int N> struct Factorial { enum { value = N * Factorial<N - 1>::value }; };
-//template <> struct Factorial<0> { enum { value = 1 }; };
-
 static double pow(double x, double y)
 {
     int temp = x;
