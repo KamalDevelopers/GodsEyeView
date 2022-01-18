@@ -4,7 +4,7 @@ rule format
 
 rule run
     pool = console
-    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=hdd.tar
+    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
 
 rule disk
     pool = console
@@ -37,6 +37,7 @@ build Kernel/Hardware/interrupts.o: cpp ./Kernel/Hardware/interrupts.cpp
 build Kernel/Hardware/pci.o: cpp ./Kernel/Hardware/pci.cpp
 build Kernel/Mem/paging.o: cpp ./Kernel/Mem/paging.cpp
 build Kernel/Mem/mm.o: cpp ./Kernel/Mem/mm.cpp
+build Kernel/Mem/pmm.o: cpp ./Kernel/Mem/pmm.cpp
 build Kernel/GDT/gdt.o: cpp ./Kernel/GDT/gdt.cpp
 build Kernel/Net/arp.o: cpp ./Kernel/Net/arp.cpp
 build Kernel/Net/etherframe.o: cpp ./Kernel/Net/etherframe.cpp
@@ -48,7 +49,7 @@ build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/GDT/gdt.o Kernel/Net/arp.o Kernel/Net/etherframe.o Kernel/Net/ipv4.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build format: format
 build run: run
 build disk: disk
