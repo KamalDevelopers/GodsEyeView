@@ -1,5 +1,4 @@
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
-//void printf(const char* format, ...);
 
 #include "LibC/liballoc.hpp"
 
@@ -23,9 +22,15 @@ unsigned int l_allocated; //< The real amount of memory allocated.
 unsigned int l_inuse;     //< The amount of memory in use (malloc'ed).
 #endif
 
+void memory_hooks(uint32_t (*pmalloc)(size_t), int (*pfree)(uint32_t, size_t))
+{
+    hpmalloc = pmalloc;
+    hpfree = pfree;
+}
+
 /** This function is supposed to lock the memory data structures. It
  * could be as simple as disabling interrupts or acquiring a spinlock.
- * It's up to you to decide. 
+ * It's up to you to decide.
  *
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
@@ -57,12 +62,14 @@ void* liballoc_alloc(int pages)
 {
     unsigned int size = pages * 4096;
     char* p2;
+
+    if (hpmalloc != 0)
+        return (void*)hpmalloc(size);
+
     asm("int $0x80"
         : "=a"(p2)
         : "a"(90), "b"(0), "c"(size));
 
-    if (!p2)
-        return NULL;
     return p2;
 }
 
@@ -77,6 +84,10 @@ void* liballoc_alloc(int pages)
 int liballoc_free(void* ptr, int pages)
 {
     unsigned int size = pages * 4096;
+
+    if (hpfree != 0)
+        return hpfree((uint32_t)ptr, size);
+
     asm("int $0x80"
         :
         : "a"(91), "b"(ptr), "c"(size));
@@ -85,7 +96,7 @@ int liballoc_free(void* ptr, int pages)
 
 // ***********   HELPER FUNCTIONS  *******************************
 
-/** Returns the exponent required to manage 'size' amount of memory. 
+/** Returns the exponent required to manage 'size' amount of memory.
  *
  *  Returns n where  2^n <= size < 2^(n+1)
  */
@@ -156,7 +167,7 @@ static void dump_array()
     printf("Memory in used (malloc'ed): %i\n", l_inuse);
 
     for (i = 0; i < MAXEXP; i++) {
-        //printf("%.2i(%i): ", i, l_completePages[i]);
+        // printf("%.2i(%i): ", i, l_completePages[i]);
 
         tag = l_freePages[i];
         while (tag != NULL) {
@@ -169,7 +180,7 @@ static void dump_array()
             printf(" ");
             tag = tag->next;
         }
-        //printf("\n");
+        // printf("\n");
     }
 }
 #endif

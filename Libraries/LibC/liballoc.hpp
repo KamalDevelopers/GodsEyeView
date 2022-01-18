@@ -3,6 +3,10 @@
 
 #include "types.hpp"
 
+extern void memory_hooks(uint32_t (*pmalloc)(size_t), int (*pfree)(uint32_t, size_t));
+static uint32_t (*hpmalloc)(size_t) = 0;
+static int (*hpfree)(uint32_t, size_t) = 0;
+
 static int l_initialized;
 
 struct boundary_tag {
