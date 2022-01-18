@@ -1,3 +1,4 @@
+#include "liballoc.hpp"
 #include "string.hpp"
 #include "unistd.hpp"
 
@@ -7,7 +8,7 @@ int main(int argc, char** argv);
 
 [[noreturn]] void _entry()
 {
-    char* arguments;
+    char* arguments = (char*)malloc(100 * sizeof(char));
     int argc = 0;
 
     asm("movl %%ebx, %0;"
@@ -17,6 +18,7 @@ int main(int argc, char** argv);
         argc = 1;
 
     int status = main(argc, &arguments);
+    free(arguments);
     _exit(status);
 
     while (1)
