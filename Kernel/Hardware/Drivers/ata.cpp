@@ -57,10 +57,10 @@ void AdvancedTechnologyAttachment::identify()
 
 uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data, int count)
 {
+    static uint8_t buffer[512];
     uint16_t index = 0;
-    uint8_t* buffer;
     for (int i = 0; i < 512; i++)
-        buffer[i] = '\0';
+        buffer[i] = 0;
 
     if (sector_num > 0x0FFFFFFF)
         return nullptr;
