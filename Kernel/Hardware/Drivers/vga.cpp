@@ -169,8 +169,8 @@ uint8_t* Graphics::get_frame_buffer_segment()
 uint8_t* Graphics::get_pixel_color(int x, int y)
 {
     uint8_t* pixel_address;
-    //uint16_t wd_in_bytes = screen_width / 8;
-    //uint16_t wd_x = x / 8;
+    // uint16_t wd_in_bytes = screen_width / 8;
+    // uint16_t wd_x = x / 8;
 
     /*if (screen_colordepth == 16)
         pixel_address = 0xA0000 + wd_in_bytes * y + wd_x;

@@ -53,15 +53,15 @@ void MouseDriver::on_mouse_up()
 void MouseDriver::on_mouse_down(int b)
 {
     if (b == 9) {
-        mouse_press = 1; //Left Click
+        mouse_press = 1; // Left Click
         return;
     }
     if (b == 10) {
-        mouse_press = 2; //Right Click
+        mouse_press = 2; // Right Click
         return;
     }
     if (b == 12) {
-        mouse_press = 3; //Middle Click
+        mouse_press = 3; // Middle Click
         return;
     }
 }

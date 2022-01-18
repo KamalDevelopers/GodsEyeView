@@ -226,7 +226,7 @@ void KeyboardDriver::read_keys(int len, char* data)
 
     char c = 0;
     int key_stroke = 0;
-    char* buffer;
+    char buffer[512];
 
     while (c != 10) {
         while (!(c = KeyboardDriver::active->get_key()))
