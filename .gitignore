@@ -4,4 +4,6 @@ hdd.tar
 compile_flags.txt
 .ninja_log
 .autogen
+.ccls
+.ccls-cache
 libc.a
