@@ -158,14 +158,14 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     } else if (interrupt != hardwareInterruptOffset) {
         if (interrupt == 0x0D)
             PANIC("General protection fault");
-        //printf("UNHANDLED INTERRUPT %x", interrupt);
+        if (interrupt == 0x0E)
+            PANIC("Page fault");
     }
 
     if (interrupt == hardwareInterruptOffset) {
         esp = (uint32_t)taskManager->schedule((cpu_state*)esp);
     }
 
-    // hardware interrupts must be acknowledged
     if (hardwareInterruptOffset <= interrupt && interrupt < hardwareInterruptOffset + 16) {
         programmableInterruptControllerMasterCommandPort.write(0x20);
         if (hardwareInterruptOffset + 8 <= interrupt)
