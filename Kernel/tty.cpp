@@ -41,13 +41,13 @@ void klog(char* str)
         return;
 
     for (int i = 0; i < strlen(datacolorblue); i++)
-        log_putc(datacolorblue[i]); //color on
+        log_putc(datacolorblue[i]); // color on
     for (int i = 0; str[i] != '\0'; i++) {
         log_putc(str[i]);
     }
     log_putc('\n');
     for (int i = 0; i < strlen(datacoloroff); i++)
-        log_putc(datacoloroff[i]); //color off
+        log_putc(datacoloroff[i]); // color off
 }
 
 void klog(int num)
@@ -59,13 +59,13 @@ void klog(int num)
     itoa(num, str);
 
     for (int i = 0; i < strlen(datacolorblue); i++)
-        log_putc(datacolorblue[i]); //color on
+        log_putc(datacolorblue[i]); // color on
     for (int i = 0; str[i] != '\0'; i++) {
         log_putc(str[i]);
     }
     log_putc('\n');
     for (int i = 0; i < strlen(datacoloroff); i++)
-        log_putc(datacoloroff[i]); //color off
+        log_putc(datacoloroff[i]); // color off
 }
 
 static inline uint8_t vga_entry_color(uint8_t fg, uint8_t bg)
