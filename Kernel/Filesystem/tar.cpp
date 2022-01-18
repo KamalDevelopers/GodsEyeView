@@ -138,20 +138,21 @@ int Tar::read_dir(char* dirname, char** file_ids)
 
 void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t buffer[513];
-
+    uint8_t buffer[512];
     int size = count;
     int sector_offset = 0;
     int data_index = 0;
 
     /* Iterate through the sectors and store the contents in buffers */
     for (; size > 0; size -= 512) {
+        memset(buffer, 0, 512);
+
         hd->read28(sector_start + sector_offset, buffer, 512);
         for (int i = 0; i < 512; i++) {
             fdata[data_index] = buffer[i];
             data_index++;
         }
-        buffer[size > 512 ? 512 : size] = '\0';
+        // buffer[size > 512 ? 512 : size] = '\0';
         sector_offset++;
     }
 }
@@ -364,7 +365,7 @@ void Tar::sector_swap(int sector_src, int sector_dest)
     hd->flush();
 }
 
-/* Remove entry from archive 
+/* Remove entry from archive
  * FIXME: Should update all entry changes */
 void Tar::update(int uentry, int uentry_size)
 {

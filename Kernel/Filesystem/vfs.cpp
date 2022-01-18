@@ -17,7 +17,7 @@ VirtualFilesystem::VirtualFilesystem()
 
     /* Descriptors:
      * 0 : stdin
-     * 1 : stdout 
+     * 1 : stdout
      * 2 : stderr */
 
     file_descriptors = 4;
@@ -33,9 +33,9 @@ void VirtualFilesystem::mount(Filesystem* fs)
 
 int VirtualFilesystem::open(char* file_name)
 {
-    //for (int i = 0; i < num_open_files; i++)
-    //if (strcmp(file_name, files[i].file_name) == 0)
-    //return i;
+    // for (int i = 0; i < num_open_files; i++)
+    // if (strcmp(file_name, files[i].file_name) == 0)
+    // return i;
 
     int mount = -1;
     for (int i = 0; i < num_mounts; i++)

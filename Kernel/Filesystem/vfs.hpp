@@ -97,9 +97,9 @@ inline int gid(int descriptor)
 }
 
 /* TODO */
-//int rename(char* file_name, char* new_file_name);
-//int chmod(char* file_name, char* permissions);
-//int unlink(int path, bool update = 1);
+// int rename(char* file_name, char* new_file_name);
+// int chmod(char* file_name, char* permissions);
+// int unlink(int path, bool update = 1);
 };
 
 #endif
