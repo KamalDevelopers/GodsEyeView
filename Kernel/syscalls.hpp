@@ -8,16 +8,12 @@
 #include "Hardware/interrupts.hpp"
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"
+#include "LibC/utsname.hpp"
 #include "Mem/mm.hpp"
 #include "multitasking.hpp"
 #include "tty.hpp"
 
 extern "C" int shutdown();
-
-struct utsname {
-    char sysname[6];
-    char release[6];
-};
 
 struct stat {
     int st_uid;

@@ -11,10 +11,10 @@ SyscallHandler::~SyscallHandler()
 
 void sys_read(int file_handle, char* data, int len)
 {
-    if (len <= 0)
+    if ((len <= 0) || (len > 512))
         return;
 
-    char* buffer = new char[len];
+    char buffer[512];
 
     switch (file_handle) {
     case 0:
@@ -29,7 +29,6 @@ void sys_read(int file_handle, char* data, int len)
 
     buffer[len] = '\0';
     memcpy(data, buffer, len);
-    kfree(buffer);
 }
 
 void sys_write(int file_handle, char* data, int len)
@@ -37,22 +36,17 @@ void sys_write(int file_handle, char* data, int len)
     if (len <= 0)
         return;
 
-    char* buffer = new char[len];
-    memcpy(buffer, data, len);
-
     switch (file_handle) {
     case 1:
-        buffer[len] = '\0';
+        data[len] = '\0';
         write_string(data);
         break;
 
     default:
         /* FIXME: Cannot overwrite existing file */
-        VFS::write(file_handle, (uint8_t*)&buffer, len);
+        VFS::write(file_handle, (uint8_t*)&data, len);
         break;
     }
-
-    kfree(buffer);
 }
 
 int sys_open(char* file_name)
@@ -140,13 +134,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 
     case 90:
         /* Incomplete implementation */
-        cpu->eax = (uint32_t)pmalloc((size_t)cpu->ecx);
-        Paging::map_page(cpu->eax, cpu->eax);
+        cpu->eax = (uint32_t)PMM::allocate_pages((size_t)cpu->ecx);
         break;
 
     case 91:
         /* Incomplete implementation */
-        pfree((void*)cpu->ebx, (size_t)cpu->ecx);
+        PMM::free_pages((uint32_t)cpu->ebx, (size_t)cpu->ecx);
         break;
 
     case 109:
