@@ -1,6 +1,6 @@
 #include "multitasking.hpp"
 
-Task::Task(char* task_name, uint32_t entrypoint, uint8_t priv)
+Task::Task(char* task_name, uint32_t eip, int priv)
 {
     if (strlen(task_name) > 20)
         task_name = "Unknown";
@@ -16,15 +16,26 @@ Task::Task(char* task_name, uint32_t entrypoint, uint8_t priv)
     cpustate->esi = 0;
     cpustate->edi = 0;
     cpustate->ebp = 0;
-    cpustate->eip = entrypoint;
+    cpustate->eip = eip;
     cpustate->cs = g_gdt->code_segment_selector();
     cpustate->eflags = 0x202;
 
-    Paging::copy_page_directory(page_directory);
+    memset(arguments, 0, 100);
+    memset(execfile, 0, 20);
 
+    // Paging::copy_page_directory(page_directory);
+
+    execute = 0;
     state = 0;
     privelege = priv;
     pid = ++g_lpid;
+}
+
+void Task::executable(executable_t exec)
+{
+    is_executable = true;
+    loaded_executable = exec;
+    cpustate->eip = exec.eip;
 }
 
 int8_t Task::notify(int signal)
@@ -100,41 +111,34 @@ int8_t TaskManager::send_signal(int pid, int sig)
     return -1;
 }
 
-int TaskManager::execute(char* file)
+int TaskManager::spawn(char* file, char* args)
 {
-    tasks[current_task]->execute = 0;
     int fd = VFS::open(file);
     int size = VFS::size(fd);
+
+    if (fd < 0)
+        return -1;
 
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
 
     VFS::read(fd, elfdata);
     VFS::close(fd);
+    klog("Starting child program");
 
-    int program_exec = Loader::load->exec(elfdata);
-    tasks[current_task]->cpustate->eip = program_exec;
-    strcpy((char*)tasks[current_task]->cpustate->ebx, (char*)tasks[current_task]->arguments);
-    kfree(elfdata);
+    executable_t exec = Loader::load->exec(elfdata);
 
-    return 0;
-}
-
-int TaskManager::spawn(char* file, char* args)
-{
-    int is_file = VFS::open(file);
-    VFS::close(is_file);
-    if (is_file < 0)
-        return -1;
-
-    int parent = tasks[current_task]->pid;
-    Task* child = (Task*)kmalloc(sizeof(Task));
-    new (child) Task(file, 0);
-
+    Task* child = new Task(file, 0);
     strcpy(child->execfile, file);
-    child->execute = 1;
+    child->executable(exec);
+    child->is_child = true;
 
-    add_task(child);
     strcpy(child->arguments, args);
+    strcpy((char*)child->cpustate->ebx, (char*)child->arguments);
+    add_task(child);
+
+    while (send_signal(child->get_pid(), 0) == -1)
+        ;
+
     return child->pid;
 }
 
@@ -142,6 +146,8 @@ void TaskManager::kill_zombie_tasks()
 {
     for (int i = 0; i < num_tasks; i++) {
         if (tasks[i]->state == 1) {
+            if (tasks[i]->is_child)
+                free(tasks[i]);
             klog("Zombie Process Killed");
             delete_element(i, num_tasks, tasks);
             num_tasks--;
@@ -163,11 +169,6 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
 
     if ((num_tasks <= 0) || (is_running == 0))
         return cpustate;
-
-    Paging::switch_page_directory(tasks[current_task]->page_directory);
-
-    if (tasks[current_task]->execute == 1)
-        execute(tasks[current_task]->execfile);
 
     return tasks[current_task]->cpustate;
 }

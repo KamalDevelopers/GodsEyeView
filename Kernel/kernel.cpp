@@ -8,6 +8,7 @@
 #include "GDT/gdt.hpp"
 #include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
+#include "Mem/pmm.hpp"
 #include "Net/arp.hpp"
 #include "Net/etherframe.hpp"
 #include "Net/ipv4.hpp"
@@ -29,7 +30,7 @@
 #include "syscalls.hpp"
 
 typedef void (*constructor)();
-extern "C" uint32_t kernel_end;
+extern "C" uint8_t kernel_end;
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 
@@ -56,16 +57,15 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     klog("Starting memory management and paging");
     Paging::init();
-    kernel_end = 10 * 1024 * 2;
-    uint32_t* memupper = (uint32_t*)(&multiboot_info_ptr->mem_upper);
-    MemoryManager memory_manager(kernel_end, (*memupper) * 1024);
+    PMM::init();
+    kmalloc(1);
 
     klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);
     SyscallHandler syscalls(&interrupts, 0x80);
 
-    MouseDriver* mouse = new MouseDriver(&interrupts, 640, 480);
-    KeyboardDriver* keyboard = new KeyboardDriver(&interrupts);
+    MouseDriver mouse(&interrupts, 640, 480);
+    KeyboardDriver keyboard(&interrupts);
 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
@@ -80,8 +80,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     PCI pci;
     DriverManager driver_manager;
 
-    driver_manager.add_driver(keyboard);
-    driver_manager.add_driver(mouse);
+    driver_manager.add_driver(&keyboard);
+    driver_manager.add_driver(&mouse);
     pci.select_drivers(&driver_manager, &interrupts);
     driver_manager.activate_all();
 
@@ -96,15 +96,15 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     VFS::read(shell_file_descriptor, elfdata);
     VFS::close(shell_file_descriptor);
 
-    int shell_execute = Loader::load->exec(elfdata);
-    kfree(elfdata);
+    klog("Starting shell...");
+    executable_t execute = Loader::load->exec(elfdata);
 
     kprintf("Spawning interactive shell...\n\n");
-    Task shell("Demo", shell_execute);
+
+    Task shell("shell", 0);
+    shell.executable(execute);
     task_manager.append_tasks(1, &shell);
 
-    /* FIXME: General protection interrupt (0xD)? */
-    usleep(2000);
     IRQ::activate();
 
     while (1)

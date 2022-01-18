@@ -1,45 +1,53 @@
 #include "paging.hpp"
 
-static uint32_t* page_directory = 0;
-static uint32_t page_dir_loc = 0;
-static uint32_t* last_page = 0;
+Paging::page_directory_t* kernel_page_directory;
 
-/* Map page, virtual to physical */
-void Paging::map_page(uint32_t virt, uint32_t phys)
+void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
 {
-    uint16_t id = virt >> 22;
-    for (int i = 0; i < 1024; i++) {
-        last_page[i] = phys | 3;
-        phys += 4096;
-    }
-    page_directory[id] = ((uint32_t)last_page) | 3;
-    last_page = (uint32_t*)(((uint32_t)last_page) + 4096);
+    uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
+    uint32_t table_index = PAGETBL_INDEX(virtual_address);
+
+    page_table_t* table = (page_table_t*)((directory_index * sizeof(page_table_t)) + KERNEL_PAGE_DIR_START + sizeof(page_directory_t) + 0x2000);
+
+    kernel_page_directory->tables[directory_index].frame = (uint32_t)table >> 12;
+    kernel_page_directory->tables[directory_index].present = 1;
+    kernel_page_directory->tables[directory_index].rw = 1;
+    kernel_page_directory->tables[directory_index].user = 1;
+    kernel_page_directory->tables[directory_index].page_size = 0;
+    kernel_page_directory->reference_tables[directory_index] = table;
+
+    table->pages[table_index].frame = physical_address >> 12;
+    table->pages[table_index].present = 1;
+    table->pages[table_index].rw = 1;
+    table->pages[table_index].user = 1;
 }
 
-void Paging::copy_page_directory(uint32_t* destination)
+int Paging::unmap_page(uint32_t virtual_address)
 {
-    // FIXME
-    for (int i = 0; i < 1024; i++) {
-        destination[i] = page_directory[i];
-    }
-}
+    uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
+    uint32_t table_index = PAGETBL_INDEX(virtual_address);
 
-void Paging::switch_page_directory(uint32_t* page_dir)
-{
-    page_directory = (uint32_t*)0x400000;
-    for (int i = 0; i < 1024; i++) {
-        page_directory[i] = page_dir[i];
+    if (!kernel_page_directory->reference_tables[directory_index]) {
+        klog("Could not unmap page! (no table entry)");
+        return -1;
     }
-    page_dir_loc = (uint32_t)page_directory;
-    enable();
+
+    page_table_t* table = kernel_page_directory->reference_tables[directory_index];
+    if (!table->pages[table_index].present) {
+        klog("Could not unmap page! (not present)");
+        return -1;
+    }
+
+    table->pages[table_index].present = 0;
+    table->pages[table_index].frame = 0;
+    return 0;
 }
 
 void Paging::enable()
 {
-    /* Put page directory into CR3 */
     asm volatile("mov %%eax, %%cr3"
                  :
-                 : "a"(page_dir_loc));
+                 : "a"(KERNEL_PAGE_DIR_START));
     asm volatile("mov %cr0, %eax");
     asm volatile("orl $0x80000000, %eax");
     asm volatile("mov %eax, %cr0");
@@ -47,13 +55,13 @@ void Paging::enable()
 
 void Paging::init()
 {
-    page_directory = (uint32_t*)0x400000;
-    page_dir_loc = (uint32_t)page_directory;
-    last_page = (uint32_t*)0x404000;
-    for (int i = 0; i < 1024; i++) {
-        page_directory[i] = 0 | 2;
+    kernel_page_directory = (page_directory_t*)KERNEL_PAGE_DIR_START;
+
+    uint32_t page = 0;
+    while (page < (PAGE_SIZE * 1024 * 3)) {
+        Paging::map_page(page, page);
+        page += PAGE_SIZE;
     }
-    Paging::map_page(0, 0);
-    Paging::map_page(0x400000, 0x400000);
+
     Paging::enable();
 }

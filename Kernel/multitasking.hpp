@@ -7,7 +7,6 @@
 #include "LibC/stdio.hpp"
 #include "LibC/types.hpp"
 #include "Mem/mm.hpp"
-#include "Mem/paging.hpp"
 #include "tty.hpp"
 #include <stdarg.h>
 
@@ -38,9 +37,12 @@ class Task {
     friend class TaskManager;
 
 private:
-    uint8_t stack[4096]; // 4 KiB
-    uint32_t page_directory[1024];
+    uint8_t stack[4096];
     cpu_state* cpustate;
+
+    executable_t loaded_executable;
+    bool is_executable = false;
+    bool is_child = false;
 
     int pid;
     int execute;
@@ -54,7 +56,11 @@ private:
 public:
     int8_t notify(int signal);
     void suicide(int error_code);
-    Task(char* task_name, uint32_t entrypoint, uint8_t priv = 0);
+    void executable(executable_t exec);
+
+    int get_pid() { return pid; }
+
+    Task(char* task_name, uint32_t eip, int priv = 0);
     ~Task();
 };
 
