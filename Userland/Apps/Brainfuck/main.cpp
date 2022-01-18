@@ -3,10 +3,9 @@
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
 
-int run(char* input)
+int run(char* input, int* tape)
 {
     int pointer = 0;
-    int tape[30000];
     int unmatched_brackets = 0;
 
     for (int i = 0; i < strlen(input); i++) {
@@ -24,10 +23,10 @@ int run(char* input)
             tape[pointer]--;
             break;
         case '.':
-            printf("%c\0", tape[pointer]);
+            printf("%c", tape[pointer]);
             break;
         case ',':
-            //Not implemented yet.
+            // Not implemented yet.
             break;
         case '[':
             if (tape[pointer] == 0) {
@@ -70,15 +69,21 @@ int main(int argc, char** argv)
 
         file_descriptor = open((char*)argv[0]);
         fstat(file_descriptor, &statbuffer);
-        char* buffer = (char*)malloc(sizeof(char) * statbuffer.st_size);
+
+        if (statbuffer.st_size == -1) {
+            printf("File does not exist");
+            return 0;
+        }
+
+        char* buffer = (char*)malloc(statbuffer.st_size);
+        int* tape = (int*)calloc(30000, sizeof(int));
 
         read(file_descriptor, buffer, statbuffer.st_size);
         close(file_descriptor);
 
-        run(buffer);
-        free(buffer);
+        run(buffer, tape);
     } else {
-        printf("No input file\0");
+        printf("No input file");
     }
     return 0;
 }
