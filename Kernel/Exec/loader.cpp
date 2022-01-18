@@ -13,9 +13,9 @@ int Execf::probe(uint8_t* file_data)
     return 0;
 }
 
-int Execf::exec(uint8_t* file_data)
+executable_t Execf::exec(uint8_t* file_data)
 {
-    return 0;
+    return executable_t {};
 }
 
 char* Execf::name()
@@ -38,7 +38,7 @@ void Loader::add(Execf* l)
     loader_num++;
 }
 
-int Loader::exec(uint8_t* file_buffer, char* loader_name)
+executable_t Loader::exec(uint8_t* file_buffer, char* loader_name)
 {
     for (int i = 0; i < loader_num; i++) {
         if (loader_name) {
@@ -49,7 +49,7 @@ int Loader::exec(uint8_t* file_buffer, char* loader_name)
             return execfs[i]->exec(file_buffer);
         }
     }
-    return -1;
+    return executable_t {};
 }
 
 int Loader::probe(uint8_t* file_buffer, char* loader_name)

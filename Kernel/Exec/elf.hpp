@@ -86,13 +86,13 @@ typedef struct elfhdr {
     elf32_half e_shentsize; /* section header entry size */
     elf32_half e_shnum;     /* number of section header entries */
     elf32_half e_shstrndx;  /* section header table's "section
-					   header string table" entry offset */
+                                           header string table" entry offset */
 } elf32_ehdr;
 
 /* Section Header */
 typedef struct {
     elf32_word sh_name;      /* name - index into section header
-					   string table section */
+                                           string table section */
     elf32_word sh_type;      /* type */
     elf32_word sh_flags;     /* flags */
     elf32_addr sh_addr;      /* address */
@@ -121,10 +121,10 @@ private:
     char format_name[100];
 
 public:
-    Elf(char* n);
+    Elf(char* name);
     ~Elf();
     int probe(uint8_t* file_data);
-    int exec(uint8_t* file_data);
+    executable_t exec(uint8_t* file_data);
     char* name();
 };
 

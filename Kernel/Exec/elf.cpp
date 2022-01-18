@@ -1,9 +1,9 @@
 #include "elf.hpp"
 
-Elf::Elf(char* n)
-    : Execf(n)
+Elf::Elf(char* name)
+    : Execf(name)
 {
-    strcpy(format_name, n);
+    strcpy(format_name, name);
 }
 
 Elf::~Elf()
@@ -27,6 +27,7 @@ int Elf::probe(uint8_t* file_data)
 
     if ((elf_header.e_ident.ei_magic[0] == 0x7F) && (strcmp(magic_elf, "ELF\0") == 0))
         valid = 1;
+
     if (elf_header.e_type == 2)
         executable = 1;
 
@@ -39,34 +40,31 @@ int Elf::probe(uint8_t* file_data)
     return -1;
 }
 
-int Elf::exec(uint8_t* file_data)
+executable_t Elf::exec(uint8_t* file_data)
 {
+    executable_t executable;
+
+    if (probe(file_data) != 1) {
+        klog("Could not probe!");
+        return executable;
+    }
+
     elf32_ehdr* elf_header = (elf32_ehdr*)file_data;
-
-    if (probe(file_data) != 1)
-        return 0;
-
     elf32_phdr* elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
-    elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
-    uint32_t phys_location;
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
         switch (elf_program_header->p_type) {
         case 1:
-            if (elf_program_header->p_filesz != 0) {
-                phys_location = (uint32_t)pmalloc(ROUND_UP(elf_program_header->p_filesz, 4096));
-                Paging::map_page(elf_program_header->p_vaddr, phys_location);
-            }
-
+            /* FIXME: Allocate the segment and update the task's page directory! */
+            /* The segment is currently assumed to be mapped in the page directory of the kernel. */
             memcpy((void*)elf_program_header->p_vaddr, file_data + elf_program_header->p_offset, elf_program_header->p_filesz);
             memset((void*)(elf_program_header->p_vaddr + elf_program_header->p_filesz), 0, elf_program_header->p_memsz - elf_program_header->p_filesz);
             break;
-
-        default:
-            break;
         }
     }
-    return elf_header->e_entry + elf_program_header->p_vaddr;
+
+    executable.eip = elf_header->e_entry + elf_program_header->p_vaddr;
+    return executable;
 }
 
 char* Elf::name()
