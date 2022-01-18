@@ -78,7 +78,7 @@ int main(int argc, char** argv)
         printf(ps1, user, uname_struct.sysname, path);
 
         char input[100];
-        read(0, input, 99);
+        read(0, input, 100);
 
         if (!strlen(input))
             continue;

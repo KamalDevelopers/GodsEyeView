@@ -1,7 +1,7 @@
 ENTRY(_entry)
 SECTIONS
 {
-	. = 8M;
+    . = 8M;
 	.text BLOCK(4K) : ALIGN(4K)
 	{
 		*(.text)

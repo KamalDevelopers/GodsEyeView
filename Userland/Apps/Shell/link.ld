@@ -1,20 +1,20 @@
 ENTRY(_entry)
 SECTIONS
 {
-	. = 8M;
-	.text BLOCK(4K) : ALIGN(4K)
+    . = 11M;
+	.text : ALIGN(0x1000)
 	{
 		*(.text)
 	}
-	.rodata BLOCK(4K) : ALIGN(4K)
+	.rodat : ALIGN(0x1000)
 	{
 		*(.rodata)
 	}
-	.data BLOCK(4K) : ALIGN(4K)
+	.data : ALIGN(0x1000)
 	{
 		*(.data)
 	}
-	.bss BLOCK(4K) : ALIGN(4K)
+	.bss : ALIGN(0x1000)
 	{
 		*(COMMON)
 		*(.bss)

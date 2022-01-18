@@ -42,7 +42,7 @@ void draw(char* buffer)
 
 int main(int argc, char** argv)
 {
-    const char* default_msg = "I'm Tony the dog!\0";
+    const char* default_msg = "I'm Tony the dog!";
     if (argc && strlen(argv[0]) < 50)
         draw(argv[0]);
     else
