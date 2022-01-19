@@ -7,7 +7,8 @@
 #define MAX_LOADERS 5
 
 typedef struct executable {
-    uint32_t eip;
+    bool valid = false;
+    uint32_t eip = 0;
 } executable_t;
 
 class Execf {

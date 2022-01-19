@@ -42,9 +42,8 @@ executable_t Loader::exec(uint8_t* file_buffer, char* loader_name)
 {
     for (int i = 0; i < loader_num; i++) {
         if (loader_name) {
-            if (strcmp(loader_name, execfs[i]->name()) == 0) {
+            if (strcmp(loader_name, execfs[i]->name()) == 0)
                 return execfs[i]->exec(file_buffer);
-            }
         } else if (execfs[i]->probe(file_buffer) == 1) {
             return execfs[i]->exec(file_buffer);
         }

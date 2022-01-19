@@ -120,12 +120,15 @@ int TaskManager::spawn(char* file, char* args)
         return -1;
 
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
-
     VFS::read(fd, elfdata);
     VFS::close(fd);
-    klog("Starting child program");
 
+    klog("Trying to start new child task");
     executable_t exec = Loader::load->exec(elfdata);
+    kfree(elfdata);
+
+    if (!exec.valid)
+        return -1;
 
     Task* child = new Task(file, 0);
     strcpy(child->execfile, file);

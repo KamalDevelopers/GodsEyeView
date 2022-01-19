@@ -49,6 +49,7 @@ executable_t Elf::exec(uint8_t* file_data)
         return executable;
     }
 
+    executable.valid = true;
     elf32_ehdr* elf_header = (elf32_ehdr*)file_data;
     elf32_phdr* elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
 
