@@ -70,7 +70,7 @@ public:
 
     void activate();
     int reset();
-    uint32_t HandleInterrupt(uint32_t esp);
+    uint32_t interrupt(uint32_t esp);
     void send(uint8_t* buffer, int count);
     void receive();
     void set_handler(RawDataHandler* handler);

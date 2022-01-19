@@ -34,12 +34,12 @@ public:
 
     static KeyboardDriver* active;
 
-    virtual uint32_t HandleInterrupt(uint32_t esp);
-    virtual char get_last_key(int raw = 0);
-    virtual int get_key_presses(int raw = 0);
-    virtual char get_key();
-    virtual uint8_t read_key();
-    virtual void read_keys(int len, char* data);
+    virtual uint32_t interrupt(uint32_t esp) override;
+    char get_last_key(int raw = 0);
+    int get_key_presses(int raw = 0);
+    char get_key();
+    uint8_t read_key();
+    void read_keys(int len, char* data);
 };
 
 #endif

@@ -30,7 +30,7 @@ public:
         h = height;
     }
 
-    virtual uint32_t HandleInterrupt(uint32_t esp) override;
+    virtual uint32_t interrupt(uint32_t esp) override;
     virtual void start() { active = 1; }
     virtual void stop() { active = 0; }
 

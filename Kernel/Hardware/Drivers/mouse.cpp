@@ -66,7 +66,7 @@ void MouseDriver::on_mouse_down(int b)
     }
 }
 
-uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
+uint32_t MouseDriver::interrupt(uint32_t esp)
 {
     uint8_t status = commandport.read();
     if (!(status & 0x20) || (active == 0))

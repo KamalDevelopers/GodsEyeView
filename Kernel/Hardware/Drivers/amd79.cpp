@@ -23,7 +23,7 @@ void RawDataHandler::send(uint8_t* buffer, uint32_t size)
 
 AmdDriver::AmdDriver(DeviceDescriptor* dev, InterruptManager* interrupts)
     : Driver()
-    , InterruptHandler(interrupts, dev->interrupt + interrupts->HardwareInterruptOffset())
+    , InterruptHandler(interrupts, dev->interrupt + interrupts->get_hardware_interrupt_offset())
     , MACAddress0Port(dev->port_base)
     , MACAddress2Port(dev->port_base + 0x02)
     , MACAddress4Port(dev->port_base + 0x04)
@@ -196,7 +196,7 @@ int AmdDriver::reset()
     return 10;
 }
 
-uint32_t AmdDriver::HandleInterrupt(uint32_t esp)
+uint32_t AmdDriver::interrupt(uint32_t esp)
 {
     printf("%s", "\nINTERRUPT FROM AMD am79c973\n");
 

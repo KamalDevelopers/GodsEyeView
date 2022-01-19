@@ -1,7 +1,7 @@
 #include "syscalls.hpp"
 
 SyscallHandler::SyscallHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number)
-    : InterruptHandler(interrupt_manager, interrupt_number + interrupt_manager->HardwareInterruptOffset())
+    : InterruptHandler(interrupt_manager, interrupt_number + interrupt_manager->get_hardware_interrupt_offset())
 {
 }
 
@@ -81,7 +81,7 @@ void sys_reboot(int arg)
     }
 }
 
-uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
+uint32_t SyscallHandler::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
     int desc;

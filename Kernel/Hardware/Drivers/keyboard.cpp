@@ -268,7 +268,7 @@ void KeyboardDriver::on_key(uint8_t keypress)
     keys_pressed_raw++;
 }
 
-uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
+uint32_t KeyboardDriver::interrupt(uint32_t esp)
 {
     uint8_t key = dataport.read();
     on_key(key);

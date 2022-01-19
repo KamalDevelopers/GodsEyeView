@@ -12,116 +12,114 @@ class InterruptManager;
 
 class InterruptHandler {
 protected:
-    uint8_t InterruptNumber;
-    InterruptManager* interruptManager;
-    InterruptHandler(InterruptManager* interruptManager, uint8_t InterruptNumber);
+    uint8_t interrupt_number;
+    InterruptManager* interrupt_manager;
+    InterruptHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number);
     ~InterruptHandler();
 
 public:
-    virtual uint32_t HandleInterrupt(uint32_t esp);
+    virtual uint32_t interrupt(uint32_t esp);
 };
 
 class InterruptManager {
-
     friend class InterruptHandler;
 
 protected:
-    static InterruptManager* ActiveInterruptManager;
     InterruptHandler* handlers[256];
-    TaskManager* taskManager;
+    TaskManager* task_manager;
 
-    struct GateDescriptor {
-        uint16_t handlerAddressLowBits;
-        uint16_t gdt_codeSegmentSelector;
+    struct gate_descriptor {
+        uint16_t handler_address_low_bits;
+        uint16_t gdt_code_segment_selector;
         uint8_t reserved;
         uint8_t access;
-        uint16_t handlerAddressHighBits;
+        uint16_t handler_address_high_bits;
     } __attribute__((packed));
 
-    static GateDescriptor interruptDescriptorTable[256];
+    static gate_descriptor interrupt_descriptor_table[256];
 
-    struct InterruptDescriptorTablePointer {
+    struct interrupt_descriptor_table_pointer {
         uint16_t size;
         uint32_t base;
     } __attribute__((packed));
 
-    uint16_t hardwareInterruptOffset;
-    static void SetInterruptDescriptorTableEntry(uint8_t interrupt,
-        uint16_t codeSegmentSelectorOffset, void (*handler)(),
-        uint8_t DescriptorPrivilegeLevel, uint8_t DescriptorType);
+    uint16_t hardware_interrupt_offset;
+    static void set_interrupt_descriptor_table_entry(uint8_t interrupt,
+        uint16_t code_segment_selector_offset, void (*handler)(),
+        uint8_t descriptor_privilege_level, uint8_t descriptor_type);
 
-    static void InterruptIgnore();
+    static void interrupt_ignore();
 
-    static void HandleInterruptRequest0x00();
-    static void HandleInterruptRequest0x01();
-    static void HandleInterruptRequest0x02();
-    static void HandleInterruptRequest0x03();
-    static void HandleInterruptRequest0x04();
-    static void HandleInterruptRequest0x05();
-    static void HandleInterruptRequest0x06();
-    static void HandleInterruptRequest0x07();
-    static void HandleInterruptRequest0x08();
-    static void HandleInterruptRequest0x09();
-    static void HandleInterruptRequest0x0A();
-    static void HandleInterruptRequest0x0B();
-    static void HandleInterruptRequest0x0C();
-    static void HandleInterruptRequest0x0D();
-    static void HandleInterruptRequest0x0E();
-    static void HandleInterruptRequest0x0F();
-    static void HandleInterruptRequest0x31();
-    static void HandleInterruptRequest0x80();
+    static void request0x00();
+    static void request0x01();
+    static void request0x02();
+    static void request0x03();
+    static void request0x04();
+    static void request0x05();
+    static void request0x06();
+    static void request0x07();
+    static void request0x08();
+    static void request0x09();
+    static void request0x0A();
+    static void request0x0B();
+    static void request0x0C();
+    static void request0x0D();
+    static void request0x0E();
+    static void request0x0F();
+    static void request0x31();
+    static void request0x80();
 
-    static void HandleException0x00();
-    static void HandleException0x01();
-    static void HandleException0x02();
-    static void HandleException0x03();
-    static void HandleException0x04();
-    static void HandleException0x05();
-    static void HandleException0x06();
-    static void HandleException0x07();
-    static void HandleException0x08();
-    static void HandleException0x09();
-    static void HandleException0x0A();
-    static void HandleException0x0B();
-    static void HandleException0x0C();
-    static void HandleException0x0D();
-    static void HandleException0x0E();
-    static void HandleException0x0F();
-    static void HandleException0x10();
-    static void HandleException0x11();
-    static void HandleException0x12();
-    static void HandleException0x13();
+    static void exception0x00();
+    static void exception0x01();
+    static void exception0x02();
+    static void exception0x03();
+    static void exception0x04();
+    static void exception0x05();
+    static void exception0x06();
+    static void exception0x07();
+    static void exception0x08();
+    static void exception0x09();
+    static void exception0x0A();
+    static void exception0x0B();
+    static void exception0x0C();
+    static void exception0x0D();
+    static void exception0x0E();
+    static void exception0x0F();
+    static void exception0x10();
+    static void exception0x11();
+    static void exception0x12();
+    static void exception0x13();
 
-    static uint32_t HandleInterrupt(uint8_t interrupt, uint32_t esp);
-    uint32_t DoHandleInterrupt(uint8_t interrupt, uint32_t esp);
+    static uint32_t interrupt(uint8_t interrupt, uint32_t esp);
+    uint32_t handle_interrupt(uint8_t interrupt, uint32_t esp);
 
-    Port8BitSlow programmableInterruptControllerMasterCommandPort;
-    Port8BitSlow programmableInterruptControllerMasterDataPort;
-    Port8BitSlow programmableInterruptControllerSlaveCommandPort;
-    Port8BitSlow programmableInterruptControllerSlaveDataPort;
+    Port8BitSlow master_command_port;
+    Port8BitSlow master_data_port;
+    Port8BitSlow slave_command_port;
+    Port8BitSlow slave_data_port;
 
 public:
-    InterruptManager(uint16_t hardwareInterruptOffset, GDT* globalDescriptorTable, TaskManager* taskManager);
+    InterruptManager(uint16_t hardware_interrupt_offset, GDT* global_descriptor_table, TaskManager* task_manager);
     ~InterruptManager();
 
+    static InterruptManager* active_handler;
     static InterruptManager* active;
-
-    uint16_t HardwareInterruptOffset();
-    void Activate();
-    void Deactivate();
+    uint16_t get_hardware_interrupt_offset() { return hardware_interrupt_offset; }
+    void activate();
+    void deactivate();
 };
 
 namespace IRQ {
 static void activate()
 {
     if (InterruptManager::active != 0)
-        InterruptManager::active->Activate();
+        InterruptManager::active->activate();
 }
 
 static void deactivate()
 {
     if (InterruptManager::active != 0)
-        InterruptManager::active->Deactivate();
+        InterruptManager::active->deactivate();
 }
 };
 

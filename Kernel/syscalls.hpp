@@ -26,7 +26,7 @@ public:
     SyscallHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number);
     ~SyscallHandler();
 
-    virtual uint32_t HandleInterrupt(uint32_t esp);
+    virtual uint32_t interrupt(uint32_t esp) override;
 };
 
 #endif
