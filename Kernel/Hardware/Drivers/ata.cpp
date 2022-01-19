@@ -43,9 +43,8 @@ void AdvancedTechnologyAttachment::identify()
         && ((status & 0x01) != 0x01))
         status = commandPort.read();
 
-    if (status & 0x01) {
+    if (status & 0x01)
         return;
-    }
 
     for (int i = 0; i < 256; i++) {
         uint16_t data = dataPort.read();
@@ -59,6 +58,7 @@ uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data
 {
     static uint8_t buffer[512];
     uint16_t index = 0;
+
     for (int i = 0; i < 512; i++)
         buffer[i] = 0;
 
@@ -106,9 +106,7 @@ uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data
 
 void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, uint32_t count)
 {
-    if (sector_num > 0x0FFFFFFF)
-        return;
-    if (count > 512)
+    if ((sector_num > 0x0FFFFFFF) || (count > 512))
         return;
 
     devicePort.write((master ? 0xE0 : 0xF0) | ((sector_num & 0x0F000000) >> 24));
@@ -143,7 +141,6 @@ void AdvancedTechnologyAttachment::flush()
         && ((status & 0x01) != 0x01))
         status = commandPort.read();
 
-    if (status & 0x01) {
+    if (status & 0x01)
         return;
-    }
 }

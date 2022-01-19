@@ -1,4 +1,5 @@
 #include "multitasking.hpp"
+#include "Hardware/interrupts.hpp"
 
 Task::Task(char* task_name, uint32_t eip, int priv)
 {
@@ -120,10 +121,11 @@ int TaskManager::spawn(char* file, char* args)
         return -1;
 
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
+    IRQ::deactivate();
     VFS::read(fd, elfdata);
+    IRQ::activate();
     VFS::close(fd);
 
-    klog("Trying to start new child task");
     executable_t exec = Loader::load->exec(elfdata);
     kfree(elfdata);
 
