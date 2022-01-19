@@ -12,14 +12,14 @@ typedef struct {
 unsigned rand(unsigned int seed = 918, unsigned int max = 36000);
 unsigned int random(unsigned int seed, unsigned int max);
 
-extern void exit(int status);
-extern void* memcpy(void* dst, const void* src, unsigned int cnt);
-extern void* memset(void* b, char c, int len);
-extern int itoan(int x, char str[], int d);
-extern void itoa(unsigned int num, char* number);
-extern int atoi(char* str);
-extern char* ftoa(float n, char* res, int afterpoint);
-extern div_t div(int numerator, int denominator);
+void exit(int status);
+void* memcpy(void* dst, const void* src, unsigned int cnt);
+void* memset(void* b, char c, int len);
+int itoan(int x, char str[], int d);
+void itoa(unsigned int num, char* number);
+int atoi(char* str);
+char* ftoa(float n, char* res, int afterpoint);
+div_t div(int numerator, int denominator);
 
 template<typename T>
 static void delete_element(int x, int size, T* arr[])

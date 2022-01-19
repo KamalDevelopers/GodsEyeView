@@ -12,19 +12,19 @@
 static char write_buffer[512];
 static int write_index = 0;
 static void (*hwrite)(char*) = 0;
-extern void puts_hook(void (*t)(char*));
+void puts_hook(void (*t)(char*));
 
-extern void flush();
-extern void puts(char* str);
-extern void puti(int num);
-extern void putc(int c);
-extern void putx(int c);
-extern void vprintf(const char* format, va_list v);
-extern void printf(const char* format, ...);
-extern void clear();
-extern void sleep(uint32_t timer_count);
-extern void usleep(uint32_t ms);
-extern void beep(uint32_t ms_time, uint32_t frequency);
+void flush();
+void puts(char* str);
+void puti(int num);
+void putc(int c);
+void putx(int c);
+void vprintf(const char* format, va_list v);
+void printf(const char* format, ...);
+void clear();
+void sleep(uint32_t timer_count);
+void usleep(uint32_t ms);
+void beep(uint32_t ms_time, uint32_t frequency);
 static void newline()
 {
     putc(10);

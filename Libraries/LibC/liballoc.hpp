@@ -22,9 +22,9 @@ struct boundary_tag {
     struct boundary_tag* prev; //< Linked list info.
 };
 
-extern void* malloc(size_t);         //< The standard function.
-extern void* realloc(void*, size_t); //< The standard function.
-extern void* calloc(size_t, size_t); //< The standard function.
-extern void free(void*);             //< The standard function.
+void* malloc(size_t);         //< The standard function.
+void* realloc(void*, size_t); //< The standard function.
+void* calloc(size_t, size_t); //< The standard function.
+void free(void*);             //< The standard function.
 
 #endif

@@ -1,13 +1,13 @@
 #ifndef UNISTD_HPP
 #define UNISTD_HPP
 
-extern void _exit(int status);
-extern void _shutdown();
-extern void _reboot();
-extern int close(int descriptor);
-extern int read(int descriptor, void* buffer, int length);
-extern int write(int descriptor, char* buffer, int length);
-extern int open(char* file_name);
-extern int spawn(char* file_name, char* args);
+void _exit(int status);
+void _shutdown();
+void _reboot();
+int close(int descriptor);
+int read(int descriptor, void* buffer, int length);
+int write(int descriptor, char* buffer, int length);
+int open(char* file_name);
+int spawn(char* file_name, char* args);
 
 #endif

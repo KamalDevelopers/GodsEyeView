@@ -70,7 +70,7 @@ int spawn(char* file_name, char* args)
                  : "=a"(pid)
                  : "a"(401), "b"(file_name), "c"(args));
 
-    if (pid != -1)
+    if (pid >= 0)
         while (kill(pid, 0) != -1)
             ;
 
