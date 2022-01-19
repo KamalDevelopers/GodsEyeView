@@ -72,7 +72,7 @@ TaskManager::TaskManager(GDT* gdt)
     current_task = -1;
 }
 
-TaskManager* TaskManager::active = 0;
+TaskManager* TM = 0;
 TaskManager::~TaskManager()
 {
 }

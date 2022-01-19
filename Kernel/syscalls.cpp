@@ -11,7 +11,7 @@ Syscalls::~Syscalls()
 
 void Syscalls::sys_exit()
 {
-    TaskManager::active->kill();
+    TM->kill();
 }
 
 int Syscalls::sys_read(int fd, char* data, int length)
@@ -84,7 +84,7 @@ int Syscalls::sys_fstat(int fd, struct stat* buffer)
 
 int Syscalls::sys_getpid()
 {
-    return TaskManager::active->get_pid();
+    return TM->get_pid();
 }
 
 void Syscalls::sys_reboot(int cmd)
@@ -107,7 +107,7 @@ void Syscalls::sys_reboot(int cmd)
 
 int8_t Syscalls::sys_kill(int pid, int sig)
 {
-    return TaskManager::active->send_signal(pid, sig);
+    return TM->send_signal(pid, sig);
 }
 
 uint32_t Syscalls::sys_mmap(void* addr, size_t length)
@@ -117,7 +117,7 @@ uint32_t Syscalls::sys_mmap(void* addr, size_t length)
 
 int Syscalls::sys_munmap(void* addr, size_t length)
 {
-    PMM::free_pages((uint32_t)addr, length);
+    return PMM::free_pages((uint32_t)addr, length);
 }
 
 int Syscalls::sys_uname(utsname* buffer)
@@ -141,7 +141,7 @@ int Syscalls::sys_beep(int time, uint32_t frequency)
 
 int Syscalls::sys_spawn(char* file, char* args)
 {
-    return TaskManager::active->spawn(file, args);
+    return TM->spawn(file, args);
 }
 
 uint32_t Syscalls::interrupt(uint32_t esp)
