@@ -141,9 +141,6 @@ int TaskManager::spawn(char* file, char* args)
     strcpy((char*)child->cpustate->ebx, (char*)child->arguments);
     add_task(child);
 
-    while (send_signal(child->get_pid(), 0) == -1)
-        ;
-
     return child->pid;
 }
 
