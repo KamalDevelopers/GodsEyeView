@@ -61,7 +61,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);
-    SyscallHandler syscalls(&interrupts, 0x80);
+    Syscalls syscalls(&interrupts, 0x80);
 
     MouseDriver mouse(&interrupts, 640, 480);
     KeyboardDriver keyboard(&interrupts);

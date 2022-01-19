@@ -7,12 +7,12 @@ struct stat {
     int st_size;
 };
 
-inline int fstat(int descriptor, struct stat* __restrict statbuffer)
+inline int fstat(int fd, struct stat* __restrict statbuffer)
 {
     int result;
     asm volatile("int $0x80"
                  : "=a"(result)
-                 : "a"(28), "b"(descriptor), "c"(statbuffer));
+                 : "a"(28), "b"(fd), "c"(statbuffer));
     return result;
 }
 

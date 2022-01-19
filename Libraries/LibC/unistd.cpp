@@ -9,11 +9,11 @@ void _exit(int status)
 
 int kill(int pid, int sig)
 {
-    int res;
+    int status;
     asm volatile("int $0x80"
-                 : "=a"(res)
+                 : "=a"(status)
                  : "a"(37), "b"(pid), "c"(sig));
-    return res;
+    return status;
 }
 
 void _shutdown()
@@ -30,37 +30,37 @@ void _reboot()
                  : "a"(88), "b"(0));
 }
 
-int close(int descriptor)
+int close(int fd)
 {
     asm volatile("int $0x80"
                  :
-                 : "a"(6), "b"(descriptor));
+                 : "a"(6), "b"(fd));
     return 0;
 }
 
-int read(int descriptor, void* buffer, int length)
+int read(int fd, void* buffer, int length)
 {
     asm volatile("int $0x80"
                  :
-                 : "a"(3), "b"(descriptor), "c"(buffer), "d"(length));
+                 : "a"(3), "b"(fd), "c"(buffer), "d"(length));
     return 0;
 }
 
-int write(int descriptor, char* buffer, int length)
+int write(int fd, char* buffer, int length)
 {
     asm volatile("int $0x80"
                  :
-                 : "a"(4), "b"(descriptor), "c"(buffer), "d"(length));
+                 : "a"(4), "b"(fd), "c"(buffer), "d"(length));
     return 0;
 }
 
 int open(char* file_name)
 {
-    int descriptor;
+    int fd;
     asm volatile("int $0x80"
-                 : "=a"(descriptor)
+                 : "=a"(fd)
                  : "a"(5), "b"(file_name));
-    return descriptor;
+    return fd;
 }
 
 int spawn(char* file_name, char* args)

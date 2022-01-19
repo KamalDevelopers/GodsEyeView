@@ -1,71 +1,95 @@
 #include "syscalls.hpp"
 
-SyscallHandler::SyscallHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number)
+Syscalls::Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number)
     : InterruptHandler(interrupt_manager, interrupt_number + interrupt_manager->get_hardware_interrupt_offset())
 {
 }
 
-SyscallHandler::~SyscallHandler()
+Syscalls::~Syscalls()
 {
 }
 
-void sys_read(int file_handle, char* data, int len)
+void Syscalls::sys_exit()
 {
-    if ((len <= 0) || (len > 512))
-        return;
+    TaskManager::active->kill();
+}
+
+int Syscalls::sys_read(int fd, char* data, int length)
+{
+    if ((length <= 0) || (length > 512))
+        return -1;
 
     char buffer[512];
 
-    switch (file_handle) {
+    switch (fd) {
     case 0:
         /* FIXME: This should not freeze every process */
-        KeyboardDriver::active->read_keys(len, buffer);
+        KeyboardDriver::active->read_keys(length, buffer);
         break;
 
     default:
-        VFS::read(file_handle, (uint8_t*)buffer);
+        VFS::read(fd, (uint8_t*)buffer);
         break;
     }
 
-    buffer[len] = '\0';
-    memcpy(data, buffer, len);
+    buffer[length] = '\0';
+    memcpy(data, buffer, length);
+    return length;
 }
 
-void sys_write(int file_handle, char* data, int len)
+int Syscalls::sys_write(int fd, char* data, int length)
 {
-    if (len <= 0)
-        return;
+    if (length <= 0)
+        return -1;
 
-    switch (file_handle) {
+    switch (fd) {
     case 1:
-        data[len] = '\0';
+        data[length] = '\0';
         write_string(data);
         break;
 
     default:
         /* FIXME: Cannot overwrite existing file */
-        VFS::write(file_handle, (uint8_t*)&data, len);
+        VFS::write(fd, (uint8_t*)&data, length);
         break;
     }
+
+    return length;
 }
 
-int sys_open(char* file_name)
+int Syscalls::sys_open(char* file_name)
 {
-    int descriptor = VFS::open(file_name);
-    return descriptor;
+    return VFS::open(file_name);
 }
 
-int sys_stat(int descriptor, stat* buffer)
+int Syscalls::sys_close(int fd)
 {
-    buffer->st_uid = VFS::uid(descriptor);
-    buffer->st_gid = VFS::gid(descriptor);
-    buffer->st_size = VFS::size(descriptor);
+    return VFS::close(fd);
+}
+
+int Syscalls::sys_stat(char* file_name, struct stat* buffer)
+{
+    int fd = VFS::open(file_name);
+    VFS::close(fd);
+    return sys_fstat(fd, buffer);
+}
+
+int Syscalls::sys_fstat(int fd, struct stat* buffer)
+{
+    buffer->st_uid = VFS::uid(fd);
+    buffer->st_gid = VFS::gid(fd);
+    buffer->st_size = VFS::size(fd);
     return (buffer->st_size == -1) ? -1 : 0;
 }
 
-void sys_reboot(int arg)
+int Syscalls::sys_getpid()
 {
-    switch (arg) {
+    return TaskManager::active->get_pid();
+}
+
+void Syscalls::sys_reboot(int cmd)
+{
+    switch (cmd) {
     case 1:
         outbw(0x604, 0x2000);
         outbw(0x4004, 0x3400);
@@ -81,51 +105,84 @@ void sys_reboot(int arg)
     }
 }
 
-uint32_t SyscallHandler::interrupt(uint32_t esp)
+int8_t Syscalls::sys_kill(int pid, int sig)
+{
+    return TaskManager::active->send_signal(pid, sig);
+}
+
+uint32_t Syscalls::sys_mmap(void* addr, size_t length)
+{
+    return PMM::allocate_pages(length);
+}
+
+int Syscalls::sys_munmap(void* addr, size_t length)
+{
+    PMM::free_pages((uint32_t)addr, length);
+}
+
+int Syscalls::sys_uname(utsname* buffer)
+{
+    strcpy(buffer->sysname, "GevOS");
+    strcpy(buffer->release, "0.1.0");
+    return 0;
+}
+
+int Syscalls::sys_nanosleep(int time)
+{
+    sleep(time);
+    return 0;
+}
+
+int Syscalls::sys_beep(int time, uint32_t frequency)
+{
+    PCS::beep(time, frequency);
+    return 0;
+}
+
+int Syscalls::sys_spawn(char* file, char* args)
+{
+    return TaskManager::active->spawn(file, args);
+}
+
+uint32_t Syscalls::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
-    int desc;
-    int pid;
 
     switch (cpu->eax) {
     case 1:
-        TaskManager::active->kill();
+        sys_exit();
         break;
 
     case 3:
-        sys_read((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+        cpu->eax = sys_read((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
         break;
 
     case 4:
-        sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+        cpu->eax = sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
         break;
 
     case 5:
-        desc = sys_open((char*)cpu->ebx);
-        cpu->eax = desc;
+        cpu->eax = sys_open((char*)cpu->ebx);
         break;
 
     case 6:
-        VFS::close((int)cpu->ebx);
+        cpu->eax = sys_close((int)cpu->ebx);
         break;
 
     case 18:
-        desc = VFS::open((char*)cpu->ebx);
-        cpu->eax = sys_stat(desc, (stat*)cpu->ecx);
-        VFS::close(desc);
+        cpu->eax = sys_stat((char*)cpu->ebx, (struct stat*)cpu->ecx);
         break;
 
     case 20:
-        pid = TaskManager::active->get_pid();
-        cpu->eax = pid;
+        cpu->eax = sys_getpid();
         break;
 
     case 28:
-        cpu->eax = sys_stat((int)cpu->ebx, (stat*)cpu->ecx);
+        cpu->eax = sys_fstat((int)cpu->ebx, (struct stat*)cpu->ecx);
         break;
 
     case 37:
-        cpu->eax = TaskManager::active->send_signal((int)cpu->ebx, (int)cpu->ecx);
+        cpu->eax = sys_kill((int)cpu->ebx, (int)cpu->ecx);
         break;
 
     case 88:
@@ -133,35 +190,29 @@ uint32_t SyscallHandler::interrupt(uint32_t esp)
         break;
 
     case 90:
-        /* Incomplete implementation */
-        cpu->eax = (uint32_t)PMM::allocate_pages((size_t)cpu->ecx);
+        cpu->eax = sys_mmap((void*)cpu->ebx, (size_t)cpu->ecx);
         break;
 
     case 91:
-        /* Incomplete implementation */
-        PMM::free_pages((uint32_t)cpu->ebx, (size_t)cpu->ecx);
+        cpu->eax = sys_munmap((void*)cpu->ebx, (size_t)cpu->ecx);
         break;
 
     case 109:
-        strcpy(((utsname*)cpu->ebx)->sysname, "GevOS");
-        strcpy(((utsname*)cpu->ebx)->release, "0.1.0");
-        cpu->eax = 0;
+        cpu->eax = sys_uname((utsname*)cpu->ebx);
         break;
 
     case 162:
-        sleep((uint32_t)cpu->ebx);
+        cpu->eax = sys_nanosleep((uint32_t)cpu->ebx);
         break;
 
     case 400:
-        PCS::beep((uint32_t)cpu->ebx, (uint32_t)cpu->ecx);
+        cpu->eax = sys_beep((int)cpu->ebx, (uint32_t)cpu->ecx);
         break;
 
     case 401:
-        cpu->eax = TaskManager::active->spawn((char*)cpu->ebx, (char*)cpu->ecx);
-        break;
-
-    default:
+        cpu->eax = sys_spawn((char*)cpu->ebx, (char*)cpu->ecx);
         break;
     }
+
     return esp;
 }
