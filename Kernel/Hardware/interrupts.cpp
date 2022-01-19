@@ -150,10 +150,17 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
     if (handlers[interrupt] != 0) {
         esp = handlers[interrupt]->interrupt(esp);
     } else if (interrupt != hardware_interrupt_offset) {
-        if (interrupt == 0x0D)
+        if (interrupt == 0x0D) {
             PANIC("General protection fault");
-        if (interrupt == 0x0E)
+        }
+
+        if (interrupt == 0x0E) {
+            uint32_t faulting_addr;
+            asm volatile("mov %%cr2, %0"
+                         : "=r"(faulting_addr));
+            kprintf("\n{Faulty address 0x%x}\n", faulting_addr);
             PANIC("Page fault");
+        }
     }
 
     if (interrupt == hardware_interrupt_offset) {

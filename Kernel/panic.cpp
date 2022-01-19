@@ -11,7 +11,8 @@ void dump_stack()
     stk = (stackframe*)__builtin_frame_address(0);
 
     for (unsigned int frame = 0; stk && frame < 4096; ++frame) {
-        kprintf("0x%x ", stk->eip);
+        if (stk->eip)
+            kprintf("0x%x ", stk->eip);
         stk = stk->ebp;
     }
 }
