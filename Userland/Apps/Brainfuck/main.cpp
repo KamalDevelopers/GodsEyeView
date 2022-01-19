@@ -63,27 +63,31 @@ int run(char* input, int* tape)
 
 int main(int argc, char** argv)
 {
-    if (argc) {
-        int file_descriptor;
-        struct stat statbuffer;
-
-        file_descriptor = open((char*)argv[0]);
-        fstat(file_descriptor, &statbuffer);
-
-        if (statbuffer.st_size == -1) {
-            printf("File does not exist");
-            return 0;
-        }
-
-        char* buffer = (char*)malloc(statbuffer.st_size);
-        int* tape = (int*)calloc(30000, sizeof(int));
-
-        read(file_descriptor, buffer, statbuffer.st_size);
-        close(file_descriptor);
-
-        run(buffer, tape);
-    } else {
+    if (!argc) {
         printf("No input file");
+        return 0;
     }
+
+    int file_descriptor;
+    struct stat statbuffer;
+
+    file_descriptor = open((char*)argv[0]);
+    fstat(file_descriptor, &statbuffer);
+
+    if (statbuffer.st_size == -1) {
+        printf("File does not exist");
+        return 0;
+    }
+
+    char* buffer = (char*)malloc(statbuffer.st_size);
+    int* tape = (int*)calloc(30000, sizeof(int));
+
+    read(file_descriptor, buffer, statbuffer.st_size);
+    close(file_descriptor);
+
+    run(buffer, tape);
+
+    free(buffer);
+    free(tape);
     return 0;
 }
