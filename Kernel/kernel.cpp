@@ -95,9 +95,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     VFS::read(shell_file_descriptor, elfdata);
     VFS::close(shell_file_descriptor);
 
-    klog("Starting shell...");
     executable_t execute = Loader::load->exec(elfdata);
-
     kprintf("Spawning interactive shell...\n\n");
 
     Task shell("shell", 0);

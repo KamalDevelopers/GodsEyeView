@@ -146,9 +146,9 @@ void TaskManager::kill_zombie_tasks()
 {
     for (int i = 0; i < num_tasks; i++) {
         if (tasks[i]->state == 1) {
+            klog("Zombie process '%s' killed", tasks[i]->name);
             if (tasks[i]->is_child)
                 free(tasks[i]);
-            klog("Zombie Process Killed");
             delete_element(i, num_tasks, tasks);
             num_tasks--;
         }

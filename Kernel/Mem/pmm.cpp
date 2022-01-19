@@ -43,7 +43,7 @@ uint32_t PMM::allocate_pages(size_t size)
         for (int i = 0; i < pages; i++) {
             used_pages++;
             if (pages_bitmap[index + i])
-                klog("allocating allocated page!");
+                klog("PMM: [0x%x i: %d], is already allocated!", (address + (i * PAGE_SIZE)), index + i);
             pages_bitmap[index + i] = true;
             Paging::map_page(address + (i * PAGE_SIZE), address + (i * PAGE_SIZE));
         }
@@ -51,7 +51,8 @@ uint32_t PMM::allocate_pages(size_t size)
         return address;
     }
 
-    klog("No more memory!");
+    klog("PMM out of memory!");
+    info();
     return 0;
 }
 
@@ -70,9 +71,9 @@ int PMM::free_pages(uint32_t address, size_t size)
 
     for (int i = 0; i < pages; i++) {
         if (pages_bitmap[index + i] == false) {
-            if (debug)
-                kprintf("freeing free page!\n");
+            klog("PMM: [0x%x i: %d], is already freed!", (address + (i * PAGE_SIZE)), index + i);
             is_valid = -1;
+            continue;
         }
 
         used_pages--;
@@ -80,5 +81,5 @@ int PMM::free_pages(uint32_t address, size_t size)
         Paging::unmap_page(address + (i * PAGE_SIZE));
     }
 
-    return -1;
+    return is_valid;
 }

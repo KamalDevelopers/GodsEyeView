@@ -105,7 +105,7 @@ int Tar::find_file(char* file_name)
         if (strncmp(file_name, files[i].name, strlen(file_name)) == 0)
             return i;
     }
-    klog("File not found!");
+    klog("File '%s' not found", file_name);
     return -1;
 }
 

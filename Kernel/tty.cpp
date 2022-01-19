@@ -20,7 +20,7 @@ void init_serial()
     outb(COMPORT + 3, 0x03);
     outb(COMPORT + 2, 0xC7);
     outb(COMPORT + 4, 0x0B);
-    serial_enabled = 1;
+    serial_enabled = true;
 }
 
 int transmit_empty()
@@ -30,42 +30,41 @@ int transmit_empty()
 
 void log_putc(char c)
 {
+    if (!serial_enabled)
+        return;
+
     while (transmit_empty() == 0)
         ;
     outb(COMPORT, c);
 }
 
-void klog(char* str)
+void log_puts(char* str)
 {
-    if (serial_enabled == 0)
-        return;
+    for (int i = 0; str[i] != '\0'; i++)
+        log_putc(str[i]);
+}
 
+void klog(const char* format, ...)
+{
     for (int i = 0; i < strlen(datacolorblue); i++)
         log_putc(datacolorblue[i]); // color on
-    for (int i = 0; str[i] != '\0'; i++) {
-        log_putc(str[i]);
-    }
-    log_putc('\n');
+
+    va_list arg;
+
+    puts_hook(log_puts);
+    va_start(arg, format);
+    vprintf(format, arg);
+    va_end(arg);
+    puts("\n");
+    puts_hook(0);
+
     for (int i = 0; i < strlen(datacoloroff); i++)
         log_putc(datacoloroff[i]); // color off
 }
 
 void klog(int num)
 {
-    if (serial_enabled == 0)
-        return;
-
-    char str[20];
-    itoa(num, str);
-
-    for (int i = 0; i < strlen(datacolorblue); i++)
-        log_putc(datacolorblue[i]); // color on
-    for (int i = 0; str[i] != '\0'; i++) {
-        log_putc(str[i]);
-    }
-    log_putc('\n');
-    for (int i = 0; i < strlen(datacoloroff); i++)
-        log_putc(datacoloroff[i]); // color off
+    klog("%d", num);
 }
 
 static inline uint8_t vga_entry_color(uint8_t fg, uint8_t bg)

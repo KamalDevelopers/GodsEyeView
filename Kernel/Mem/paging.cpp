@@ -28,13 +28,13 @@ int Paging::unmap_page(uint32_t virtual_address)
     uint32_t table_index = PAGETBL_INDEX(virtual_address);
 
     if (!kernel_page_directory->reference_tables[directory_index]) {
-        klog("Could not unmap page! (no table entry)");
+        klog("Could not unmap page! [0x%x] (no table entry)", virtual_address);
         return -1;
     }
 
     page_table_t* table = kernel_page_directory->reference_tables[directory_index];
     if (!table->pages[table_index].present) {
-        klog("Could not unmap page! (not present)");
+        klog("Could not unmap page! [0x%x] (not present)", virtual_address);
         return -1;
     }
 
