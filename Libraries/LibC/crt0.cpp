@@ -1,4 +1,5 @@
 #include "liballoc.hpp"
+#include "stdio.hpp"
 #include "string.hpp"
 #include "unistd.hpp"
 
@@ -18,6 +19,7 @@ int main(int argc, char** argv);
         argc = 1;
 
     int status = main(argc, &arguments);
+    flush();
     free(arguments);
     _exit(status);
 

@@ -234,14 +234,15 @@ void KeyboardDriver::read_keys(int len, char* data)
         if (c == '\b') {
             if (key_stroke > 0) {
                 key_stroke--;
-                printf("%c", c);
+                kprintf("%c", c);
             }
         } else {
             buffer[key_stroke] = c;
             key_stroke++;
-            printf("%c", c);
+            kprintf("%c", c);
         }
     }
+
     len -= len - key_stroke;
     buffer[key_stroke + 1] = '\0';
 

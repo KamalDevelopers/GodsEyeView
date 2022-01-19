@@ -76,6 +76,7 @@ int main(int argc, char** argv)
 
     while (1) {
         printf(ps1, user, uname_struct.sysname, path);
+        flush();
 
         char input[100];
         read(0, input, 100);

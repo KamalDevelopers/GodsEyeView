@@ -6,21 +6,48 @@ void puts_hook(void (*t)(char*))
     hwrite = t;
 }
 
+void flush()
+{
+    if (hwrite == 0) {
+        write(1, write_buffer, write_index);
+    } else {
+        hwrite(write_buffer);
+    }
+
+    memchr(write_buffer, 0, BUFSIZ);
+    write_index = 0;
+}
+
 void puts(char* str)
 {
-    int len = strlen(str);
-    if (hwrite == 0) {
-        write(1, str, len);
-    } else {
+    if (hwrite != 0) {
         hwrite(str);
+        return;
     }
+
+    int len = strlen(str);
+    bool do_flush = false;
+
+    if ((write_index + len) >= BUFSIZ)
+        flush();
+
+    for (int i = 0; i < len; i++) {
+        write_buffer[write_index] = str[i];
+        write_index++;
+
+        if (str[i] == 10)
+            do_flush = true;
+    }
+
+    if (do_flush)
+        flush();
 }
 
 void putc(int c)
 {
     char buff[2];
     buff[0] = c;
-    buff[1] = '\0';
+    buff[1] = 0;
     puts(buff);
 }
 

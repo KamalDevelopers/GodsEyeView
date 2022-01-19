@@ -3,14 +3,18 @@
 
 #define MAX_ROWS 25
 #define MAX_COLS 80
+#define BUFSIZ 512
 
 #include "LibC/stdlib.hpp"
 #include "LibC/unistd.hpp"
 #include <stdarg.h>
 
+static char write_buffer[512];
+static int write_index = 0;
 static void (*hwrite)(char*) = 0;
 extern void puts_hook(void (*t)(char*));
 
+extern void flush();
 extern void puts(char* str);
 extern void puti(int num);
 extern void putc(int c);
