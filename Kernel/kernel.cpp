@@ -58,7 +58,6 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     klog("Starting memory management and paging");
     Paging::init();
     PMM::init();
-    kmalloc(1);
 
     klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);

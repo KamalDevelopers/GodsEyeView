@@ -8,7 +8,6 @@ void PMM::init()
 {
     used_pages = 0;
     memset(pages_bitmap, 0, MAX_PAGES);
-    info();
 }
 
 void PMM::info()
