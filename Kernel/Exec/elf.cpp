@@ -19,7 +19,7 @@ int Elf::probe(uint8_t* file_data)
     elf32_ehdr elf_header;
     memcpy((uint8_t*)&elf_header, file_data, sizeof(elf_header));
 
-    char* magic_elf;
+    char magic_elf[4];
     magic_elf[0] = elf_header.e_ident.ei_magic[1];
     magic_elf[1] = elf_header.e_ident.ei_magic[2];
     magic_elf[2] = elf_header.e_ident.ei_magic[3];

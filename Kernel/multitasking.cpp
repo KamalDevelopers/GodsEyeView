@@ -121,9 +121,7 @@ int TaskManager::spawn(char* file, char* args)
         return -1;
 
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
-    IRQ::deactivate();
     VFS::read(fd, elfdata);
-    IRQ::activate();
     VFS::close(fd);
 
     executable_t exec = Loader::load->exec(elfdata);
