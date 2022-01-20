@@ -40,18 +40,18 @@ public:
     ~TimeDriver();
 
     static TimeDriver* active;
-    virtual void read_rtc();
-    virtual void set_timezone_offset(uint16_t t_offset);
+    void read_rtc();
+    void set_timezone_offset(uint16_t t_offset);
 
-    virtual unsigned char get_second();
-    virtual unsigned char get_minute();
-    virtual unsigned char get_hour(uint16_t t_offset = 0);
+    unsigned char get_second();
+    unsigned char get_minute();
+    unsigned char get_hour(uint16_t t_offset = 0);
 
-    virtual unsigned char get_day();
-    virtual unsigned char get_month();
-    virtual unsigned int get_year();
-    virtual unsigned int get_time();
-    virtual void get_full_time(char seperator, char* time);
+    unsigned char get_day();
+    unsigned char get_month();
+    unsigned int get_year();
+    unsigned int get_time();
+    void get_full_time(char seperator, char* time);
 };
 
 #endif

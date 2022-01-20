@@ -25,7 +25,7 @@ int Elf::probe(uint8_t* file_data)
     magic_elf[2] = elf_header.e_ident.ei_magic[3];
     magic_elf[3] = '\0';
 
-    if ((elf_header.e_ident.ei_magic[0] == 0x7F) && (strcmp(magic_elf, "ELF\0") == 0))
+    if ((elf_header.e_ident.ei_magic[0] == 0x7F) && (strcmp(magic_elf, "ELF") == 0))
         valid = 1;
 
     if (elf_header.e_type == 2)
