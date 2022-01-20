@@ -177,26 +177,6 @@ uint8_t inb(uint16_t port)
     return result;
 }
 
-void sleep(uint32_t timer_count)
-{
-    while (1) {
-        asm volatile("nop");
-        timer_count--;
-        if (timer_count <= 0)
-            break;
-    }
-}
-
-void usleep(uint32_t ms)
-{
-    while (1) {
-        sleep(40000);
-        ms--;
-        if (ms <= 0)
-            break;
-    }
-}
-
 void beep(uint32_t ms_time, uint32_t frequency)
 {
     asm("int $0x80"

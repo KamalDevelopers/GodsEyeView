@@ -22,8 +22,6 @@ void putx(int c);
 void vprintf(const char* format, va_list v);
 void printf(const char* format, ...);
 void clear();
-void sleep(uint32_t timer_count);
-void usleep(uint32_t ms);
 void beep(uint32_t ms_time, uint32_t frequency);
 static void newline()
 {
