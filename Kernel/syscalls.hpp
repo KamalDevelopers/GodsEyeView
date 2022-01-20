@@ -31,8 +31,7 @@ private:
     uint32_t sys_mmap(void* addr, size_t length);
     int sys_munmap(void* addr, size_t length);
     int sys_uname(utsname* buffer);
-    int sys_nanosleep(int time);
-    int sys_beep(int time, uint32_t frequency);
+    int sys_sleep(int time);
     int sys_spawn(char* file, char* args);
 
 public:

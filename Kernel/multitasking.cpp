@@ -25,8 +25,6 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     memset(execfile, 0, 20);
     memset(stdin_buffer, 0, 200);
 
-    // Paging::copy_page_directory(page_directory);
-
     execute = 0;
     state = 0;
     privelege = priv;
@@ -129,6 +127,11 @@ void TaskManager::reset_stdin()
     memset(tasks[current_task]->stdin_buffer, 0, 200);
 }
 
+void TaskManager::sleep(uint32_t ticks)
+{
+    tasks[current_task]->sleeping = current_ticks + ticks;
+}
+
 int TaskManager::spawn(char* file, char* args)
 {
     int fd = VFS::open(file);
@@ -174,11 +177,22 @@ void TaskManager::kill_zombie_tasks()
 
 cpu_state* TaskManager::schedule(cpu_state* cpustate)
 {
+    current_ticks++;
     if (current_task >= 0)
         tasks[current_task]->cpustate = cpustate;
 
     if (++current_task >= num_tasks)
         current_task = 0;
+
+    if (tasks[current_task]->sleeping != 0) {
+        if (current_ticks >= tasks[current_task]->sleeping) {
+            tasks[current_task]->sleeping = 0;
+        } else {
+            current_task++;
+            if (++current_task >= num_tasks)
+                current_task = 0;
+        }
+    }
 
     kill_zombie_tasks();
     if (current_task >= num_tasks)

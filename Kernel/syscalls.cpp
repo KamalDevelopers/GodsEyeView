@@ -135,15 +135,10 @@ int Syscalls::sys_uname(utsname* buffer)
     return 0;
 }
 
-int Syscalls::sys_nanosleep(int time)
+int Syscalls::sys_sleep(int sec)
 {
-    sleep(time);
-    return 0;
-}
-
-int Syscalls::sys_beep(int time, uint32_t frequency)
-{
-    PCS::beep(time, frequency);
+    TM->sleep(sec * 20);
+    asm volatile("int $0x20");
     return 0;
 }
 
@@ -210,11 +205,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 162:
-        cpu->eax = sys_nanosleep((uint32_t)cpu->ebx);
-        break;
-
-    case 400:
-        cpu->eax = sys_beep((int)cpu->ebx, (uint32_t)cpu->ecx);
+        cpu->eax = sys_sleep((uint32_t)cpu->ebx);
         break;
 
     case 401:

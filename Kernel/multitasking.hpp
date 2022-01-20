@@ -45,6 +45,7 @@ private:
     executable_t loaded_executable;
     bool is_executable = false;
     bool is_child = false;
+    uint32_t sleeping = 0;
 
     int pid;
     int execute;
@@ -74,6 +75,7 @@ private:
     bool add_task(Task* task);
     int num_tasks;
     int current_task;
+    uint32_t current_ticks = 0;
     int8_t is_running = 1;
     Task* tasks[256];
 
@@ -95,6 +97,7 @@ public:
     void reset_stdin();
     void append_stdin(char key);
 
+    void sleep(uint32_t ticks);
     int execute(char* file);
     int spawn(char* file, char* args);
     bool append_tasks(int count, ...);

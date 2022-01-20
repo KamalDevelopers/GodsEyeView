@@ -73,6 +73,13 @@ int open(char* file_name)
     return fd;
 }
 
+void sleep(int sec)
+{
+    asm volatile("int $0x80"
+                 :
+                 : "a"(162), "b"(sec));
+}
+
 int spawn(char* file_name, char* args)
 {
     int pid;
