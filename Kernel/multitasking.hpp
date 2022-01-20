@@ -40,6 +40,7 @@ class Task {
 private:
     uint8_t stack[4096];
     cpu_state* cpustate;
+    char stdin_buffer[200];
 
     executable_t loaded_executable;
     bool is_executable = false;
@@ -86,8 +87,13 @@ public:
 
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
+
     int get_pid() { return tasks[current_task]->pid; }
     char* get_name() { return tasks[current_task]->name; }
+    char* get_stdin() { return tasks[current_task]->stdin_buffer; }
+
+    void reset_stdin();
+    void append_stdin(char key);
 
     int execute(char* file);
     int spawn(char* file, char* args);

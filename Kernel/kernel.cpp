@@ -64,7 +64,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Syscalls syscalls(&interrupts, 0x80);
 
     MouseDriver mouse(&interrupts, 640, 480);
-    KeyboardDriver keyboard(&interrupts);
+    KeyboardDriver keyboard(&interrupts, &task_manager);
 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);

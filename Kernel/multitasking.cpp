@@ -23,6 +23,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
 
     memset(arguments, 0, 100);
     memset(execfile, 0, 20);
+    memset(stdin_buffer, 0, 200);
 
     // Paging::copy_page_directory(page_directory);
 
@@ -110,6 +111,22 @@ int8_t TaskManager::send_signal(int pid, int sig)
             if (tasks[i]->privelege <= tasks[current_task]->privelege)
                 return tasks[i]->notify(sig);
     return -1;
+}
+
+void TaskManager::append_stdin(char key)
+{
+    size_t length = strlen(tasks[current_task]->stdin_buffer);
+    if (key == '\b') {
+        tasks[current_task]->stdin_buffer[length - 1] = 0;
+    } else {
+        tasks[current_task]->stdin_buffer[length] = key;
+        tasks[current_task]->stdin_buffer[length + 1] = 0;
+    }
+}
+
+void TaskManager::reset_stdin()
+{
+    memset(tasks[current_task]->stdin_buffer, 0, 200);
 }
 
 int TaskManager::spawn(char* file, char* args)

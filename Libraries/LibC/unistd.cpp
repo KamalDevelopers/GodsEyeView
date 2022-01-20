@@ -40,10 +40,20 @@ int close(int fd)
 
 int read(int fd, void* buffer, int length)
 {
+    int size;
     asm volatile("int $0x80"
-                 :
+                 : "=a"(size)
                  : "a"(3), "b"(fd), "c"(buffer), "d"(length));
-    return 0;
+
+    if (fd == 0) {
+        while (size != length) {
+            asm volatile("int $0x80"
+                         : "=a"(size)
+                         : "a"(3), "b"(fd), "c"(buffer), "d"(length));
+        }
+    }
+
+    return size;
 }
 
 int write(int fd, char* buffer, int length)

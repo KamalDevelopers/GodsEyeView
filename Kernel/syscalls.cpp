@@ -20,21 +20,29 @@ int Syscalls::sys_read(int fd, char* data, int length)
         return -1;
 
     char buffer[512];
+    int size = length;
 
     switch (fd) {
     case 0:
-        /* FIXME: This should not freeze every process */
-        KeyboardDriver::active->read_keys(length, buffer);
+        size = strlen(TM->get_stdin());
+        memcpy(buffer, TM->get_stdin(), length);
+
+        if (TM->get_stdin()[size - 1] == 10) {
+            buffer[size - 1] = 0;
+            TM->reset_stdin();
+            size = length;
+        }
         break;
 
     default:
+        /* FIXME: Return the file size */
         VFS::read(fd, (uint8_t*)buffer);
         break;
     }
 
     buffer[length] = '\0';
     memcpy(data, buffer, length);
-    return length;
+    return size;
 }
 
 int Syscalls::sys_write(int fd, char* data, int length)
