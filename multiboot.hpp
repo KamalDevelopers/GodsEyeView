@@ -8,6 +8,14 @@ struct multiboot_aout_symbol_table {
 };
 typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
 
+typedef struct multiboot_memory_map {
+    unsigned int size;
+    unsigned int base_addr_low, base_addr_high;
+    unsigned int length_low, length_high;
+    unsigned int type;
+} multiboot_memory_map_t;
+typedef multiboot_memory_map_t mmap_entry_t;
+
 struct multiboot_elf_section_header_table {
     uint32_t num;
     uint32_t size;
@@ -90,5 +98,20 @@ struct multiboot_info {
         };
     };
 };
+
 typedef struct multiboot_info multiboot_info_t;
-extern "C" multiboot_info_t* multiboot_info_ptr;
+
+static uint32_t detect_memory(multiboot_info_t* multiboot_info_ptr)
+{
+    mmap_entry_t* entry = (mmap_entry_t*)multiboot_info_ptr->mmap_addr;
+    uint32_t total = 0;
+    while ((uint32_t)entry < multiboot_info_ptr->mmap_addr + multiboot_info_ptr->mmap_length) {
+        entry = (mmap_entry_t*)((uint32_t)entry + entry->size + sizeof(entry->size));
+        if (entry->type == 1) {
+            uint64_t length = (((uint64_t)entry->length_high) << 32) | ((uint64_t)entry->length_low);
+            total += length;
+        }
+    }
+
+    return total;
+}

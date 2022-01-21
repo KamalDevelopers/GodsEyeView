@@ -56,8 +56,13 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     VirtualFilesystem vfs;
 
     klog("Starting memory management and paging");
+    uint32_t total_memory = detect_memory(multiboot_info_ptr);
+    uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
+    total_memory = (total_memory - (total_memory % (memory_divide))) - 15 * MB;
+    uint32_t available_pages = PAGE_ALIGN(total_memory) / PAGE_SIZE;
+
     Paging::init();
-    PMM::init();
+    PMM::init(available_pages);
 
     klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);

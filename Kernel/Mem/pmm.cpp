@@ -2,17 +2,21 @@
 
 constexpr bool debug = false;
 bool pages_bitmap[MAX_PAGES];
+uint32_t available_pages;
 uint32_t used_pages;
 
-void PMM::init()
+void PMM::init(uint32_t pages)
 {
     used_pages = 0;
+    available_pages = pages;
+    if (available_pages > MAX_PAGES)
+        available_pages = MAX_PAGES;
     memset(pages_bitmap, 0, MAX_PAGES);
 }
 
 void PMM::info()
 {
-    kprintf("total memory: %d MB (%d pages)\n", (MAX_PAGES * PAGE_SIZE) / MB, MAX_PAGES);
+    kprintf("total memory: %d MB (%d pages)\n", (available_pages * PAGE_SIZE) / MB, available_pages);
     kprintf("used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
 }
 
@@ -24,7 +28,7 @@ uint32_t PMM::allocate_pages(size_t size)
     uint32_t pages = size / PAGE_SIZE;
     uint32_t index = 0;
 
-    while (index + pages < MAX_PAGES) {
+    while (index + pages < available_pages) {
         bool can_allocate = true;
         for (int i = 0; i < pages; i++) {
             if (pages_bitmap[index + i]) {
