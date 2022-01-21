@@ -216,8 +216,6 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
             tasks[current_task]->sleeping = 0;
         } else {
             current_task++;
-            if (++current_task >= num_tasks)
-                current_task = 0;
         }
     }
 
