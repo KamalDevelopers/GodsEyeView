@@ -24,14 +24,7 @@ int Syscalls::sys_read(int fd, char* data, int length)
 
     switch (fd) {
     case 0:
-        size = strlen(TM->get_stdin());
-        memcpy(buffer, TM->get_stdin(), length);
-
-        if (TM->get_stdin()[size - 1] == 10) {
-            buffer[size - 1] = 0;
-            TM->reset_stdin();
-            size = length;
-        }
+        size = TM->read_stdin(buffer, length);
         break;
 
     default:
@@ -150,6 +143,7 @@ int Syscalls::sys_spawn(char* file, char* args)
 uint32_t Syscalls::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
+    IRQ::activate();
 
     switch (cpu->eax) {
     case 1:

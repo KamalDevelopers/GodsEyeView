@@ -12,13 +12,12 @@ static char* l_nm = "123456789";
 
 KeyboardDriver* KeyboardDriver::active = 0;
 
-KeyboardDriver::KeyboardDriver(InterruptManager* interrupt_manager, TaskManager* task_manager)
+KeyboardDriver::KeyboardDriver(InterruptManager* interrupt_manager)
     : InterruptHandler(interrupt_manager, 0x21)
     , dataport(0x60)
     , commandport(0x64)
 {
     active = this;
-    this->task_manager = task_manager;
     while (commandport.read() & 0x1)
         dataport.read();
     commandport.write(0xae); // activate interrupts
@@ -186,8 +185,7 @@ void KeyboardDriver::on_key(uint8_t keypress)
         last_key = key_a(keypress);
 
         if ((last_key == '\b' && keys_pressed - 1 >= 0) || last_key != '\b') {
-            kprintf("%c", last_key);
-            task_manager->append_stdin(last_key);
+            TM->append_stdin(last_key);
             keys_pressed += (last_key == '\b') ? -1 : 1;
         }
 

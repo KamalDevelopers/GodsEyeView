@@ -113,6 +113,9 @@ int8_t TaskManager::send_signal(int pid, int sig)
 
 void TaskManager::append_stdin(char key)
 {
+    if (is_reading_stdin)
+        kprintf("%c", key);
+
     size_t length = strlen(tasks[current_task]->stdin_buffer);
     if (key == '\b') {
         tasks[current_task]->stdin_buffer[length - 1] = 0;
@@ -125,6 +128,30 @@ void TaskManager::append_stdin(char key)
 void TaskManager::reset_stdin()
 {
     memset(tasks[current_task]->stdin_buffer, 0, 200);
+}
+
+uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
+{
+    if (!length)
+        return 0;
+
+    uint32_t size = 0;
+    reset_stdin();
+    is_reading_stdin = true;
+
+    while (true) {
+        size = strlen(get_stdin());
+
+        if (TM->get_stdin()[size - 1] == 10) {
+            strncpy(buffer, get_stdin(), length);
+            buffer[size - 1] = 0;
+            reset_stdin();
+            break;
+        }
+    }
+
+    is_reading_stdin = false;
+    return size - 1;
 }
 
 void TaskManager::sleep(uint32_t ticks)

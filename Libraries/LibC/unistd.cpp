@@ -45,14 +45,6 @@ int read(int fd, void* buffer, int length)
                  : "=a"(size)
                  : "a"(3), "b"(fd), "c"(buffer), "d"(length));
 
-    if (fd == 0) {
-        while (size != length) {
-            asm volatile("int $0x80"
-                         : "=a"(size)
-                         : "a"(3), "b"(fd), "c"(buffer), "d"(length));
-        }
-    }
-
     return size;
 }
 

@@ -77,6 +77,7 @@ private:
     int current_task;
     uint32_t current_ticks = 0;
     int8_t is_running = 1;
+    bool is_reading_stdin = false;
     Task* tasks[256];
 
 public:
@@ -96,6 +97,7 @@ public:
 
     void reset_stdin();
     void append_stdin(char key);
+    uint32_t read_stdin(char* buffer, uint32_t length);
 
     void sleep(uint32_t ticks);
     int execute(char* file);

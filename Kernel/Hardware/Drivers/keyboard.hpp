@@ -15,8 +15,6 @@ class KeyboardDriver : public InterruptHandler
     Port8Bit commandport;
 
 private:
-    TaskManager* task_manager;
-
     int x_offset;
     int y_offset;
 
@@ -31,7 +29,7 @@ private:
     uint8_t key_a(uint8_t key);
 
 public:
-    KeyboardDriver(InterruptManager* interrupt_manager, TaskManager* task_manager);
+    KeyboardDriver(InterruptManager* interrupt_manager);
     ~KeyboardDriver();
 
     static KeyboardDriver* active;
