@@ -130,8 +130,8 @@ int Syscalls::sys_uname(utsname* buffer)
 
 int Syscalls::sys_sleep(int sec)
 {
-    TM->sleep(sec * 20);
-    asm volatile("int $0x20");
+    TM->sleep(sec * 18);
+    TM->yield();
     return 0;
 }
 
