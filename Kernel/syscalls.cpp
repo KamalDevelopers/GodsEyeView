@@ -85,7 +85,7 @@ int Syscalls::sys_fstat(int fd, struct stat* buffer)
 
 int Syscalls::sys_getpid()
 {
-    return TM->get_pid();
+    return TM->task()->get_pid();
 }
 
 void Syscalls::sys_reboot(int cmd)

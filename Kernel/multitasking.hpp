@@ -91,10 +91,7 @@ public:
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
     void yield() { asm volatile("int $0x20"); }
-
-    int get_pid() { return tasks[current_task]->pid; }
-    char* get_name() { return tasks[current_task]->name; }
-    char* get_stdin() { return tasks[current_task]->stdin_buffer; }
+    Task* task() { return tasks[current_task]; }
 
     void reset_stdin();
     void append_stdin(char key);

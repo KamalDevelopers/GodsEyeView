@@ -140,10 +140,10 @@ uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
     is_reading_stdin = true;
 
     while (true) {
-        size = strlen(get_stdin());
+        size = strlen(tasks[current_task]->stdin_buffer);
 
-        if (TM->get_stdin()[size - 1] == 10) {
-            strncpy(buffer, get_stdin(), length);
+        if (TM->tasks[current_task]->stdin_buffer[size - 1] == 10) {
+            strncpy(buffer, tasks[current_task]->stdin_buffer, length);
             buffer[size - 1] = 0;
             reset_stdin();
             break;
