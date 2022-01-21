@@ -31,6 +31,10 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     pid = ++g_lpid;
 }
 
+Task::~Task()
+{
+}
+
 void Task::executable(executable_t exec)
 {
     is_executable = true;
@@ -57,10 +61,6 @@ int8_t Task::notify(int signal)
 void Task::suicide(int error_code)
 {
     state = 1;
-}
-
-Task::~Task()
-{
 }
 
 TaskManager::TaskManager(GDT* gdt)
@@ -194,8 +194,10 @@ void TaskManager::kill_zombie_tasks()
     for (int i = 0; i < num_tasks; i++) {
         if (tasks[i]->state == 1) {
             klog("Zombie process '%s' killed", tasks[i]->name);
+
             if (tasks[i]->is_child)
                 free(tasks[i]);
+
             delete_element(i, num_tasks, tasks);
             num_tasks--;
         }

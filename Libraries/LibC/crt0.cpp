@@ -9,7 +9,9 @@ int main(int argc, char** argv);
 
 [[noreturn]] void _entry()
 {
+    /* Store in original pointer as 'args' to avoid manipulation before free() */
     char* arguments = (char*)malloc(100 * sizeof(char));
+    char* args = arguments;
     int argc = 0;
 
     asm("movl %%ebx, %0;"
@@ -20,7 +22,7 @@ int main(int argc, char** argv);
 
     int status = main(argc, &arguments);
     flush();
-    free(arguments);
+    free(args);
     _exit(status);
 
     while (1)
