@@ -16,25 +16,30 @@ void Syscalls::sys_exit()
 
 int Syscalls::sys_read(int fd, char* data, int length)
 {
-    if ((length <= 0) || (length > 512))
+    if (length <= 0)
         return -1;
 
-    char buffer[512];
-    int size = length;
+    char* buffer = new char[length];
+    int size = 0;
 
     switch (fd) {
     case 0:
+        if (length > 512)
+            length = 512;
         size = TM->read_stdin(buffer, length);
         break;
 
     default:
-        /* FIXME: Return the file size */
-        VFS::read(fd, (uint8_t*)buffer);
+        size = VFS::read(fd, (uint8_t*)buffer);
         break;
     }
 
+    if (length < size)
+        size = length;
+
     buffer[length] = '\0';
     memcpy(data, buffer, length);
+    kfree(buffer);
     return size;
 }
 

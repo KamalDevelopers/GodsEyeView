@@ -1,5 +1,4 @@
 #include "multitasking.hpp"
-#include "Hardware/interrupts.hpp"
 
 Task::Task(char* task_name, uint32_t eip, int priv)
 {
@@ -141,6 +140,9 @@ uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
 
     while (true) {
         size = strlen(tasks[current_task]->stdin_buffer);
+
+        if (size == 0)
+            continue;
 
         if (TM->tasks[current_task]->stdin_buffer[size - 1] == 10) {
             strncpy(buffer, tasks[current_task]->stdin_buffer, length);

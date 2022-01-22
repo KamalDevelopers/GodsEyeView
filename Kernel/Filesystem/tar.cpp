@@ -225,7 +225,7 @@ int Tar::read_file(int file_id, uint8_t* data)
     int data_offset = sector_links_file[file_id] + 1;             // File data sector index
     int data_size = (oct_bin(files[file_id].size, 11) / 512) + 1; // Get sector index
     read_data(data_offset, data, data_size * 512);                // Convert sectors into bytes
-    return 0;
+    return data_size * 512;
 }
 
 /* Reads file from ram using file name */
