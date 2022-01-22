@@ -2,9 +2,9 @@
 #define IPV4_HPP
 
 #include "../Mem/mm.hpp"
-#include "LibC/types.hpp"
 #include "arp.hpp"
 #include "etherframe.hpp"
+#include <LibC/types.hpp>
 
 namespace Network {
 struct InternetProtocolV4Message {

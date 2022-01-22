@@ -3,11 +3,11 @@
 
 #include "../interrupts.hpp"
 #include "../port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/string.hpp"
-#include "LibC/types.hpp"
 #include "driver.hpp"
 #include "vga.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/string.hpp>
+#include <LibC/types.hpp>
 
 class KeyboardDriver : public InterruptHandler
     , public Driver {

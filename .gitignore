@@ -6,4 +6,5 @@ compile_flags.txt
 .autogen
 .ccls
 .ccls-cache
+*.py
 libc.a

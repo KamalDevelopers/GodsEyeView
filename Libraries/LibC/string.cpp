@@ -1,4 +1,4 @@
-#include "LibC/string.hpp"
+#include "string.hpp"
 
 int str_len(char arr[])
 {

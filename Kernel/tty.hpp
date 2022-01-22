@@ -6,9 +6,9 @@
 #define MAX_COLS 80
 
 #include "Hardware/port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/stdlib.hpp"
-#include "LibC/string.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/stdlib.hpp>
+#include <LibC/string.hpp>
 #include <stdarg.h>
 
 static char* datacolorblue = "\033[01;34m[GevOS]: ";

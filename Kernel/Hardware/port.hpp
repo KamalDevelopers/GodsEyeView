@@ -1,7 +1,7 @@
 #ifndef PORT_HPP
 #define PORT_HPP
 
-#include "LibC/types.hpp"
+#include <LibC/types.hpp>
 
 extern void outbw(uint16_t port, uint16_t data);
 extern uint16_t inbw(uint16_t port);

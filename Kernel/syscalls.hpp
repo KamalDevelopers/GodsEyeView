@@ -6,13 +6,13 @@
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/pcspk.hpp"
 #include "Hardware/interrupts.hpp"
-#include "LibC/stat.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/types.hpp"
-#include "LibC/utsname.hpp"
 #include "Mem/mm.hpp"
 #include "multitasking.hpp"
 #include "tty.hpp"
+#include <LibC/stat.hpp>
+#include <LibC/stdio.hpp>
+#include <LibC/types.hpp>
+#include <LibC/utsname.hpp>
 
 extern "C" int shutdown();
 

@@ -1,5 +1,5 @@
-#include "LibC/stdio.hpp"
-#include "LibC/string.hpp"
+#include "stdio.hpp"
+#include "string.hpp"
 
 void puts_hook(void (*t)(char*))
 {

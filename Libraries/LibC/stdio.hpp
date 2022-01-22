@@ -5,8 +5,8 @@
 #define MAX_COLS 80
 #define BUFSIZ 512
 
-#include "LibC/stdlib.hpp"
-#include "LibC/unistd.hpp"
+#include "stdlib.hpp"
+#include "unistd.hpp"
 #include <stdarg.h>
 
 static char write_buffer[512];

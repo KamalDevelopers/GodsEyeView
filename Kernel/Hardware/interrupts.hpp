@@ -4,9 +4,9 @@
 #include "../GDT/gdt.hpp"
 #include "../multitasking.hpp"
 #include "../tty.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/types.hpp"
 #include "port.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/types.hpp>
 
 class InterruptManager;
 

@@ -4,9 +4,9 @@
 #include "../interrupts.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/types.hpp"
 #include "driver.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/types.hpp>
 
 class AmdDriver;
 class RawDataHandler {

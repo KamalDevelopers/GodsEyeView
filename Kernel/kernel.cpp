@@ -1,8 +1,4 @@
 #include "../multiboot.hpp"
-#include "LibC/ctype.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/stdlib.hpp"
-
 #include "Exec/elf.hpp"
 #include "Exec/loader.hpp"
 #include "GDT/gdt.hpp"
@@ -28,6 +24,10 @@
 #include "multitasking.hpp"
 #include "panic.hpp"
 #include "syscalls.hpp"
+
+#include <LibC/ctype.hpp>
+#include <LibC/stdio.hpp>
+#include <LibC/stdlib.hpp>
 
 typedef void (*constructor)();
 extern "C" uint8_t kernel_end;

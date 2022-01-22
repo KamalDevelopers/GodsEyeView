@@ -3,8 +3,8 @@
 
 #include "../Hardware/Drivers/amd79.hpp"
 #include "../Mem/mm.hpp"
-#include "LibC/stdlib.hpp"
-#include "LibC/types.hpp"
+#include <LibC/stdlib.hpp>
+#include <LibC/types.hpp>
 
 namespace Network {
 struct EtherFrameHeader {

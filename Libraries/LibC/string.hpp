@@ -1,8 +1,8 @@
 #ifndef STRING_HPP
 #define STRING_HPP
 
-#include "LibC/ctype.hpp"
-#include "LibC/types.hpp"
+#include "ctype.hpp"
+#include "types.hpp"
 
 int len(const char* arr);
 int str_len(char arr[]);

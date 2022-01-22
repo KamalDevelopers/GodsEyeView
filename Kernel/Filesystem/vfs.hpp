@@ -1,10 +1,10 @@
 #ifndef VFS_HPP
 #define VFS_HPP
 
-#include "LibC/stdio.hpp"
-#include "LibC/stdlib.hpp"
-#include "LibC/string.hpp"
-#include "LibC/types.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/stdlib.hpp>
+#include <LibC/string.hpp>
+#include <LibC/types.hpp>
 
 #define MAX_OPENFILES 200
 #define MAX_FILE_NAME 100

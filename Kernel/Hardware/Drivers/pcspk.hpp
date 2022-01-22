@@ -2,8 +2,8 @@
 #define PCSPK_HPP
 
 #include "../port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/types.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/types.hpp>
 
 namespace PCS {
 void beep_start(uint32_t frequency);

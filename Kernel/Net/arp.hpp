@@ -1,8 +1,8 @@
 #ifndef ARP_HPP
 #define ARP_HPP
 
-#include "LibC/types.hpp"
 #include "etherframe.hpp"
+#include <LibC/types.hpp>
 
 namespace Network {
 struct AddressResolutionProtocolMessage {

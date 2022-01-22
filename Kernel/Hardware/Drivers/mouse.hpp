@@ -3,10 +3,10 @@
 
 #include "../interrupts.hpp"
 #include "../port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/types.hpp"
 #include "driver.hpp"
 #include "vga.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/types.hpp>
 
 class MouseDriver : public InterruptHandler
     , public Driver {

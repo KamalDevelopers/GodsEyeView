@@ -4,10 +4,10 @@
 #include "../../Mem/mm.hpp"
 #include "../../tty.hpp"
 #include "../port.hpp"
-#include "LibC/stdio.hpp"
-#include "LibC/stdlib.hpp"
-#include "LibC/string.hpp"
-#include "LibC/types.hpp"
+#include <LibC/stdio.hpp>
+#include <LibC/stdlib.hpp>
+#include <LibC/string.hpp>
+#include <LibC/types.hpp>
 
 namespace VGA16 {
 static uint8_t black = 0x0;
