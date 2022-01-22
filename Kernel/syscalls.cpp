@@ -74,8 +74,9 @@ int Syscalls::sys_close(int fd)
 int Syscalls::sys_stat(char* file_name, struct stat* buffer)
 {
     int fd = VFS::open(file_name);
+    int status = sys_fstat(fd, buffer);
     VFS::close(fd);
-    return sys_fstat(fd, buffer);
+    return status;
 }
 
 int Syscalls::sys_fstat(int fd, struct stat* buffer)
