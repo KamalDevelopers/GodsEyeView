@@ -7,8 +7,13 @@ int run(char* input, int* tape)
 {
     int pointer = 0;
     int unmatched_brackets = 0;
+    int program_size = strlen(input);
 
-    for (int i = 0; i < strlen(input); i++) {
+    char user_input[50];
+    int user_input_index = 0;
+    memset(user_input, 0, 50);
+
+    for (int i = 0; i <= program_size; i++) {
         switch (input[i]) {
         case '>':
             pointer++;
@@ -24,9 +29,17 @@ int run(char* input, int* tape)
             break;
         case '.':
             printf("%c", tape[pointer]);
+            flush();
             break;
         case ',':
-            // Not implemented yet.
+            if (user_input[user_input_index] == 0) {
+                memset(user_input, 0, 50);
+                int rsize = read(0, user_input, 50);
+                user_input_index = 0;
+            }
+
+            tape[pointer] = user_input[user_input_index];
+            user_input_index++;
             break;
         case '[':
             if (tape[pointer] == 0) {
