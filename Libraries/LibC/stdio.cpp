@@ -28,6 +28,11 @@ void puts(char* str)
     int len = strlen(str);
     bool do_flush = false;
 
+    if (len > BUFSIZ) {
+        write(1, str, len);
+        return;
+    }
+
     if ((write_index + len) >= BUFSIZ)
         flush();
 
