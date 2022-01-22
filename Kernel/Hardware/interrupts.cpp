@@ -128,6 +128,7 @@ void InterruptManager::activate()
 
     active_handler = this;
     asm("sti");
+    TM->yield();
 }
 
 void InterruptManager::deactivate()
