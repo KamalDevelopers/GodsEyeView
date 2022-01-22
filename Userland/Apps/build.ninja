@@ -1,7 +1,3 @@
-rule demo
-    command = cd ./Demo && ninja && ninja move && cd ../
-    description = building demo application
-
 rule tonysay
     command = cd ./Tonysay && ninja && ninja move && cd ../
     description = building tonysay application
@@ -18,7 +14,6 @@ rule cat
     command = cd ./Cat && ninja && ninja move && cd ../
     description = building cat application
 
-build demo: demo
 build tonysay: tonysay
 build shell: shell
 build brainfuck: brainfuck

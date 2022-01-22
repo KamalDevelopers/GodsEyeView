@@ -7,7 +7,9 @@
 
 int command(char* input)
 {
+    char arguments[100];
     char* program = strtok(input, (char*)" ");
+
     if (strcmp(program, "uname") == 0) {
         utsname uname_struct;
         uname(&uname_struct);
@@ -33,9 +35,24 @@ int command(char* input)
         return 1;
     }
 
+    memset(arguments, 0, 100);
+    char* arg = strtok(NULL, (char*)" ");
+
+    while (arg) {
+        strcat(arguments, arg);
+        arg = strtok(NULL, (char*)" ");
+        if (arg)
+            strcat(arguments, (char*)" ");
+    }
+
     if (strcmp(program, "clear") == 0) {
         clear();
         return 2;
+    }
+
+    if (strcmp(program, "echo") == 0) {
+        printf("%s", arguments);
+        return 1;
     }
 
     if (strcmp(program, "shutdown") == 0) {
@@ -44,17 +61,6 @@ int command(char* input)
 
     if (strcmp(program, "reboot") == 0) {
         _reboot();
-    }
-
-    char arguments[100];
-    memset(arguments, '\0', 99);
-    char* arg = strtok(NULL, (char*)" ");
-
-    while (arg) {
-        strcat(arguments, arg);
-        arg = strtok(NULL, (char*)" ");
-        if (arg)
-            strcat(arguments, (char*)" ");
     }
 
     if (spawn(program, arguments) != -1)
