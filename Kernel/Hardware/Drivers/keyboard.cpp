@@ -1,14 +1,18 @@
 #include "keyboard.hpp"
 
 /* Mapping */
-static char* u_l1 = "QWERTYUIOP";
-static char* u_l2 = "ASDFGHJKL";
-static char* u_l3 = "ZXCVBNM";
-static char* u_nm = "!#¤%&/()=";
-static char* l_l1 = "qwertyuiop";
-static char* l_l2 = "asdfghjkl";
-static char* l_l3 = "zxcvbnm";
-static char* l_nm = "123456789";
+static char* altgr_l1 = "@ſ€®þ←↓→œþ";
+static char* altgr_l2 = "ªßðđŋħ̉ĸł";
+static char* altgr_l3 = "«»©„“”µ";
+static char* altgr_l0 = "!@?$??{[]}";
+static char* shift_l1 = "QWERTYUIOP";
+static char* shift_l2 = "ASDFGHJKL";
+static char* shift_l3 = "ZXCVBNM";
+static char* shift_l0 = "!\"#?%&/()=";
+static char* l1 = "qwertyuiop";
+static char* l2 = "asdfghjkl";
+static char* l3 = "zxcvbnm";
+static char* l0 = "123456789";
 
 KeyboardDriver* KeyboardDriver::active = 0;
 
@@ -62,41 +66,64 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
         return '-';
     }
 
-    if (key == ZERO_PRESSED)
+    if (key == ZERO_PRESSED) {
+        if (is_shift)
+            return shift_l0[9];
+        if (is_altgr)
+            return altgr_l0[9];
         return '0';
+    }
 
     if (key == PLUS_PRESSED) {
         if (is_shift)
             return '?';
+        if (is_altgr)
+            return '\\';
         return '+';
+    }
+
+    if (key == PIPE_PRESSED) {
+        if (is_shift)
+            return '>';
+        if (is_altgr)
+            return '|';
+        return '<';
     }
 
     /* Row 1 */
     if (key >= ONE_PRESSED && key <= NINE_PRESSED) {
+        if (is_altgr)
+            return altgr_l0[key - ONE_PRESSED];
         if (is_shift)
-            return u_nm[key - ONE_PRESSED];
-        return l_nm[key - ONE_PRESSED];
+            return shift_l0[key - ONE_PRESSED];
+        return l0[key - ONE_PRESSED];
     }
 
     /* Row 2 */
     if (key >= Q_PRESSED && key <= ENTER_PRESSED) {
+        if (is_altgr)
+            return altgr_l1[key - Q_PRESSED];
         if (is_shift)
-            return u_l1[key - Q_PRESSED];
-        return l_l1[key - Q_PRESSED];
+            return shift_l1[key - Q_PRESSED];
+        return l1[key - Q_PRESSED];
     }
 
     /* Row 3 */
     else if (key >= A_PRESSED && key <= L_PRESSED) {
+        if (is_altgr)
+            return altgr_l2[key - A_PRESSED];
         if (is_shift)
-            return u_l2[key - A_PRESSED];
-        return l_l2[key - A_PRESSED];
+            return shift_l2[key - A_PRESSED];
+        return l2[key - A_PRESSED];
     }
 
     /* Row 4 */
     else if (key >= Y_PRESSED && key <= M_PRESSED) {
+        if (is_altgr)
+            return altgr_l3[key - Y_PRESSED];
         if (is_shift)
-            return u_l3[key - Y_PRESSED];
-        return l_l3[key - Y_PRESSED];
+            return shift_l3[key - Y_PRESSED];
+        return l3[key - Y_PRESSED];
     }
     return 0;
 }
@@ -123,8 +150,15 @@ char KeyboardDriver::get_key()
         c = read_key();
         if (c == SHIFT_PRESSED)
             is_shift = 1;
+
         if (c == SHIFT_RELEASED)
             is_shift = 0;
+
+        if (c == ALTGR_PRESSED)
+            is_altgr = 1;
+
+        if (c == ALTGR_RELEASED)
+            is_altgr = 0;
     }
     if (key_a(c) != 0)
         return key_a(c);
@@ -178,8 +212,15 @@ void KeyboardDriver::on_key(uint8_t keypress)
 {
     if (keypress == SHIFT_PRESSED)
         is_shift = 1;
+
     if (keypress == SHIFT_RELEASED)
         is_shift = 0;
+
+    if (keypress == ALTGR_PRESSED)
+        is_altgr = 1;
+
+    if (keypress == ALTGR_RELEASED)
+        is_altgr = 0;
 
     if (key_a(keypress) != 0) {
         last_key = key_a(keypress);

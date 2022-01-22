@@ -24,6 +24,7 @@ private:
     char last_key;
     uint8_t last_key_raw;
     bool is_shift = 0;
+    bool is_altgr = 0;
 
     void on_key(uint8_t keypress);
     uint8_t key_a(uint8_t key);
@@ -105,6 +106,7 @@ enum KEYCODE {
     NINE_PRESSED = 0xA,
     PLUS_PRESSED = 0x0C,
     PLUS_RELEASED = 0x8C,
+    PIPE_PRESSED = 0x56,
 
     POINT_PRESSED = 0x34,
     POINT_RELEASED = 0xB4,
@@ -119,7 +121,10 @@ enum KEYCODE {
     ENTER_RELEASED = 0x9C,
 
     SHIFT_PRESSED = 0x2A,
-    SHIFT_RELEASED = 0xAA
+    SHIFT_RELEASED = 0xAA,
+
+    ALTGR_PRESSED = 0x38,
+    ALTGR_RELEASED = 0xB8
 };
 
 #endif
