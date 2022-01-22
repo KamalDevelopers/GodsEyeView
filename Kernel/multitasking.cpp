@@ -131,7 +131,7 @@ void TaskManager::reset_stdin()
 
 uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
 {
-    if (!length)
+    if ((!length) || (length > 512))
         return 0;
 
     uint32_t size = 0;
@@ -146,14 +146,14 @@ uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
 
         if (TM->tasks[current_task]->stdin_buffer[size - 1] == 10) {
             strncpy(buffer, tasks[current_task]->stdin_buffer, length);
-            buffer[size - 1] = 0;
+            buffer[size] = 0;
             reset_stdin();
             break;
         }
     }
 
     is_reading_stdin = false;
-    return size - 1;
+    return size;
 }
 
 void TaskManager::sleep(uint32_t ticks)

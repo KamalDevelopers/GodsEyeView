@@ -79,7 +79,8 @@ int main(int argc, char** argv)
         flush();
 
         char input[100];
-        read(0, input, 100);
+        int read_size = read(0, input, 100);
+        input[read_size - 1] = 0;
 
         if (!strlen(input))
             continue;

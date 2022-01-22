@@ -24,8 +24,6 @@ int Syscalls::sys_read(int fd, char* data, int length)
 
     switch (fd) {
     case 0:
-        if (length > 512)
-            length = 512;
         size = TM->read_stdin(buffer, length);
         break;
 
