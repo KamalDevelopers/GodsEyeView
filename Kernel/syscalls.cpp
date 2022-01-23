@@ -71,6 +71,11 @@ int Syscalls::sys_close(int fd)
     return VFS::close(fd);
 }
 
+int Syscalls::sys_waitpid(int pid)
+{
+    return TM->waitpid(pid);
+}
+
 int Syscalls::sys_stat(char* file_name, struct stat* buffer)
 {
     int fd = VFS::open(file_name);
@@ -168,6 +173,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 6:
         cpu->eax = sys_close((int)cpu->ebx);
+        break;
+
+    case 7:
+        cpu->eax = sys_waitpid((int)cpu->ebx);
         break;
 
     case 18:

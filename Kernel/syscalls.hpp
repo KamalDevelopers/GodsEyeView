@@ -23,6 +23,7 @@ private:
     int sys_write(int file_handle, char* data, int length);
     int sys_open(char* file_name);
     int sys_close(int file_handle);
+    int sys_waitpid(int pid);
     int sys_stat(char* file_name, struct stat* buffer);
     int sys_fstat(int file_handle, struct stat* buffer);
     int sys_getpid();

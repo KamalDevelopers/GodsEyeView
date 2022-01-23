@@ -77,10 +77,14 @@ int spawn(char* file_name, char** args)
     asm volatile("int $0x80"
                  : "=a"(pid)
                  : "a"(401), "b"(file_name), "c"(args));
-
-    if (pid >= 0)
-        while (kill(pid, 0) != -1)
-            ;
-
     return pid;
+}
+
+int waitpid(int pid)
+{
+    int status;
+    asm volatile("int $0x80"
+                 : "=a"(status)
+                 : "a"(7), "b"(pid));
+    return status;
 }

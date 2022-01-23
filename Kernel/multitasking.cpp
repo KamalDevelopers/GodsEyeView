@@ -101,13 +101,22 @@ void TaskManager::kill()
     tasks[current_task]->suicide(SIG_TERM);
 }
 
-int8_t TaskManager::send_signal(int pid, int sig)
+Task* TaskManager::task(int pid)
 {
     for (int i = 0; i < num_tasks; i++)
         if (tasks[i]->pid == pid)
-            if (tasks[i]->privelege <= tasks[current_task]->privelege)
-                return tasks[i]->notify(sig);
-    return -1;
+            return tasks[i];
+    return 0;
+}
+
+int8_t TaskManager::send_signal(int pid, int sig)
+{
+    Task* receiver = task(pid);
+    if (receiver == 0)
+        return -1;
+    if (receiver->privelege <= tasks[current_task]->privelege)
+        return -1;
+    return receiver->notify(sig);
 }
 
 void TaskManager::append_stdin(char key)
@@ -161,6 +170,17 @@ void TaskManager::sleep(uint32_t ticks)
     tasks[current_task]->sleeping = current_ticks + ticks;
 }
 
+int TaskManager::waitpid(int pid)
+{
+    Task* child = task(pid);
+    if (child == 0)
+        return -1;
+
+    child->wake_pid_on_exit = tasks[current_task]->get_pid();
+    tasks[current_task]->sleeping = -1;
+    return pid;
+}
+
 int TaskManager::spawn(char* file, char** args)
 {
     int fd = VFS::open(file);
@@ -201,6 +221,9 @@ void TaskManager::kill_zombie_tasks()
         if (tasks[i]->state == 1) {
             klog("Zombie process '%s' killed", tasks[i]->name);
 
+            if (tasks[i]->wake_pid_on_exit)
+                task(tasks[i]->wake_pid_on_exit)->wake();
+
             if (tasks[i]->is_child)
                 free(tasks[i]);
 
@@ -219,7 +242,10 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     if (++current_task >= num_tasks)
         current_task = 0;
 
-    if (tasks[current_task]->sleeping != 0) {
+    if (tasks[current_task]->sleeping == -1)
+        current_task++;
+
+    if (tasks[current_task]->sleeping > 0) {
         if (current_ticks >= tasks[current_task]->sleeping) {
             tasks[current_task]->sleeping = 0;
         } else {

@@ -45,7 +45,8 @@ private:
     executable_t loaded_executable;
     bool is_executable = false;
     bool is_child = false;
-    uint32_t sleeping = 0;
+    int sleeping = 0;
+    int wake_pid_on_exit = 0;
 
     int pid;
     int execute;
@@ -60,6 +61,7 @@ public:
     int8_t notify(int signal);
     void suicide(int error_code);
     void executable(executable_t exec);
+    void wake() { sleeping = 0; }
 
     int get_pid() { return pid; }
 
@@ -92,13 +94,14 @@ public:
     void deactivate() { is_running = 0; }
     void yield() { asm volatile("int $0x20"); }
     Task* task() { return tasks[current_task]; }
+    Task* task(int pid);
 
     void reset_stdin();
     void append_stdin(char key);
     uint32_t read_stdin(char* buffer, uint32_t length);
 
     void sleep(uint32_t ticks);
-    int execute(char* file);
+    int waitpid(int pid);
     int spawn(char* file, char** args);
     bool append_tasks(int count, ...);
     int8_t send_signal(int pid, int sig);

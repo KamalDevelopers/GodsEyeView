@@ -72,8 +72,11 @@ int command(char* input)
         _reboot();
     }
 
-    if (spawn(program, arguments) != -1)
+    int pid = spawn(program, arguments);
+    if (pid != -1) {
+        waitpid(pid);
         return 1;
+    }
 
     for (uint32_t i = 0; i < 10; i++)
         free(arguments[i]);
