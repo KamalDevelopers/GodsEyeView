@@ -32,6 +32,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
 
 Task::~Task()
 {
+    free(this);
 }
 
 void Task::executable(executable_t exec)
@@ -224,9 +225,7 @@ void TaskManager::kill_zombie_tasks()
             if (tasks[i]->wake_pid_on_exit)
                 task(tasks[i]->wake_pid_on_exit)->wake();
 
-            if (tasks[i]->is_child)
-                free(tasks[i]);
-
+            tasks[i]->~Task();
             delete_element(i, num_tasks, tasks);
             num_tasks--;
         }
