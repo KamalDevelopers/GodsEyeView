@@ -4,7 +4,7 @@
 constexpr bool debug = false;
 uint32_t available_pages;
 uint32_t used_pages;
-BitArray<MAX_PAGES> bit_array;
+BitArray<MAX_PAGES> page_bitmap;
 
 void PMM::init(uint32_t pages)
 {
@@ -26,7 +26,7 @@ uint32_t PMM::allocate_pages(size_t size)
         size = PAGE_ALIGN(size);
 
     uint32_t pages = size / PAGE_SIZE;
-    uint32_t index = bit_array.find_unset(pages);
+    uint32_t index = page_bitmap.find_unset(pages);
     uint32_t address = PHYSICAL_MEMORY_START + index * PAGE_SIZE;
 
     if (debug)
@@ -34,14 +34,14 @@ uint32_t PMM::allocate_pages(size_t size)
 
     for (uint32_t i = 0; i < pages; i++) {
         uint32_t map_address = address + (i * PAGE_SIZE);
-        if (bit_array.bit_get(index + i)) {
+        if (page_bitmap.bit_get(index + i)) {
             klog("PMM: [0x%x i: %d], is already allocated!", map_address, index + i);
             PANIC("Out of memory");
         }
 
         used_pages++;
         Paging::map_page(map_address, map_address);
-        bit_array.bit_set(index + i);
+        page_bitmap.bit_set(index + i);
     }
     return address;
 }
@@ -61,14 +61,14 @@ int PMM::free_pages(uint32_t address, size_t size)
 
     for (uint32_t i = 0; i < pages; i++) {
         uint32_t map_address = address + (i * PAGE_SIZE);
-        if (!bit_array.bit_get(index + i)) {
+        if (!page_bitmap.bit_get(index + i)) {
             klog("PMM: [0x%x i: %d], is already freed!", map_address, index + i);
             is_valid = -1;
         }
 
         used_pages--;
         Paging::unmap_page(map_address);
-        bit_array.bit_clear(index + i);
+        page_bitmap.bit_clear(index + i);
     }
 
     return is_valid;

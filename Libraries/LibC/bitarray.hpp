@@ -12,9 +12,14 @@ public:
             bitmap[i] = 0x00;
     }
 
+    uint32_t size()
+    {
+        return T;
+    }
+
     bool boundary(uint32_t index)
     {
-        if (index >= T)
+        if (index >= size())
             return false;
         return true;
     }
@@ -31,7 +36,6 @@ public:
     {
         if (!boundary(index))
             return false;
-
         bitmap[index / 8] &= ~(0x1 << (index % 8));
         return true;
     }
@@ -43,7 +47,7 @@ public:
         return (bitmap[index / 8] & (0x1 << (index % 0x8))) != 0x00;
     }
 
-    bool bit_do_range(uint32_t start, uint32_t size, bool set_or_clear)
+    bool bit_modify_range(uint32_t start, uint32_t size, bool set_or_clear)
     {
         if (!boundary(start) || !boundary(start + size))
             return false;
@@ -60,22 +64,22 @@ public:
 
     bool bit_set_range(uint32_t start, uint32_t size)
     {
-        return bit_do_range(start, size, true);
+        return bit_modify_range(start, size, true);
     }
 
     bool bit_clear_range(uint32_t start, uint32_t size)
     {
-        return bit_do_range(start, size, false);
+        return bit_modify_range(start, size, false);
     }
 
-    uint32_t find_unset(uint32_t size = 1)
+    uint32_t find_unset(uint32_t length = 1)
     {
         uint32_t index = 0;
-        for (; index < T; index++) {
+        for (; index < size(); index++) {
             bool fits = true;
 
-            for (uint32_t s = 0; s < size; s++) {
-                if (bit_get(index + s))
+            for (uint32_t i = 0; i < length; i++) {
+                if (bit_get(index + i))
                     fits = false;
             }
 
