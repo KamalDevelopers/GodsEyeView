@@ -16,7 +16,8 @@ int run(char* input, int* tape)
     for (int i = 0; i <= program_size; i++) {
         switch (input[i]) {
         case '>':
-            pointer++;
+            if (pointer + 1 < 30000)
+                pointer++;
             break;
         case '<':
             pointer--;
@@ -34,9 +35,12 @@ int run(char* input, int* tape)
         case ',':
             if (user_input[user_input_index] == 0) {
                 memset(user_input, 0, 50);
-                int rsize = read(0, user_input, 50);
+                read(0, user_input, 50);
                 user_input_index = 0;
             }
+
+            if (user_input_index >= 50)
+                break;
 
             tape[pointer] = user_input[user_input_index];
             user_input_index++;
