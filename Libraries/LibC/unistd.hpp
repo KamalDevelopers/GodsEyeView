@@ -9,6 +9,6 @@ int read(int descriptor, void* buffer, int length);
 int write(int descriptor, char* buffer, int length);
 int open(char* file_name);
 void sleep(int sec);
-int spawn(char* file_name, char* args);
+int spawn(char* file_name, char** args);
 
 #endif

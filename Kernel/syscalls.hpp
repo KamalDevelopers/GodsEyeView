@@ -32,7 +32,7 @@ private:
     int sys_munmap(void* addr, size_t length);
     int sys_uname(utsname* buffer);
     int sys_sleep(int time);
-    int sys_spawn(char* file, char* args);
+    int sys_spawn(char* file, char** args);
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);

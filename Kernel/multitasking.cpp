@@ -20,7 +20,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     cpustate->cs = g_gdt->code_segment_selector();
     cpustate->eflags = 0x202;
 
-    memset(arguments, 0, 100);
+    memset(arguments, 0, 500);
     memset(execfile, 0, 20);
     memset(stdin_buffer, 0, 200);
 
@@ -161,7 +161,7 @@ void TaskManager::sleep(uint32_t ticks)
     tasks[current_task]->sleeping = current_ticks + ticks;
 }
 
-int TaskManager::spawn(char* file, char* args)
+int TaskManager::spawn(char* file, char** args)
 {
     int fd = VFS::open(file);
     int size = VFS::size(fd);
@@ -184,8 +184,12 @@ int TaskManager::spawn(char* file, char* args)
     child->executable(exec);
     child->is_child = true;
 
-    strcpy(child->arguments, args);
-    strcpy((char*)child->cpustate->ebx, (char*)child->arguments);
+    for (uint32_t i = 0; i < 10; i++) {
+        strcat(child->arguments, args[i]);
+        strcat(child->arguments, " ");
+    }
+
+    child->cpustate->ebx = (uint32_t)&child->arguments;
     add_task(child);
 
     return child->pid;

@@ -7,7 +7,13 @@
 
 int command(char* input)
 {
-    char arguments[100];
+    char** arguments = (char**)malloc(sizeof(char*) * 10);
+    for (uint32_t i = 0; i < 10; ++i)
+        arguments[i] = (char*)malloc(50);
+
+    for (uint32_t i = 0; i < 10; i++)
+        memset(arguments[i], 0, 50);
+
     char* program = strtok(input, (char*)" ");
 
     if (strcmp(program, "uname") == 0) {
@@ -35,14 +41,15 @@ int command(char* input)
         return 1;
     }
 
-    memset(arguments, 0, 100);
     char* arg = strtok(NULL, (char*)" ");
 
+    uint32_t argc = 0;
     while (arg) {
-        strcat(arguments, arg);
+        if (arg) {
+            strcpy(arguments[argc], arg);
+            argc++;
+        }
         arg = strtok(NULL, (char*)" ");
-        if (arg)
-            strcat(arguments, (char*)" ");
     }
 
     if (strcmp(program, "clear") == 0) {
@@ -51,7 +58,9 @@ int command(char* input)
     }
 
     if (strcmp(program, "echo") == 0) {
-        printf("%s", arguments);
+        for (uint32_t i = 0; i < 10; i++)
+            printf("%s ", arguments[i]);
+        flush();
         return 1;
     }
 
@@ -66,6 +75,9 @@ int command(char* input)
     if (spawn(program, arguments) != -1)
         return 1;
 
+    for (uint32_t i = 0; i < 10; i++)
+        free(arguments[i]);
+    free(arguments);
     return 0;
 }
 

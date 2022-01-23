@@ -139,7 +139,7 @@ int Syscalls::sys_sleep(int sec)
     return 0;
 }
 
-int Syscalls::sys_spawn(char* file, char* args)
+int Syscalls::sys_spawn(char* file, char** args)
 {
     return TM->spawn(file, args);
 }
@@ -207,7 +207,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 401:
-        cpu->eax = sys_spawn((char*)cpu->ebx, (char*)cpu->ecx);
+        cpu->eax = sys_spawn((char*)cpu->ebx, (char**)cpu->ecx);
         break;
     }
 

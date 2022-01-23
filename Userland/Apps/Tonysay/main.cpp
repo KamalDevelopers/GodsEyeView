@@ -43,10 +43,21 @@ void draw(char* buffer)
 int main(int argc, char** argv)
 {
     const char* default_msg = "I'm Tony the dog!";
-    if (argc && strlen(argv[0]) < 50)
-        draw(argv[0]);
-    else
+    char msg[50];
+
+    if (!argc) {
         draw((char*)default_msg);
+        return 0;
+    }
+
+    for (uint32_t i = 0; i < argc; i++) {
+        if ((strlen(argv[i]) + strlen(msg)) > 50)
+            break;
+        strcat(msg, argv[i]);
+        if (i != argc - 1)
+            strcat(msg, " ");
+    }
+    draw(msg);
 
     return 0;
 }

@@ -9,20 +9,36 @@ int main(int argc, char** argv);
 
 [[noreturn]] void _entry()
 {
-    /* Store in original pointer as 'args' to avoid manipulation before free() */
-    char* arguments = (char*)malloc(100 * sizeof(char));
-    char* args = arguments;
+    uint32_t argument_pointer;
+    char** arguments;
     int argc = 0;
 
     asm("movl %%ebx, %0;"
-        : "=r"(arguments));
+        : "=r"(argument_pointer));
 
-    if (strlen(arguments))
-        argc = 1;
+    arguments = (char**)malloc(sizeof(char*) * 10);
+    for (uint32_t i = 0; i < 10; ++i)
+        arguments[i] = (char*)malloc(50);
 
-    int status = main(argc, &arguments);
+    for (uint32_t i = 0; i < 10; i++)
+        memset(arguments[i], 0, 50);
+
+    char* arg = strtok((char*)argument_pointer, (char*)" ");
+    while (arg) {
+        if (arg) {
+            strcpy(arguments[argc], arg);
+            argc++;
+        }
+        arg = strtok(NULL, (char*)" ");
+    }
+
+    int status = main(argc, (char**)arguments);
+
+    for (uint32_t i = 0; i < 10; i++)
+        free(arguments[i]);
+    free(arguments);
+
     flush();
-    free(args);
     _exit(status);
 
     while (1)

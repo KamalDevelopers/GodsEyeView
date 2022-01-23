@@ -71,7 +71,7 @@ void sleep(int sec)
                  : "a"(162), "b"(sec));
 }
 
-int spawn(char* file_name, char* args)
+int spawn(char* file_name, char** args)
 {
     int pid;
     asm volatile("int $0x80"
