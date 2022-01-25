@@ -32,6 +32,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
 
 Task::~Task()
 {
+    free_memory_region();
     free(this);
 }
 
@@ -40,6 +41,20 @@ void Task::executable(executable_t exec)
     is_executable = true;
     loaded_executable = exec;
     cpustate->eip = exec.eip;
+}
+
+void Task::free_memory_region()
+{
+    if (!is_executable)
+        return;
+
+    uint32_t segment = 0;
+    while (true) {
+        if (!loaded_executable.memory[segment].size)
+            break;
+        PMM::free_pages(loaded_executable.memory[segment].virtual_address, loaded_executable.memory[segment].size);
+        segment++;
+    }
 }
 
 int8_t Task::notify(int signal)

@@ -57,6 +57,8 @@ private:
     uint8_t privelege;
     void (*notify_callback)(int);
 
+    void free_memory_region();
+
 public:
     int8_t notify(int signal);
     void suicide(int error_code);

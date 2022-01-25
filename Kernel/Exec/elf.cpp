@@ -52,14 +52,18 @@ executable_t Elf::exec(uint8_t* file_data)
     executable.valid = true;
     elf32_ehdr* elf_header = (elf32_ehdr*)file_data;
     elf32_phdr* elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
+    uint32_t segment = 0;
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
         switch (elf_program_header->p_type) {
         case 1:
-            /* FIXME: Allocate the segment and update the task's page directory! */
-            /* The segment is currently assumed to be mapped in the page directory of the kernel. */
+            executable.memory[segment].physical_address = PMM::allocate_pages_with_virtual_address(elf_program_header->p_memsz, elf_program_header->p_vaddr);
+            executable.memory[segment].virtual_address = elf_program_header->p_vaddr;
+            executable.memory[segment].size = elf_program_header->p_memsz;
+
             memcpy((void*)elf_program_header->p_vaddr, file_data + elf_program_header->p_offset, elf_program_header->p_filesz);
             memset((void*)(elf_program_header->p_vaddr + elf_program_header->p_filesz), 0, elf_program_header->p_memsz - elf_program_header->p_filesz);
+            segment++;
             break;
         }
     }

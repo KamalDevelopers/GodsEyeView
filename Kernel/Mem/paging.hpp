@@ -61,6 +61,7 @@ typedef struct page_directory {
     page_table_t* reference_tables[1024];
 } page_directory_t;
 
+uint32_t virtual_to_physical(uint32_t virtual_address);
 void map_page(uint32_t virtual_address, uint32_t physical_address);
 int unmap_page(uint32_t virtual_address);
 void enable();

@@ -5,10 +5,18 @@
 #include <LibC/string.hpp>
 
 #define MAX_LOADERS 5
+#define BINARY_MAX_SECTIONS 10
+
+typedef struct memory_region {
+    uint32_t virtual_address = 0;
+    uint32_t physical_address = 0;
+    uint32_t size = 0;
+} memory_region_t;
 
 typedef struct executable {
     bool valid = false;
     uint32_t eip = 0;
+    memory_region_t memory[BINARY_MAX_SECTIONS];
 } executable_t;
 
 class Execf {

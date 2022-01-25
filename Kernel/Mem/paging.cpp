@@ -2,6 +2,17 @@
 
 Paging::page_directory_t* kernel_page_directory;
 
+uint32_t Paging::virtual_to_physical(uint32_t virtual_address)
+{
+    uint32_t page_directory_index = PAGEDIR_INDEX(virtual_address);
+    uint32_t page_table_index = PAGETBL_INDEX(virtual_address);
+    uint32_t page_frame_offset = PAGEFRAME_INDEX(virtual_address);
+    page_table_t* table = kernel_page_directory->reference_tables[page_directory_index];
+    uint32_t address = table->pages[page_table_index].frame;
+    address = (address << 12) + page_frame_offset;
+    return address;
+}
+
 void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
 {
     uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
@@ -26,13 +37,13 @@ int Paging::unmap_page(uint32_t virtual_address)
 {
     uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
     uint32_t table_index = PAGETBL_INDEX(virtual_address);
+    page_table_t* table = kernel_page_directory->reference_tables[directory_index];
 
-    if (!kernel_page_directory->reference_tables[directory_index]) {
+    if (!table) {
         klog("Could not unmap page! [0x%x] (no table entry)", virtual_address);
         return -1;
     }
 
-    page_table_t* table = kernel_page_directory->reference_tables[directory_index];
     if (!table->pages[table_index].present) {
         klog("Could not unmap page! [0x%x] (not present)", virtual_address);
         return -1;
