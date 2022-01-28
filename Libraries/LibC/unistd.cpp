@@ -88,3 +88,12 @@ int waitpid(int pid)
                  : "a"(7), "b"(pid));
     return status;
 }
+
+int listdir(char* dirname, char** entries)
+{
+    int result;
+    asm volatile("int $0x80"
+                 : "=a"(result)
+                 : "a"(402), "b"(dirname), "c"(entries));
+    return result;
+}

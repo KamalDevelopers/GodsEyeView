@@ -119,3 +119,13 @@ int VirtualFilesystem::gid(int descriptor)
         return -1;
     return mounts[files[index].mountfs]->get_gid(files[index].file_name);
 }
+
+int VirtualFilesystem::listdir(char* dirname, char** entries)
+{
+    int exists = -1;
+    for (int i = 0; i < num_mounts; i++) {
+        if (mounts[i]->read_dir(dirname, entries) == 0)
+            exists = 0;
+    }
+    return exists;
+}

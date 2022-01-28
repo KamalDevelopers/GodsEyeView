@@ -9,6 +9,7 @@
 #include "Mem/mm.hpp"
 #include "multitasking.hpp"
 #include "tty.hpp"
+
 #include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/types.hpp>
@@ -34,6 +35,7 @@ private:
     int sys_uname(utsname* buffer);
     int sys_sleep(int time);
     int sys_spawn(char* file, char** args);
+    int sys_listdir(char* dirname, char** entries);
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);

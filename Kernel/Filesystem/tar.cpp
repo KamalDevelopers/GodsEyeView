@@ -121,19 +121,54 @@ int Tar::exists(char* name)
     return 1;
 }
 
-int Tar::read_dir(char* dirname, char** file_ids)
+int Tar::read_dir(char* dirname, char** entries)
 {
+    int exists = -1;
+    bool root = false;
+
+    if (strlen(dirname) == 0) {
+        root = true;
+        exists = 0;
+    }
+
     /* Iterate through file names */
-    for (int i = 0; i < file_index; i++)
-        if (strncmp(files[i].name, dirname, str_len(dirname)) == 0)
-            *file_ids++ = files[i].name;
+    for (int i = 0; i < file_index; i++) {
+        if ((strncmp(files[i].name, dirname, strlen(dirname)) == 0) && !root) {
+            *entries++ = files[i].name;
+        }
+
+        if (root) {
+            bool is_root = true;
+            for (int x = 0; x < strlen(files[i].name); x++)
+                if (files[i].name[x] == '/')
+                    is_root = false;
+
+            if (is_root)
+                *entries++ = files[i].name;
+        }
+    }
 
     /* Iterate through directory name */
-    for (int i = 0; i < dir_index; i++)
-        if (strncmp(dirs[i].name, dirname, str_len(dirname)) == 0)
+    for (int i = 0; i < dir_index; i++) {
+        if ((strncmp(dirs[i].name, dirname, strlen(dirname)) == 0) && !root) {
             if (strcmp(dirs[i].name, dirname) != 0)
-                *file_ids++ = dirs[i].name;
-    return 0;
+                *entries++ = dirs[i].name;
+            else
+                exists = 0;
+        }
+
+        if (root) {
+            uint8_t is_root = 1;
+            for (int x = 0; x < strlen(dirs[i].name); x++)
+                if (dirs[i].name[x] == '/')
+                    is_root--;
+
+            if (is_root == 0)
+                *entries++ = dirs[i].name;
+        }
+    }
+
+    return exists;
 }
 
 void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count)

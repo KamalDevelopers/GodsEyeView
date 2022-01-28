@@ -11,7 +11,7 @@
 
 #define SB_OFFSET 1024
 #define MAX_FILES 200
-#define MAX_DIRS 100
+#define MAX_DIRS 200
 #define MAGIC "ustar"
 
 struct posix_header {   /* byte offset */
@@ -67,7 +67,7 @@ public:
 
     int rename_file(char* file_name, char* new_file_name);
     int unlink(char* path, bool should_update = 1);
-    int read_dir(char* dirname, char** file_ids);
+    int read_dir(char* dirname, char** entries);
     int exists(char* name);
     int chmod(char* file_name, char* permissions);
 

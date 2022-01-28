@@ -14,7 +14,12 @@ rule cat
     command = cd ./Cat && ninja && ninja move && cd ../
     description = building cat application
 
+rule ls
+    command = cd ./List && ninja && ninja move && cd ../
+    description = building list (ls) application
+
 build tonysay: tonysay
 build shell: shell
 build brainfuck: brainfuck
 build cat: cat
+build ls: ls

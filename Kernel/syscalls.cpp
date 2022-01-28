@@ -149,6 +149,11 @@ int Syscalls::sys_spawn(char* file, char** args)
     return TM->spawn(file, args);
 }
 
+int Syscalls::sys_listdir(char* dirname, char** entries)
+{
+    return VFS->listdir(dirname, entries);
+}
+
 uint32_t Syscalls::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
@@ -217,6 +222,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 401:
         cpu->eax = sys_spawn((char*)cpu->ebx, (char**)cpu->ecx);
+        break;
+
+    case 402:
+        cpu->eax = sys_listdir((char*)cpu->ebx, (char**)cpu->ecx);
         break;
     }
 

@@ -29,6 +29,7 @@ public:
     virtual int write_file(char* file_name, uint8_t* data, int data_length) { return 0; }
     virtual int read_file(char* file_name, uint8_t* data) { return 0; }
     virtual int find_file(char* file_name) { return 0; }
+    virtual int read_dir(char* dirname, char** entries) { return 0; }
 };
 
 class VirtualFilesystem {
@@ -51,6 +52,7 @@ public:
     static VirtualFilesystem* active;
     void mount(Filesystem* fs);
 
+    int listdir(char* dirname, char** entries);
     int open(char* file_name);
     int close(int descriptor);
     int write(int descriptor, uint8_t* data, int data_length);

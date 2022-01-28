@@ -5,7 +5,6 @@
 
 bool print_file(char* file_name)
 {
-
     int file_descriptor;
     struct stat statbuffer;
 
