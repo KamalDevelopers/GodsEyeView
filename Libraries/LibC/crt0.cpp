@@ -13,7 +13,7 @@ int main(int argc, char** argv);
     char** arguments;
     int argc = 0;
 
-    asm("movl %%ebx, %0;"
+    asm("movl %%edx, %0;"
         : "=r"(argument_pointer));
 
     arguments = (char**)malloc(sizeof(char*) * 10);

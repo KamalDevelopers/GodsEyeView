@@ -225,7 +225,7 @@ int TaskManager::spawn(char* file, char** args)
         strcat(child->arguments, " ");
     }
 
-    child->cpustate->ebx = (uint32_t)&child->arguments;
+    child->cpustate->edx = (uint32_t)&child->arguments;
     add_task(child);
 
     return child->pid;
