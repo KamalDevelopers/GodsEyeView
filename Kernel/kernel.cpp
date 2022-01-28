@@ -5,9 +5,6 @@
 #include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
 #include "Mem/pmm.hpp"
-#include "Net/arp.hpp"
-#include "Net/etherframe.hpp"
-#include "Net/ipv4.hpp"
 
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"

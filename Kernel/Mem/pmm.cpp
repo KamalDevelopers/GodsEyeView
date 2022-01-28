@@ -46,34 +46,6 @@ uint32_t PMM::allocate_pages(size_t size)
     return address;
 }
 
-uint32_t PMM::allocate_pages_with_virtual_address(size_t size, uint32_t virtual_address)
-{
-    if (!IS_ALIGN(size))
-        size = PAGE_ALIGN(size);
-
-    uint32_t pages = size / PAGE_SIZE;
-    uint32_t index = page_bitmap.find_unset(pages);
-    uint32_t address = PHYSICAL_MEMORY_START + index * PAGE_SIZE;
-
-    if (debug)
-        kprintf("allocating (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
-
-    for (uint32_t i = 0; i < pages; i++) {
-        uint32_t map_address = address + (i * PAGE_SIZE);
-        uint32_t map_address_virtual = virtual_address + (i * PAGE_SIZE);
-
-        if (page_bitmap.bit_get(index + i)) {
-            klog("PMM: [0x%x i: %d], is already allocated!", map_address, index + i);
-            PANIC("Out of memory");
-        }
-
-        used_pages++;
-        Paging::map_page(map_address_virtual, map_address);
-        page_bitmap.bit_set(index + i);
-    }
-    return address;
-}
-
 int PMM::free_pages(uint32_t address, size_t size)
 {
     int is_valid = 0;

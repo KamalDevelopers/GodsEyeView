@@ -55,7 +55,7 @@ int main(int argc, char** argv)
             break;
         strcat(msg, argv[i]);
         if (i != argc - 1)
-            strcat(msg, " ");
+            strcat(msg, (char*)" ");
     }
     draw(msg);
 
