@@ -28,7 +28,7 @@ int Syscalls::sys_read(int fd, char* data, int length)
         break;
 
     default:
-        size = VFS::read(fd, (uint8_t*)buffer);
+        size = VFS->read(fd, (uint8_t*)buffer);
         break;
     }
 
@@ -54,7 +54,7 @@ int Syscalls::sys_write(int fd, char* data, int length)
 
     default:
         /* FIXME: Cannot overwrite existing file */
-        VFS::write(fd, (uint8_t*)&data, length);
+        VFS->write(fd, (uint8_t*)&data, length);
         break;
     }
 
@@ -63,12 +63,12 @@ int Syscalls::sys_write(int fd, char* data, int length)
 
 int Syscalls::sys_open(char* file_name)
 {
-    return VFS::open(file_name);
+    return VFS->open(file_name);
 }
 
 int Syscalls::sys_close(int fd)
 {
-    return VFS::close(fd);
+    return VFS->close(fd);
 }
 
 int Syscalls::sys_waitpid(int pid)
@@ -78,17 +78,17 @@ int Syscalls::sys_waitpid(int pid)
 
 int Syscalls::sys_stat(char* file_name, struct stat* buffer)
 {
-    int fd = VFS::open(file_name);
+    int fd = VFS->open(file_name);
     int status = sys_fstat(fd, buffer);
-    VFS::close(fd);
+    VFS->close(fd);
     return status;
 }
 
 int Syscalls::sys_fstat(int fd, struct stat* buffer)
 {
-    buffer->st_uid = VFS::uid(fd);
-    buffer->st_gid = VFS::gid(fd);
-    buffer->st_size = VFS::size(fd);
+    buffer->st_uid = VFS->uid(fd);
+    buffer->st_gid = VFS->gid(fd);
+    buffer->st_size = VFS->size(fd);
     return (buffer->st_size == -1) ? -1 : 0;
 }
 

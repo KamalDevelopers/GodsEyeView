@@ -199,15 +199,15 @@ int TaskManager::waitpid(int pid)
 
 int TaskManager::spawn(char* file, char** args)
 {
-    int fd = VFS::open(file);
-    int size = VFS::size(fd);
+    int fd = VFS->open(file);
+    int size = VFS->size(fd);
 
     if (fd < 0)
         return -1;
 
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
-    VFS::read(fd, elfdata);
-    VFS::close(fd);
+    VFS->read(fd, elfdata);
+    VFS->close(fd);
 
     executable_t exec = Loader::load->exec(elfdata);
     kfree(elfdata);

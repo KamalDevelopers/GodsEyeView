@@ -9,6 +9,7 @@
 #define MAX_OPENFILES 200
 #define MAX_FILE_NAME 100
 #define MAX_MOUNTS 5
+#define VFS VirtualFilesystem::active
 
 struct file_entry {
     int descriptor;
@@ -52,54 +53,11 @@ public:
 
     int open(char* file_name);
     int close(int descriptor);
-    int write_file(int descriptor, uint8_t* data, int data_length);
-    int read_file(int descriptor, uint8_t* data);
-    int file_size(int descriptor);
-    int file_uid(int descriptor);
-    int file_gid(int descriptor);
-};
-
-namespace VFS {
-
-inline int close(int descriptor)
-{
-    return VirtualFilesystem::active->close(descriptor);
-}
-
-inline int open(char* file_name)
-{
-    return VirtualFilesystem::active->open(file_name);
-}
-
-inline int write(int descriptor, uint8_t* data, int data_length)
-{
-    return VirtualFilesystem::active->write_file(descriptor, data, data_length);
-}
-
-inline int read(int descriptor, uint8_t* data)
-{
-    return VirtualFilesystem::active->read_file(descriptor, data);
-}
-
-inline int size(int descriptor)
-{
-    return VirtualFilesystem::active->file_size(descriptor);
-}
-
-inline int uid(int descriptor)
-{
-    return VirtualFilesystem::active->file_uid(descriptor);
-}
-
-inline int gid(int descriptor)
-{
-    return VirtualFilesystem::active->file_gid(descriptor);
-}
-
-/* TODO */
-// int rename(char* file_name, char* new_file_name);
-// int chmod(char* file_name, char* permissions);
-// int unlink(int path, bool update = 1);
+    int write(int descriptor, uint8_t* data, int data_length);
+    int read(int descriptor, uint8_t* data);
+    int size(int descriptor);
+    int uid(int descriptor);
+    int gid(int descriptor);
 };
 
 #endif

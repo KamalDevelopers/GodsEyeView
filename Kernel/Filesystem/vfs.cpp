@@ -80,7 +80,7 @@ int VirtualFilesystem::search(int descriptor)
     return -1;
 }
 
-int VirtualFilesystem::write_file(int descriptor, uint8_t* data, int data_length)
+int VirtualFilesystem::write(int descriptor, uint8_t* data, int data_length)
 {
     int index = search(descriptor);
     if (index == -1)
@@ -88,7 +88,7 @@ int VirtualFilesystem::write_file(int descriptor, uint8_t* data, int data_length
     return mounts[files[index].mountfs]->write_file(files[index].file_name, data, data_length);
 }
 
-int VirtualFilesystem::read_file(int descriptor, uint8_t* data)
+int VirtualFilesystem::read(int descriptor, uint8_t* data)
 {
     int index = search(descriptor);
     if (index == -1)
@@ -96,7 +96,7 @@ int VirtualFilesystem::read_file(int descriptor, uint8_t* data)
     return mounts[files[index].mountfs]->read_file(files[index].file_name, data);
 }
 
-int VirtualFilesystem::file_size(int descriptor)
+int VirtualFilesystem::size(int descriptor)
 {
     int index = search(descriptor);
     if (index == -1)
@@ -104,7 +104,7 @@ int VirtualFilesystem::file_size(int descriptor)
     return mounts[files[index].mountfs]->get_size(files[index].file_name);
 }
 
-int VirtualFilesystem::file_uid(int descriptor)
+int VirtualFilesystem::uid(int descriptor)
 {
     int index = search(descriptor);
     if (index == -1)
@@ -112,7 +112,7 @@ int VirtualFilesystem::file_uid(int descriptor)
     return mounts[files[index].mountfs]->get_uid(files[index].file_name);
 }
 
-int VirtualFilesystem::file_gid(int descriptor)
+int VirtualFilesystem::gid(int descriptor)
 {
     int index = search(descriptor);
     if (index == -1)

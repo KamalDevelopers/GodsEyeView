@@ -94,11 +94,11 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Loader loader;
     loader.add(&elf_load);
 
-    int shell_file_descriptor = VFS::open("shell");
-    int size = VFS::size(shell_file_descriptor);
+    int shell_file_descriptor = VFS->open("shell");
+    int size = VFS->size(shell_file_descriptor);
     uint8_t* elfdata = new uint8_t[size];
-    VFS::read(shell_file_descriptor, elfdata);
-    VFS::close(shell_file_descriptor);
+    VFS->read(shell_file_descriptor, elfdata);
+    VFS->close(shell_file_descriptor);
 
     executable_t execute = Loader::load->exec(elfdata);
     kprintf("Spawning interactive shell...\n\n");
