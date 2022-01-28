@@ -1,7 +1,7 @@
 ENTRY(_entry)
 SECTIONS
 {
-    . = 11M;
+    . = 0x0;
 	.text : ALIGN(0x1000)
 	{
 		*(.text)

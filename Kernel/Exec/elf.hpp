@@ -10,9 +10,18 @@
 #define EM_386 (3)     /* x86 Machine Type */
 #define EV_CURRENT (1) /* Current Version */
 #define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
 #define PF_X 0x1
 #define PF_W 0x2
 #define PF_R 0x4
+
+#define PT_NULL 0
+#define PT_LOAD 1
+#define PT_DYNAMIC 2
+#define PT_INTERP 3
+#define PT_NOTE 4
+#define PT_SHLIB 5
 
 /* e_ident[] magic number */
 #define ELFMAG0 0x7f     /* e_ident[EI_MAG0] */

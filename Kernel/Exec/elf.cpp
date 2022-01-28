@@ -52,23 +52,34 @@ executable_t Elf::exec(uint8_t* file_data)
     executable.valid = true;
     elf32_ehdr* elf_header = (elf32_ehdr*)file_data;
     elf32_phdr* elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
-    uint32_t segment = 0;
+
+    uint32_t base_addres = UINT32_MAX;
+    for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
+        base_addres = MIN(base_addres, elf_program_header->p_vaddr);
+    }
+
+    elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
+    uint32_t size = 0;
+    for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
+        size = MAX(size, elf_program_header->p_vaddr - base_addres + elf_program_header->p_memsz);
+    }
+
+    elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
+    executable.memory.physical_address = (uint32_t)kmalloc(size);
+    executable.memory.size = size;
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
+        uint32_t address = 0;
         switch (elf_program_header->p_type) {
-        case 1:
-            executable.memory[segment].physical_address = PMM::allocate_pages_with_virtual_address(elf_program_header->p_memsz, elf_program_header->p_vaddr);
-            executable.memory[segment].virtual_address = elf_program_header->p_vaddr;
-            executable.memory[segment].size = elf_program_header->p_memsz;
-
-            memcpy((void*)elf_program_header->p_vaddr, file_data + elf_program_header->p_offset, elf_program_header->p_filesz);
-            memset((void*)(elf_program_header->p_vaddr + elf_program_header->p_filesz), 0, elf_program_header->p_memsz - elf_program_header->p_filesz);
-            segment++;
+        case PT_LOAD:
+            address = (elf_program_header->p_vaddr - base_addres) + executable.memory.physical_address;
+            memset((void*)address, 0, elf_program_header->p_memsz);
+            memcpy((void*)address, file_data + elf_program_header->p_offset, elf_program_header->p_filesz);
             break;
         }
     }
 
-    executable.eip = elf_header->e_entry + elf_program_header->p_vaddr;
+    executable.eip = elf_header->e_entry + executable.memory.physical_address;
     return executable;
 }
 

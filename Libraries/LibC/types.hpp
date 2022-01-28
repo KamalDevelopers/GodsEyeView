@@ -1,6 +1,7 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 #define NULL 0
+#define UINT32_MAX 0xFFFFFFFF
 
 typedef char int8_t;
 typedef unsigned char uint8_t;

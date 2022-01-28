@@ -16,7 +16,7 @@ typedef struct memory_region {
 typedef struct executable {
     bool valid = false;
     uint32_t eip = 0;
-    memory_region_t memory[BINARY_MAX_SECTIONS];
+    memory_region_t memory;
 } executable_t;
 
 class Execf {
