@@ -10,15 +10,15 @@
 class AdvancedTechnologyAttachment {
 
 protected:
-    Port16Bit dataPort;
-    Port8Bit errorPort;
-    Port8Bit sectorCountPort;
-    Port8Bit lbaLowPort;
-    Port8Bit lbaMidPort;
-    Port8Bit lbaHiPort;
-    Port8Bit devicePort;
-    Port8Bit commandPort;
-    Port8Bit controlPort;
+    Port16Bit data_port;
+    Port8Bit error_port;
+    Port8Bit sector_count_port;
+    Port8Bit lba_low_port;
+    Port8Bit lba_mid_port;
+    Port8Bit lba_hi_port;
+    Port8Bit device_port;
+    Port8Bit command_port;
+    Port8Bit control_port;
 
     bool master;
 
