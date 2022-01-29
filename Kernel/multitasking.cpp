@@ -21,8 +21,8 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     cpustate->eflags = 0x202;
 
     memset(arguments, 0, 500);
-    memset(execfile, 0, 20);
     memset(stdin_buffer, 0, 200);
+    memset(cwd, 0, MAX_FILE_NAME);
 
     execute = 0;
     state = 0;
@@ -63,6 +63,25 @@ int8_t Task::notify(int signal)
 void Task::suicide(int error_code)
 {
     state = 1;
+}
+
+int Task::chdir(char* dir)
+{
+    if (strlen(dir) == 0) {
+        memset(cwd, 0, MAX_FILE_NAME);
+        return 0;
+    }
+
+    if (VFS->listdir(dir, 0) == -1)
+        return -1;
+
+    strcpy(cwd, dir);
+    return 0;
+}
+
+void Task::get_cwd(char* buffer)
+{
+    strcpy(buffer, cwd);
 }
 
 TaskManager::TaskManager(GDT* gdt)
@@ -203,7 +222,7 @@ int TaskManager::spawn(char* file, char** args)
         return -1;
 
     Task* child = new Task(file, 0);
-    strcpy(child->execfile, file);
+    strcpy(child->cwd, tasks[current_task]->cwd);
     child->executable(exec);
     child->is_child = true;
 

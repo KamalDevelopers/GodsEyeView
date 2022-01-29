@@ -76,6 +76,11 @@ int Syscalls::sys_waitpid(int pid)
     return TM->waitpid(pid);
 }
 
+int Syscalls::sys_chdir(char* dir)
+{
+    return TM->task()->chdir(dir);
+}
+
 int Syscalls::sys_stat(char* file_name, struct stat* buffer)
 {
     int fd = VFS->open(file_name);
@@ -154,6 +159,11 @@ int Syscalls::sys_listdir(char* dirname, char** entries)
     return VFS->listdir(dirname, entries);
 }
 
+void Syscalls::sys_getcwd(char* buffer)
+{
+    TM->task()->get_cwd(buffer);
+}
+
 uint32_t Syscalls::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
@@ -182,6 +192,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 7:
         cpu->eax = sys_waitpid((int)cpu->ebx);
+        break;
+
+    case 12:
+        cpu->eax = sys_chdir((char*)cpu->ebx);
         break;
 
     case 18:
@@ -218,6 +232,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 162:
         cpu->eax = sys_sleep((uint32_t)cpu->ebx);
+        break;
+
+    case 183:
+        sys_getcwd((char*)cpu->ebx);
         break;
 
     case 401:

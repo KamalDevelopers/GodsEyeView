@@ -89,6 +89,22 @@ int waitpid(int pid)
     return status;
 }
 
+int chdir(char* dir)
+{
+    int exists;
+    asm volatile("int $0x80"
+                 : "=a"(exists)
+                 : "a"(12), "b"(dir));
+    return exists;
+}
+
+void getcwd(char* buffer)
+{
+    asm volatile("int $0x80"
+                 :
+                 : "a"(183), "b"(buffer));
+}
+
 int listdir(char* dirname, char** entries)
 {
     int result;

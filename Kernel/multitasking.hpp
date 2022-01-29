@@ -51,7 +51,7 @@ private:
     int pid;
     int execute;
     char name[20];
-    char execfile[20];
+    char cwd[MAX_FILE_NAME];
     char arguments[500];
     uint16_t state;
     uint8_t privelege;
@@ -62,7 +62,9 @@ public:
     void suicide(int error_code);
     void executable(executable_t exec);
     void wake() { sleeping = 0; }
+    int chdir(char* dir);
 
+    void get_cwd(char* buffer);
     int get_pid() { return pid; }
 
     Task(char* task_name, uint32_t eip, int priv = 0);

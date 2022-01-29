@@ -11,6 +11,8 @@ int open(char* file_name);
 void sleep(int sec);
 int spawn(char* file_name, char** args);
 int waitpid(int pid);
+int chdir(char* dir);
+void getcwd(char* buffer);
 int listdir(char* dirname, char** entries);
 
 #endif

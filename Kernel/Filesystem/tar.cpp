@@ -98,14 +98,12 @@ int Tar::chmod(char* file_name, char* permissions)
     return 0;
 }
 
-/* Returns the index of file_name */
 int Tar::find_file(char* file_name)
 {
     for (int i = 0; i < file_index; i++) {
         if (strncmp(file_name, files[i].name, strlen(file_name)) == 0)
             return i;
     }
-    klog("File '%s' not found", file_name);
     return -1;
 }
 
@@ -133,7 +131,7 @@ int Tar::read_dir(char* dirname, char** entries)
 
     /* Iterate through file names */
     for (int i = 0; i < file_index; i++) {
-        if ((strncmp(files[i].name, dirname, strlen(dirname)) == 0) && !root) {
+        if ((strncmp(files[i].name, dirname, strlen(dirname)) == 0) && !root && entries) {
             *entries++ = files[i].name;
         }
 
@@ -143,7 +141,7 @@ int Tar::read_dir(char* dirname, char** entries)
                 if (files[i].name[x] == '/')
                     is_root = false;
 
-            if (is_root)
+            if (is_root && entries)
                 *entries++ = files[i].name;
         }
     }
@@ -151,7 +149,7 @@ int Tar::read_dir(char* dirname, char** entries)
     /* Iterate through directory name */
     for (int i = 0; i < dir_index; i++) {
         if ((strncmp(dirs[i].name, dirname, strlen(dirname)) == 0) && !root) {
-            if (strcmp(dirs[i].name, dirname) != 0)
+            if ((strcmp(dirs[i].name, dirname) != 0) && entries)
                 *entries++ = dirs[i].name;
             else
                 exists = 0;
@@ -163,7 +161,7 @@ int Tar::read_dir(char* dirname, char** entries)
                 if (dirs[i].name[x] == '/')
                     is_root--;
 
-            if (is_root == 0)
+            if ((is_root == 0) && entries)
                 *entries++ = dirs[i].name;
         }
     }

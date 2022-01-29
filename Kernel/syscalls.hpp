@@ -25,6 +25,7 @@ private:
     int sys_open(char* file_name);
     int sys_close(int file_handle);
     int sys_waitpid(int pid);
+    int sys_chdir(char* dir);
     int sys_stat(char* file_name, struct stat* buffer);
     int sys_fstat(int file_handle, struct stat* buffer);
     int sys_getpid();
@@ -36,6 +37,7 @@ private:
     int sys_sleep(int time);
     int sys_spawn(char* file, char** args);
     int sys_listdir(char* dirname, char** entries);
+    void sys_getcwd(char* buffer);
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);
