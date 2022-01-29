@@ -1,5 +1,7 @@
 #include "ata.hpp"
 
+MUTEX(ata);
+
 AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, uint16_t port_base)
     : dataPort(port_base)
     , errorPort(port_base + 0x1)
@@ -56,14 +58,17 @@ void AdvancedTechnologyAttachment::identify()
 
 uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data, int count)
 {
+    Mutex::lock(ata);
     static uint8_t buffer[512];
     uint16_t index = 0;
 
     for (int i = 0; i < 512; i++)
         buffer[i] = 0;
 
-    if (sector_num > 0x0FFFFFFF)
+    if (sector_num > 0x0FFFFFFF) {
+        Mutex::unlock(ata);
         return nullptr;
+    }
 
     devicePort.write((master ? 0xE0 : 0xF0) | ((sector_num & 0x0F000000) >> 24));
     errorPort.write(0);
@@ -78,8 +83,10 @@ uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data
         && ((status & 0x01) != 0x01))
         status = commandPort.read();
 
-    if (status & 0x01)
+    if (status & 0x01) {
+        Mutex::unlock(ata);
         return nullptr;
+    }
 
     for (int i = 0; i < count; i += 2) {
         uint16_t wdata = dataPort.read();
@@ -101,6 +108,7 @@ uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data
         dataPort.read();
 
     buffer[index + 1] = '\0';
+    Mutex::unlock(ata);
     return buffer;
 }
 
@@ -109,6 +117,7 @@ void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, u
     if ((sector_num > 0x0FFFFFFF) || (count > 512))
         return;
 
+    Mutex::lock(ata);
     devicePort.write((master ? 0xE0 : 0xF0) | ((sector_num & 0x0F000000) >> 24));
     errorPort.write(0);
     sectorCountPort.write(1);
@@ -126,6 +135,7 @@ void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, u
 
     for (int i = count + (count % 2); i < 512; i += 2)
         dataPort.write(0x0000);
+    Mutex::unlock(ata);
 }
 
 void AdvancedTechnologyAttachment::flush()
@@ -137,9 +147,11 @@ void AdvancedTechnologyAttachment::flush()
     if (status == 0x00)
         return;
 
+    Mutex::lock(ata);
     while (((status & 0x80) == 0x80)
         && ((status & 0x01) != 0x01))
         status = commandPort.read();
+    Mutex::unlock(ata);
 
     if (status & 0x01)
         return;

@@ -1,6 +1,7 @@
 #ifndef ATA_HPP
 #define ATA_HPP
 
+#include "../../mutex.hpp"
 #include "../port.hpp"
 #include <LibC/stdio.hpp>
 #include <LibC/string.hpp>
