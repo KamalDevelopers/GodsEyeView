@@ -81,7 +81,7 @@ private:
     int num_tasks;
     int current_task;
     uint32_t current_ticks = 0;
-    int8_t is_running = 1;
+    int8_t is_running = 0;
     bool is_reading_stdin = false;
     Task* tasks[256];
 
@@ -95,6 +95,7 @@ public:
 
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
+    bool is_active() { return is_running; }
     void yield() { asm volatile("int $0x20"); }
     Task* task() { return tasks[current_task]; }
     Task* task(int pid);

@@ -107,6 +107,12 @@ bool TaskManager::add_task(Task* task)
 {
     if (num_tasks >= 256)
         return false;
+
+    if (!is_running) {
+        tasks[num_tasks++] = task;
+        return true;
+    }
+
     is_running = 0;
     tasks[num_tasks++] = task;
     is_running = 1;

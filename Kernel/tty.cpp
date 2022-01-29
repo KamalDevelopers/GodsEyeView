@@ -1,5 +1,7 @@
 #include "tty.hpp"
 
+MUTEX(console);
+
 void kprintf(const char* format, ...)
 {
     va_list arg;
@@ -80,6 +82,7 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
 static int8_t esc_flag = 0;
 void write_string(char* str)
 {
+    Mutex::lock(console);
     for (int i = 0; str[i] != '\0'; i++) {
         if (str[i] == '\b' && !esc_flag) {
             if (video_memory_index <= 0)
@@ -93,6 +96,7 @@ void write_string(char* str)
 
         write_char(str[i]);
     }
+    Mutex::unlock(console);
 }
 
 void write_char(int c)

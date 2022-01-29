@@ -102,8 +102,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     Task shell("shell", 0);
     shell.executable(execute);
-    task_manager.append_tasks(1, &shell);
+    TM->append_tasks(1, &shell);
 
+    TM->activate();
     IRQ::activate();
 
     while (1)

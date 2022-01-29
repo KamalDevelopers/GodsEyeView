@@ -6,6 +6,7 @@
 #define MAX_COLS 80
 
 #include "Hardware/port.hpp"
+#include "mutex.hpp"
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
