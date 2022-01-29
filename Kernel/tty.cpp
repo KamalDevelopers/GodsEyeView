@@ -6,11 +6,13 @@ void kprintf(const char* format, ...)
 {
     va_list arg;
 
+    TM->deactivate();
     puts_hook(write_string);
     va_start(arg, format);
     vprintf(format, arg);
     va_end(arg);
     puts_hook(0);
+    TM->activate();
 }
 
 void init_serial()
