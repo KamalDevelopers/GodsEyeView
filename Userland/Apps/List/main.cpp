@@ -1,17 +1,8 @@
+#include <LibC/path.hpp>
 #include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
-
-bool is_dir(char* name)
-{
-    int fd = open(name);
-    close(fd);
-
-    if (fd == -1)
-        return true;
-    return false;
-}
 
 int read_dir(char* name, bool root)
 {
@@ -19,19 +10,12 @@ int read_dir(char* name, bool root)
     for (uint32_t i = 0; i < 50; ++i)
         names[i] = (char*)malloc(100);
 
-    int exists = -1;
-    if (!root) {
-        if (name[strlen(name) - 1] != '/')
-            strcat(name, (char*)"/");
-    }
-
-    exists = listdir(name, (char**)names);
-
-    if (exists == -1) {
+    if (listdir(name, (char**)names) == -1) {
         printf("Folder does not exist");
         return -1;
     }
 
+    chdir("");
     for (uint32_t i = 0; i < 10; i++) {
         char* file_name = names[i];
         if (!strlen(file_name))

@@ -61,9 +61,9 @@ int Syscalls::sys_write(int fd, char* data, int length)
     return length;
 }
 
-int Syscalls::sys_open(char* file_name)
+int Syscalls::sys_open(char* file)
 {
-    return VFS->open(file_name);
+    return VFS->open(file);
 }
 
 int Syscalls::sys_close(int fd)
@@ -81,9 +81,9 @@ int Syscalls::sys_chdir(char* dir)
     return TM->task()->chdir(dir);
 }
 
-int Syscalls::sys_stat(char* file_name, struct stat* buffer)
+int Syscalls::sys_stat(char* file, struct stat* buffer)
 {
-    int fd = VFS->open(file_name);
+    int fd = VFS->open(file);
     int status = sys_fstat(fd, buffer);
     VFS->close(fd);
     return status;

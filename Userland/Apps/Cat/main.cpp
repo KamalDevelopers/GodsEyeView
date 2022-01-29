@@ -32,14 +32,9 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    char file[100];
-    getcwd(file);
-
     for (uint32_t i = 0; i < argc; i++) {
-        strcat(file, argv[i]);
-
-        if (!print_file(file)) {
-            printf("File '%s' does not exist", file);
+        if (!print_file(argv[i])) {
+            printf("File '%s' does not exist", argv[i]);
             if (i != argc - 1)
                 printf("\n");
         }

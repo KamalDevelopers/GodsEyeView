@@ -10,6 +10,7 @@
 #include "multitasking.hpp"
 #include "tty.hpp"
 
+#include <LibC/path.hpp>
 #include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/types.hpp>
@@ -22,11 +23,11 @@ private:
     void sys_exit();
     int sys_read(int file_handle, char* data, int length);
     int sys_write(int file_handle, char* data, int length);
-    int sys_open(char* file_name);
+    int sys_open(char* file);
     int sys_close(int file_handle);
     int sys_waitpid(int pid);
     int sys_chdir(char* dir);
-    int sys_stat(char* file_name, struct stat* buffer);
+    int sys_stat(char* file, struct stat* buffer);
     int sys_fstat(int file_handle, struct stat* buffer);
     int sys_getpid();
     void sys_reboot(int cmd);

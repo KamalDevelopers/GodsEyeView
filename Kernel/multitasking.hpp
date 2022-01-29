@@ -6,6 +6,7 @@
 #include "GDT/gdt.hpp"
 #include "Mem/mm.hpp"
 #include "tty.hpp"
+#include <LibC/path.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/types.hpp>
 #include <stdarg.h>
@@ -51,7 +52,7 @@ private:
     int pid;
     int execute;
     char name[20];
-    char cwd[MAX_FILE_NAME];
+    char cwd[MAX_PATH_SIZE];
     char arguments[500];
     uint16_t state;
     uint8_t privelege;

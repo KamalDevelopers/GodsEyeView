@@ -22,7 +22,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
 
     memset(arguments, 0, 500);
     memset(stdin_buffer, 0, 200);
-    memset(cwd, 0, MAX_FILE_NAME);
+    memset(cwd, 0, MAX_PATH_SIZE);
 
     execute = 0;
     state = 0;
@@ -67,15 +67,21 @@ void Task::suicide(int error_code)
 
 int Task::chdir(char* dir)
 {
-    if (strlen(dir) == 0) {
-        memset(cwd, 0, MAX_FILE_NAME);
+    char dir_path[MAX_PATH_SIZE];
+    memset(dir_path, 0, MAX_PATH_SIZE);
+    strcat(dir_path, cwd);
+    strcat(dir_path, dir);
+    path_resolver(dir_path, true);
+
+    if (strlen(dir_path) == 0) {
+        memset(cwd, 0, MAX_PATH_SIZE);
         return 0;
     }
 
-    if (VFS->listdir(dir, 0) == -1)
+    if (VFS->listdir(dir_path, 0) == -1)
         return -1;
 
-    strcpy(cwd, dir);
+    strcpy(cwd, dir_path);
     return 0;
 }
 

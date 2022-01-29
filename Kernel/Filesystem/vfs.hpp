@@ -1,6 +1,9 @@
 #ifndef VFS_HPP
 #define VFS_HPP
 
+#include "../Mem/mm.hpp"
+#include "../multitasking.hpp"
+#include <LibC/path.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>

@@ -33,23 +33,25 @@ void VirtualFilesystem::mount(Filesystem* fs)
 
 int VirtualFilesystem::open(char* file_name)
 {
-    // for (int i = 0; i < num_open_files; i++)
-    // if (strcmp(file_name, files[i].file_name) == 0)
-    // return i;
+    char file_path[MAX_PATH_SIZE];
+    memset(file_path, 0, MAX_PATH_SIZE);
+    TM->task()->get_cwd(file_path);
+    strcat(file_path, file_name);
+    path_resolver(file_path, false);
 
     int mount = -1;
     for (int i = 0; i < num_mounts; i++)
-        if (mounts[i]->find_file(file_name) != -1)
+        if (mounts[i]->find_file(file_path) != -1)
             mount = i;
 
     if (mount == -1)
         return -1;
 
     file_entry file;
-    strcpy(file.file_name, file_name);
+    strcpy(file.file_name, file_path);
     file.mountfs = mount;
     file.descriptor = file_descriptors;
-    file.size = mounts[mount]->get_size(file_name);
+    file.size = mounts[mount]->get_size(file_path);
     files[num_open_files] = file;
 
     num_open_files++;
@@ -122,6 +124,8 @@ int VirtualFilesystem::gid(int descriptor)
 
 int VirtualFilesystem::listdir(char* dirname, char** entries)
 {
+    path_resolver(dirname);
+
     int exists = -1;
     for (int i = 0; i < num_mounts; i++) {
         if (mounts[i]->read_dir(dirname, entries) == 0)

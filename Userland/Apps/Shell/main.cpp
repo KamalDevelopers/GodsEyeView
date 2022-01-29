@@ -7,19 +7,6 @@
 
 static char current_path[100];
 
-char* parse_path(char* dir)
-{
-    if (strncmp(dir, "..", 2) == 0) {
-        strcpy(dir, current_path);
-        for (uint32_t i = strlen(current_path); i != 0; i--) {
-            if (current_path[i] == '/')
-                break;
-            dir--;
-        }
-    }
-    return dir;
-}
-
 int command(char* input)
 {
     char** arguments = (char**)malloc(sizeof(char*) * 10);
@@ -43,12 +30,6 @@ int command(char* input)
         if (!dir) {
             printf("Missing directory argument");
             return 1;
-        }
-
-        dir = parse_path(dir);
-        if (strlen(dir)) {
-            if (dir[strlen(dir) - 1] != '/')
-                strcat(dir, (char*)"/");
         }
 
         if (chdir(dir) == -1) {
@@ -134,8 +115,8 @@ int main(int argc, char** argv)
         printf(ps1, user, uname_struct.sysname, current_path);
         flush();
 
-        char input[100];
-        int read_size = read(0, input, 100);
+        char input[300];
+        int read_size = read(0, input, 300);
         input[read_size - 1] = 0;
 
         if (!strlen(input))
