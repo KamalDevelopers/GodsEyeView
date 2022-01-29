@@ -52,7 +52,7 @@ private:
     int pid;
     int execute;
     char name[20];
-    char cwd[MAX_PATH_SIZE];
+    char working_directory[MAX_PATH_SIZE];
     char arguments[500];
     uint16_t state;
     uint8_t privelege;
@@ -64,8 +64,8 @@ public:
     void executable(executable_t exec);
     void wake() { sleeping = 0; }
     int chdir(char* dir);
+    void cwd(char* buffer);
 
-    void get_cwd(char* buffer);
     int get_pid() { return pid; }
 
     Task(char* task_name, uint32_t eip, int priv = 0);

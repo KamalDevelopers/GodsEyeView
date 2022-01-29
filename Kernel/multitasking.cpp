@@ -22,7 +22,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
 
     memset(arguments, 0, 500);
     memset(stdin_buffer, 0, 200);
-    memset(cwd, 0, MAX_PATH_SIZE);
+    memset(working_directory, 0, MAX_PATH_SIZE);
 
     execute = 0;
     state = 0;
@@ -69,25 +69,25 @@ int Task::chdir(char* dir)
 {
     char dir_path[MAX_PATH_SIZE];
     memset(dir_path, 0, MAX_PATH_SIZE);
-    strcat(dir_path, cwd);
+    strcat(dir_path, working_directory);
     strcat(dir_path, dir);
     path_resolver(dir_path, true);
 
     if (strlen(dir_path) == 0) {
-        memset(cwd, 0, MAX_PATH_SIZE);
+        memset(working_directory, 0, MAX_PATH_SIZE);
         return 0;
     }
 
     if (VFS->listdir(dir_path, 0) == -1)
         return -1;
 
-    strcpy(cwd, dir_path);
+    strcpy(working_directory, dir_path);
     return 0;
 }
 
-void Task::get_cwd(char* buffer)
+void Task::cwd(char* buffer)
 {
-    strcpy(buffer, cwd);
+    strcpy(buffer, working_directory);
 }
 
 TaskManager::TaskManager(GDT* gdt)
@@ -228,7 +228,7 @@ int TaskManager::spawn(char* file, char** args)
         return -1;
 
     Task* child = new Task(file, 0);
-    strcpy(child->cwd, tasks[current_task]->cwd);
+    strcpy(child->working_directory, tasks[current_task]->working_directory);
     child->executable(exec);
     child->is_child = true;
 

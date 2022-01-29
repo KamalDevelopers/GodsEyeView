@@ -161,7 +161,7 @@ int Syscalls::sys_listdir(char* dirname, char** entries)
 
 void Syscalls::sys_getcwd(char* buffer)
 {
-    TM->task()->get_cwd(buffer);
+    TM->task()->cwd(buffer);
 }
 
 uint32_t Syscalls::interrupt(uint32_t esp)

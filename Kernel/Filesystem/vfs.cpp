@@ -35,7 +35,7 @@ int VirtualFilesystem::open(char* file_name)
 {
     char file_path[MAX_PATH_SIZE];
     memset(file_path, 0, MAX_PATH_SIZE);
-    TM->task()->get_cwd(file_path);
+    TM->task()->cwd(file_path);
     strcat(file_path, file_name);
     path_resolver(file_path, false);
 
