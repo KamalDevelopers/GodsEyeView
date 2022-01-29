@@ -6,14 +6,26 @@
 #include <LibC/liballoc.hpp>
 #include <LibC/stdlib.hpp>
 
-namespace PMM {
 #define MAX_PAGES 122070
 #define PHYSICAL_MEMORY_START PAGE_ALIGN(15 * MB)
+#define PMM PhysicalMemoryManager::active
 
-void init(uint32_t pages);
-void info();
-uint32_t allocate_pages(size_t size);
-int free_pages(uint32_t address, size_t size);
-}
+class PhysicalMemoryManager {
+private:
+    bool debug = false;
+    uint32_t available_pages = 0;
+    uint32_t used_pages = 0;
+    BitArray<MAX_PAGES> page_bitmap;
+
+public:
+    PhysicalMemoryManager(uint32_t pages);
+    ~PhysicalMemoryManager();
+
+    static PhysicalMemoryManager* active;
+
+    uint32_t allocate_pages(size_t size);
+    int free_pages(uint32_t address, size_t size);
+    void info();
+};
 
 #endif

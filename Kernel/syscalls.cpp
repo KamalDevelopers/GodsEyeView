@@ -127,12 +127,12 @@ int8_t Syscalls::sys_kill(int pid, int sig)
 
 uint32_t Syscalls::sys_mmap(void* addr, size_t length)
 {
-    return PMM::allocate_pages(length);
+    return PMM->allocate_pages(length);
 }
 
 int Syscalls::sys_munmap(void* addr, size_t length)
 {
-    return PMM::free_pages((uint32_t)addr, length);
+    return PMM->free_pages((uint32_t)addr, length);
 }
 
 int Syscalls::sys_uname(utsname* buffer)

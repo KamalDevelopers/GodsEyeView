@@ -1,26 +1,27 @@
 #include "pmm.hpp"
 #include "../panic.hpp"
 
-constexpr bool debug = false;
-uint32_t available_pages;
-uint32_t used_pages;
-BitArray<MAX_PAGES> page_bitmap;
-
-void PMM::init(uint32_t pages)
+PhysicalMemoryManager* PhysicalMemoryManager::active = 0;
+PhysicalMemoryManager::PhysicalMemoryManager(uint32_t pages)
 {
+    active = this;
     used_pages = 0;
     available_pages = pages;
     if (available_pages >= MAX_PAGES)
         available_pages = MAX_PAGES - 1;
 }
 
-void PMM::info()
+PhysicalMemoryManager::~PhysicalMemoryManager()
+{
+}
+
+void PhysicalMemoryManager::info()
 {
     kprintf("total memory: %d MB (%d pages)\n", (available_pages * PAGE_SIZE) / MB, available_pages);
     kprintf("used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
 }
 
-uint32_t PMM::allocate_pages(size_t size)
+uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
 {
     if (!IS_ALIGN(size))
         size = PAGE_ALIGN(size);
@@ -46,7 +47,7 @@ uint32_t PMM::allocate_pages(size_t size)
     return address;
 }
 
-int PMM::free_pages(uint32_t address, size_t size)
+int PhysicalMemoryManager::free_pages(uint32_t address, size_t size)
 {
     int is_valid = 0;
     if (!IS_ALIGN(size))

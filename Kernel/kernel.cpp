@@ -59,7 +59,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     uint32_t available_pages = PAGE_ALIGN(total_memory) / PAGE_SIZE;
 
     Paging::init();
-    PMM::init(available_pages);
+    PhysicalMemoryManager pmm(available_pages);
 
     klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);
