@@ -24,6 +24,7 @@ build Kernel/multitasking.o: cpp ./Kernel/multitasking.cpp
 build Kernel/syscalls.o: cpp ./Kernel/syscalls.cpp
 build Kernel/tty.o: cpp ./Kernel/tty.cpp
 build Kernel/panic.o: cpp ./Kernel/panic.cpp
+build Kernel/mutex.o: cpp ./Kernel/mutex.cpp
 build Kernel/Hardware/port.o: cpp ./Kernel/Hardware/port.cpp
 build Kernel/Hardware/Drivers/mouse.o: cpp ./Kernel/Hardware/Drivers/mouse.cpp
 build Kernel/Hardware/Drivers/keyboard.o: cpp ./Kernel/Hardware/Drivers/keyboard.cpp
@@ -46,7 +47,7 @@ build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/driver.o Kernel/Hardware/Drivers/amd79.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build format: format
 build run: run
 build disk: disk
