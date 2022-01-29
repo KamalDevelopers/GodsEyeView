@@ -5,6 +5,21 @@
 #include <LibC/unistd.hpp>
 #include <LibC/utsname.hpp>
 
+static char current_path[100];
+
+char* parse_path(char* dir)
+{
+    if (strncmp(dir, "..", 2) == 0) {
+        strcpy(dir, current_path);
+        for (uint32_t i = strlen(current_path); i != 0; i--) {
+            if (current_path[i] == '/')
+                break;
+            dir--;
+        }
+    }
+    return dir;
+}
+
 int command(char* input)
 {
     char** arguments = (char**)malloc(sizeof(char*) * 10);
@@ -21,6 +36,26 @@ int command(char* input)
         uname(&uname_struct);
         printf("%s", uname_struct.sysname);
         return 1;
+    }
+
+    if (strcmp(program, "cd") == 0) {
+        char* dir = strtok(NULL, (char*)" ");
+        if (!dir) {
+            printf("Missing directory argument");
+            return 1;
+        }
+
+        dir = parse_path(dir);
+        if (strlen(dir)) {
+            if (dir[strlen(dir) - 1] != '/')
+                strcat(dir, (char*)"/");
+        }
+
+        if (chdir(dir) == -1) {
+            printf("Path does not exist '%s'", dir);
+            return 1;
+        }
+        return 2;
     }
 
     if (strcmp(program, "stat") == 0) {
@@ -86,17 +121,17 @@ int command(char* input)
 
 int main(int argc, char** argv)
 {
-    const char ps1[] = "\33\x2\x9%s\33\x3@\33\x2\x0C%s\33\x3:\33\x2\xA%s\33\x3# ";
+    const char ps1[] = "\33\x2\x9%s\33\x3@\33\x2\x0C%s\33\x3:\33\x2\xA/%s\33\x3# ";
 
     utsname uname_struct;
     uname(&uname_struct);
 
     const char* user = "terry";
-    const char* path = "/";
     lowercase(uname_struct.sysname);
 
     while (1) {
-        printf(ps1, user, uname_struct.sysname, path);
+        getcwd(current_path);
+        printf(ps1, user, uname_struct.sysname, current_path);
         flush();
 
         char input[100];

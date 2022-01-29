@@ -22,8 +22,9 @@ int read_dir(char* name, bool root)
     int exists = -1;
     if (!root) {
         if (name[strlen(name) - 1] != '/')
-            strcat(name, "/");
+            strcat(name, (char*)"/");
     }
+
     exists = listdir(name, (char**)names);
 
     if (exists == -1) {
@@ -32,15 +33,20 @@ int read_dir(char* name, bool root)
     }
 
     for (uint32_t i = 0; i < 10; i++) {
-        if (!strlen(names[i]))
+        char* file_name = names[i];
+        if (!strlen(file_name))
             continue;
 
+        if (strncmp(file_name, name, strlen(name)) == 0) {
+            file_name += strlen(name);
+        }
+
         if (is_dir(names[i])) {
-            printf("\33\x2\x9%s\33\x3 ", names[i]);
+            printf("\33\x2\x9%s\33\x3 ", file_name);
             continue;
         }
 
-        printf("%s ", names[i]);
+        printf("%s ", file_name);
     }
 
     for (uint32_t i = 0; i < 50; i++)
@@ -51,10 +57,15 @@ int read_dir(char* name, bool root)
 
 int main(int argc, char** argv)
 {
-    if (!argc)
-        read_dir("", true);
-    else
+    char cwd[100];
+    getcwd(cwd);
+
+    if (!argc) {
+        read_dir(cwd, true);
+    } else {
+        strcat(cwd, argv[0]);
         read_dir(argv[0], false);
+    }
 
     return 0;
 }
