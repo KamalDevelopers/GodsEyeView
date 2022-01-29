@@ -85,18 +85,14 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    char file[100];
-    getcwd(file);
-    strcat(file, argv[0]);
-
     int file_descriptor;
     struct stat statbuffer;
 
-    file_descriptor = open(file);
+    file_descriptor = open(argv[0]);
     fstat(file_descriptor, &statbuffer);
 
     if (statbuffer.st_size == -1) {
-        printf("File '%s' does not exist", file);
+        printf("File '%s' does not exist", argv[0]);
         return 0;
     }
 

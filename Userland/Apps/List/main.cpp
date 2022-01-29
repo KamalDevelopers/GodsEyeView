@@ -15,7 +15,7 @@ int read_dir(char* name, bool root)
         return -1;
     }
 
-    chdir("");
+    chdir((char*)"");
     for (uint32_t i = 0; i < 10; i++) {
         char* file_name = names[i];
         if (!strlen(file_name))
