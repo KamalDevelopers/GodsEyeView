@@ -11,6 +11,7 @@ build LibC/unistd.o: cpp ./LibC/unistd.cpp
 build LibC/string.o: cpp ./LibC/string.cpp
 build LibC/stdio.o: cpp ./LibC/stdio.cpp
 build LibC/stdlib.o: cpp ./LibC/stdlib.cpp
+build LibC/path.o: cpp ./LibC/path.cpp
 build LibC/liballoc.o: cpp ./LibC/liballoc.cpp
 build LibC/crt0.o: crt0 ./LibC/crt0.cpp
-build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/liballoc.o LibC/crt0.o
+build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/liballoc.o LibC/crt0.o
