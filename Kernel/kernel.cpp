@@ -14,6 +14,7 @@
 #include "Hardware/Drivers/driver.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
+#include "Hardware/Drivers/sb16.hpp"
 #include "Hardware/Drivers/vga.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"
@@ -22,6 +23,7 @@
 #include "panic.hpp"
 #include "syscalls.hpp"
 
+#include <LibC/cmath.hpp>
 #include <LibC/ctype.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
@@ -67,6 +69,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     MouseDriver mouse(&interrupts, 640, 480);
     KeyboardDriver keyboard(&interrupts);
+    SoundBlaster16 sb16(&interrupts);
 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
