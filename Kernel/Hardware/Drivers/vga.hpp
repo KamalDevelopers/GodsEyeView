@@ -3,6 +3,7 @@
 
 #include "../../Mem/mm.hpp"
 #include "../../tty.hpp"
+#include "../pci.hpp"
 #include "../port.hpp"
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
@@ -28,9 +29,7 @@ static uint8_t yellow = 0xE;
 static uint8_t bright_white = 0xF;
 };
 
-static uint8_t vga_on = 0;
-
-class Graphics {
+class VGA : public Driver {
 protected:
     Port8Bit miscPort;
     Port8Bit crtcIndexPort;
@@ -53,18 +52,17 @@ protected:
     uint8_t old_vga_buffer[480 * 640];
     uint8_t background[480 * 640];
 
-    uint8_t is_ready = 0;
-
 private:
     int vga_x_offset = 0;
     int vga_y_offset = 0;
     int screen_width = 0;
     int screen_height = 0;
     int screen_colordepth = 0;
+    bool is_activated = false;
 
 public:
-    Graphics();
-    ~Graphics();
+    VGA();
+    ~VGA();
 
     bool init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex);
     bool set_mode(uint32_t width, uint32_t height, uint32_t colordepth);
@@ -85,16 +83,9 @@ public:
     int get_screen_h() { return screen_height; }
     int get_screen_w() { return screen_width; }
     int get_screen_c() { return screen_colordepth; }
-    void frame_start(uint8_t i) { is_ready = i; }
-    uint8_t get_frame_start() { return is_ready; }
-};
 
-static void vmemset(unsigned char* s, unsigned c, unsigned n)
-{
-    for (; n != 0; n--) {
-        *s = c;
-        s++;
-    }
-}
+    virtual void activate();
+    virtual driver_identifier_t identify();
+};
 
 #endif

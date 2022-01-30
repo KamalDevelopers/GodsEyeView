@@ -11,30 +11,37 @@ SoundBlaster16::SoundBlaster16(InterruptManager* interrupt_manager)
     , read_status_port(0x22E)
 {
     active = this;
+}
+
+SoundBlaster16::~SoundBlaster16()
+{
+}
+
+driver_identifier_t SoundBlaster16::identify()
+{
     reset_port.write(1);
     delay(32);
     reset_port.write(0);
 
     uint8_t data = dsp_read();
-    if (data != SB16_MAGIC) {
-        klog("SB16 could not be initialized");
-        return;
-    }
+    if ((data == SB16_MAGIC) && !is_activated)
+        activate();
+    return {};
+}
 
+void SoundBlaster16::activate()
+{
+    is_activated = true;
     dsp_write(0xE1);
     major_version = dsp_read();
     uint8_t minor_version = dsp_read();
-    klog("SB16 version: %d.%d", major_version, minor_version);
+    klog("SB16 version %d.%d", major_version, minor_version);
 
     /* Activate interrupts */
     mixer_port.write(0x80);
     mixer_data_port.write(SB16_DEFAULT_IRQ_BITMASK);
 
     set_sample_rate(48000);
-}
-
-SoundBlaster16::~SoundBlaster16()
-{
 }
 
 void SoundBlaster16::dsp_write(uint8_t value)

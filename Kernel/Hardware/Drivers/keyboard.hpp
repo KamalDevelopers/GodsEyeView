@@ -3,7 +3,6 @@
 
 #include "../interrupts.hpp"
 #include "../port.hpp"
-#include "driver.hpp"
 #include "vga.hpp"
 #include <LibC/stdio.hpp>
 #include <LibC/string.hpp>

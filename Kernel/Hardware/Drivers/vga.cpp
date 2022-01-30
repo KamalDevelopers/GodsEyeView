@@ -1,6 +1,6 @@
 #include "vga.hpp"
 
-Graphics::Graphics()
+VGA::VGA()
     : miscPort(0x3c2)
     , crtcIndexPort(0x3d4)
     , crtcDataPort(0x3d5)
@@ -15,7 +15,17 @@ Graphics::Graphics()
 {
 }
 
-void Graphics::write_registers(uint8_t* registers)
+driver_identifier_t VGA::identify()
+{
+    return { 0x00, 0x00, 0x03, 0x00 };
+}
+
+void VGA::activate()
+{
+    is_activated = true;
+}
+
+void VGA::write_registers(uint8_t* registers)
 {
     miscPort.write(*(registers++));
 
@@ -52,9 +62,8 @@ void Graphics::write_registers(uint8_t* registers)
     attributeControllerIndexPort.write(0x20);
 }
 
-bool Graphics::set_mode(uint32_t width, uint32_t height, uint32_t colordepth)
+bool VGA::set_mode(uint32_t width, uint32_t height, uint32_t colordepth)
 {
-    vga_on = 1;
     // clang-format off
     unsigned char g_320x200x256[] = {
     /* MISC */
@@ -138,10 +147,12 @@ bool Graphics::set_mode(uint32_t width, uint32_t height, uint32_t colordepth)
     return false;
 }
 
-bool Graphics::init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex)
+bool VGA::init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex)
 {
-    set_mode(width, height, colordepth);
+    if (!is_activated)
+        return false;
 
+    set_mode(width, height, colordepth);
     for (int32_t y = 0; y < height; y++)
         for (int32_t x = 0; x < width; x++)
             put_pixel(x, y, colorindex);
@@ -149,7 +160,7 @@ bool Graphics::init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_
     return true;
 }
 
-uint8_t* Graphics::get_frame_buffer_segment()
+uint8_t* VGA::get_frame_buffer_segment()
 {
     graphicsControllerIndexPort.write(0x06);
     uint8_t segment_number = graphicsControllerDataPort.read() & (3 << 2);
@@ -166,7 +177,7 @@ uint8_t* Graphics::get_frame_buffer_segment()
     }
 }
 
-uint8_t* Graphics::get_pixel_color(int x, int y)
+uint8_t* VGA::get_pixel_color(int x, int y)
 {
     uint8_t* pixel_address;
     // uint16_t wd_in_bytes = screen_width / 8;
@@ -180,7 +191,15 @@ uint8_t* Graphics::get_pixel_color(int x, int y)
     return pixel_address;
 }
 
-void Graphics::fill_plane(int x, int y, int wd, int ht, unsigned c)
+void vmemset(unsigned char* s, unsigned c, unsigned n)
+{
+    for (; n != 0; n--) {
+        *s = c;
+        s++;
+    }
+}
+
+void VGA::fill_plane(int x, int y, int wd, int ht, unsigned c)
 {
     unsigned w, wd_in_bytes, off;
     unsigned char lmask, rmask;
@@ -223,7 +242,7 @@ void Graphics::fill_plane(int x, int y, int wd, int ht, unsigned c)
     }
 }
 
-void Graphics::set_plane(unsigned p)
+void VGA::set_plane(unsigned p)
 {
     static unsigned curr_p = -1u;
     unsigned char pmask;
@@ -238,7 +257,7 @@ void Graphics::set_plane(unsigned p)
     sequencerIndexPort.write((pmask << 8) | 2);
 }
 
-void Graphics::vga_draw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
+void VGA::vga_draw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
 {
     if (screen_colordepth == 16) {
         unsigned mask, p, pmask;
@@ -262,7 +281,7 @@ void Graphics::vga_draw(uint32_t x, uint32_t y, uint8_t colorindex, int cycle)
     }
 }
 
-void Graphics::slow_draw(uint32_t x, uint32_t y, uint8_t color_index)
+void VGA::slow_draw(uint32_t x, uint32_t y, uint8_t color_index)
 {
     if (screen_colordepth == 16) {
         unsigned mask, p, pmask;
@@ -288,7 +307,7 @@ void Graphics::slow_draw(uint32_t x, uint32_t y, uint8_t color_index)
     }
 }
 
-void Graphics::fill_rectangle(int x, int y, int wd, int ht, uint8_t colorindex)
+void VGA::fill_rectangle(int x, int y, int wd, int ht, uint8_t colorindex)
 {
     unsigned char p, pmask;
 
@@ -307,17 +326,17 @@ void Graphics::fill_rectangle(int x, int y, int wd, int ht, uint8_t colorindex)
     }
 }
 
-void Graphics::put_pixel(uint32_t x, uint32_t y, uint8_t colorindex)
+void VGA::put_pixel(uint32_t x, uint32_t y, uint8_t colorindex)
 {
     vga_buffer[y * 640 + x] = colorindex;
 }
 
-void Graphics::set_background(int x, int y, uint8_t colorindex)
+void VGA::set_background(int x, int y, uint8_t colorindex)
 {
     background[y * 640 + x] = colorindex;
 }
 
-void Graphics::render_screen(uint8_t refresh)
+void VGA::render_screen(uint8_t refresh)
 {
     if (refresh == 1) {
         fill_rectangle(0, 0, 640, 480, VGA16::black);
@@ -336,12 +355,12 @@ void Graphics::render_screen(uint8_t refresh)
     memcpy(vga_buffer, background, sizeof(uint8_t) * 640 * 480);
 }
 
-void Graphics::reset_offset()
+void VGA::reset_offset()
 {
     vga_x_offset = 0;
 }
 
-void Graphics::render_bit_map(int bitmap[], uint8_t colorindex, int x_offset, int y_offset)
+void VGA::render_bit_map(int bitmap[], uint8_t colorindex, int x_offset, int y_offset)
 {
     int x, y;
     int set;

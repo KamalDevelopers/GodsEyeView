@@ -8,10 +8,8 @@
 
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
-#include "Hardware/Drivers/amd79.hpp"
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/cmos.hpp"
-#include "Hardware/Drivers/driver.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/Drivers/sb16.hpp"
@@ -53,6 +51,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TaskManager task_manager(&gdt);
     TimeDriver time;
     VirtualFilesystem vfs;
+    VGA vga;
 
     klog("Starting memory management and paging");
     uint32_t total_memory = detect_memory(multiboot_info_ptr);
@@ -73,8 +72,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     klog("Starting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
-
     ata1s.identify();
+
     Tar fs_tar(&ata1s);
     if (fs_tar.mount() != 0)
         PANIC("Could not mount the filesystem");
@@ -82,12 +81,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     klog("Starting PCI and activating drivers");
     PCI pci;
-    DriverManager driver_manager;
-
-    driver_manager.add_driver(&keyboard);
-    driver_manager.add_driver(&mouse);
-    pci.select_drivers(&driver_manager, &interrupts);
-    driver_manager.activate_all();
+    Driver* drivers[] = { &sb16, &vga };
+    pci.select_drivers(drivers, 2);
 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");

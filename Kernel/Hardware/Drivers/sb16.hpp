@@ -17,9 +17,11 @@
 #define SB16 SoundBlaster16::active
 
 #include "../interrupts.hpp"
+#include "../pci.hpp"
 #include "../port.hpp"
 
-class SoundBlaster16 : public InterruptHandler {
+class SoundBlaster16 : public InterruptHandler
+    , public Driver {
 private:
     Port8Bit mixer_port;
     Port8Bit mixer_data_port;
@@ -28,6 +30,7 @@ private:
     Port8Bit write_port;
     Port8Bit read_status_port;
 
+    bool is_activated = false;
     int major_version = 0;
     uint16_t sample_rate = 0;
 
@@ -44,6 +47,9 @@ public:
 
     void write(void* buffer, uint32_t length);
     virtual uint32_t interrupt(uint32_t esp);
+
+    virtual void activate();
+    virtual driver_identifier_t identify();
 };
 
 #endif
