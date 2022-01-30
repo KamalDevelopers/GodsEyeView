@@ -11,8 +11,8 @@
 
 class KeyboardDriver : public InterruptHandler
     , public Driver {
-    Port8Bit dataport;
-    Port8Bit commandport;
+    Port8Bit data_port;
+    Port8Bit command_port;
 
 private:
     int x_offset;

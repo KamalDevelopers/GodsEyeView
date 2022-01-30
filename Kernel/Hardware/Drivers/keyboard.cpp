@@ -18,18 +18,18 @@ KeyboardDriver* KeyboardDriver::active = 0;
 
 KeyboardDriver::KeyboardDriver(InterruptManager* interrupt_manager)
     : InterruptHandler(interrupt_manager, 0x21)
-    , dataport(0x60)
-    , commandport(0x64)
+    , data_port(0x60)
+    , command_port(0x64)
 {
     active = this;
-    while (commandport.read() & 0x1)
-        dataport.read();
-    commandport.write(0xae); // activate interrupts
-    commandport.write(0x20); // command 0x20 = read controller command byte
-    uint8_t status = (dataport.read() | 1) & ~0x10;
-    commandport.write(0x60); // command 0x60 = set controller command byte
-    dataport.write(status);
-    dataport.write(0xf4);
+    while (command_port.read() & 0x1)
+        data_port.read();
+    command_port.write(0xae);
+    command_port.write(0x20);
+    uint8_t status = (data_port.read() | 1) & ~0x10;
+    command_port.write(0x60);
+    data_port.write(status);
+    data_port.write(0xf4);
 }
 
 KeyboardDriver::~KeyboardDriver()
@@ -138,8 +138,8 @@ int KeyboardDriver::get_key_presses(int raw)
 uint8_t KeyboardDriver::read_key()
 {
     uint8_t lastkey = 0;
-    if (commandport.read() & 1)
-        lastkey = dataport.read();
+    if (command_port.read() & 1)
+        lastkey = data_port.read();
     return lastkey;
 }
 
@@ -240,7 +240,7 @@ void KeyboardDriver::on_key(uint8_t keypress)
 
 uint32_t KeyboardDriver::interrupt(uint32_t esp)
 {
-    uint8_t key = dataport.read();
+    uint8_t key = data_port.read();
     on_key(key);
     return esp;
 }

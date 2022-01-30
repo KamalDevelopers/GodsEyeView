@@ -2,8 +2,8 @@
 
 MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)
     : InterruptHandler(manager, 0x2C)
-    , dataport(0x60)
-    , commandport(0x64)
+    , data_port(0x60)
+    , command_port(0x64)
 {
     offset = 0;
     buttons = 0;
@@ -12,15 +12,15 @@ MouseDriver::MouseDriver(InterruptManager* manager, int screenw, int screenh)
     mouse_x = w / 2;
     mouse_y = h / 2;
 
-    commandport.write(0xA8);
-    commandport.write(0x20);
-    uint8_t status = dataport.read() | 2;
-    commandport.write(0x60);
-    dataport.write(status);
+    command_port.write(0xA8);
+    command_port.write(0x20);
+    uint8_t status = data_port.read() | 2;
+    command_port.write(0x60);
+    data_port.write(status);
 
-    commandport.write(0xD4);
-    dataport.write(0xF4);
-    dataport.read();
+    command_port.write(0xD4);
+    data_port.write(0xF4);
+    data_port.read();
 }
 
 MouseDriver::~MouseDriver()
@@ -68,11 +68,11 @@ void MouseDriver::on_mouse_down(int b)
 
 uint32_t MouseDriver::interrupt(uint32_t esp)
 {
-    uint8_t status = commandport.read();
+    uint8_t status = command_port.read();
     if (!(status & 0x20) || (active == 0))
         return esp;
 
-    buffer[offset] = dataport.read();
+    buffer[offset] = data_port.read();
     offset = (offset + 1) % 3;
 
     if (offset == 0) {
