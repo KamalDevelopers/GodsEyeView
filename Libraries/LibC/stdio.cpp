@@ -14,7 +14,7 @@ void flush()
         hwrite(write_buffer);
     }
 
-    memchr(write_buffer, 0, BUFSIZ);
+    memset(write_buffer, 0, BUFSIZ);
     write_index = 0;
 }
 
@@ -25,7 +25,7 @@ void puts(char* str)
         return;
     }
 
-    int len = strlen(str);
+    uint32_t len = strlen(str);
     bool do_flush = false;
 
     if (len > BUFSIZ) {
@@ -36,7 +36,7 @@ void puts(char* str)
     if ((write_index + len) >= BUFSIZ)
         flush();
 
-    for (int i = 0; i < len; i++) {
+    for (uint32_t i = 0; i < len; i++) {
         write_buffer[write_index] = str[i];
         write_index++;
 
