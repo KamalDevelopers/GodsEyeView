@@ -60,9 +60,9 @@ int8_t Task::notify(int signal)
     return 0;
 }
 
-void Task::suicide(int error_code)
+void Task::suicide(int error)
 {
-    state = 1;
+    state = error;
 }
 
 int Task::chdir(char* dir)
@@ -132,6 +132,7 @@ bool TaskManager::append_tasks(int count, ...)
 
 void TaskManager::kill()
 {
+    check_kill = true;
     tasks[current_task]->suicide(SIG_TERM);
 }
 
@@ -211,7 +212,7 @@ int TaskManager::waitpid(int pid)
         return -1;
 
     child->wake_pid_on_exit = tasks[current_task]->get_pid();
-    tasks[current_task]->sleeping = -1;
+    tasks[current_task]->sleeping = SLEEP_WAIT_WAKE;
     return pid;
 }
 
@@ -251,18 +252,40 @@ int TaskManager::spawn(char* file, char** args)
 
 void TaskManager::kill_zombie_tasks()
 {
-    for (int i = 0; i < num_tasks; i++) {
-        if (tasks[i]->state == 1) {
-            klog("Zombie process '%s' killed", tasks[i]->name);
+    if (!check_kill)
+        return;
 
-            if (tasks[i]->wake_pid_on_exit)
-                task(tasks[i]->wake_pid_on_exit)->wake();
+    for (uint32_t i = 0; i < num_tasks; i++) {
+        if (tasks[i]->state == ALIVE)
+            continue;
 
-            tasks[i]->~Task();
-            delete_element(i, num_tasks, tasks);
-            num_tasks--;
-        }
+        if (tasks[i]->wake_pid_on_exit)
+            task(tasks[i]->wake_pid_on_exit)->wake();
+
+        tasks[i]->~Task();
+        delete_element(i, num_tasks, tasks);
+        num_tasks--;
     }
+
+    check_kill = false;
+}
+
+void TaskManager::pick_next_task()
+{
+    current_task++;
+    if (current_task >= num_tasks)
+        current_task = 0;
+
+    if (tasks[current_task]->state != ALIVE)
+        pick_next_task();
+
+    if (tasks[current_task]->sleeping == SLEEP_WAIT_WAKE)
+        pick_next_task();
+
+    if (current_ticks >= tasks[current_task]->sleeping)
+        tasks[current_task]->sleeping = 0;
+    else
+        pick_next_task();
 }
 
 cpu_state* TaskManager::schedule(cpu_state* cpustate)
@@ -271,26 +294,10 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     if (current_task >= 0)
         tasks[current_task]->cpustate = cpustate;
 
-    if (++current_task >= num_tasks)
-        current_task = 0;
-
-    if (tasks[current_task]->sleeping == -1)
-        current_task++;
-
-    if (tasks[current_task]->sleeping > 0) {
-        if (current_ticks >= tasks[current_task]->sleeping) {
-            tasks[current_task]->sleeping = 0;
-        } else {
-            current_task++;
-        }
-    }
-
-    kill_zombie_tasks();
-    if (current_task >= num_tasks)
-        current_task = 0;
-
     if ((num_tasks <= 0) || (is_running == 0))
         return cpustate;
 
+    kill_zombie_tasks();
+    pick_next_task();
     return tasks[current_task]->cpustate;
 }

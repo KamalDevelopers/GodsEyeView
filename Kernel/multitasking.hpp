@@ -11,9 +11,11 @@
 #include <LibC/types.hpp>
 #include <stdarg.h>
 
+#define ALIVE 0
 #define SIG_ILL 1
 #define SIG_TERM 2
 #define SIG_SEGV 3
+#define SLEEP_WAIT_WAKE -1
 #define TM TaskManager::active
 
 struct cpu_state {
@@ -83,6 +85,7 @@ private:
     uint32_t current_ticks = 0;
     int8_t is_running = 0;
     bool is_reading_stdin = false;
+    bool check_kill = false;
     Task* tasks[256];
 
 public:
@@ -92,6 +95,7 @@ public:
     static TaskManager* active;
 
     cpu_state* schedule(cpu_state* cpustate);
+    void pick_next_task();
 
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
