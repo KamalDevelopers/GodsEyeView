@@ -166,22 +166,6 @@ void clear()
     puts("\33\x1");
 }
 
-void outb(uint16_t port, uint8_t data)
-{
-    asm volatile("outb %0, %1"
-                 :
-                 : "a"(data), "Nd"(port));
-}
-
-uint8_t inb(uint16_t port)
-{
-    uint8_t result;
-    asm volatile("inb %1, %0"
-                 : "=a"(result)
-                 : "Nd"(port));
-    return result;
-}
-
 void beep(uint32_t ms_time, uint32_t frequency)
 {
     asm("int $0x80"
