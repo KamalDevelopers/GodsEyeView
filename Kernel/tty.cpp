@@ -1,6 +1,14 @@
 #include "tty.hpp"
 
 MUTEX(console);
+constexpr char* datacolorblue = "\033[01;34m[GevOS]: ";
+constexpr char* datacoloroff = "\033[0m";
+uint16_t* video_memory = (unsigned short*)0xb8000;
+bool serial_enabled = false;
+int video_memory_index = 0;
+int new_line_index = 0;
+uint32_t default_color = 0;
+uint32_t color = 0;
 
 void kprintf(const char* format, ...)
 {
@@ -85,7 +93,7 @@ static int8_t esc_flag = 0;
 void write_string(char* str)
 {
     Mutex::lock(console);
-    for (int i = 0; str[i] != '\0'; i++) {
+    for (uint32_t i = 0; str[i] != '\0'; i++) {
         if (str[i] == '\b' && !esc_flag) {
             if (video_memory_index <= 0)
                 continue;
@@ -101,7 +109,7 @@ void write_string(char* str)
     Mutex::unlock(console);
 }
 
-void write_char(int c)
+void write_char(char c)
 {
     if (c == '\33' && !esc_flag) {
         esc_flag = 1;
@@ -150,14 +158,15 @@ void write_char(int c)
     if (c == 10) {
         new_line_index++;
         video_memory_index = 0;
+        clear_line(new_line_index);
     } else {
         video_memory[80 * new_line_index + video_memory_index] = vga_entry(c, color);
         video_memory_index++;
     }
 
     if (new_line_index >= MAX_ROWS) {
-        for (int y = 0; y < MAX_ROWS; y++) {
-            for (int x = 0; x < MAX_COLS; x++) {
+        for (uint32_t y = 0; y < MAX_ROWS; y++) {
+            for (uint32_t x = 0; x < MAX_COLS; x++) {
                 video_memory[80 * y + x] = video_memory[80 * (y + 1) + x];
             }
         }
@@ -174,16 +183,19 @@ void write_char(int c)
     update_cursor();
 }
 
-void clear_screen(int fg, int bg)
+void clear_line(uint32_t y)
 {
-    if ((fg != -1) && (bg != -1)) {
-        set_color(fg, bg);
-        default_color = color;
+    for (uint32_t x = 0; x < MAX_COLS; x++) {
+        video_memory[80 * new_line_index + x] = (video_memory[80 * new_line_index + x] & 0xff00) | ' ';
+        video_memory[80 * new_line_index + x] = vga_entry(' ', color);
     }
+}
 
+void clear_screen()
+{
     video_memory_index = 0;
     new_line_index = 0;
-    for (int i = 0; i < 2200; i++) {
+    for (uint32_t i = 0; i < MAX_COLS * MAX_ROWS; i++) {
         video_memory[i] = (video_memory[i] & 0xff00) | ' ';
         video_memory[i] = vga_entry(' ', color);
     }
@@ -192,6 +204,8 @@ void clear_screen(int fg, int bg)
 void set_color(uint8_t fg, uint8_t bg)
 {
     color = vga_entry_color(fg, bg);
+    if (default_color == 0)
+        default_color = color;
 }
 
 void update_cursor()

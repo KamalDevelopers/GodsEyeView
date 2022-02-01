@@ -45,7 +45,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 {
     init_serial();
     klog("Kernel started");
-    clear_screen(VGA16::white, VGA16::black);
+
+    set_color(VGA16::white, VGA16::black);
+    clear_screen();
 
     GDT gdt;
     TaskManager task_manager(&gdt);

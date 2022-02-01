@@ -12,16 +12,6 @@
 #include <LibC/string.hpp>
 #include <stdarg.h>
 
-static char* datacolorblue = "\033[01;34m[GevOS]: ";
-static char* datacoloroff = "\033[0m";
-static bool serial_enabled = false;
-
-static uint16_t* video_memory = (unsigned short*)0xb8000;
-static int video_memory_index = 0;
-static int new_line_index = 0;
-static uint32_t default_color;
-static uint32_t color;
-
 /* Qemu serials */
 void init_serial();
 int transmit_empty();
@@ -32,8 +22,9 @@ void klog(int num);
 
 void kprintf(const char* format, ...);
 void write_string(char* str);
-void write_char(int c);
-void clear_screen(int fg = -1, int bg = -1);
+void write_char(char c);
+void clear_line(uint32_t y);
+void clear_screen();
 void set_color(uint8_t fg, uint8_t bg);
 void update_cursor();
 
