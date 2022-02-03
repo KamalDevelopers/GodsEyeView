@@ -7,8 +7,7 @@
 #include <LibC/stdio.hpp>
 #include <LibC/types.hpp>
 
-class MouseDriver : public InterruptHandler
-    , public Driver {
+class MouseDriver : public InterruptHandler {
     Port8Bit data_port;
     Port8Bit command_port;
     uint8_t buffer[3];

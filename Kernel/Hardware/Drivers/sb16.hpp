@@ -20,8 +20,7 @@
 #include "../pci.hpp"
 #include "../port.hpp"
 
-class SoundBlaster16 : public InterruptHandler
-    , public Driver {
+class SoundBlaster16 : public InterruptHandler {
 private:
     Port8Bit mixer_port;
     Port8Bit mixer_data_port;
@@ -46,10 +45,10 @@ public:
     static SoundBlaster16* active;
 
     void write(void* buffer, uint32_t length);
-    virtual uint32_t interrupt(uint32_t esp);
 
-    virtual void activate();
-    virtual driver_identifier_t identify();
+    void activate();
+    void identify();
+    virtual uint32_t interrupt(uint32_t esp);
 };
 
 #endif

@@ -8,8 +8,7 @@
 #include <LibC/string.hpp>
 #include <LibC/types.hpp>
 
-class KeyboardDriver : public InterruptHandler
-    , public Driver {
+class KeyboardDriver : public InterruptHandler {
     Port8Bit data_port;
     Port8Bit command_port;
 

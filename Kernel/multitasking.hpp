@@ -15,7 +15,7 @@
 #define SIG_ILL 1
 #define SIG_TERM 2
 #define SIG_SEGV 3
-#define SLEEP_WAIT_WAKE -1
+#define SLEEP_WAIT_WAKE 1
 #define TM TaskManager::active
 
 struct cpu_state {

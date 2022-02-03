@@ -29,7 +29,7 @@ static uint8_t yellow = 0xE;
 static uint8_t bright_white = 0xF;
 };
 
-class VGA : public Driver {
+class VGA {
 protected:
     Port8Bit miscPort;
     Port8Bit crtcIndexPort;
@@ -58,7 +58,6 @@ private:
     int screen_width = 0;
     int screen_height = 0;
     int screen_colordepth = 0;
-    bool is_activated = false;
 
 public:
     VGA();
@@ -83,9 +82,6 @@ public:
     int get_screen_h() { return screen_height; }
     int get_screen_w() { return screen_width; }
     int get_screen_c() { return screen_colordepth; }
-
-    virtual void activate();
-    virtual driver_identifier_t identify();
 };
 
 #endif

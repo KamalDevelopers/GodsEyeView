@@ -11,13 +11,14 @@ SoundBlaster16::SoundBlaster16(InterruptManager* interrupt_manager)
     , read_status_port(0x22E)
 {
     active = this;
+    identify();
 }
 
 SoundBlaster16::~SoundBlaster16()
 {
 }
 
-driver_identifier_t SoundBlaster16::identify()
+void SoundBlaster16::identify()
 {
     reset_port.write(1);
     delay(32);
@@ -26,7 +27,6 @@ driver_identifier_t SoundBlaster16::identify()
     uint8_t data = dsp_read();
     if ((data == SB16_MAGIC) && !is_activated)
         activate();
-    return {};
 }
 
 void SoundBlaster16::activate()

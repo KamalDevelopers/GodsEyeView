@@ -39,19 +39,11 @@ typedef struct driver_identifier {
     uint16_t subclass_id = 0;
 } driver_identifier_t;
 
-class Driver {
-public:
-    Driver() {};
-    ~Driver() {};
-
-    virtual driver_identifier_t identify() { return {}; };
-    virtual void activate() {};
-};
-
 class PCI {
-    Port32Bit dataport;
-    Port32Bit commandport;
+    Port32Bit data_port;
+    Port32Bit command_port;
     device_descriptor_t dev;
+    base_address_register_t bar;
 
 public:
     PCI();
@@ -61,12 +53,14 @@ public:
     void write(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset, uint32_t value);
     bool device_has_functions(uint16_t bus, uint16_t device);
 
-    void select_driver(Driver* drivers[], size_t size, int bus, int device);
-    void select_drivers(Driver* drivers[], size_t size);
+    bool find_driver(driver_identifier_t identifier);
+    bool find_driver(driver_identifier_t identifier, uint16_t bus, uint16_t device);
 
-    device_descriptor_t get_device_descriptor(uint16_t bus, uint16_t device, uint16_t function);
-    device_descriptor_t* get_descriptor();
-    base_address_register_t get_base_address_register(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
+    void get_device_descriptor(uint16_t bus, uint16_t device, uint16_t function);
+    void get_base_address_register(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);
+    device_descriptor_t get_descriptor();
+
+    static PCI* active;
 };
 
 #endif

@@ -15,16 +15,6 @@ VGA::VGA()
 {
 }
 
-driver_identifier_t VGA::identify()
-{
-    return { 0x00, 0x00, 0x03, 0x00 };
-}
-
-void VGA::activate()
-{
-    is_activated = true;
-}
-
 void VGA::write_registers(uint8_t* registers)
 {
     miscPort.write(*(registers++));
@@ -149,9 +139,6 @@ bool VGA::set_mode(uint32_t width, uint32_t height, uint32_t colordepth)
 
 bool VGA::init(uint32_t width, uint32_t height, uint32_t colordepth, uint8_t colorindex)
 {
-    if (!is_activated)
-        return false;
-
     set_mode(width, height, colordepth);
     for (int32_t y = 0; y < height; y++)
         for (int32_t x = 0; x < width; x++)

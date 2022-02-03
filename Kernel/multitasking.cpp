@@ -212,7 +212,7 @@ int TaskManager::waitpid(int pid)
         return -1;
 
     child->wake_pid_on_exit = tasks[current_task]->get_pid();
-    tasks[current_task]->sleeping = SLEEP_WAIT_WAKE;
+    tasks[current_task]->sleeping = -SLEEP_WAIT_WAKE;
     return pid;
 }
 
@@ -279,7 +279,7 @@ void TaskManager::pick_next_task()
     if (tasks[current_task]->state != ALIVE)
         pick_next_task();
 
-    if (tasks[current_task]->sleeping == SLEEP_WAIT_WAKE)
+    if (tasks[current_task]->sleeping == -SLEEP_WAIT_WAKE)
         pick_next_task();
 
     if (current_ticks >= tasks[current_task]->sleeping)

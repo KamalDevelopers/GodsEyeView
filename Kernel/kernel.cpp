@@ -8,6 +8,7 @@
 
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
+#include "Hardware/Drivers/am79c973.hpp"
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/cmos.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
@@ -50,6 +51,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     clear_screen();
 
     GDT gdt;
+    PCI pci;
     TaskManager task_manager(&gdt);
     TimeDriver time;
     VirtualFilesystem vfs;
@@ -82,9 +84,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     vfs.mount(&fs_tar);
 
     klog("Starting PCI and activating drivers");
-    PCI pci;
-    Driver* drivers[] = { &sb16, &vga };
-    pci.select_drivers(drivers, 2);
+    if (pci.find_driver(AM79C973::identifier()))
+        AM79C973* am79c973 = new AM79C973(&interrupts, pci.get_descriptor());
 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");
