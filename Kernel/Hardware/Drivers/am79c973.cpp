@@ -82,6 +82,17 @@ void AM79C973::activate()
 
 void AM79C973::send(uint8_t* buffer, uint32_t size)
 {
+    uint8_t send_descriptor = send_buffer_index;
+    send_buffer_index = (send_buffer_index + 1) % 8;
+    size = (size > 1518) ? 1518 : size;
+
+    memcpy((void*)send_buffer_descriptions[send_descriptor].address, buffer, size);
+
+    send_buffer_descriptions[send_descriptor].avail = 0;
+    send_buffer_descriptions[send_descriptor].flags2 = 0;
+    send_buffer_descriptions[send_descriptor].flags = 0x8300F000 | ((uint16_t)((-size) & 0xFFF));
+    register_address_port.write(0);
+    register_data_port.write(0x48);
 }
 
 void AM79C973::receive()
