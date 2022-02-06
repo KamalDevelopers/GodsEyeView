@@ -5,6 +5,9 @@
 #include "../pci.hpp"
 #include "../port.hpp"
 
+#define RX_BUF_SIZE 8192
+#define TX_BUF_SIZE 1518
+
 typedef struct init_block {
     uint16_t mode;
     unsigned reserved1 : 4;
@@ -48,6 +51,7 @@ private:
     uint8_t receive_buffer_descriptions_memory[2048 + 15];
     uint8_t receive_buffers[2 * 1024 + 15][8];
     uint8_t receive_buffer_index = 0;
+    uint64_t mac_address = 0;
 
 public:
     AM79C973(InterruptManager* interrupt_manager, device_descriptor_t device);

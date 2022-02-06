@@ -26,7 +26,7 @@ void AM79C973::activate()
     uint64_t mac3 = mac2_address_port.read() / 256;
     uint64_t mac4 = mac4_address_port.read() % 256;
     uint64_t mac5 = mac4_address_port.read() / 256;
-    uint64_t mac = mac5 << 40 | mac4 << 32 | mac3 << 24 | mac2 << 16 | mac1 << 8 | mac0;
+    mac_address = mac5 << 40 | mac4 << 32 | mac3 << 24 | mac2 << 16 | mac1 << 8 | mac0;
 
     register_address_port.write(20);
     bus_control_register_data_port.write(0x102);
@@ -39,9 +39,12 @@ void AM79C973::activate()
     init_block.send_buffers = 3;
     init_block.reserved2 = 0;
     init_block.receive_buffers = 3;
-    init_block.physical_address = mac;
+    init_block.physical_address = mac_address;
     init_block.reserved3 = 0;
     init_block.logical_address = 0;
+
+    memset(send_buffer_descriptions_memory, 0, 2048 + 15);
+    memset(receive_buffer_descriptions_memory, 0, 2048 + 15);
 
     send_buffer_descriptions = (buffer_description_t*)((((uint32_t)&send_buffer_descriptions_memory[0]) + 15) & ~((uint32_t)0xF));
     init_block.send_descriptor_address = (uint32_t)send_buffer_descriptions;
@@ -84,19 +87,35 @@ void AM79C973::send(uint8_t* buffer, uint32_t size)
 {
     uint8_t send_descriptor = send_buffer_index;
     send_buffer_index = (send_buffer_index + 1) % 8;
-    size = (size > 1518) ? 1518 : size;
+    size = (size > TX_BUF_SIZE) ? TX_BUF_SIZE : size;
 
-    memcpy((void*)send_buffer_descriptions[send_descriptor].address, buffer, size);
+    for (uint8_t *src = buffer + size - 1,
+                 *dst = (uint8_t*)(send_buffer_descriptions[send_descriptor].address + size - 1);
+         src >= buffer; src--, dst--)
+        *dst = *src;
 
-    send_buffer_descriptions[send_descriptor].avail = 0;
     send_buffer_descriptions[send_descriptor].flags2 = 0;
     send_buffer_descriptions[send_descriptor].flags = 0x8300F000 | ((uint16_t)((-size) & 0xFFF));
+
     register_address_port.write(0);
     register_data_port.write(0x48);
 }
 
 void AM79C973::receive()
 {
+    for (; (receive_buffer_descriptions[receive_buffer_index].flags & 0x80000000) == 0; receive_buffer_index = (receive_buffer_index + 1) % 8) {
+        if (!(receive_buffer_descriptions[receive_buffer_index].flags & 0x40000000) && (receive_buffer_descriptions[receive_buffer_index].flags & 0x03000000) == 0x03000000) {
+            uint32_t size = receive_buffer_descriptions[receive_buffer_index].flags & 0xFFF;
+            if (size > 64)
+                size -= 4;
+
+            uint8_t* buffer = (uint8_t*)(receive_buffer_descriptions[receive_buffer_index].address);
+            /* TODO: handle packet */
+        }
+
+        receive_buffer_descriptions[receive_buffer_index].flags2 = 0;
+        receive_buffer_descriptions[receive_buffer_index].flags = 0x8000F7FF;
+    }
 }
 
 uint32_t AM79C973::interrupt(uint32_t esp)
@@ -104,7 +123,22 @@ uint32_t AM79C973::interrupt(uint32_t esp)
     register_address_port.write(0);
     uint32_t register_data_port_value = register_data_port.read();
 
-    /* TODO: handle interrupt */
+    if (register_data_port_value & 0x8000)
+        klog("[am79c973] error");
+    if (register_data_port_value & 0x2000)
+        klog("[am79c973] collision error");
+    if (register_data_port_value & 0x1000)
+        klog("[am79c973] missed frame");
+    if (register_data_port_value & 0x0800)
+        klog("[am79c973] memory error");
+    if (register_data_port_value & 0x0400)
+        receive();
+    /*
+    if (register_data_port_value & 0x0200)
+        klog("[am79c973] packet sent");
+    if (register_data_port_value & 0x0100)
+        klog("[am79c973] init done");
+    */
 
     register_address_port.write(0);
     register_data_port.write(register_data_port_value);
