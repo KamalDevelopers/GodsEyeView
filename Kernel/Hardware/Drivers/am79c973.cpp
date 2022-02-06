@@ -19,7 +19,6 @@ AM79C973::~AM79C973()
 
 void AM79C973::activate()
 {
-    is_activated = true;
     uint64_t mac0 = mac0_address_port.read() % 256;
     uint64_t mac1 = mac0_address_port.read() / 256;
     uint64_t mac2 = mac2_address_port.read() % 256;

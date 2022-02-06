@@ -5,6 +5,7 @@
 #include "Mem/mm.hpp"
 #include "Mem/paging.hpp"
 #include "Mem/pmm.hpp"
+#include "Net/ethernet.hpp"
 
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
@@ -84,12 +85,17 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         PANIC("Could not mount the filesystem");
     vfs.mount(&fs_tar);
 
-    klog("Starting PCI and activating drivers");
-    if (pci.find_driver(AM79C973::identifier()))
+    klog("Starting PCI drivers and networking");
+    Ethernet ethernet;
+    if (pci.find_driver(AM79C973::identifier())) {
         AM79C973* am79c973 = new AM79C973(&interrupts, pci.get_descriptor());
+        ethernet.set_network_driver(am79c973);
+    }
 
-    if (pci.find_driver(RTL8139::identifier()))
+    if (pci.find_driver(RTL8139::identifier())) {
         RTL8139* rtl8139 = new RTL8139(&interrupts, pci.get_descriptor());
+        ethernet.set_network_driver(rtl8139);
+    }
 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");

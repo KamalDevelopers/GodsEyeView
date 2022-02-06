@@ -1,6 +1,7 @@
 #ifndef AM79C973_HPP
 #define AM79C973_HPP
 
+#include "../../Net/ethernet.hpp"
 #include "../interrupts.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
@@ -28,10 +29,9 @@ typedef struct buffer_description {
     uint32_t avail;
 } __attribute__((packed)) buffer_description_t;
 
-class AM79C973 : public InterruptHandler {
+class AM79C973 : public InterruptHandler
+    , public NetworkDriver {
 private:
-    bool is_activated = false;
-
     Port16Bit mac0_address_port;
     Port16Bit mac2_address_port;
     Port16Bit mac4_address_port;
@@ -58,6 +58,7 @@ public:
     ~AM79C973();
 
     static driver_identifier_t identifier() { return { 0x1022, 0x2000 }; }
+    uint64_t get_mac_address() { return mac_address; }
     void send(uint8_t* buffer, uint32_t size);
     void receive();
 
