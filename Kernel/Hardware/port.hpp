@@ -3,6 +3,8 @@
 
 #include <LibC/types.hpp>
 
+uint32_t inbl(uint16_t _port);
+void outbl(uint16_t _port, uint32_t _data);
 void outbw(uint16_t port, uint16_t data);
 uint16_t inbw(uint16_t port);
 void outb(uint16_t port, uint8_t data);

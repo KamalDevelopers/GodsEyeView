@@ -124,3 +124,11 @@ void PCI::get_device_descriptor(uint16_t bus, uint16_t device, uint16_t function
     dev.revision = read(bus, device, function, 0x08);
     dev.interrupt = read(bus, device, function, 0x3c);
 }
+
+void PCI::enable_busmaster(device_descriptor_t device)
+{
+    uint16_t cmd = read(device.bus, device.device, device.function, 0x04);
+    uint16_t status = read(device.bus, device.device, device.function, 0x06);
+    cmd |= (1 << 2);
+    write(device.bus, device.device, device.function, 0x04, (uint32_t)status << 16 | (uint32_t)cmd);
+}

@@ -13,6 +13,7 @@
 #include "Hardware/Drivers/cmos.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
+#include "Hardware/Drivers/rtl8139.hpp"
 #include "Hardware/Drivers/sb16.hpp"
 #include "Hardware/Drivers/vga.hpp"
 #include "Hardware/interrupts.hpp"
@@ -86,6 +87,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     klog("Starting PCI and activating drivers");
     if (pci.find_driver(AM79C973::identifier()))
         AM79C973* am79c973 = new AM79C973(&interrupts, pci.get_descriptor());
+
+    if (pci.find_driver(RTL8139::identifier()))
+        RTL8139* rtl8139 = new RTL8139(&interrupts, pci.get_descriptor());
 
     klog("Setting up loaders and tasks");
     Elf elf_load("elf32");

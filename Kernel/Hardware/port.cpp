@@ -6,6 +6,22 @@ void delay(uint32_t microseconds)
         inb(0x80);
 }
 
+uint32_t inbl(uint16_t _port)
+{
+    uint32_t result;
+    asm volatile("inl %%dx, %%eax"
+                 : "=a"(result)
+                 : "dN"(_port));
+    return result;
+}
+
+void outbl(uint16_t _port, uint32_t _data)
+{
+    asm volatile("outl %%eax, %%dx"
+                 :
+                 : "dN"(_port), "a"(_data));
+}
+
 void outbw(uint16_t port, uint16_t data)
 {
     asm volatile("outw %0, %1"

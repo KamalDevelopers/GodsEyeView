@@ -37,8 +37,8 @@ else
         grub-mkrescue --output=kernel.iso iso
         rm -rf iso
 
-        qemu-system-x86_64 -cdrom kernel.iso -boot d -soundhw pcspk -serial mon:stdio -drive format=raw,file=../hdd.tar
         cd ../
+        ninja run
     else
         if [ "$1" != "norun" ]
         then

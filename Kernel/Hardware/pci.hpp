@@ -55,6 +55,7 @@ public:
 
     bool find_driver(driver_identifier_t identifier);
     bool find_driver(driver_identifier_t identifier, uint16_t bus, uint16_t device);
+    void enable_busmaster(device_descriptor_t device);
 
     void get_device_descriptor(uint16_t bus, uint16_t device, uint16_t function);
     void get_base_address_register(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);

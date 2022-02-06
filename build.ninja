@@ -4,7 +4,11 @@ rule format
 
 rule run
     pool = console
-    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -net user -net nic,model=pcnet -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
+    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -netdev user,id=user.0 -device rtl8139,netdev=user.0 -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
+
+rule netrun
+    pool = console
+    command = sudo qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -netdev tap,helper=/usr/lib/qemu/qemu-bridge-helper,id=net0 -device rtl8139,netdev=net0,id=nic0 -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
 
 rule disk
     pool = console
@@ -30,6 +34,7 @@ build Kernel/Hardware/Drivers/mouse.o: cpp ./Kernel/Hardware/Drivers/mouse.cpp
 build Kernel/Hardware/Drivers/keyboard.o: cpp ./Kernel/Hardware/Drivers/keyboard.cpp
 build Kernel/Hardware/Drivers/vga.o: cpp ./Kernel/Hardware/Drivers/vga.cpp
 build Kernel/Hardware/Drivers/am79c973.o: cpp ./Kernel/Hardware/Drivers/am79c973.cpp
+build Kernel/Hardware/Drivers/rtl8139.o: cpp ./Kernel/Hardware/Drivers/rtl8139.cpp
 build Kernel/Hardware/Drivers/sb16.o: cpp ./Kernel/Hardware/Drivers/sb16.cpp
 build Kernel/Hardware/Drivers/cmos.o: cpp ./Kernel/Hardware/Drivers/cmos.cpp
 build Kernel/Hardware/Drivers/ata.o: cpp ./Kernel/Hardware/Drivers/ata.cpp
@@ -47,8 +52,9 @@ build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build format: format
 build run: run
+build netrun: netrun
 build disk: disk
 default ./.out/kernel.bin
