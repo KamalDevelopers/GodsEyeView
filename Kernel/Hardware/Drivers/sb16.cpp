@@ -35,7 +35,7 @@ void SoundBlaster16::activate()
     dsp_write(0xE1);
     major_version = dsp_read();
     uint8_t minor_version = dsp_read();
-    klog("SB16 version %d.%d", major_version, minor_version);
+    /* klog("SB16 version %d.%d", major_version, minor_version); */
 
     /* Activate interrupts */
     mixer_port.write(0x80);
