@@ -8,3 +8,4 @@ compile_flags.txt
 .ccls-cache
 *.py
 libc.a
+dump.dat

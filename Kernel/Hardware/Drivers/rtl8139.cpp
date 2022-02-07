@@ -71,7 +71,7 @@ void RTL8139::receive()
     void* packet = kmalloc(packet_length);
     memcpy(packet, data, packet_length);
 
-    /* TODO: handle packet */
+    ETH->handle_packet((uint8_t*)packet, packet_length);
 
     packet_index = (packet_index + packet_length + 4 + 3) & RX_READ_POINTER_MASK;
 

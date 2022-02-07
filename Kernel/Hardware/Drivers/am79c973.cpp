@@ -1,3 +1,9 @@
+/*
+ * This driver does not seem to work in Qemu.
+ * This might be an issue in the driver implementation,
+ * or it could be an issue with the Qemu virtualized hardware.
+ */
+
 #include "am79c973.hpp"
 
 AM79C973::AM79C973(InterruptManager* interrupt_manager, device_descriptor_t device)
@@ -109,7 +115,7 @@ void AM79C973::receive()
                 size -= 4;
 
             uint8_t* buffer = (uint8_t*)(receive_buffer_descriptions[receive_buffer_index].address);
-            /* TODO: handle packet */
+            ETH->handle_packet(buffer, size);
         }
 
         receive_buffer_descriptions[receive_buffer_index].flags2 = 0;
