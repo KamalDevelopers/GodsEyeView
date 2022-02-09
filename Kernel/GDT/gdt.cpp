@@ -1,11 +1,13 @@
 #include "gdt.hpp"
 
+GDT* GDT::active = 0;
 GDT::GDT()
-    : nullSegmentSelector(0, 0, 0)
-    , unusedSegmentSelector(0, 0, 0)
-    , codeSegmentSelector(0, 64 * 1024 * 1024, 0x9A)
-    , dataSegmentSelector(0, 64 * 1024 * 1024, 0x92)
+    : null_segment_selector(0, 0, 0)
+    , unused_segment_selector(0, 0, 0)
+    , code_segment_selector(0, 64 * 1024 * 1024, 0x9A)
+    , data_segment_selector(0, 64 * 1024 * 1024, 0x92)
 {
+    active = this;
     uint32_t i[2];
     i[1] = (uint32_t)this;
     i[0] = sizeof(GDT) << 16;
@@ -18,17 +20,17 @@ GDT::~GDT()
 {
 }
 
-uint16_t GDT::data_segment_selector()
+uint16_t GDT::get_data_segment_selector()
 {
-    return (uint8_t*)&dataSegmentSelector - (uint8_t*)this;
+    return (uint8_t*)&data_segment_selector - (uint8_t*)this;
 }
 
-uint16_t GDT::code_segment_selector()
+uint16_t GDT::get_code_segment_selector()
 {
-    return (uint8_t*)&codeSegmentSelector - (uint8_t*)this;
+    return (uint8_t*)&code_segment_selector - (uint8_t*)this;
 }
 
-GDT::SegDesc::SegDesc(uint32_t base, uint32_t limit, uint8_t type)
+SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t type)
 {
     uint8_t* target = (uint8_t*)this;
 
@@ -56,7 +58,7 @@ GDT::SegDesc::SegDesc(uint32_t base, uint32_t limit, uint8_t type)
     target[5] = type;
 }
 
-uint32_t GDT::SegDesc::base()
+uint32_t SegmentDescriptor::base()
 {
     uint8_t* target = (uint8_t*)this;
 
@@ -68,7 +70,7 @@ uint32_t GDT::SegDesc::base()
     return result;
 }
 
-uint32_t GDT::SegDesc::limit()
+uint32_t SegmentDescriptor::limit()
 {
     uint8_t* target = (uint8_t*)this;
 

@@ -1,5 +1,7 @@
 #include "multitasking.hpp"
 
+uint32_t current_pid = 0;
+
 Task::Task(char* task_name, uint32_t eip, int priv)
 {
     if (strlen(task_name) > 20)
@@ -17,7 +19,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     cpustate->edi = 0;
     cpustate->ebp = 0;
     cpustate->eip = eip;
-    cpustate->cs = g_gdt->code_segment_selector();
+    cpustate->cs = GDT::active->get_code_segment_selector();
     cpustate->eflags = 0x202;
 
     memset(arguments, 0, 500);
@@ -27,7 +29,7 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     execute = 0;
     state = 0;
     privelege = priv;
-    pid = ++g_lpid;
+    pid = ++current_pid;
 }
 
 Task::~Task()
@@ -92,7 +94,6 @@ void Task::cwd(char* buffer)
 
 TaskManager::TaskManager(GDT* gdt)
 {
-    g_gdt = gdt;
     active = this;
     num_tasks = 0;
     current_task = -1;

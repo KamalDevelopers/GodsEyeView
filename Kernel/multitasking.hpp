@@ -74,9 +74,6 @@ public:
     ~Task();
 };
 
-static uint32_t g_lpid = 0;
-static GDT* g_gdt = 0;
-
 class TaskManager {
 private:
     bool add_task(Task* task);

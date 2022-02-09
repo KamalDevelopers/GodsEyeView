@@ -44,7 +44,7 @@ InterruptManager::InterruptManager(uint16_t hardware_interrupt_offset, GDT* glob
     active = this;
     this->task_manager = task_manager;
     this->hardware_interrupt_offset = hardware_interrupt_offset;
-    uint32_t code_segment = global_descriptor_table->code_segment_selector();
+    uint32_t code_segment = global_descriptor_table->get_code_segment_selector();
 
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
     for (uint8_t i = 255; i > 0; --i) {
