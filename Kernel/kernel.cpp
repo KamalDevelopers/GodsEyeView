@@ -7,6 +7,7 @@
 #include "Mem/pmm.hpp"
 #include "Net/arp.hpp"
 #include "Net/ethernet.hpp"
+#include "Net/icmp.hpp"
 #include "Net/ipv4.hpp"
 
 #include "Filesystem/tar.hpp"

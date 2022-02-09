@@ -37,19 +37,19 @@ bool Ethernet::handle_packet(uint8_t* buffer, uint32_t size)
     ethernet_frame_t* frame = (ethernet_frame_t*)buffer;
     uint8_t* data = (uint8_t*)frame + sizeof(ethernet_frame_t);
     int data_size = size - sizeof(ethernet_frame_t);
-    bool send_back = false;
+    bool response = false;
 
     /* This packet does not concern us */
     if ((frame->destination_mac != BROADCAST_MAC) && (frame->destination_mac != get_mac_address()))
         return false;
 
     if (frame->type == FLIP(ETHERNET_TYPE_ARP))
-        send_back = ARP::handle_packet((arp_packet_t*)data, data_size);
+        response = ARP::handle_packet((arp_packet_t*)data, data_size);
 
     if (frame->type == FLIP(ETHERNET_TYPE_IP))
-        send_back = IPV4::handle_packet((ipv4_packet_t*)data, data_size);
+        response = IPV4::handle_packet((ipv4_packet_t*)data, data_size);
 
-    return true;
+    return response;
 }
 
 bool Ethernet::send_packet(uint64_t mac, uint8_t* buffer, uint32_t size, uint16_t type)

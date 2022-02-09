@@ -22,9 +22,9 @@ typedef struct ipv4_packet {
 } __attribute__((packed)) ipv4_packet_t;
 
 namespace IPV4 {
-uint16_t calculate_checksum(ipv4_packet_t* packet, uint32_t size = sizeof(ipv4_packet_t));
+uint16_t calculate_checksum(uint16_t* data, uint32_t size = sizeof(ipv4_packet_t));
 bool handle_packet(ipv4_packet_t* ipv4, uint32_t size);
-void send_packet(uint32_t destination_ip, uint8_t* buffer, uint32_t size);
+void send_packet(uint32_t destination_ip, uint8_t protocol, uint8_t* buffer, uint32_t size);
 }
 
 #endif
