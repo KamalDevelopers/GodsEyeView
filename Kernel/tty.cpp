@@ -5,6 +5,7 @@ constexpr char* datacolorblue = "\033[01;34m[GevOS]: ";
 constexpr char* datacoloroff = "\033[0m";
 uint16_t* video_memory = (unsigned short*)0xb8000;
 bool serial_enabled = false;
+bool cursor_enabled = true;
 int video_memory_index = 0;
 int new_line_index = 0;
 uint32_t default_color = 0;
@@ -210,9 +211,29 @@ void set_color(uint8_t fg, uint8_t bg)
 
 void update_cursor()
 {
+    if (!cursor_enabled)
+        return;
+
     uint32_t pos = new_line_index * 80 + video_memory_index;
     outb(0x3D4, 15);
     outb(0x3D5, (uint8_t)(pos & 0xFF));
     outb(0x3D4, 14);
     outb(0x3D5, (uint8_t)(pos >> 8) & 0xFF);
+}
+
+void set_cursor(bool enable)
+{
+    if (!enable) {
+        cursor_enabled = false;
+        outb(0x3D4, 0x0A);
+        outb(0x3D5, 0x20);
+        return;
+    }
+
+    cursor_enabled = true;
+    outb(0x3D4, 0x0A);
+    outb(0x3D5, (inb(0x3D5) & 0xC0) | 14);
+    outb(0x3D4, 0x0B);
+    outb(0x3D5, (inb(0x3D5) & 0xE0) | 15);
+    update_cursor();
 }

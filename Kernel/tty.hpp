@@ -27,5 +27,6 @@ void clear_line(uint32_t y);
 void clear_screen();
 void set_color(uint8_t fg, uint8_t bg);
 void update_cursor();
+void set_cursor(bool enable);
 
 #endif

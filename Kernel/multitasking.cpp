@@ -181,6 +181,7 @@ uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
 
     uint32_t size = 0;
     reset_stdin();
+    set_cursor(true);
     is_reading_stdin = true;
 
     while (true) {
@@ -198,6 +199,7 @@ uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
     }
 
     is_reading_stdin = false;
+    set_cursor(false);
     return size;
 }
 
