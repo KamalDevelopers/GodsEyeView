@@ -1,11 +1,11 @@
 #include "multitasking.hpp"
 
-uint32_t current_pid = 0;
+BitArray<MAX_PIDS> pid_bitmap;
 
 Task::Task(char* task_name, uint32_t eip, int priv)
 {
     if (strlen(task_name) > 20)
-        task_name = "Unknown";
+        task_name = "anon@courage";
 
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
@@ -29,7 +29,8 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     execute = 0;
     state = 0;
     privelege = priv;
-    pid = ++current_pid;
+    pid = pid_bitmap.find_unset();
+    pid_bitmap.bit_set(pid);
 }
 
 Task::~Task()
@@ -94,6 +95,7 @@ void Task::cwd(char* buffer)
 
 TaskManager::TaskManager(GDT* gdt)
 {
+    pid_bitmap.bit_set(0);
     active = this;
     num_tasks = 0;
     current_task = -1;
@@ -265,6 +267,7 @@ void TaskManager::kill_zombie_tasks()
         if (tasks[i]->wake_pid_on_exit)
             task(tasks[i]->wake_pid_on_exit)->wake();
 
+        pid_bitmap.bit_clear(tasks[i]->get_pid());
         tasks[i]->~Task();
         delete_element(i, num_tasks, tasks);
         num_tasks--;
