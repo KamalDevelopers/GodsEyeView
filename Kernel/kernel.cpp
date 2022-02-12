@@ -118,6 +118,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     shell.executable(execute);
     TM->append_tasks(1, &shell);
 
+    Mutex::enable();
     TM->activate();
     IRQ::activate();
 

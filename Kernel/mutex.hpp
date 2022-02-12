@@ -11,6 +11,7 @@ typedef struct mutex_lock {
     uint8_t locked = 0;
 } mutex_lock_t;
 
+void enable();
 void lock(mutex_lock_t& lock);
 void unlock(mutex_lock_t& lock);
 }

@@ -81,7 +81,7 @@ private:
     int num_tasks;
     int current_task;
     uint32_t current_ticks = 0;
-    int8_t is_running = 0;
+    bool is_running = false;
     bool is_reading_stdin = false;
     bool check_kill = false;
     Task* tasks[256];

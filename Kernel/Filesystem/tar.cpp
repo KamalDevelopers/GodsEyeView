@@ -185,7 +185,7 @@ void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count)
             fdata[data_index] = buffer[i];
             data_index++;
         }
-        // buffer[size > 512 ? 512 : size] = '\0';
+        buffer[size > 512 ? 512 : size] = '\0';
         sector_offset++;
     }
 }
