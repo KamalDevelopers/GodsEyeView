@@ -20,17 +20,28 @@ void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
 
     page_table_t* table = (page_table_t*)((directory_index * sizeof(page_table_t)) + KERNEL_PAGE_DIR_START + sizeof(page_directory_t) + 0x2000);
 
-    kernel_page_directory->tables[directory_index].frame = (uint32_t)table >> 12;
     kernel_page_directory->tables[directory_index].present = 1;
     kernel_page_directory->tables[directory_index].rw = 1;
     kernel_page_directory->tables[directory_index].user = 1;
+    kernel_page_directory->tables[directory_index].w_through = 0;
+    kernel_page_directory->tables[directory_index].cache = 0;
+    kernel_page_directory->tables[directory_index].access = 0;
+    kernel_page_directory->tables[directory_index].reserved = 0;
     kernel_page_directory->tables[directory_index].page_size = 0;
+    kernel_page_directory->tables[directory_index].global = 0;
+    kernel_page_directory->tables[directory_index].available = 0;
+    kernel_page_directory->tables[directory_index].frame = (uint32_t)table >> 12;
     kernel_page_directory->reference_tables[directory_index] = table;
 
-    table->pages[table_index].frame = physical_address >> 12;
     table->pages[table_index].present = 1;
     table->pages[table_index].rw = 1;
     table->pages[table_index].user = 1;
+    table->pages[table_index].reserved = 0;
+    table->pages[table_index].accessed = 0;
+    table->pages[table_index].dirty = 0;
+    table->pages[table_index].reserved2 = 0;
+    table->pages[table_index].available = 0;
+    table->pages[table_index].frame = physical_address >> 12;
 }
 
 int Paging::unmap_page(uint32_t virtual_address)
@@ -49,6 +60,7 @@ int Paging::unmap_page(uint32_t virtual_address)
         return -1;
     }
 
+    table->pages[table_index].rw = 0;
     table->pages[table_index].present = 0;
     table->pages[table_index].frame = 0;
     return 0;
