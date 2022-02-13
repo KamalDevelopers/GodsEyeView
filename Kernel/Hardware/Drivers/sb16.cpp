@@ -41,7 +41,7 @@ void SoundBlaster16::activate()
     mixer_port.write(0x80);
     mixer_data_port.write(SB16_DEFAULT_IRQ_BITMASK);
 
-    set_sample_rate(48000);
+    set_sample_rate(11025);
 }
 
 void SoundBlaster16::dsp_write(uint8_t value)
@@ -56,6 +56,18 @@ uint8_t SoundBlaster16::dsp_read()
     while (!(read_status_port.read() & 0x80))
         ;
     return read_port.read();
+}
+
+void SoundBlaster16::start()
+{
+    dsp_write(0xD1);
+    dsp_write(0xD6);
+}
+
+void SoundBlaster16::stop()
+{
+    dsp_write(0xD3);
+    dsp_write(0xD5);
 }
 
 void SoundBlaster16::set_sample_rate(uint16_t hz)
@@ -77,7 +89,7 @@ void SoundBlaster16::dma_start(void* buffer, uint32_t length)
     outb(0xd4, 4 + (channel % 4));
     outb(0xd8, 1);
 
-    outb(0xd6, (channel % 4) | mode | (1 << 4));
+    outb(0xd6, (channel % 4) | mode);
 
     uint16_t offset = (((uint32_t)buffer) / 2) % 65536;
     outb(0xc4, (uint8_t)((offset >> 0) & 0xFF));
@@ -90,20 +102,22 @@ void SoundBlaster16::dma_start(void* buffer, uint32_t length)
     outb(0xD4, channel % 4);
 }
 
-void SoundBlaster16::write(void* buffer, uint32_t length)
+void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
 {
-    dma_start(buffer, length);
-    uint16_t sample_count = (length / 2) - 1;
+    sound_data = buffer;
+    total_size = length;
+
+    dma_start(sound_data, CHUNK_SIZE);
+    uint16_t sample_count = (CHUNK_SIZE / 2) - 1;
 
     /* Transfer type and type of data */
     dsp_write(DSP_PLAY | DSP_PROG_16 | DSP_AUTO_INIT);
     dsp_write(DSP_SIGNED | DSP_STEREO);
 
-    dsp_write((uint8_t)((sample_count >> 0) & 0xFF));
+    dsp_write((uint8_t)(sample_count & 0xFF));
     dsp_write((uint8_t)((sample_count >> 8) & 0xFF));
 
-    dsp_write(0xD1);
-    dsp_write(0xD6);
+    start();
 }
 
 uint32_t SoundBlaster16::interrupt(uint32_t esp)
@@ -111,5 +125,20 @@ uint32_t SoundBlaster16::interrupt(uint32_t esp)
     read_status_port.read();
     if (major_version >= 4)
         inb(0x22F);
+
+    if ((CHUNK_SIZE * current_position) >= total_size) {
+        stop();
+        kfree(sound_data);
+        current_position = 1;
+        total_size = 0;
+        return esp;
+    }
+
+    uint32_t size = total_size - (CHUNK_SIZE * current_position);
+    size = (size > CHUNK_SIZE) ? CHUNK_SIZE : size;
+
+    dma_start(sound_data + (CHUNK_SIZE * current_position), size);
+    current_position++;
+
     return esp;
 }

@@ -14,6 +14,7 @@
 #define DSP_STEREO 0x20
 #define DSP_UNSIGNED 0x00
 #define DSP_SIGNED 0x10
+#define CHUNK_SIZE PAGE_SIZE
 #define SB16 SoundBlaster16::active
 
 #include "../interrupts.hpp"
@@ -32,10 +33,13 @@ private:
     bool is_activated = false;
     int major_version = 0;
     uint16_t sample_rate = 0;
+    uint8_t* sound_data = 0;
+
+    uint32_t current_position = 1;
+    uint32_t total_size = 0;
 
     void dsp_write(uint8_t value);
     uint8_t dsp_read();
-    void set_sample_rate(uint16_t hz);
     void dma_start(void* buffer, uint32_t length);
 
 public:
@@ -44,7 +48,11 @@ public:
 
     static SoundBlaster16* active;
 
-    void write(void* buffer, uint32_t length);
+    void write(uint8_t* buffer, uint32_t length);
+    void set_sample_rate(uint16_t hz);
+
+    void start();
+    void stop();
 
     void activate();
     void identify();
