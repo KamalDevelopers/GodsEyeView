@@ -8,4 +8,6 @@ compile_flags.txt
 .ccls-cache
 *.py
 libc.a
+libaudio.a
 dump.dat
+dr_wav.h

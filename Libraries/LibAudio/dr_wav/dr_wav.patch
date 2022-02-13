@@ -1,0 +1,122 @@
+diff --git a/dr_wav.h b/dr_wav.h
+index 2dec76c..2fdc57d 100644
+--- a/dr_wav.h
++++ b/dr_wav.h
+@@ -116,10 +116,13 @@ Notes
+ #ifndef dr_wav_h
+ #define dr_wav_h
+ 
++#include <LibC/types.hpp>
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+ 
++#define DR_WAV_NO_STDIO
+ #define DRWAV_STRINGIFY(x)      #x
+ #define DRWAV_XSTRINGIFY(x)     DRWAV_STRINGIFY(x)
+ 
+@@ -128,8 +131,6 @@ extern "C" {
+ #define DRWAV_VERSION_REVISION  5
+ #define DRWAV_VERSION_STRING    DRWAV_XSTRINGIFY(DRWAV_VERSION_MAJOR) "." DRWAV_XSTRINGIFY(DRWAV_VERSION_MINOR) "." DRWAV_XSTRINGIFY(DRWAV_VERSION_REVISION)
+ 
+-#include <stddef.h> /* For size_t. */
+-
+ /* Sized types. */
+ typedef   signed char           drwav_int8;
+ typedef unsigned char           drwav_uint8;
+@@ -148,8 +149,8 @@ typedef unsigned int            drwav_uint32;
+             #pragma GCC diagnostic ignored "-Wc++11-long-long"
+         #endif
+     #endif
+-    typedef   signed long long  drwav_int64;
+-    typedef unsigned long long  drwav_uint64;
++    typedef   signed long  drwav_int64;
++    typedef unsigned long  drwav_uint64;
+     #if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)))
+         #pragma GCC diagnostic pop
+     #endif
+@@ -1297,19 +1298,16 @@ DRWAV_API drwav_bool32 drwav_fourcc_equal(const drwav_uint8* a, const char* b);
+ #ifndef dr_wav_c
+ #define dr_wav_c
+ 
+-#include <stdlib.h>
+-#include <string.h> /* For memcpy(), memset() */
+-#include <limits.h> /* For INT_MAX */
++#include <LibC/stdlib.hpp>
++#include <LibC/liballoc.hpp>
+ 
+ #ifndef DR_WAV_NO_STDIO
+-#include <stdio.h>
+-#include <wchar.h>
++#include <LibC/stdio.hpp>
+ #endif
+ 
+ /* Standard library stuff. */
+ #ifndef DRWAV_ASSERT
+-#include <assert.h>
+-#define DRWAV_ASSERT(expression)           assert(expression)
++#define DRWAV_ASSERT(expression)           ;
+ #endif
+ #ifndef DRWAV_MALLOC
+ #define DRWAV_MALLOC(sz)                   malloc((sz))
+@@ -2495,7 +2493,7 @@ DRWAV_PRIVATE drwav_uint64 drwav__read_bext_to_metadata_obj(drwav__metadata_pars
+ 
+             drwav_buffer_reader_read_u32(&reader, &timeReferenceLow);
+             drwav_buffer_reader_read_u32(&reader, &timeReferenceHigh);
+-            pMetadata->data.bext.timeReference = ((drwav_uint64)timeReferenceHigh << 32) + timeReferenceLow;
++            pMetadata->data.bext.timeReference = ((drwav_uint64)timeReferenceHigh << 16) + timeReferenceLow;
+ 
+             drwav_buffer_reader_read_u16(&reader, &pMetadata->data.bext.version);
+ 
+@@ -3734,7 +3732,7 @@ DRWAV_PRIVATE size_t drwav__write_or_count_metadata(drwav* pWav, drwav_metadata*
+                 bytesWritten += drwav__write_or_count(pWav, pMetadata->data.bext.pOriginationTime, sizeof(pMetadata->data.bext.pOriginationTime));
+ 
+                 timeReferenceLow  = (drwav_uint32)(pMetadata->data.bext.timeReference & 0xFFFFFFFF);
+-                timeReferenceHigh = (drwav_uint32)(pMetadata->data.bext.timeReference >> 32);
++                timeReferenceHigh = (drwav_uint32)(pMetadata->data.bext.timeReference >> 16);
+                 bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, timeReferenceLow);
+                 bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, timeReferenceHigh);
+ 
+@@ -4241,7 +4239,6 @@ DRWAV_API drwav_uint64 drwav_target_write_size_bytes(const drwav_data_format* pF
+ #ifndef DR_WAV_NO_STDIO
+ 
+ /* drwav_result_from_errno() is only used for fopen() and wfopen() so putting it inside DR_WAV_NO_STDIO for now. If something else needs this later we can move it out. */
+-#include <errno.h>
+ DRWAV_PRIVATE drwav_result drwav_result_from_errno(int e)
+ {
+     switch (e)
+@@ -6128,7 +6125,7 @@ DRWAV_PRIVATE void drwav__pcm_to_s16(drwav_int16* pOut, const drwav_uint8* pIn,
+         }
+ 
+         pIn += j;
+-        *pOut++ = (drwav_int16)((drwav_int64)sample >> 48);
++        *pOut++ = (drwav_int16)((drwav_int64)sample >> 16);
+     }
+ }
+ 
+@@ -7000,7 +6997,7 @@ DRWAV_PRIVATE void drwav__pcm_to_s32(drwav_int32* pOut, const drwav_uint8* pIn,
+         }
+ 
+         pIn += j;
+-        *pOut++ = (drwav_int32)((drwav_int64)sample >> 32);
++        *pOut++ = (drwav_int32)((drwav_int64)sample >> 16);
+     }
+ }
+ 
+@@ -7821,9 +7818,7 @@ DRWAV_API drwav_int32 drwav_bytes_to_s32(const drwav_uint8* data)
+ 
+ DRWAV_API drwav_uint64 drwav_bytes_to_u64(const drwav_uint8* data)
+ {
+-    return
+-        ((drwav_uint64)data[0] <<  0) | ((drwav_uint64)data[1] <<  8) | ((drwav_uint64)data[2] << 16) | ((drwav_uint64)data[3] << 24) |
+-        ((drwav_uint64)data[4] << 32) | ((drwav_uint64)data[5] << 40) | ((drwav_uint64)data[6] << 48) | ((drwav_uint64)data[7] << 56);
++    return (drwav_uint64)data;
+ }
+ 
+ DRWAV_API drwav_int64 drwav_bytes_to_s64(const drwav_uint8* data)
+@@ -8282,3 +8277,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
++

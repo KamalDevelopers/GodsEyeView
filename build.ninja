@@ -4,7 +4,7 @@ rule format
 
 rule run
     pool = console
-    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
+    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -drive format=raw,file=hdd.tar -display sdl -d cpu_reset
 
 rule netrun
     pool = console
@@ -21,7 +21,7 @@ rule asm
     command = as --32 $in -o $out
 
 rule link
-    command = ld -melf_i386 -T linker.ld -o $out $in ./Libraries/libc.a
+    command = ld -melf_i386 -T linker.ld -o $out $in ./Libraries/libc.a ./Libraries/libaudio.a
 
 build Kernel/kernel.o: cpp ./Kernel/kernel.cpp
 build Kernel/multitasking.o: cpp ./Kernel/multitasking.cpp

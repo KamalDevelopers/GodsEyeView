@@ -7,6 +7,14 @@ rule crt0
 rule libc
     command = ar ruv $out $in && ranlib $out
 
+rule libaudio
+    command = ar ruv $out $in && ranlib $out
+
+rule fetch
+    command = cd LibAudio/dr_wav/ && ./fetch.sh
+
+build fetch: fetch
+
 build LibC/unistd.o: cpp ./LibC/unistd.cpp
 build LibC/string.o: cpp ./LibC/string.cpp
 build LibC/stdio.o: cpp ./LibC/stdio.cpp
@@ -15,3 +23,6 @@ build LibC/path.o: cpp ./LibC/path.cpp
 build LibC/liballoc.o: cpp ./LibC/liballoc.cpp
 build LibC/crt0.o: crt0 ./LibC/crt0.cpp
 build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/liballoc.o LibC/crt0.o
+
+build LibAudio/wave.o: cpp ./LibAudio/wave.cpp
+build libaudio.a: libaudio LibAudio/wave.o
