@@ -47,6 +47,7 @@ bool Wave::init()
     if (!drwav_init_memory(&wav, buffer, buffer_size, NULL))
         return false;
 
+    channels = wav.channels;
     sample_rate = wav.sampleRate;
     sample_count = (size_t)wav.totalPCMFrameCount * wav.channels * sizeof(int32_t);
     return true;
