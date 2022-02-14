@@ -132,7 +132,7 @@ int Tar::read_dir(char* dirname, char** entries)
     /* Iterate through file names */
     for (int i = 0; i < file_index; i++) {
         if ((strncmp(files[i].name, dirname, strlen(dirname)) == 0) && !root && entries) {
-            *entries++ = files[i].name;
+            strcpy(*entries++, files[i].name);
         }
 
         if (root) {
@@ -142,7 +142,7 @@ int Tar::read_dir(char* dirname, char** entries)
                     is_root = false;
 
             if (is_root && entries)
-                *entries++ = files[i].name;
+                strcpy(*entries++, files[i].name);
         }
     }
 
@@ -150,7 +150,7 @@ int Tar::read_dir(char* dirname, char** entries)
     for (int i = 0; i < dir_index; i++) {
         if ((strncmp(dirs[i].name, dirname, strlen(dirname)) == 0) && !root) {
             if ((strcmp(dirs[i].name, dirname) != 0) && entries)
-                *entries++ = dirs[i].name;
+                strcpy(*entries++, dirs[i].name);
             else
                 exists = 0;
         }
@@ -162,7 +162,7 @@ int Tar::read_dir(char* dirname, char** entries)
                     is_root--;
 
             if ((is_root == 0) && entries)
-                *entries++ = dirs[i].name;
+                strcpy(*entries++, dirs[i].name);
         }
     }
 
