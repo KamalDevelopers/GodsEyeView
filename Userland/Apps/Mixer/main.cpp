@@ -26,7 +26,7 @@ bool play(char* file_name)
     uint8_t* data = (uint8_t*)malloc(statbuffer.st_size);
     read(file_descriptor, data, statbuffer.st_size);
     close(file_descriptor);
-    uint32_t size = statbuffer.st_size;
+    uint32_t size = statbuffer.st_size - 4096;
 
     printf("Playing %s at 8000 Hz ", file_name);
     uint32_t number_places_size = number_places(size / 4096);
