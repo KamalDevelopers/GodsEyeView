@@ -14,7 +14,7 @@ void Syscalls::sys_exit()
     TM->kill();
 }
 
-int Syscalls::sys_read(int fd, char* data, int length)
+int Syscalls::sys_read(int fd, void* data, int length)
 {
     if (length <= 0)
         return -1;
@@ -41,20 +41,26 @@ int Syscalls::sys_read(int fd, char* data, int length)
     return size;
 }
 
-int Syscalls::sys_write(int fd, char* data, int length)
+int Syscalls::sys_write(int fd, void* data, int length)
 {
     if (length <= 0)
         return -1;
 
     switch (fd) {
     case 1:
-        data[length] = '\0';
-        write_string(data);
+        ((char*)data)[length] = '\0';
+        write_string((char*)data);
+        break;
+
+    case DEV_AUDIO_FD:
+        SB16->write((uint8_t*)data, length);
+        while (SB16->playing())
+            ;
         break;
 
     default:
         /* FIXME: Cannot overwrite existing file */
-        VFS->write(fd, (uint8_t*)&data, length);
+        VFS->write(fd, (uint8_t*)data, length);
         break;
     }
 
@@ -179,7 +185,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 4:
-        cpu->eax = sys_write((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+        cpu->eax = sys_write((int)cpu->ebx, (uint8_t*)cpu->ecx, (int)cpu->edx);
         break;
 
     case 5:

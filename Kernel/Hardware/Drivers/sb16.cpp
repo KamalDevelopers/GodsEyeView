@@ -41,7 +41,7 @@ void SoundBlaster16::activate()
     mixer_port.write(0x80);
     mixer_data_port.write(SB16_DEFAULT_IRQ_BITMASK);
 
-    set_sample_rate(11025);
+    set_sample_rate(8000);
 }
 
 void SoundBlaster16::dsp_write(uint8_t value)
@@ -104,10 +104,12 @@ void SoundBlaster16::dma_start(void* buffer, uint32_t length)
 
 void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
 {
-    sound_data = buffer;
+    if (length > CHUNK_SIZE)
+        return;
+
     total_size = length;
 
-    dma_start(sound_data, CHUNK_SIZE);
+    dma_start(buffer, CHUNK_SIZE);
     uint16_t sample_count = (CHUNK_SIZE / 2) - 1;
 
     /* Transfer type and type of data */
@@ -117,6 +119,7 @@ void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
     dsp_write((uint8_t)(sample_count & 0xFF));
     dsp_write((uint8_t)((sample_count >> 8) & 0xFF));
 
+    is_playing = true;
     start();
 }
 
@@ -126,19 +129,7 @@ uint32_t SoundBlaster16::interrupt(uint32_t esp)
     if (major_version >= 4)
         inb(0x22F);
 
-    if ((CHUNK_SIZE * current_position) >= total_size) {
-        stop();
-        kfree(sound_data);
-        current_position = 1;
-        total_size = 0;
-        return esp;
-    }
-
-    uint32_t size = total_size - (CHUNK_SIZE * current_position);
-    size = (size > CHUNK_SIZE) ? CHUNK_SIZE : size;
-
-    dma_start(sound_data + (CHUNK_SIZE * current_position), size);
-    current_position++;
-
+    stop();
+    is_playing = false;
     return esp;
 }

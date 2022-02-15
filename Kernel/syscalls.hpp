@@ -4,7 +4,7 @@
 #include "Exec/loader.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
-#include "Hardware/Drivers/pcspk.hpp"
+#include "Hardware/Drivers/sb16.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Mem/mm.hpp"
 #include "multitasking.hpp"
@@ -21,8 +21,8 @@ extern "C" int shutdown();
 class Syscalls : public InterruptHandler {
 private:
     void sys_exit();
-    int sys_read(int file_handle, char* data, int length);
-    int sys_write(int file_handle, char* data, int length);
+    int sys_read(int file_handle, void* data, int length);
+    int sys_write(int file_handle, void* data, int length);
     int sys_open(char* file);
     int sys_close(int file_handle);
     int sys_waitpid(int pid);

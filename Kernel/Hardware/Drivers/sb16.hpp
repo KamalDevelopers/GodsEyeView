@@ -31,9 +31,10 @@ private:
     Port8Bit read_status_port;
 
     bool is_activated = false;
+    bool is_playing = false;
+
     int major_version = 0;
     uint16_t sample_rate = 0;
-    uint8_t* sound_data = 0;
 
     uint32_t current_position = 1;
     uint32_t total_size = 0;
@@ -51,6 +52,7 @@ public:
     void write(uint8_t* buffer, uint32_t length);
     void set_sample_rate(uint16_t hz);
 
+    bool playing() { return is_playing; }
     void start();
     void stop();
 

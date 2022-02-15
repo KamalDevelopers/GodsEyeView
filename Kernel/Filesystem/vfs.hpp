@@ -12,6 +12,8 @@
 #define MAX_OPENFILES 200
 #define MAX_FILE_NAME 100
 #define MAX_MOUNTS 5
+#define MAX_FILE_DESCRIPTORS INT_MAX - 10
+#define DEV_AUDIO_FD MAX_FILE_DESCRIPTORS + 1
 #define VFS VirtualFilesystem::active
 
 struct file_entry {

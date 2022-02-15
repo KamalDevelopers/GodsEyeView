@@ -33,6 +33,9 @@ void VirtualFilesystem::mount(Filesystem* fs)
 
 int VirtualFilesystem::open(char* file_name)
 {
+    if (strcmp(file_name, "/dev/audio") == 0)
+        return DEV_AUDIO_FD;
+
     char file_path[MAX_PATH_SIZE];
     memset(file_path, 0, MAX_PATH_SIZE);
     TM->task()->cwd(file_path);
@@ -53,6 +56,9 @@ int VirtualFilesystem::open(char* file_name)
     file.descriptor = file_descriptors;
     file.size = mounts[mount]->get_size(file_path);
     files[num_open_files] = file;
+
+    if ((file_descriptors + 1) > MAX_FILE_DESCRIPTORS)
+        file_descriptors = 0;
 
     num_open_files++;
     file_descriptors++;
