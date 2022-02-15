@@ -5,12 +5,14 @@ BitArray<MAX_PIDS> pid_bitmap;
 Task::Task(char* task_name, uint32_t eip, int priv)
 {
     if (strlen(task_name) > 20)
-        task_name = "anon@courage";
+        task_name = "Unknown";
 
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
 
-    cpustate = (cpu_state*)(stack + 4096 - sizeof(cpu_state));
+    cpustate = (cpu_state*)(stack + (100 * KB) - sizeof(cpu_state));
+    memset(stack, 0, (100 * KB));
+
     cpustate->eax = 0;
     cpustate->ebx = 0;
     cpustate->ecx = 0;

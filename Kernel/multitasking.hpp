@@ -18,6 +18,7 @@
 #define SLEEP_WAIT_WAKE 1
 #define MAX_PIDS 1000
 #define TM TaskManager::active
+#define KB 1000
 
 struct cpu_state {
     uint32_t eax;
@@ -42,7 +43,7 @@ class Task {
     friend class TaskManager;
 
 private:
-    uint8_t stack[4096];
+    uint8_t stack[100 * KB];
     cpu_state* cpustate;
     char stdin_buffer[200];
 
