@@ -6,9 +6,9 @@
 
 int read_dir(char* name, bool root)
 {
-    char** names = (char**)malloc(sizeof(char*) * 50);
-    for (uint32_t i = 0; i < 50; ++i)
-        names[i] = (char*)malloc(100);
+    char* names[50];
+    for (uint32_t i = 0; i < 20; i++)
+        names[i] = (char*)malloc(sizeof(char) * 100);
 
     if (listdir(name, (char**)names) == -1) {
         printf("Folder does not exist");
@@ -33,9 +33,8 @@ int read_dir(char* name, bool root)
         printf("%s ", file_name);
     }
 
-    for (uint32_t i = 0; i < 50; i++)
+    for (uint32_t i = 0; i < 20; i++)
         free(names[i]);
-    free(names);
     return 0;
 }
 
