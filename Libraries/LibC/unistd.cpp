@@ -47,7 +47,7 @@ int read(int fd, void* buffer, int length)
     return size;
 }
 
-int write(int fd, char* buffer, int length)
+int write(int fd, void* buffer, int length)
 {
     asm volatile("int $0x80"
                  :
