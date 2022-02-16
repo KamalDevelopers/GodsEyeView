@@ -54,8 +54,6 @@ int Syscalls::sys_write(int fd, void* data, int length)
 
     case DEV_AUDIO_FD:
         SB16->write((uint8_t*)data, length);
-        while (SB16->playing())
-            ;
         break;
 
     default:

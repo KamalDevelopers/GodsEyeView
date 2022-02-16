@@ -1,5 +1,7 @@
 #include "sb16.hpp"
 
+MUTEX(sb16);
+
 SoundBlaster16* SoundBlaster16::active = 0;
 SoundBlaster16::SoundBlaster16(InterruptManager* interrupt_manager)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + SB16_DEFAULT_IRQ)
@@ -107,6 +109,7 @@ void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
     if (length > CHUNK_SIZE)
         return;
 
+    Mutex::lock(sb16);
     total_size = length;
 
     dma_start(buffer, CHUNK_SIZE);
@@ -131,5 +134,6 @@ uint32_t SoundBlaster16::interrupt(uint32_t esp)
 
     stop();
     is_playing = false;
+    Mutex::unlock(sb16);
     return esp;
 }
