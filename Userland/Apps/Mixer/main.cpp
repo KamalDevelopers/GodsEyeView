@@ -30,11 +30,9 @@ bool play(char* file_name)
 
     printf("Playing %s at 8000 Hz ", file_name);
     uint32_t number_places_size = number_places(size / 4096);
-    uint8_t* sample_data = (uint8_t*)malloc(4096);
 
     for (uint32_t i = 0; i < size; i += 4096) {
-        memcpy(sample_data, data + i, 4096);
-        write(audio_device, sample_data, 4096);
+        write(audio_device, data + i, 4096);
         printf("[%d:%d]", i / 4096, size / 4096);
         flush();
 
@@ -44,9 +42,7 @@ bool play(char* file_name)
     }
 
     printf("[done]");
-
     free(data);
-    free(sample_data);
 
     return true;
 }
