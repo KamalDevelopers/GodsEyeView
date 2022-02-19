@@ -1,19 +1,20 @@
 #include "cmos.hpp"
 
-TimeDriver* TimeDriver::active = 0;
-TimeDriver::TimeDriver()
+CMOS* CMOS::active = 0;
+CMOS::CMOS()
     : cmos_address(0x70)
     , cmos_data(0x71)
 {
     active = this;
+    set_timezone_offset(2);
 }
 
-void TimeDriver::set_timezone_offset(uint16_t t_offset)
+void CMOS::set_timezone_offset(int time_offset)
 {
-    timezone_offset = t_offset;
+    timezone_offset = time_offset;
 }
 
-void TimeDriver::get_full_time(char seperator, char* time)
+void CMOS::get_full_time(char seperator, char* time)
 {
     char format[10];
     char sec[3], min[3], hour[3], middle[3];
@@ -52,7 +53,7 @@ void TimeDriver::get_full_time(char seperator, char* time)
     strcpy(time, format);
 }
 
-unsigned int TimeDriver::get_time()
+unsigned int CMOS::get_time()
 {
     unsigned int yeardata = ((get_year() - 1970)) * SECONDS_YEAR;
     unsigned int monthdata = get_month() * SECONDS_MONTH;
@@ -63,55 +64,55 @@ unsigned int TimeDriver::get_time()
     return yeardata + monthdata + daydata + hourdata + mindata + get_second();
 }
 
-unsigned char TimeDriver::get_second()
+unsigned char CMOS::get_second()
 {
     read_rtc();
     return second;
 }
 
-unsigned char TimeDriver::get_minute()
+unsigned char CMOS::get_minute()
 {
     read_rtc();
     return minute;
 }
 
-unsigned char TimeDriver::get_hour(uint16_t t_offset)
+unsigned char CMOS::get_hour()
 {
     read_rtc();
-    return hour + t_offset;
+    return hour;
 }
 
-unsigned char TimeDriver::get_day()
+unsigned char CMOS::get_day()
 {
     read_rtc();
     return day;
 }
 
-unsigned char TimeDriver::get_month()
+unsigned char CMOS::get_month()
 {
     read_rtc();
     return month;
 }
 
-unsigned int TimeDriver::get_year()
+unsigned int CMOS::get_year()
 {
     read_rtc();
     return year;
 }
 
-int TimeDriver::get_update_in_progress_flag()
+int CMOS::get_update_in_progress_flag()
 {
     cmos_address.write(0x0A);
     return (cmos_data.read() & 0x80);
 }
 
-unsigned char TimeDriver::get_rtc_register(int reg)
+unsigned char CMOS::get_rtc_register(int reg)
 {
     cmos_address.write(reg);
     return cmos_data.read();
 }
 
-void TimeDriver::read_rtc()
+void CMOS::read_rtc()
 {
     unsigned char century;
     unsigned char last_second;
@@ -131,9 +132,9 @@ void TimeDriver::read_rtc()
     day = get_rtc_register(0x07);
     month = get_rtc_register(0x08);
     year = get_rtc_register(0x09);
-    if (century_register != 0) {
+
+    if (century_register != 0)
         century = get_rtc_register(century_register);
-    }
 
     do {
         last_second = second;
@@ -182,5 +183,6 @@ void TimeDriver::read_rtc()
         if (year < CURRENT_YEAR)
             year += 100;
     }
+
     hour = hour + timezone_offset;
 }

@@ -15,8 +15,10 @@
 #include "Hardware/Drivers/am79c973.hpp"
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/cmos.hpp"
+#include "Hardware/Drivers/es1370.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
+#include "Hardware/Drivers/pcs.hpp"
 #include "Hardware/Drivers/rtl8139.hpp"
 #include "Hardware/Drivers/sb16.hpp"
 #include "Hardware/Drivers/vga.hpp"
@@ -57,8 +59,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     GDT gdt;
     PCI pci;
+    CMOS time;
     TaskManager task_manager(&gdt);
-    TimeDriver time;
     VirtualFilesystem vfs;
     VGA vga;
 

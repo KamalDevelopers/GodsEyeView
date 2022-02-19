@@ -4,11 +4,11 @@ rule format
 
 rule run
     pool = console
-    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -drive format=raw,file=hdd.tar -display sdl -d cpu_reset
+    command = qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device es1370 -netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
 
 rule netrun
     pool = console
-    command = sudo qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device sb16 -netdev tap,helper=/usr/lib/qemu/qemu-bridge-helper,id=net0 -device rtl8139,netdev=net0,id=nic0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
+    command = sudo qemu-system-i386 -kernel ./.out/kernel.bin -boot d -device es1370 -netdev tap,helper=/usr/lib/qemu/qemu-bridge-helper,id=net0 -device rtl8139,netdev=net0,id=nic0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -drive format=raw,file=hdd.tar -d cpu_reset
 
 rule disk
     pool = console
@@ -35,10 +35,11 @@ build Kernel/Hardware/Drivers/keyboard.o: cpp ./Kernel/Hardware/Drivers/keyboard
 build Kernel/Hardware/Drivers/vga.o: cpp ./Kernel/Hardware/Drivers/vga.cpp
 build Kernel/Hardware/Drivers/am79c973.o: cpp ./Kernel/Hardware/Drivers/am79c973.cpp
 build Kernel/Hardware/Drivers/rtl8139.o: cpp ./Kernel/Hardware/Drivers/rtl8139.cpp
+build Kernel/Hardware/Drivers/pcs.o: cpp ./Kernel/Hardware/Drivers/pcs.cpp
 build Kernel/Hardware/Drivers/sb16.o: cpp ./Kernel/Hardware/Drivers/sb16.cpp
 build Kernel/Hardware/Drivers/cmos.o: cpp ./Kernel/Hardware/Drivers/cmos.cpp
 build Kernel/Hardware/Drivers/ata.o: cpp ./Kernel/Hardware/Drivers/ata.cpp
-build Kernel/Hardware/Drivers/pcspk.o: cpp ./Kernel/Hardware/Drivers/pcspk.cpp
+build Kernel/Hardware/Drivers/es1370.o: cpp ./Kernel/Hardware/Drivers/es1370.cpp
 build Kernel/Hardware/interrupts.o: cpp ./Kernel/Hardware/interrupts.cpp
 build Kernel/Hardware/pci.o: cpp ./Kernel/Hardware/pci.cpp
 build Kernel/Mem/paging.o: cpp ./Kernel/Mem/paging.cpp
@@ -56,7 +57,7 @@ build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/pcspk.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/Hardware/port.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build format: format
 build run: run
 build netrun: netrun

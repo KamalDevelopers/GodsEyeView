@@ -15,12 +15,12 @@
 #define SECONDS_DAY 86400
 #define SECONDS_HOUR 3600
 #define SECONDS_MIN 60
-#define Time TimeDriver::active
+#define Time CMOS::active
 
-class TimeDriver {
+class CMOS {
 protected:
     int century_register = 0x00;
-    int timezone_offset = 2;
+    int timezone_offset = 0;
 
     unsigned char second;
     unsigned char minute;
@@ -36,16 +36,16 @@ protected:
     int get_update_in_progress_flag();
 
 public:
-    TimeDriver();
-    ~TimeDriver();
+    CMOS();
+    ~CMOS();
 
-    static TimeDriver* active;
+    static CMOS* active;
     void read_rtc();
-    void set_timezone_offset(uint16_t t_offset);
+    void set_timezone_offset(int time_offset);
 
     unsigned char get_second();
     unsigned char get_minute();
-    unsigned char get_hour(uint16_t t_offset = 0);
+    unsigned char get_hour();
 
     unsigned char get_day();
     unsigned char get_month();
