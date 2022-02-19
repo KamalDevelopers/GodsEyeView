@@ -25,8 +25,3 @@ void Audio::set_sample_rate(uint16_t hz)
 {
     audio_driver->set_sample_rate(hz);
 }
-
-bool Audio::playing()
-{
-    return audio_driver->playing();
-}

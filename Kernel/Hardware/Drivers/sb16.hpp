@@ -33,7 +33,6 @@ private:
     Port8Bit read_status_port;
 
     bool is_activated = false;
-    bool is_playing = false;
 
     int major_version = 0;
     uint16_t sample_rate = 0;
@@ -57,7 +56,6 @@ public:
     void set_sample_rate(uint16_t hz);
 
     bool activated() { return is_activated; }
-    bool playing() { return is_playing; }
     void start();
     void stop();
 

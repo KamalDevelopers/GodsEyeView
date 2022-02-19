@@ -124,7 +124,6 @@ void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
     dsp_write((uint8_t)(sample_count & 0xFF));
     dsp_write((uint8_t)((sample_count >> 8) & 0xFF));
 
-    is_playing = true;
     start();
 }
 
@@ -135,7 +134,6 @@ uint32_t SoundBlaster16::interrupt(uint32_t esp)
         inb(0x22F);
 
     stop();
-    is_playing = false;
     Mutex::unlock(sb16);
     return esp;
 }

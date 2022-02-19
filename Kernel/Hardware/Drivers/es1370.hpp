@@ -21,6 +21,7 @@
 #define SCTRL_SH_P2ENDINC 19
 #define CTRL_DAC2_EN 0x00000020
 #define CTRL_PCLKDIV 0x1FFF0000
+#define CODEC_DONE 0x00000100
 #define CTRL_SH_PCLKDIV 16
 #define XCTL0 0x0100
 #define CDC_EN 0x0002
@@ -46,7 +47,6 @@ private:
     Port32Bit dac2_buffer_port;
     Port32Bit dac2_buffer_size_port;
 
-    bool is_playing = false;
     bool is_init_irq = true;
     uint16_t sample_rate = 0;
     const uint8_t interrupt_mask = 0x3;
@@ -61,7 +61,6 @@ public:
     void set_sample_rate(uint16_t hz);
     void write_codec(int reg, uint16_t value);
     void write(uint8_t* buffer, uint32_t length);
-    bool playing() { return is_playing; }
 
     virtual uint32_t interrupt(uint32_t esp);
 };

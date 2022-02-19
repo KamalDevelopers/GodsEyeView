@@ -22,7 +22,8 @@ ES1370::ES1370(InterruptManager* interrupt_manager, device_descriptor_t device)
 
 void ES1370::activate()
 {
-    /* Enable codec */
+    /* Enable codec and turn off legacy */
+    legacy_port.write(0x0);
     write_codec(0x16, 0x2);
     delay(20);
     write_codec(0x16, 0x3);
@@ -33,7 +34,7 @@ void ES1370::activate()
     control |= CDC_EN;
     control_port.write(control);
 
-    /* Set master and mixer max volume */
+    /* Set master and mixer to max volume */
     write_codec(CODEC_MASTER_VOLUME_L, 0x0);
     write_codec(CODEC_MASTER_VOLUME_R, 0x0);
     write_codec(CODEC_VOICE_VOLUME_L, 0x0);
@@ -55,7 +56,7 @@ void ES1370::set_sample_rate(uint16_t hz)
 
 void ES1370::write_codec(int reg, uint16_t value)
 {
-    while ((status_port.read() & 0x00000100) != 0)
+    while ((status_port.read() & CODEC_DONE) != 0)
         ;
     codec_port.write((reg << 8) | value);
 }
@@ -63,7 +64,6 @@ void ES1370::write_codec(int reg, uint16_t value)
 void ES1370::write(uint8_t* buffer, uint32_t length)
 {
     Mutex::lock(es1370);
-    is_playing = true;
 
     /* Set sample counts and buffer length */
     /* FIXME: How should we properly calculate the sample count? */
@@ -83,6 +83,7 @@ void ES1370::write(uint8_t* buffer, uint32_t length)
     /* Start dac2 playback */
     uint32_t ctrl = control_port.read();
     control_port.write(ctrl | CTRL_DAC2_EN);
+    is_init_irq = true;
 }
 
 uint32_t ES1370::interrupt(uint32_t esp)
@@ -99,12 +100,9 @@ uint32_t ES1370::interrupt(uint32_t esp)
             /* Stop dac2 playback */
             control_port.write(ctrl & ~CTRL_DAC2_EN);
             Mutex::unlock(es1370);
-
-            is_playing = false;
-            is_init_irq = true;
-        } else {
-            is_init_irq = false;
         }
+
+        is_init_irq = false;
     }
 
     return esp;

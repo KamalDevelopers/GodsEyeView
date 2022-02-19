@@ -12,7 +12,6 @@ public:
 
     virtual void write(uint8_t* buffer, uint32_t length) { }
     virtual void set_sample_rate(uint16_t hz) { }
-    virtual bool playing() { return 0; }
 };
 
 class Audio {
@@ -28,7 +27,6 @@ public:
     void set_audio_driver(AudioDriver* driver);
     void write(uint8_t* buffer, uint32_t length);
     void set_sample_rate(uint16_t hz);
-    bool playing();
 };
 
 #endif
