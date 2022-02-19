@@ -1,5 +1,7 @@
 #include "es1370.hpp"
 
+MUTEX(es1370);
+
 ES1370::ES1370(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
     , control_port(device.port_base + 0x00)
@@ -60,10 +62,12 @@ void ES1370::write_codec(int reg, uint16_t value)
 
 void ES1370::write(uint8_t* buffer, uint32_t length)
 {
+    Mutex::lock(es1370);
     is_playing = true;
 
     /* Set sample counts and buffer length */
-    uint16_t sample_count = (length / 4) - 1;
+    /* FIXME: How should we properly calculate the sample count? */
+    uint16_t sample_count = (length / 8) - 1;
     memory_page_port.write(0xC);
     dac2_buffer_port.write((uint32_t)buffer);
     dac2_buffer_size_port.write((length / 4) - 1);
@@ -94,6 +98,8 @@ uint32_t ES1370::interrupt(uint32_t esp)
         if (!is_init_irq) {
             /* Stop dac2 playback */
             control_port.write(ctrl & ~CTRL_DAC2_EN);
+            Mutex::unlock(es1370);
+
             is_playing = false;
             is_init_irq = true;
         } else {
