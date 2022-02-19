@@ -62,6 +62,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     CMOS time;
     TaskManager task_manager(&gdt);
     VirtualFilesystem vfs;
+    Audio audio;
     VGA vga;
 
     klog("Starting memory management and paging");
@@ -100,6 +101,15 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     if (pci.find_driver(RTL8139::identifier())) {
         RTL8139* rtl8139 = new RTL8139(&interrupts, pci.get_descriptor());
         ethernet.set_network_driver(rtl8139);
+    }
+
+    if (sb16.activated()) {
+        AUDIO->set_audio_driver(&sb16);
+    }
+
+    if (pci.find_driver(ES1370::identifier())) {
+        ES1370* es1370 = new ES1370(&interrupts, pci.get_descriptor());
+        AUDIO->set_audio_driver(es1370);
     }
 
     klog("Setting up loaders and tasks");

@@ -4,7 +4,7 @@
 #include "Exec/loader.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
-#include "Hardware/Drivers/sb16.hpp"
+#include "Hardware/audio.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Mem/mm.hpp"
 #include "multitasking.hpp"

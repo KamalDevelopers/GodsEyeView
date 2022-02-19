@@ -1,6 +1,7 @@
 #ifndef ES1370_HPP
 #define ES1370_HPP
 
+#include "../audio.hpp"
 #include "../interrupts.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
@@ -30,7 +31,8 @@
 #define OUTPUT_MIX2_VOICER (1 << 2)
 #define DAC2_SRTODIV(x) (((1411200 + (x) / 2) / (x)-2) & 0x1FFF)
 
-class ES1370 : public InterruptHandler {
+class ES1370 : public InterruptHandler
+    , public AudioDriver {
 private:
     Port32Bit control_port;
     Port32Bit status_port;
@@ -49,6 +51,8 @@ private:
     uint16_t sample_rate = 0;
     const uint8_t interrupt_mask = 0x3;
 
+    void activate();
+
 public:
     ES1370(InterruptManager* interrupt_manager, device_descriptor_t device);
     ~ES1370();
@@ -58,7 +62,6 @@ public:
     void write_codec(int reg, uint16_t value);
     void write(uint8_t* buffer, uint32_t length);
     bool playing() { return is_playing; }
-    void activate();
 
     virtual uint32_t interrupt(uint32_t esp);
 };

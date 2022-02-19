@@ -113,6 +113,8 @@ void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
     total_size = length;
 
     dma_start(buffer, CHUNK_SIZE);
+
+    /* FIXME: How should we properly calculate the sample count? */
     uint16_t sample_count = (CHUNK_SIZE / 2) - 1;
 
     /* Transfer type and type of data */

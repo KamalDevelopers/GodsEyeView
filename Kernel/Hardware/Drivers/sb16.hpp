@@ -17,11 +17,13 @@
 #define CHUNK_SIZE PAGE_SIZE
 #define SB16 SoundBlaster16::active
 
+#include "../audio.hpp"
 #include "../interrupts.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
 
-class SoundBlaster16 : public InterruptHandler {
+class SoundBlaster16 : public InterruptHandler
+    , public AudioDriver {
 private:
     Port8Bit mixer_port;
     Port8Bit mixer_data_port;
@@ -42,6 +44,8 @@ private:
     void dsp_write(uint8_t value);
     uint8_t dsp_read();
     void dma_start(void* buffer, uint32_t length);
+    void activate();
+    void identify();
 
 public:
     SoundBlaster16(InterruptManager* interrupt_manager);
@@ -52,12 +56,11 @@ public:
     void write(uint8_t* buffer, uint32_t length);
     void set_sample_rate(uint16_t hz);
 
+    bool activated() { return is_activated; }
     bool playing() { return is_playing; }
     void start();
     void stop();
 
-    void activate();
-    void identify();
     virtual uint32_t interrupt(uint32_t esp);
 };
 
