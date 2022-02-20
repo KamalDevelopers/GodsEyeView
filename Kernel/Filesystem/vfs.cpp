@@ -57,7 +57,7 @@ int VirtualFilesystem::open(char* file_name)
     file.size = mounts[mount]->get_size(file_path);
     files[num_open_files] = file;
 
-    if ((file_descriptors + 1) > MAX_FILE_DESCRIPTORS)
+    if (file_descriptors >= MAX_FILE_DESCRIPTORS)
         file_descriptors = 0;
 
     num_open_files++;
@@ -68,6 +68,9 @@ int VirtualFilesystem::open(char* file_name)
 
 int VirtualFilesystem::close(int descriptor)
 {
+    if (descriptor >= MAX_FILE_DESCRIPTORS)
+        return 1;
+
     int index = search(descriptor);
     if (index == -1)
         return -1;
