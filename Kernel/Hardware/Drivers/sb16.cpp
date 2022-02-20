@@ -104,6 +104,12 @@ void SoundBlaster16::dma_start(void* buffer, uint32_t length)
     outb(0xD4, channel % 4);
 }
 
+void SoundBlaster16::wait()
+{
+    Mutex::lock(sb16);
+    Mutex::unlock(sb16);
+}
+
 void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
 {
     if (length > CHUNK_SIZE)
@@ -114,13 +120,11 @@ void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
 
     dma_start(buffer, CHUNK_SIZE);
 
-    /* FIXME: How should we properly calculate the sample count? */
-    uint16_t sample_count = (CHUNK_SIZE / 2) - 1;
-
     /* Transfer type and type of data */
     dsp_write(DSP_PLAY | DSP_PROG_16 | DSP_AUTO_INIT);
     dsp_write(DSP_SIGNED | DSP_STEREO);
 
+    uint16_t sample_count = (CHUNK_SIZE / sizeof(int16_t)) - 1;
     dsp_write((uint8_t)(sample_count & 0xFF));
     dsp_write((uint8_t)((sample_count >> 8) & 0xFF));
 

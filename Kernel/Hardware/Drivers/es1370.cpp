@@ -43,14 +43,20 @@ void ES1370::activate()
     write_codec(CODEC_OUTPUT_MIX2, OUTPUT_MIX2_VOICEL | OUTPUT_MIX2_VOICER);
     delay(50000);
 
-    set_sample_rate(8000);
+    set_sample_rate(44100);
+}
+
+void ES1370::wait()
+{
+    Mutex::lock(es1370);
+    Mutex::unlock(es1370);
 }
 
 void ES1370::set_sample_rate(uint16_t hz)
 {
     sample_rate = hz;
     uint32_t ctrl = control_port.read() & ~CTRL_PCLKDIV;
-    ctrl |= DAC2_SRTODIV((uint16_t)sample_rate) << CTRL_SH_PCLKDIV;
+    ctrl |= DAC2_SRTODIV(sample_rate) << CTRL_SH_PCLKDIV;
     control_port.write(ctrl);
 }
 
@@ -64,14 +70,14 @@ void ES1370::write_codec(int reg, uint16_t value)
 void ES1370::write(uint8_t* buffer, uint32_t length)
 {
     Mutex::lock(es1370);
+    memory_page_port.write(0xC);
 
     /* Set sample counts and buffer length */
-    /* FIXME: How should we properly calculate the sample count? */
-    uint16_t sample_count = (length / 8) - 1;
-    memory_page_port.write(0xC);
+    int sample_count = length / sizeof(int16_t);
+
     dac2_buffer_port.write((uint32_t)buffer);
     dac2_buffer_size_port.write((length / 4) - 1);
-    dac2_sample_port.write(sample_count);
+    dac2_sample_port.write((sample_count >> 2) - 1);
 
     /* Looped 16 bit stereo playback */
     uint32_t sctrl = serial_port.read();
@@ -83,7 +89,7 @@ void ES1370::write(uint8_t* buffer, uint32_t length)
     /* Start dac2 playback */
     uint32_t ctrl = control_port.read();
     control_port.write(ctrl | CTRL_DAC2_EN);
-    is_init_irq = true;
+    ignore_irq = (ignore_irq) ? ignore_irq : 2;
 }
 
 uint32_t ES1370::interrupt(uint32_t esp)
@@ -93,16 +99,19 @@ uint32_t ES1370::interrupt(uint32_t esp)
     if (status & interrupt_mask) {
         uint32_t sctrl = serial_port.read();
         uint32_t ctrl = control_port.read();
+
         serial_port.write(sctrl & ~SCTRL_P2INTEN);
         serial_port.write(sctrl | SCTRL_P2INTEN);
 
-        if (!is_init_irq) {
-            /* Stop dac2 playback */
-            control_port.write(ctrl & ~CTRL_DAC2_EN);
-            Mutex::unlock(es1370);
-        }
+        /* FIXME: What do these IRQs mean? */
+        ignore_irq--;
+        if (ignore_irq != 0)
+            return esp;
 
-        is_init_irq = false;
+        /* Stop playback */
+        control_port.write(ctrl & ~CTRL_DAC2_EN);
+        serial_port.write(sctrl & ~SCTRL_P2INTEN);
+        Mutex::unlock(es1370);
     }
 
     return esp;

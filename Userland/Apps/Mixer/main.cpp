@@ -1,20 +1,11 @@
+#include <LibC/pcm.hpp>
 #include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
 
-int number_places(int n)
+bool play(char* file_name, uint16_t sample_rate)
 {
-    if (n < 0)
-        return number_places((n == INT_MIN) ? INT_MAX : -n);
-    if (n < 10)
-        return 1;
-    return 1 + number_places(n / 10);
-}
-
-bool play(char* file_name)
-{
-    int audio_device = open((char*)"/dev/audio");
     int file_descriptor = open(file_name);
     struct stat statbuffer;
 
@@ -26,41 +17,37 @@ bool play(char* file_name)
     uint8_t* data = (uint8_t*)malloc(statbuffer.st_size);
     read(file_descriptor, data, statbuffer.st_size);
     close(file_descriptor);
-    uint32_t size = statbuffer.st_size - 4096;
+    uint32_t size = statbuffer.st_size;
 
-    printf("Playing %s at 8000 Hz ", file_name);
-    uint32_t number_places_size = number_places(size / 4096);
+    pcm_header_t pcm;
+    pcm.sample_rate = sample_rate;
+    pcm.data = data;
+    pcm.size = size;
 
-    for (uint32_t i = 0; i < size; i += 4096) {
-        write(audio_device, data + i, 4096);
-        printf("[%d:%d]", i / 4096, size / 4096);
-        flush();
+    printf("Playing %s at %d Hz...", file_name, sample_rate);
+    flush();
 
-        uint32_t position = (i == 0) ? 1 : i;
-        for (uint32_t x = 0; x < number_places_size + number_places(position / 4096) + 3; x++)
-            printf("%s", "\b");
-    }
+    audio_device_write(pcm);
 
-    printf("[done]");
+    printf("%s", "\b\b\b [done]");
     free(data);
-
     return true;
 }
 
 int main(int argc, char** argv)
 {
     if (!argc) {
-        printf("No input file");
+        printf("Usage: mixer <file> <sample rate>");
         return 0;
     }
 
-    for (uint32_t i = 0; i < argc; i++) {
-        if (!play(argv[i])) {
-            printf("File '%s' does not exist", argv[i]);
-        }
-        if (i != argc - 1)
-            printf("\n");
-    }
+    uint16_t sample_rate = 44100;
+
+    if (argc > 1)
+        sample_rate = atoi(argv[1]);
+
+    if (!play(argv[0], sample_rate))
+        printf("File '%s' does not exist", argv[0]);
 
     return 0;
 }

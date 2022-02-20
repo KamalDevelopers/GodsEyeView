@@ -14,6 +14,7 @@
 #define CODEC_OUTPUT_MIX2 0x11
 #define BIT16_STEREO 0x20020C
 
+#define STAT_DAC2 0x00000002
 #define SCTRL_P2INTEN 0x00000200
 #define SCTRL_P1INTEN 0x00000100
 #define SCTRL_P2SEB 0x00000008
@@ -30,7 +31,7 @@
 #define OUTPUT_MIX1_CDR (1 << 1)
 #define OUTPUT_MIX2_VOICEL (1 << 3)
 #define OUTPUT_MIX2_VOICER (1 << 2)
-#define DAC2_SRTODIV(x) (((1411200 + (x) / 2) / (x)-2) & 0x1FFF)
+#define DAC2_SRTODIV(x) (((1411200 + (x) / 2) / (x)) - 2)
 
 class ES1370 : public InterruptHandler
     , public AudioDriver {
@@ -47,7 +48,7 @@ private:
     Port32Bit dac2_buffer_port;
     Port32Bit dac2_buffer_size_port;
 
-    bool is_init_irq = true;
+    uint8_t ignore_irq = 3;
     uint16_t sample_rate = 0;
     const uint8_t interrupt_mask = 0x3;
 
@@ -58,9 +59,12 @@ public:
     ~ES1370();
 
     static driver_identifier_t identifier() { return { 0x1274, 0x5000 }; }
+    uint32_t chunk_size() { return 256000; }
+
     void set_sample_rate(uint16_t hz);
     void write_codec(int reg, uint16_t value);
     void write(uint8_t* buffer, uint32_t length);
+    void wait();
 
     virtual uint32_t interrupt(uint32_t esp);
 };
