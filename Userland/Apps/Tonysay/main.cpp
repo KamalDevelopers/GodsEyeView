@@ -44,6 +44,7 @@ int main(int argc, char** argv)
 {
     const char* default_msg = "I'm Tony the dog!";
     char msg[50];
+    memset(msg, 0, 50);
 
     if (!argc) {
         draw((char*)default_msg);
