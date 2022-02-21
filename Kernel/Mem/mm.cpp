@@ -21,7 +21,7 @@ void* kmalloc(size_t size)
 void* krealloc(void* address, size_t new_size)
 {
     memory_hooks(allocate_pages_hook, free_pages_hook);
-    void* new_address = krealloc(address, new_size);
+    void* new_address = realloc(address, new_size);
     memory_hooks(0, 0);
     return new_address;
 }
@@ -29,7 +29,7 @@ void* krealloc(void* address, size_t new_size)
 void* kcalloc(size_t nitems, size_t size)
 {
     memory_hooks(allocate_pages_hook, free_pages_hook);
-    void* address = kcalloc(nitems, size);
+    void* address = calloc(nitems, size);
     memory_hooks(0, 0);
     return address;
 }

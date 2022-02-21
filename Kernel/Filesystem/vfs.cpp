@@ -31,10 +31,38 @@ void VirtualFilesystem::mount(Filesystem* fs)
     num_mounts++;
 }
 
-int VirtualFilesystem::open(char* file_name)
+int VirtualFilesystem::open_pipe(char* file_name, int flags)
+{
+    for (int i = 0; i < num_open_files; i++)
+        if (strcmp(file_name, files[i].file_name) == 0)
+            return files[i].descriptor;
+
+    if (flags == 0)
+        return -1;
+
+    file_entry file;
+    pipe_t pipe = Pipe::create();
+    strcpy(file.file_name, file_name);
+    file.pipe = pipe;
+    file.type = FS_PIPE;
+    file.descriptor = file_descriptors;
+    files[num_open_files] = file;
+
+    if (file_descriptors >= MAX_FILE_DESCRIPTORS)
+        file_descriptors = 0;
+
+    num_open_files++;
+    file_descriptors++;
+    return file.descriptor;
+}
+
+int VirtualFilesystem::open(char* file_name, int type, int flags)
 {
     if (strcmp(file_name, "/dev/audio") == 0)
         return DEV_AUDIO_FD;
+
+    if (type == FS_PIPE)
+        return open_pipe(file_name, flags);
 
     char file_path[MAX_PATH_SIZE];
     memset(file_path, 0, MAX_PATH_SIZE);
@@ -55,6 +83,7 @@ int VirtualFilesystem::open(char* file_name)
     file.mountfs = mount;
     file.descriptor = file_descriptors;
     file.size = mounts[mount]->get_size(file_path);
+    file.type = type;
     files[num_open_files] = file;
 
     if (file_descriptors >= MAX_FILE_DESCRIPTORS)
@@ -63,7 +92,7 @@ int VirtualFilesystem::open(char* file_name)
     num_open_files++;
     file_descriptors++;
 
-    return file_descriptors - 1;
+    return file.descriptor;
 }
 
 int VirtualFilesystem::close(int descriptor)
@@ -96,6 +125,9 @@ int VirtualFilesystem::write(int descriptor, uint8_t* data, int data_length)
     int index = search(descriptor);
     if (index == -1)
         return -1;
+
+    if (files[index].type == FS_PIPE)
+        return Pipe::write(files[index].pipe, data, data_length);
     return mounts[files[index].mountfs]->write_file(files[index].file_name, data, data_length);
 }
 
@@ -104,6 +136,9 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data)
     int index = search(descriptor);
     if (index == -1)
         return -1;
+
+    if (files[index].type == FS_PIPE)
+        return Pipe::read(files[index].pipe, data, files[index].pipe.size);
     return mounts[files[index].mountfs]->read_file(files[index].file_name, data);
 }
 
@@ -112,6 +147,9 @@ int VirtualFilesystem::size(int descriptor)
     int index = search(descriptor);
     if (index == -1)
         return -1;
+
+    if (files[index].type == FS_PIPE)
+        return files[index].pipe.size;
     return mounts[files[index].mountfs]->get_size(files[index].file_name);
 }
 
