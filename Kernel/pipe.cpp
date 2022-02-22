@@ -51,13 +51,25 @@ void Pipe::collapse(pipe_t& pipe, size_t size)
 
 int Pipe::read(pipe_t& pipe, uint8_t* buffer, size_t size)
 {
+    if (!size)
+        return 0;
+
     if ((size > pipe.total_size) || (size > pipe.size))
-        return -1;
+        size = pipe.size;
 
     Mutex::lock(pipe_lock);
     memcpy(buffer, pipe.buffer, size);
-    memset(pipe.buffer, 0, pipe.total_size);
-    pipe.size = 0;
+
+    if (pipe.size - size == 0) {
+        memset(pipe.buffer, 0, pipe.size);
+    } else {
+        for (int i = 0; i < pipe.size - size; i++) {
+            pipe.buffer[i] = pipe.buffer[i + size];
+            pipe.buffer[i + size] = 0;
+        }
+    }
+
+    pipe.size = pipe.size - size;
     Mutex::unlock(pipe_lock);
 
     return size;
@@ -69,7 +81,6 @@ int Pipe::write(pipe_t& pipe, uint8_t* buffer, size_t size)
         return -1;
 
     Mutex::lock(pipe_lock);
-    size = size + 1;
     if (size > pipe.total_size)
         expand(pipe, size);
     if (size < pipe.total_size)
@@ -77,7 +88,6 @@ int Pipe::write(pipe_t& pipe, uint8_t* buffer, size_t size)
 
     pipe.size = size;
     memcpy(pipe.buffer, buffer, size);
-    pipe.buffer[size] = '\0';
     Mutex::unlock(pipe_lock);
     return size;
 }

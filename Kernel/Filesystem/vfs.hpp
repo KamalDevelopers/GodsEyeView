@@ -1,8 +1,6 @@
 #ifndef VFS_HPP
 #define VFS_HPP
 
-#include "../Mem/mm.hpp"
-#include "../multitasking.hpp"
 #include "../pipe.hpp"
 #include <LibC/path.hpp>
 #include <LibC/stdio.hpp>
@@ -18,17 +16,8 @@
 #define VFS VirtualFilesystem::active
 
 #define FS_FILE 1
-#define FS_PIPE 2
-
-struct file_entry {
-    int descriptor = 0;
-    int mountfs = 0;
-    char file_name[MAX_FILE_NAME];
-    int file_position = 0;
-    int size = 0;
-    int type = 0;
-    pipe_t pipe;
-};
+#define FS_FIFO 2
+#define FS_CREATE_FIFO 1
 
 class Filesystem {
 public:
@@ -44,18 +33,33 @@ public:
     virtual int read_dir(char* dirname, char** entries) { return 0; }
 };
 
+struct file_entry {
+    int descriptor = 0;
+    int mountfs = 0;
+    char file_name[MAX_FILE_NAME];
+    int file_position = 0;
+    int size = 0;
+    int type = 0;
+    pipe_t pipe;
+};
+
+typedef struct file_table {
+    file_entry files[MAX_OPENFILES];
+    int descriptor_index = 4;
+    int num_open_files = 0;
+} file_table_t;
+
 class VirtualFilesystem {
 private:
     Filesystem* mounts[MAX_MOUNTS];
-    file_entry files[MAX_OPENFILES];
+    file_table kernel_file_table;
 
     int search(int descriptor);
 
-    int num_open_files;
-    int file_descriptors;
-
     int current_mount;
     int num_mounts;
+
+    file_table* ft();
 
 public:
     VirtualFilesystem();
@@ -65,8 +69,9 @@ public:
     void mount(Filesystem* fs);
 
     int listdir(char* dirname, char** entries);
-    int open_pipe(char* file_name, int flags);
-    int open(char* file_name, int type = FS_FILE, int flags = 0);
+    int open_fifo(char* file_name, int flags);
+    int open(char* file_name, int flags = 0);
+    int close_fifo(int index);
     int close(int descriptor);
     int write(int descriptor, uint8_t* data, int size);
     int read(int descriptor, uint8_t* data, int size);

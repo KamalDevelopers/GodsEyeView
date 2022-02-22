@@ -47,6 +47,7 @@ private:
     cpu_state* cpustate;
     char stdin_buffer[200];
 
+    file_table_t process_file_table;
     executable_t loaded_executable;
     bool is_executable = false;
     bool is_child = false;
@@ -69,6 +70,7 @@ public:
     void wake() { sleeping = 0; }
     int chdir(char* dir);
     void cwd(char* buffer);
+    file_table_t* get_file_table() { return &process_file_table; }
 
     int get_pid() { return pid; }
 
