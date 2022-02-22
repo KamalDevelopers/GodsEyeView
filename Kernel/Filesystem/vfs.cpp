@@ -127,11 +127,17 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data, int size)
 {
     int index = search(descriptor);
     if (index == -1)
-        return -1;
+        return 0;
 
     if (files[index].type == FS_PIPE)
         return Pipe::read(files[index].pipe, data, files[index].pipe.size);
-    return mounts[files[index].mountfs]->read_file(files[index].file_name, data, size);
+
+    int read_size = mounts[files[index].mountfs]->read_file(files[index].file_name, data, size, files[index].file_position);
+    if ((read_size != -1) && (read_size))
+        files[index].file_position += size;
+    if (read_size < 0)
+        read_size = 0;
+    return read_size;
 }
 
 int VirtualFilesystem::size(int descriptor)

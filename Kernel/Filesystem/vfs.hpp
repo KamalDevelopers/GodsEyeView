@@ -24,6 +24,7 @@ struct file_entry {
     int descriptor = 0;
     int mountfs = 0;
     char file_name[MAX_FILE_NAME];
+    int file_position = 0;
     int size = 0;
     int type = 0;
     pipe_t pipe;
@@ -38,7 +39,7 @@ public:
     virtual int get_uid(char* file_name) { return 0; }
     virtual int get_size(char* file_name) { return 0; }
     virtual int write_file(char* file_name, uint8_t* data, int size) { return 0; }
-    virtual int read_file(char* file_name, uint8_t* data, int size) { return 0; }
+    virtual int read_file(char* file_name, uint8_t* data, int size, int seek = 0) { return 0; }
     virtual int find_file(char* file_name) { return 0; }
     virtual int read_dir(char* dirname, char** entries) { return 0; }
 };

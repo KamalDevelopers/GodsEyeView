@@ -43,7 +43,7 @@ class Task {
     friend class TaskManager;
 
 private:
-    uint8_t stack[100 * KB];
+    uint8_t stack[4096];
     cpu_state* cpustate;
     char stdin_buffer[200];
 

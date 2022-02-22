@@ -16,6 +16,17 @@
 #define PF_W 0x2
 #define PF_R 0x4
 
+#define SHT_NULL 0
+#define SHT_PROGBITS 1
+#define SHT_SYMTAB 2
+#define SHT_STRTAB 3
+#define SHT_RELA 4
+#define SHT_NOBITS 8
+#define SHT_REL 9
+
+#define SHF_WRITE 0x01
+#define SHF_ALLOC 0x02
+
 #define PT_NULL 0
 #define PT_LOAD 1
 #define PT_DYNAMIC 2

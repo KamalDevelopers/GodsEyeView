@@ -169,20 +169,26 @@ int Tar::read_dir(char* dirname, char** entries)
     return exists;
 }
 
-void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count)
+void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
 {
     uint8_t buffer[512];
     int size = count;
     int sector_offset = 0;
     int data_index = 0;
 
+    if (seek > 512)
+        sector_start += (seek - sector_offset) / 512;
+
     /* Iterate through the sectors and store the contents in buffers */
     for (; size > 0; size -= 512) {
         memset(buffer, 0, 512);
 
         hd->read28(sector_start + sector_offset, buffer, 512);
-        for (int i = 0; i < 512; i++) {
-            fdata[data_index] = buffer[i];
+        int i = (sector_offset) ? 0 : (seek % 512);
+
+        for (; i < 512; i++) {
+            if (data_index <= count)
+                fdata[data_index] = buffer[i];
             data_index++;
         }
         buffer[size > 512 ? 512 : size] = '\0';
@@ -251,7 +257,7 @@ int Tar::get_mode(int file_id, int utype)
 }
 
 /* Reads file from ram */
-int Tar::read_file(int file_id, uint8_t* data, int size)
+int Tar::read_file(int file_id, uint8_t* data, int size, int seek)
 {
     if (file_id > file_index)
         return -1;
@@ -259,24 +265,24 @@ int Tar::read_file(int file_id, uint8_t* data, int size)
     int data_offset = sector_links_file[file_id] + 1;
     int data_size = oct_bin(files[file_id].size, 11);
 
-    /* Convert sectors to bytes */
-    if (data_size > size)
-        return -1;
-
     if (!size)
         return 0;
+    if (seek >= data_size)
+        return 0;
+    if (size > data_size)
+        size = data_size;
 
-    read_data(data_offset, data, size);
+    read_data(data_offset, data, size, seek);
     return size;
 }
 
 /* Reads file from ram using file name */
-int Tar::read_file(char* file_name, uint8_t* data, int size)
+int Tar::read_file(char* file_name, uint8_t* data, int size, int seek)
 {
     int file_id = find_file(file_name);
     if ((file_id > file_index) || (file_id == -1))
         return -1;
-    return read_file(file_id, data, size);
+    return read_file(file_id, data, size, seek);
 }
 
 /* Reads file from ram using file name */

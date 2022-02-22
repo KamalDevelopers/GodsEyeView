@@ -31,7 +31,6 @@ int Syscalls::sys_read(int fd, void* data, int length)
         break;
     }
 
-    ((uint8_t*)data)[length] = '\0';
     return size;
 }
 

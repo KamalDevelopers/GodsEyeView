@@ -5,23 +5,16 @@
 
 bool print_file(char* file_name)
 {
-    int file_descriptor;
-    struct stat statbuffer;
-
-    file_descriptor = open(file_name);
-    fstat(file_descriptor, &statbuffer);
-
-    if (statbuffer.st_size == -1) {
+    int file_descriptor = open(file_name);
+    if (file_descriptor < 0)
         return false;
+    char buffer[1024];
+
+    while (read(file_descriptor, buffer, sizeof(buffer)) != 0) {
+        write(1, buffer, sizeof(buffer));
     }
 
-    char* buffer = (char*)malloc(sizeof(char) * statbuffer.st_size);
-
-    read(file_descriptor, buffer, statbuffer.st_size);
     close(file_descriptor);
-
-    printf("%s", buffer);
-    free(buffer);
     return true;
 }
 
@@ -33,11 +26,10 @@ int main(int argc, char** argv)
     }
 
     for (uint32_t i = 0; i < argc; i++) {
-        if (!print_file(argv[i])) {
-            printf("File '%s' does not exist", argv[i]);
-            if (i != argc - 1)
-                printf("\n");
-        }
+        if (print_file(argv[i]))
+            continue;
+
+        printf("File '%s' does not exist\n", argv[i]);
     }
 
     return 0;

@@ -52,6 +52,7 @@ executable_t Elf::exec(uint8_t* file_data)
     executable.valid = true;
     elf32_ehdr* elf_header = (elf32_ehdr*)file_data;
     elf32_phdr* elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
+    elf32_shdr* elf_section_header = (elf32_shdr*)(file_data + elf_header->e_shoff);
 
     uint32_t base_addres = UINT32_MAX;
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
