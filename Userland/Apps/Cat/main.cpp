@@ -10,7 +10,7 @@ bool print_file(char* file_name)
         return false;
     char buffer[1024];
 
-    while (read(file_descriptor, buffer, sizeof(buffer)) != 0) {
+    while (read(file_descriptor, buffer, sizeof(buffer)) > 0) {
         write(1, buffer, sizeof(buffer));
     }
 
@@ -29,7 +29,9 @@ int main(int argc, char** argv)
         if (print_file(argv[i]))
             continue;
 
-        printf("File '%s' does not exist\n", argv[i]);
+        if (i != 0)
+            printf("\n");
+        printf("File '%s' does not exist", argv[i]);
     }
 
     return 0;
