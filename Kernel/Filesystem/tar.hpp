@@ -57,9 +57,9 @@ public:
     int mount();
     void update(int uentry, int uentry_size);
 
-    int write_file(char* file_name, uint8_t* data, int data_length);
-    int read_file(int file_id, uint8_t* data);
-    int read_file(char* file_name, uint8_t* data);
+    int write_file(char* file_name, uint8_t* data, int size);
+    int read_file(int file_id, uint8_t* data, int size);
+    int read_file(char* file_name, uint8_t* data, int size);
     int find_file(char* file_name);
     int get_size(char* file_name);
     int get_uid(char* file_name);

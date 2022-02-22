@@ -31,14 +31,14 @@ struct file_entry {
 
 class Filesystem {
 public:
-    Filesystem();
-    ~Filesystem();
+    Filesystem() { }
+    ~Filesystem() { }
 
     virtual int get_gid(char* file_name) { return 0; }
     virtual int get_uid(char* file_name) { return 0; }
     virtual int get_size(char* file_name) { return 0; }
-    virtual int write_file(char* file_name, uint8_t* data, int data_length) { return 0; }
-    virtual int read_file(char* file_name, uint8_t* data) { return 0; }
+    virtual int write_file(char* file_name, uint8_t* data, int size) { return 0; }
+    virtual int read_file(char* file_name, uint8_t* data, int size) { return 0; }
     virtual int find_file(char* file_name) { return 0; }
     virtual int read_dir(char* dirname, char** entries) { return 0; }
 };
@@ -67,8 +67,8 @@ public:
     int open_pipe(char* file_name, int flags);
     int open(char* file_name, int type = FS_FILE, int flags = 0);
     int close(int descriptor);
-    int write(int descriptor, uint8_t* data, int data_length);
-    int read(int descriptor, uint8_t* data);
+    int write(int descriptor, uint8_t* data, int size);
+    int read(int descriptor, uint8_t* data, int size);
     int size(int descriptor);
     int uid(int descriptor);
     int gid(int descriptor);

@@ -17,27 +17,21 @@ void Syscalls::sys_exit()
 int Syscalls::sys_read(int fd, void* data, int length)
 {
     if (length <= 0)
-        return -1;
+        return 0;
 
-    char* buffer = new char[length];
     int size = 0;
 
     switch (fd) {
     case 0:
-        size = TM->read_stdin(buffer, length);
+        size = TM->read_stdin((char*)data, length);
         break;
 
     default:
-        size = VFS->read(fd, (uint8_t*)buffer);
+        size = VFS->read(fd, (uint8_t*)data, length);
         break;
     }
 
-    if (length < size)
-        size = length;
-
-    buffer[length] = '\0';
-    memcpy(data, buffer, length);
-    kfree(buffer);
+    ((uint8_t*)data)[length] = '\0';
     return size;
 }
 

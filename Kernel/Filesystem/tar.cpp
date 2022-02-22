@@ -251,23 +251,32 @@ int Tar::get_mode(int file_id, int utype)
 }
 
 /* Reads file from ram */
-int Tar::read_file(int file_id, uint8_t* data)
+int Tar::read_file(int file_id, uint8_t* data, int size)
 {
     if (file_id > file_index)
         return -1;
-    int data_offset = sector_links_file[file_id] + 1;             // File data sector index
-    int data_size = (oct_bin(files[file_id].size, 11) / 512) + 1; // Get sector index
-    read_data(data_offset, data, data_size * 512);                // Convert sectors into bytes
-    return data_size * 512;
+
+    int data_offset = sector_links_file[file_id] + 1;
+    int data_size = oct_bin(files[file_id].size, 11);
+
+    /* Convert sectors to bytes */
+    if (data_size > size)
+        return -1;
+
+    if (!size)
+        return 0;
+
+    read_data(data_offset, data, size);
+    return size;
 }
 
 /* Reads file from ram using file name */
-int Tar::read_file(char* file_name, uint8_t* data)
+int Tar::read_file(char* file_name, uint8_t* data, int size)
 {
     int file_id = find_file(file_name);
     if ((file_id > file_index) || (file_id == -1))
         return -1;
-    return read_file(file_id, data);
+    return read_file(file_id, data, size);
 }
 
 /* Reads file from ram using file name */
@@ -334,7 +343,7 @@ int Tar::calculate_checksum(posix_header* header_data)
     return chck;
 }
 
-int Tar::write_file(char* file_name, uint8_t* data, int data_length)
+int Tar::write_file(char* file_name, uint8_t* data, int size)
 {
     /* Calculate where the file should be located */
     int file_id = file_index + 1;
@@ -354,9 +363,9 @@ int Tar::write_file(char* file_name, uint8_t* data, int data_length)
     strcpy(meta_head.name, file_name);
 
     /* Convert size data to octal */
-    char* sizedata;
+    char sizedata[12];
     char tsize[12];
-    itoa(bin_oct(data_length), sizedata);
+    itoa(bin_oct(size), sizedata);
     int octal_offset = 11 - str_len(sizedata);
 
     tsize[octal_offset] = '\0';
@@ -385,7 +394,7 @@ int Tar::write_file(char* file_name, uint8_t* data, int data_length)
     for (int i = 0; i < 513; i++)
         hd->write28(data_offset + data_size + 1 + i, (uint8_t*)"\0", 1);
     hd->write28(data_offset + data_size + 1, (uint8_t*)&meta_head, sizeof(posix_header));
-    write_data(data_offset + data_size + 2, data, data_length);
+    write_data(data_offset + data_size + 2, data, size);
     kfree(p_meta_head);
     return 0;
 }

@@ -120,7 +120,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     int shell_file_descriptor = VFS->open("shell");
     int size = VFS->size(shell_file_descriptor);
     uint8_t* elfdata = new uint8_t[size];
-    VFS->read(shell_file_descriptor, elfdata);
+    VFS->read(shell_file_descriptor, elfdata, size);
     VFS->close(shell_file_descriptor);
 
     executable_t execute = Loader::load->exec(elfdata);

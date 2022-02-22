@@ -1,13 +1,5 @@
 #include "vfs.hpp"
 
-Filesystem::Filesystem()
-{
-}
-
-Filesystem::~Filesystem()
-{
-}
-
 VirtualFilesystem* VirtualFilesystem::active = 0;
 VirtualFilesystem::VirtualFilesystem()
 {
@@ -120,18 +112,18 @@ int VirtualFilesystem::search(int descriptor)
     return -1;
 }
 
-int VirtualFilesystem::write(int descriptor, uint8_t* data, int data_length)
+int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
 {
     int index = search(descriptor);
     if (index == -1)
         return -1;
 
     if (files[index].type == FS_PIPE)
-        return Pipe::write(files[index].pipe, data, data_length);
-    return mounts[files[index].mountfs]->write_file(files[index].file_name, data, data_length);
+        return Pipe::write(files[index].pipe, data, size);
+    return mounts[files[index].mountfs]->write_file(files[index].file_name, data, size);
 }
 
-int VirtualFilesystem::read(int descriptor, uint8_t* data)
+int VirtualFilesystem::read(int descriptor, uint8_t* data, int size)
 {
     int index = search(descriptor);
     if (index == -1)
@@ -139,7 +131,7 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data)
 
     if (files[index].type == FS_PIPE)
         return Pipe::read(files[index].pipe, data, files[index].pipe.size);
-    return mounts[files[index].mountfs]->read_file(files[index].file_name, data);
+    return mounts[files[index].mountfs]->read_file(files[index].file_name, data, size);
 }
 
 int VirtualFilesystem::size(int descriptor)
