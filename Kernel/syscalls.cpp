@@ -186,17 +186,9 @@ void Syscalls::sys_getcwd(char* buffer)
     TM->task()->cwd(buffer);
 }
 
-int Syscalls::sys_display_control(canvas_t* canvas, uint32_t action)
+uint32_t Syscalls::sys_display()
 {
-    if (!canvas->size)
-        return -1;
-
-    switch (action) {
-    case 1:
-        VESA->write_canvas(canvas);
-        break;
-    }
-    return 0;
+    return Vesa::active->get_framebuffer();
 }
 
 uint32_t Syscalls::interrupt(uint32_t esp)
@@ -285,7 +277,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 404:
-        cpu->eax = sys_display_control((canvas_t*)cpu->ebx, (uint32_t)cpu->ecx);
+        cpu->eax = sys_display();
         break;
     }
 

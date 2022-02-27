@@ -14,11 +14,12 @@ typedef struct canvas {
 
 canvas_t* request_canvas(uint32_t width, uint32_t height);
 int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height);
-int request_canvas_update(canvas_t* canvas);
 int request_canvas_destroy(canvas_t* canvas);
+uint32_t request_framebuffer();
 void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size);
 void canvas_copy(uint32_t* destination, uint32_t* source, int size);
-void canvas_copy(canvas_t* child, canvas_t* parent);
+void canvas_copy(canvas_t* destination, canvas_t* source);
+void canvas_blit(canvas_t* destination, canvas_t* source);
 void canvas_set(uint32_t* destination, uint32_t rgb, int size);
 
 #endif

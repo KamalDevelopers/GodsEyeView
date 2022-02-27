@@ -23,9 +23,7 @@ public:
     ~Vesa();
 
     static Vesa* active;
-
-    uint32_t get_index(uint32_t x, uint32_t y);
-    void write_canvas(canvas_t* canvas);
+    uint32_t get_framebuffer() { return framebuffer; }
 };
 
 #endif

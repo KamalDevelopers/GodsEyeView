@@ -36,13 +36,13 @@ int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
     return 0;
 }
 
-int request_canvas_update(canvas_t* canvas)
+uint32_t request_framebuffer()
 {
-    int status;
+    uint32_t address;
     asm volatile("int $0x80"
-                 : "=a"(status)
-                 : "a"(404), "b"(canvas), "c"(1));
-    return status;
+                 : "=a"(address)
+                 : "a"(404));
+    return address;
 }
 
 void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size)
@@ -67,14 +67,28 @@ void canvas_set(uint32_t* destination, uint32_t rgb, int size)
         destination[i] = rgb;
 }
 
-void canvas_copy(canvas_t* child, canvas_t* parent)
+void canvas_copy(canvas_t* destination, canvas_t* source)
 {
-    uint32_t parent_offset = child->y * parent->width + child->x;
-    uint32_t child_offset = 0;
+    uint32_t source_offset = destination->y * source->width + destination->x;
+    uint32_t destination_offset = 0;
 
-    for (uint32_t y = 0; y < child->height; y++) {
-        canvas_copy(child->framebuffer + child_offset, parent->framebuffer + parent_offset, child->width);
-        parent_offset += parent->width;
-        child_offset += child->width;
+    for (uint32_t y = 0; y < destination->height; y++) {
+        canvas_copy(destination->framebuffer + destination_offset, source->framebuffer + source_offset, destination->width);
+        source_offset += source->width;
+        destination_offset += destination->width;
+    }
+}
+
+void canvas_blit(canvas_t* destination, canvas_t* source)
+{
+    int destination_pitch = destination->width * sizeof(int32_t);
+    int source_pitch = source->width * sizeof(int32_t);
+    uint32_t destination_address = source->y * destination_pitch + source->x * sizeof(int32_t) + (uint32_t)destination->framebuffer;
+    uint32_t source_address = (uint32_t)(source->framebuffer);
+
+    for (uint32_t y = 0; y < source->height; y++) {
+        memcpy32((uint32_t*)destination_address, (uint32_t*)source_address, source_pitch);
+        source_address += source_pitch;
+        destination_address += destination_pitch;
     }
 }

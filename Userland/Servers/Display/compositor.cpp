@@ -2,9 +2,17 @@
 
 Compositor::Compositor()
 {
+    display_framebuffer = request_framebuffer();
     final_layer = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
     root_layer = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
     mouse_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
+    mouse_ghost_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
+
+    display_layer.width = SCREEN_WIDTH;
+    display_layer.height = SCREEN_HEIGHT;
+    display_layer.x = 0;
+    display_layer.y = 0;
+    display_layer.framebuffer = (uint32_t*)display_framebuffer;
 }
 
 Compositor::~Compositor()
@@ -12,6 +20,7 @@ Compositor::~Compositor()
     request_canvas_destroy(root_layer);
     request_canvas_destroy(mouse_layer);
     request_canvas_destroy(final_layer);
+    request_canvas_destroy(mouse_ghost_layer);
     free(mouse_bitmap);
 }
 
@@ -37,8 +46,9 @@ void Compositor::render_stack()
     for (uint32_t i = 0; i < layer_index; i++)
         render_canvas(layers[i]);
 
-    request_canvas_update(final_layer);
-    update_mouse_position(mouse_layer->x, mouse_layer->y);
+    update_mouse_position(mouse_layer->x, mouse_layer->y, true);
+    canvas_copy((uint32_t*)display_framebuffer, final_layer->framebuffer, final_layer->size);
+    canvas_blit(final_layer, mouse_ghost_layer);
     needs_update = false;
 }
 
@@ -65,13 +75,10 @@ void Compositor::load_mouse_bitmap(const char* file_name)
     canvas_copy(mouse_bitmap, mouse_layer->framebuffer, mouse_layer->size);
 }
 
-void Compositor::update_mouse_position(uint32_t x, uint32_t y)
+void Compositor::update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack)
 {
-    if ((x == mouse_layer->x) && (y == mouse_layer->y) && !needs_update)
+    if ((x == mouse_layer->x) && (y == mouse_layer->y) && !is_updating_stack)
         return;
-
-    canvas_copy(mouse_layer, final_layer);
-    request_canvas_update(mouse_layer);
 
     mouse_layer->x = x;
     mouse_layer->y = y;
@@ -80,8 +87,19 @@ void Compositor::update_mouse_position(uint32_t x, uint32_t y)
     if (y + mouse_layer->height > SCREEN_HEIGHT)
         mouse_layer->y = SCREEN_HEIGHT - mouse_layer->height;
 
+    /* FIXME: At this point the mouse flickers due to removing ghost mouse */
+
+    canvas_copy(mouse_layer, final_layer);
+    mouse_ghost_layer->x = mouse_layer->x;
+    mouse_ghost_layer->y = mouse_layer->y;
+    canvas_copy(mouse_ghost_layer, final_layer);
     canvas_copy_alpha(mouse_layer->framebuffer, mouse_bitmap, mouse_layer->size);
-    request_canvas_update(mouse_layer);
+    canvas_blit(final_layer, mouse_layer);
+
+    if (!is_updating_stack) {
+        canvas_copy((uint32_t*)display_framebuffer, final_layer->framebuffer, final_layer->size);
+        canvas_blit(final_layer, mouse_ghost_layer);
+    }
 }
 
 void Compositor::add_render_layer(canvas_t* canvas)

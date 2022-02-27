@@ -18,20 +18,3 @@ Vesa::Vesa(uint64_t framebuffer_address, uint32_t width, uint32_t height, uint32
 Vesa::~Vesa()
 {
 }
-
-uint32_t Vesa::get_index(uint32_t x, uint32_t y)
-{
-    return y * screen_pitch + (x * screen_bpp_bytes);
-}
-
-void Vesa::write_canvas(canvas_t* canvas)
-{
-    uint32_t frame_address = get_index(canvas->x, canvas->y) + framebuffer;
-    uint32_t canvas_address = (uint32_t)(canvas->framebuffer);
-
-    for (uint32_t y = 0; y < canvas->height; y++) {
-        memcpy32((uint32_t*)frame_address, (uint32_t*)canvas_address, canvas->width * screen_bpp_bytes);
-        canvas_address += canvas->width * screen_bpp_bytes;
-        frame_address += screen_pitch;
-    }
-}

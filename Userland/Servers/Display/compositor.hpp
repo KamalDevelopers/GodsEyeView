@@ -22,11 +22,14 @@ private:
     int active_window_index = -1;
     uint32_t layer_index = 0;
     uint32_t* mouse_bitmap = 0;
+    uint32_t display_framebuffer = 0;
     bool needs_update = false;
 
+    canvas_t display_layer;
     canvas_t* final_layer = 0;
     canvas_t* root_layer = 0;
     canvas_t* mouse_layer = 0;
+    canvas_t* mouse_ghost_layer = 0;
 
 public:
     Compositor();
@@ -39,7 +42,7 @@ public:
     void load_background_bitmap(const char* file_name);
     void load_mouse_bitmap(const char* file_name);
     int read_bitmap(const char* file_name, canvas_t* canvas);
-    void update_mouse_position(uint32_t x, uint32_t y);
+    void update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack = false);
 
     void render_canvas(canvas_t* canvas);
     void render_stack();
