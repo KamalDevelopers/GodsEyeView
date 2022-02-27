@@ -30,10 +30,21 @@ KeyboardDriver::KeyboardDriver(InterruptManager* interrupt_manager)
     command_port.write(0x60);
     data_port.write(status);
     data_port.write(0xf4);
+    memset(key_buffer, 0, BUFSIZ);
 }
 
 KeyboardDriver::~KeyboardDriver()
 {
+}
+
+keyboard_event_t* KeyboardDriver::get_keyboard_event()
+{
+    if (has_read_event)
+        return 0;
+    event.key = last_key;
+    event.is_reading = TM->has_task_reading_stdin();
+    has_read_event = true;
+    return &event;
 }
 
 /* TODO: English layout & more character support */
@@ -125,6 +136,11 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
             return shift_l3[key - Y_PRESSED];
         return l3[key - Y_PRESSED];
     }
+
+    /* ESC */
+    if (key == 1)
+        return 27;
+
     return 0;
 }
 
@@ -225,9 +241,28 @@ void KeyboardDriver::on_key(uint8_t keypress)
     if (key_a(keypress) != 0) {
         last_key = key_a(keypress);
 
+        if (strlen(key_buffer) + 1 >= BUFSIZ)
+            memset(key_buffer, 0, BUFSIZ);
+
+        if (TM->has_task_reading_stdin()) {
+            if (last_key == '\b') {
+                key_buffer[strlen(key_buffer) - 1] = 0;
+            } else {
+                key_buffer[strlen(key_buffer)] = last_key;
+                key_buffer[strlen(key_buffer)] = 0;
+            }
+        }
+
         if ((last_key == '\b' && keys_pressed - 1 >= 0) || last_key != '\b') {
-            TM->append_stdin(last_key);
-            keys_pressed += (last_key == '\b') ? -1 : 1;
+            has_read_event = false;
+            TM->test_poll();
+
+            if (TM->has_task_reading_stdin())
+                keys_pressed += (last_key == '\b') ? -1 : 1;
+            if (last_key == 10) {
+                TM->write_stdin((uint8_t*)key_buffer, strlen(key_buffer));
+                memset(key_buffer, 0, BUFSIZ);
+            }
         }
 
         if (last_key == 10)

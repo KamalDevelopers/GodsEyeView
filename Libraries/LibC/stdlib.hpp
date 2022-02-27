@@ -13,6 +13,7 @@ unsigned rand(unsigned int seed = 918, unsigned int max = 36000);
 unsigned int random(unsigned int seed, unsigned int max);
 
 void exit(int status);
+void* memcpy32(void* dst, const void* src, size_t cnt);
 void* memcpy(void* dst, const void* src, unsigned int cnt);
 void* memset(void* b, char c, int len);
 int itoan(int x, char str[], int d);
@@ -24,7 +25,7 @@ div_t div(int numerator, int denominator);
 template<typename T>
 static void delete_element(int x, int size, T* arr[])
 {
-    for (int j = x; j < size; j++)
+    for (int j = x; j < size - 1; j++)
         arr[j] = arr[j + 1];
 }
 

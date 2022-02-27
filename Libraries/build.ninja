@@ -7,6 +7,9 @@ rule crt0
 rule libc
     command = ar ruv $out $in && ranlib $out
 
+rule libdisplay
+    command = ar ruv $out $in && ranlib $out
+
 build LibC/unistd.o: cpp ./LibC/unistd.cpp
 build LibC/string.o: cpp ./LibC/string.cpp
 build LibC/stdio.o: cpp ./LibC/stdio.cpp
@@ -15,3 +18,7 @@ build LibC/path.o: cpp ./LibC/path.cpp
 build LibC/liballoc.o: cpp ./LibC/liballoc.cpp
 build LibC/crt0.o: crt0 ./LibC/crt0.cpp
 build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/liballoc.o LibC/crt0.o
+
+build LibDisplay/canvas.o: cpp ./LibDisplay/canvas.cpp
+build LibDisplay/connection.o: cpp ./LibDisplay/connection.cpp
+build libdisplay.a: libdisplay LibDisplay/canvas.o LibDisplay/connection.o

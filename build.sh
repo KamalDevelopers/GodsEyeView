@@ -12,39 +12,33 @@ then
     cd Userland/Apps
     ninja
     cd ../..
+    cd Userland/Servers
+    ninja
+    cd ../..
     ninja disk
 fi
 
-if [ "$#" -eq  "0" ]
+mkdir .out/iso
+mkdir .out/iso/boot
+mkdir .out/iso/boot/grub
+cp .out/kernel.bin .out/iso/boot/kernel.bin
+echo 'set timeout=0'                     >> .out/iso/boot/grub/grub.cfg
+echo 'set default=0'                     >> .out/iso/boot/grub/grub.cfg
+echo ''                                  >> .out/iso/boot/grub/grub.cfg
+echo 'menuentry "gevos" {'               >> .out/iso/boot/grub/grub.cfg
+echo '  multiboot /boot/kernel.bin'      >> .out/iso/boot/grub/grub.cfg
+echo '  boot'                            >> .out/iso/boot/grub/grub.cfg
+echo '}'                                 >> .out/iso/boot/grub/grub.cfg
+cd ./.out
+
+grub-mkrescue --output=kernel.iso iso
+rm -rf iso
+
+cd ../
+
+if [ "$1" != "norun" ]
 then
     ninja run
-else
-    if [ "$1" = "iso" ]
-    then
-        mkdir .out/iso
-        mkdir .out/iso/boot
-        mkdir .out/iso/boot/grub
-        cp .out/kernel.bin .out/iso/boot/kernel.bin
-        echo 'set timeout=0'                     >> .out/iso/boot/grub/grub.cfg
-        echo 'set default=0'                     >> .out/iso/boot/grub/grub.cfg
-        echo ''                                  >> .out/iso/boot/grub/grub.cfg
-        echo \'menuentry "GevOS" {\' >> .out/iso/boot/grub/grub.cfg
-        echo '  multiboot /boot/kernel.bin'      >> .out/iso/boot/grub/grub.cfg
-        echo '  boot'                            >> .out/iso/boot/grub/grub.cfg
-        echo '}'                                 >> .out/iso/boot/grub/grub.cfg
-        cd ./.out
-
-        grub-mkrescue --output=kernel.iso iso
-        rm -rf iso
-
-        cd ../
-        ninja run
-    else
-        if [ "$1" != "norun" ]
-        then
-            ninja run
-        fi
-    fi
 fi
 
 if [ "$1" != "norun" ]

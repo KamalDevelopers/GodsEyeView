@@ -82,7 +82,7 @@ uint64_t ARP::resolve(uint32_t ip)
     if (result == BROADCAST_MAC)
         request_mac_address(ip);
 
-    /* FIXME: prevent infinite loop */
+    /* FIXME: Prevent infinite loop */
     while (result == BROADCAST_MAC)
         result = mac_address_from_cache(ip);
 

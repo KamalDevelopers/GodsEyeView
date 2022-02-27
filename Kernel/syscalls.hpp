@@ -4,6 +4,8 @@
 #include "Exec/loader.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
+#include "Hardware/Drivers/mouse.hpp"
+#include "Hardware/Drivers/vesa.hpp"
 #include "Hardware/audio.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Mem/mm.hpp"
@@ -11,6 +13,7 @@
 #include "tty.hpp"
 
 #include <LibC/path.hpp>
+#include <LibC/poll.hpp>
 #include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/types.hpp>
@@ -23,7 +26,7 @@ private:
     void sys_exit();
     int sys_read(int file_handle, void* data, int length);
     int sys_write(int file_handle, void* data, int length);
-    int sys_open(char* file);
+    int sys_open(char* file, int flags);
     int sys_close(int file_handle);
     int sys_waitpid(int pid);
     int sys_chdir(char* dir);
@@ -37,8 +40,10 @@ private:
     int sys_uname(utsname* buffer);
     int sys_sleep(int time);
     int sys_spawn(char* file, char** args);
+    int sys_poll(pollfd* fds, uint32_t nfds);
     int sys_listdir(char* dirname, char** entries);
     void sys_getcwd(char* buffer);
+    int sys_display_control(canvas_t* canvas, uint32_t action);
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);

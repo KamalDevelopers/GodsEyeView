@@ -21,7 +21,7 @@ VirtualFilesystem::VirtualFilesystem()
 file_table* VirtualFilesystem::ft()
 {
     if (TM->is_active())
-        return TM->task()->get_file_table();
+        return TM->get_file_table();
     return &kernel_file_table;
 }
 
@@ -34,27 +34,25 @@ void VirtualFilesystem::mount(Filesystem* fs)
 
 int VirtualFilesystem::open_fifo(char* file_name, int flags)
 {
-    file_entry file;
-
     for (int i = 0; i < ft()->num_open_files; i++)
         if (strcmp(file_name, ft()->files[i].file_name) == 0)
             return ft()->files[i].descriptor;
 
     for (int i = 0; i < kernel_file_table.num_open_files; i++) {
         if (strcmp(file_name, kernel_file_table.files[i].file_name) == 0) {
-            memcpy(&file, &kernel_file_table.files[i], sizeof(file_entry));
-            file.descriptor = ft()->descriptor_index;
-            ft()->files[ft()->num_open_files] = file;
+            ft()->files[ft()->num_open_files] = kernel_file_table.files[i];
+            ft()->files[ft()->num_open_files].descriptor = ft()->descriptor_index;
             ft()->descriptor_index++;
             ft()->num_open_files++;
-            return file.descriptor;
+            return ft()->descriptor_index - 1;
         }
     }
 
     if (flags != FS_CREATE_FIFO)
         return -1;
 
-    pipe_t pipe = Pipe::create();
+    file_entry file;
+    pipe_t* pipe = Pipe::create();
     strcpy(file.file_name, file_name);
     file.pipe = pipe;
     file.type = FS_FIFO;
@@ -77,6 +75,12 @@ int VirtualFilesystem::open(char* file_name, int flags)
 {
     if (strcmp(file_name, "/dev/audio") == 0)
         return DEV_AUDIO_FD;
+
+    if (strcmp(file_name, "/dev/mouse") == 0)
+        return DEV_MOUSE_FD;
+
+    if (strcmp(file_name, "/dev/keyboard") == 0)
+        return DEV_KEYBOARD_FD;
 
     int fifo = open_fifo(file_name, flags);
     if (fifo != -1)
@@ -111,7 +115,6 @@ int VirtualFilesystem::open(char* file_name, int flags)
 
     ft()->num_open_files++;
     ft()->descriptor_index++;
-
     return file.descriptor;
 }
 
@@ -121,7 +124,6 @@ int VirtualFilesystem::close_fifo(int index)
 
     for (int i = 0; i < kernel_file_table.num_open_files; i++) {
         if (strcmp(kernel_file_table.files[i].file_name, ft()->files[index].file_name) == 0) {
-            klog("Unlinking pipe from kernel file table fd=%d", kernel_file_table.files[i].descriptor);
             for (int j = i; j < kernel_file_table.num_open_files - 1; j++)
                 kernel_file_table.files[j] = kernel_file_table.files[j + 1];
             kernel_file_table.num_open_files--;
@@ -129,7 +131,6 @@ int VirtualFilesystem::close_fifo(int index)
         }
     }
 
-    klog("Could not properly close pipe");
     return -1;
 }
 
@@ -150,7 +151,6 @@ int VirtualFilesystem::close(int descriptor)
 
     for (int j = index; j < ft()->num_open_files - 1; j++)
         ft()->files[j] = ft()->files[j + 1];
-
     ft()->num_open_files--;
     return 0;
 }
@@ -167,9 +167,10 @@ int VirtualFilesystem::search(int descriptor)
 int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
 {
     int index = search(descriptor);
-    if (index == -1)
+    if ((index == -1) || (size <= 0))
         return -1;
 
+    TM->test_poll();
     if (ft()->files[index].type == FS_FIFO)
         return Pipe::write(ft()->files[index].pipe, data, size);
     return mounts[ft()->files[index].mountfs]->write_file(ft()->files[index].file_name, data, size);
@@ -181,9 +182,8 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data, int size)
     if (index == -1)
         return -1;
 
-    if (ft()->files[index].type == FS_FIFO) {
+    if (ft()->files[index].type == FS_FIFO)
         return Pipe::read(ft()->files[index].pipe, data, size);
-    }
 
     int read_size = mounts[ft()->files[index].mountfs]->read_file(ft()->files[index].file_name, data, size, ft()->files[index].file_position);
     if (read_size > 0)
@@ -198,7 +198,7 @@ int VirtualFilesystem::size(int descriptor)
         return -1;
 
     if (ft()->files[index].type == FS_FIFO)
-        return ft()->files[index].pipe.size;
+        return ft()->files[index].pipe->size;
     return mounts[ft()->files[index].mountfs]->get_size(ft()->files[index].file_name);
 }
 

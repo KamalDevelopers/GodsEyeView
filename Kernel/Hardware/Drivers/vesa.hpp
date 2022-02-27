@@ -2,17 +2,12 @@
 #define VESA_HPP
 
 #include "../../Mem/mm.hpp"
+#include "../interrupts.hpp"
 #include <LibC/stdlib.hpp>
 #include <LibC/types.hpp>
+#include <LibDisplay/canvas.hpp>
 
-typedef struct canvas {
-    uint32_t* framebuffer = 0;
-    uint32_t size = 0;
-    uint32_t width = 0;
-    uint32_t height = 0;
-    uint32_t x = 0;
-    uint32_t y = 0;
-} canvas_t;
+#define VESA Vesa::active
 
 class Vesa {
 private:
@@ -27,9 +22,9 @@ public:
     Vesa(uint64_t framebuffer_address, uint32_t width, uint32_t height, uint32_t pitch, uint32_t bpp);
     ~Vesa();
 
+    static Vesa* active;
+
     uint32_t get_index(uint32_t x, uint32_t y);
-    canvas_t* create_canvas(uint32_t width, uint32_t height);
-    void destroy_canvas(canvas_t* canvas);
     void write_canvas(canvas_t* canvas);
 };
 

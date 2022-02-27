@@ -3,6 +3,23 @@
 #include "string.hpp"
 #include "unistd.hpp"
 
+#ifdef __cplusplus
+void* operator new(long unsigned int size)
+{
+    return malloc(size);
+}
+
+void operator delete(void* ptr)
+{
+    free(ptr);
+}
+
+void operator delete[](void* ptr)
+{
+    free(ptr);
+}
+#endif
+
 extern "C" {
 
 int main(int argc, char** argv);

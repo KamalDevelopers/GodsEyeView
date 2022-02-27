@@ -89,20 +89,21 @@ int command(char* input)
     }
 
     int pid = spawn(program, arguments);
-    if (pid != -1) {
+    if (pid != -1)
         waitpid(pid);
-        return 1;
-    }
 
     for (uint32_t i = 0; i < 10; i++)
         free(arguments[i]);
     free(arguments);
-    return 0;
+
+    if (pid == -1)
+        return 0;
+    return 1;
 }
 
 int main(int argc, char** argv)
 {
-    const char ps1[] = "\33\x2\x9%s\33\x3@\33\x2\x0C%s\33\x3:\33\x2\xA/%s\33\x3# ";
+    const char ps1[] = "\33\x2\x9%s\33\x3@\33\x2\xA%s\33\x3:\33\x2\xC/%s\33\x3# ";
 
     utsname uname_struct;
     uname(&uname_struct);
@@ -116,8 +117,11 @@ int main(int argc, char** argv)
         flush();
 
         char input[300];
-        int read_size = read(0, input, 300);
+        int read_size = read(0, input, sizeof(input));
         input[read_size - 1] = 0;
+
+        printf("\n");
+        flush();
 
         if (!strlen(input))
             continue;

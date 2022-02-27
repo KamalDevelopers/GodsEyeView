@@ -1,0 +1,5 @@
+rule display
+    command = cd ./Display && ninja && ninja move && cd ../
+    description = building display server
+
+build display: display

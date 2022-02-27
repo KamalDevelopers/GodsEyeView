@@ -29,6 +29,23 @@ void* memcpy(void* dst, const void* src, unsigned int cnt)
     return dst;
 }
 
+void* memcpy32(void* dst, const void* src, size_t cnt)
+{
+    uint32_t num_dwords = cnt / 4;
+    uint32_t num_bytes = cnt % 4;
+    uint32_t* dest32 = (uint32_t*)dst;
+    uint32_t* src32 = (uint32_t*)src;
+    uint8_t* dest8 = ((uint8_t*)dst) + num_dwords * 4;
+    uint8_t* src8 = ((uint8_t*)src) + num_dwords * 4;
+    uint32_t i;
+
+    for (i = 0; i < num_dwords; i++)
+        dest32[i] = src32[i];
+    for (i = 0; i < num_bytes; i++)
+        dest8[i] = src8[i];
+    return dst;
+}
+
 void* memset(void* b, char c, int len)
 {
     char* b_char = (char*)b;

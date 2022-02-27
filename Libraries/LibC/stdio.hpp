@@ -9,7 +9,7 @@
 #include "unistd.hpp"
 #include <stdarg.h>
 
-static char write_buffer[512];
+static char write_buffer[BUFSIZ];
 static int write_index = 0;
 static void (*hwrite)(char*) = 0;
 void puts_hook(void (*t)(char*));

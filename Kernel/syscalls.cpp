@@ -26,11 +26,29 @@ int Syscalls::sys_read(int fd, void* data, int length)
         size = TM->read_stdin((char*)data, length);
         break;
 
+    case 1:
+        memset(data, 0, length);
+        size = Pipe::read(TM->task()->get_stdout(), (uint8_t*)data, length);
+        break;
+
+    case DEV_MOUSE_FD:
+        if (MouseDriver::active->can_read_event())
+            size = sizeof(mouse_event_t);
+        memcpy(data, MouseDriver::active->get_mouse_event(), size);
+        break;
+
+    case DEV_KEYBOARD_FD:
+        if (KeyboardDriver::active->can_read_event())
+            size = sizeof(keyboard_event_t);
+        memcpy(data, KeyboardDriver::active->get_keyboard_event(), size);
+        break;
+
     default:
         size = VFS->read(fd, (uint8_t*)data, length);
         break;
     }
 
+    TM->test_poll();
     return size;
 }
 
@@ -41,8 +59,7 @@ int Syscalls::sys_write(int fd, void* data, int length)
 
     switch (fd) {
     case 1:
-        ((char*)data)[length] = '\0';
-        write_string((char*)data);
+        Pipe::append(TM->task()->get_stdout(), (uint8_t*)data, length);
         break;
 
     case DEV_AUDIO_FD:
@@ -55,12 +72,13 @@ int Syscalls::sys_write(int fd, void* data, int length)
         break;
     }
 
+    TM->test_poll();
     return length;
 }
 
-int Syscalls::sys_open(char* file)
+int Syscalls::sys_open(char* file, int flags)
 {
-    return VFS->open(file);
+    return VFS->open(file, flags);
 }
 
 int Syscalls::sys_close(int fd)
@@ -151,6 +169,13 @@ int Syscalls::sys_spawn(char* file, char** args)
     return TM->spawn(file, args);
 }
 
+/* TODO: Add timespec and sigmask */
+int Syscalls::sys_poll(pollfd* fds, uint32_t nfds)
+{
+    return TM->task()->poll(fds, nfds);
+}
+
+/* TODO: Replace with getdents */
 int Syscalls::sys_listdir(char* dirname, char** entries)
 {
     return VFS->listdir(dirname, entries);
@@ -159,6 +184,19 @@ int Syscalls::sys_listdir(char* dirname, char** entries)
 void Syscalls::sys_getcwd(char* buffer)
 {
     TM->task()->cwd(buffer);
+}
+
+int Syscalls::sys_display_control(canvas_t* canvas, uint32_t action)
+{
+    if (!canvas->size)
+        return -1;
+
+    switch (action) {
+    case 1:
+        VESA->write_canvas(canvas);
+        break;
+    }
+    return 0;
 }
 
 uint32_t Syscalls::interrupt(uint32_t esp)
@@ -180,7 +218,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 5:
-        cpu->eax = sys_open((char*)cpu->ebx);
+        cpu->eax = sys_open((char*)cpu->ebx, (int)cpu->ecx);
         break;
 
     case 6:
@@ -231,6 +269,9 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         cpu->eax = sys_sleep((uint32_t)cpu->ebx);
         break;
 
+    case 168:
+        cpu->eax = sys_poll((pollfd*)cpu->ebx, (uint32_t)cpu->ecx);
+
     case 183:
         sys_getcwd((char*)cpu->ebx);
         break;
@@ -241,6 +282,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 402:
         cpu->eax = sys_listdir((char*)cpu->ebx, (char**)cpu->ecx);
+        break;
+
+    case 404:
+        cpu->eax = sys_display_control((canvas_t*)cpu->ebx, (uint32_t)cpu->ecx);
         break;
     }
 

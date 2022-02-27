@@ -63,7 +63,6 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TaskManager task_manager(&gdt);
     VirtualFilesystem vfs;
     Audio audio;
-    VGA vga;
 
     klog("Starting memory management and paging");
     uint32_t total_memory = detect_memory(multiboot_info_ptr);
@@ -74,12 +73,16 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Paging::init();
     PhysicalMemoryManager pmm(available_pages);
 
+    VGA vga;
+    Vesa vesa(multiboot_info_ptr->framebuffer_addr,
+        multiboot_info_ptr->framebuffer_width,
+        multiboot_info_ptr->framebuffer_height,
+        multiboot_info_ptr->framebuffer_pitch,
+        multiboot_info_ptr->framebuffer_bpp);
+
     klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &gdt, &task_manager);
     Syscalls syscalls(&interrupts, 0x80);
-
-    MouseDriver mouse(&interrupts, 640, 480);
-    KeyboardDriver keyboard(&interrupts);
     SoundBlaster16 sb16(&interrupts);
 
     klog("Starting filesystem");
@@ -92,6 +95,10 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     vfs.mount(&fs_tar);
 
     klog("Starting PCI drivers and networking");
+    MouseDriver mouse(&interrupts, multiboot_info_ptr->framebuffer_width,
+        multiboot_info_ptr->framebuffer_height);
+    KeyboardDriver keyboard(&interrupts);
+
     Ethernet ethernet;
     if (pci.find_driver(AM79C973::identifier())) {
         AM79C973* am79c973 = new AM79C973(&interrupts, pci.get_descriptor());
@@ -117,18 +124,27 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Loader loader;
     loader.add(&elf_load);
 
-    int shell_file_descriptor = VFS->open("shell");
-    int size = VFS->size(shell_file_descriptor);
-    uint8_t* elfdata = new uint8_t[size];
-    VFS->read(shell_file_descriptor, elfdata, size);
-    VFS->close(shell_file_descriptor);
+    int terminal_file_descriptor = VFS->open("terminal");
+    int size = VFS->size(terminal_file_descriptor);
+    uint8_t* elf_data_terminal = new uint8_t[size];
+    VFS->read(terminal_file_descriptor, elf_data_terminal, size);
+    VFS->close(terminal_file_descriptor);
+    executable_t execute_terminal = Loader::load->exec(elf_data_terminal);
 
-    executable_t execute = Loader::load->exec(elfdata);
-    kprintf("Spawning interactive shell...\n\n");
+    int display_file_descriptor = VFS->open("servers/display");
+    size = VFS->size(display_file_descriptor);
+    uint8_t* elf_data_display = new uint8_t[size];
+    VFS->read(display_file_descriptor, elf_data_display, size);
+    VFS->close(display_file_descriptor);
+    executable_t execute = Loader::load->exec(elf_data_display);
 
-    Task shell("shell", 0);
-    shell.executable(execute);
-    TM->append_tasks(1, &shell);
+    Task idle("idle", (uint32_t)kernel_idle, 1);
+    Task display("servers/display");
+    Task terminal("terminal");
+
+    display.executable(execute);
+    terminal.executable(execute_terminal);
+    TM->append_tasks(3, &display, &terminal, &idle);
 
     Mutex::enable();
     TM->activate();

@@ -1,11 +1,13 @@
 #include "multitasking.hpp"
+#include "Hardware/Drivers/keyboard.hpp"
+#include "Hardware/Drivers/mouse.hpp"
 
 BitArray<MAX_PIDS> pid_bitmap;
 
-Task::Task(char* task_name, uint32_t eip, int priv)
+Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
 {
     if (strlen(task_name) > 20)
-        task_name = "Unknown";
+        task_name = "unknown";
 
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
@@ -26,15 +28,29 @@ Task::Task(char* task_name, uint32_t eip, int priv)
     memset(stdin_buffer, 0, 200);
     memset(working_directory, 0, MAX_PATH_SIZE);
 
+    this->parent = parent;
+    if (parent != -1) {
+        pipe_stdout = TM->task(parent)->get_stdout();
+        pipe_stdin = TM->task(parent)->get_stdin();
+    } else {
+        pipe_stdout = Pipe::create();
+        pipe_stdin = Pipe::create();
+    }
+
     execute = 0;
     state = 0;
-    privelege = priv;
+    privilege = privilege_level;
     pid = pid_bitmap.find_unset();
     pid_bitmap.bit_set(pid);
 }
 
 Task::~Task()
 {
+    if (parent != -1) {
+        Pipe::destroy(pipe_stdout);
+        Pipe::destroy(pipe_stdin);
+    }
+
     if (is_executable)
         kfree((void*)loaded_executable.memory.physical_address);
     kfree(this);
@@ -93,6 +109,42 @@ void Task::cwd(char* buffer)
     strcpy(buffer, working_directory);
 }
 
+int Task::poll(pollfd* pollfds, uint32_t npolls)
+{
+    if (npolls >= sizeof(polls) / sizeof(pollfd))
+        return -1;
+
+    sleeping = -SLEEP_WAIT_POLL;
+    for (uint32_t i = 0; i < npolls; i++)
+        polls[i] = pollfds[i];
+    num_poll = npolls;
+    TM->test_poll();
+    TM->yield();
+    return npolls;
+}
+
+void Task::wake_from_poll()
+{
+    num_poll = 0;
+    sleeping = 0;
+}
+
+void Task::test_poll()
+{
+    for (uint32_t i = 0; i < num_poll; i++) {
+        if (polls[i].events & POLLIN) {
+            if ((polls[i].fd == DEV_KEYBOARD_FD) && (KeyboardDriver::active->can_read_event()))
+                return wake_from_poll();
+            if ((polls[i].fd == DEV_MOUSE_FD) && (MouseDriver::active->can_read_event()))
+                return wake_from_poll();
+            if ((polls[i].fd == 1) && (get_stdout()->size > 0))
+                return wake_from_poll();
+            if (VFS->size(polls[i].fd) > 0)
+                return wake_from_poll();
+        }
+    }
+}
+
 TaskManager::TaskManager(GDT* gdt)
 {
     pid_bitmap.bit_set(0);
@@ -108,16 +160,23 @@ TaskManager::~TaskManager()
 
 bool TaskManager::add_task(Task* task)
 {
-    if (num_tasks >= 256)
+    if (strcmp(task->get_name(), "idle") == 0) {
+        tasks[MAX_TASKS - 1] = task;
+        return true;
+    }
+
+    if (num_tasks + 2 >= MAX_TASKS)
         return false;
 
     if (!is_running) {
-        tasks[num_tasks++] = task;
+        tasks[num_tasks] = task;
+        num_tasks++;
         return true;
     }
 
     is_running = 0;
-    tasks[num_tasks++] = task;
+    tasks[num_tasks] = task;
+    num_tasks++;
     is_running = 1;
     return true;
 }
@@ -147,67 +206,61 @@ Task* TaskManager::task(int pid)
     return 0;
 }
 
+file_table_t* TaskManager::get_file_table()
+{
+    if (testing_poll_task == -1)
+        return tasks[current_task]->get_file_table();
+    return tasks[testing_poll_task]->get_file_table();
+}
+
 int8_t TaskManager::send_signal(int pid, int sig)
 {
     Task* receiver = task(pid);
     if (receiver == 0)
         return -1;
-    if (receiver->privelege <= tasks[current_task]->privelege)
+    if (receiver->privilege <= tasks[current_task]->privilege)
         return -1;
     return receiver->notify(sig);
 }
 
-void TaskManager::append_stdin(char key)
+void TaskManager::write_stdin(uint8_t* buffer, uint32_t length)
 {
-    if (is_reading_stdin)
-        kprintf("%c", key);
+    int reading_stdin_task = -1;
+    for (uint32_t i = 0; i < num_tasks; i++)
+        if (tasks[i]->sleeping == -SLEEP_WAIT_STDIN)
+            reading_stdin_task = i;
 
-    size_t length = strlen(tasks[current_task]->stdin_buffer);
-    if (key == '\b') {
-        tasks[current_task]->stdin_buffer[length - 1] = 0;
-    } else {
-        tasks[current_task]->stdin_buffer[length] = key;
-        tasks[current_task]->stdin_buffer[length + 1] = 0;
-    }
+    if (reading_stdin_task == -1)
+        return;
+
+    tasks[reading_stdin_task]->sleeping = 0;
+    Pipe::write(tasks[reading_stdin_task]->get_stdin(), buffer, length);
 }
 
-void TaskManager::reset_stdin()
+int TaskManager::read_stdin(char* buffer, uint32_t length)
 {
-    memset(tasks[current_task]->stdin_buffer, 0, 200);
-}
-
-uint32_t TaskManager::read_stdin(char* buffer, uint32_t length)
-{
-    if ((!length) || (length > 512))
-        return 0;
-
-    uint32_t size = 0;
-    reset_stdin();
-    set_cursor(true);
     is_reading_stdin = true;
-
-    while (true) {
-        size = strlen(tasks[current_task]->stdin_buffer);
-
-        if (size == 0)
-            continue;
-
-        if (TM->tasks[current_task]->stdin_buffer[size - 1] == 10) {
-            strncpy(buffer, tasks[current_task]->stdin_buffer, length);
-            buffer[size] = 0;
-            reset_stdin();
-            break;
-        }
-    }
-
+    tasks[current_task]->sleeping = -SLEEP_WAIT_STDIN;
+    yield();
+    int size = Pipe::read(tasks[current_task]->get_stdin(), (uint8_t*)buffer, length);
     is_reading_stdin = false;
-    set_cursor(false);
     return size;
 }
 
 void TaskManager::sleep(uint32_t ticks)
 {
     tasks[current_task]->sleeping = current_ticks + ticks;
+}
+
+void TaskManager::test_poll()
+{
+    for (uint32_t i = 0; i < num_tasks; i++) {
+        if (tasks[i]->sleeping == -SLEEP_WAIT_POLL) {
+            testing_poll_task = i;
+            tasks[i]->test_poll();
+        }
+    }
+    testing_poll_task = -1;
 }
 
 int TaskManager::waitpid(int pid)
@@ -238,14 +291,16 @@ int TaskManager::spawn(char* file, char** args)
     if (!exec.valid)
         return -1;
 
-    Task* child = new Task(file, 0);
+    Task* child = new Task(file, 0, 0, task()->get_pid());
     strcpy(child->working_directory, tasks[current_task]->working_directory);
     child->executable(exec);
     child->is_child = true;
 
-    for (uint32_t i = 0; i < 10; i++) {
-        strcat(child->arguments, args[i]);
-        strcat(child->arguments, " ");
+    if (args) {
+        for (uint32_t i = 0; i < 10; i++) {
+            strcat(child->arguments, args[i]);
+            strcat(child->arguments, " ");
+        }
     }
 
     child->cpustate->edx = (uint32_t)&child->arguments;
@@ -278,13 +333,20 @@ void TaskManager::kill_zombie_tasks()
 void TaskManager::pick_next_task()
 {
     current_task++;
+    scheduler_checked_tasks++;
+
+    if (scheduler_checked_tasks > num_tasks) {
+        current_task = MAX_TASKS - 1;
+        return;
+    }
+
     if (current_task >= num_tasks)
         current_task = 0;
 
     if (tasks[current_task]->state != ALIVE)
         pick_next_task();
 
-    if (tasks[current_task]->sleeping == -SLEEP_WAIT_WAKE)
+    if (tasks[current_task]->sleeping < 0)
         pick_next_task();
 
     if (current_ticks >= tasks[current_task]->sleeping)
@@ -302,7 +364,9 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     if ((num_tasks <= 0) || (is_running == 0))
         return cpustate;
 
+    scheduler_checked_tasks = 0;
     kill_zombie_tasks();
     pick_next_task();
+
     return tasks[current_task]->cpustate;
 }

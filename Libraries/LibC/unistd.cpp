@@ -55,12 +55,12 @@ int write(int fd, void* buffer, int length)
     return 0;
 }
 
-int open(char* file_name)
+int open(char* file_name, int flags)
 {
     int fd;
     asm volatile("int $0x80"
                  : "=a"(fd)
-                 : "a"(5), "b"(file_name));
+                 : "a"(5), "b"(file_name), "c"(flags));
     return fd;
 }
 
@@ -112,4 +112,13 @@ int listdir(char* dirname, char** entries)
                  : "=a"(result)
                  : "a"(402), "b"(dirname), "c"(entries));
     return result;
+}
+
+int getpid()
+{
+    int pid;
+    asm volatile("int $0x80"
+                 : "=a"(pid)
+                 : "a"(22));
+    return pid;
 }

@@ -3,6 +3,7 @@
 
 #include "../pipe.hpp"
 #include <LibC/path.hpp>
+#include <LibC/poll.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
@@ -13,6 +14,8 @@
 #define MAX_MOUNTS 5
 #define MAX_FILE_DESCRIPTORS INT_MAX - 10
 #define DEV_AUDIO_FD MAX_FILE_DESCRIPTORS + 1
+#define DEV_MOUSE_FD MAX_FILE_DESCRIPTORS + 2
+#define DEV_KEYBOARD_FD MAX_FILE_DESCRIPTORS + 3
 #define VFS VirtualFilesystem::active
 
 #define FS_FILE 1
@@ -33,15 +36,15 @@ public:
     virtual int read_dir(char* dirname, char** entries) { return 0; }
 };
 
-struct file_entry {
+typedef struct file_entry {
     int descriptor = 0;
     int mountfs = 0;
     char file_name[MAX_FILE_NAME];
     int file_position = 0;
     int size = 0;
     int type = 0;
-    pipe_t pipe;
-};
+    pipe_t* pipe;
+} file_entry_t;
 
 typedef struct file_table {
     file_entry files[MAX_OPENFILES];

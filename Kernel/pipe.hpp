@@ -12,12 +12,13 @@ typedef struct pipe {
 } pipe_t;
 
 namespace Pipe {
-pipe_t create();
-void destroy(pipe_t& pipe);
-void expand(pipe_t& pipe, size_t size);
-void collapse(pipe_t& pipe, size_t size);
-int read(pipe_t& pipe, uint8_t* buffer, size_t size);
-int write(pipe_t& pipe, uint8_t* buffer, size_t size);
+pipe_t* create();
+void destroy(pipe_t* pipe);
+void expand(pipe_t* pipe, size_t size);
+void collapse(pipe_t* pipe, size_t size);
+int read(pipe_t* pipe, uint8_t* buffer, size_t size);
+int write(pipe_t* pipe, uint8_t* buffer, size_t size);
+int append(pipe_t* pipe, uint8_t* buffer, size_t size);
 }
 
 #endif

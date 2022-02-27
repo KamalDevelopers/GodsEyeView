@@ -7,6 +7,7 @@
 #include <LibC/stdio.hpp>
 #include <LibC/string.hpp>
 #include <LibC/types.hpp>
+#include <LibDisplay/events.hpp>
 
 class KeyboardDriver : public InterruptHandler {
     Port8Bit data_port;
@@ -18,7 +19,10 @@ private:
 
     int keys_pressed = 0;
     int keys_pressed_raw = 0;
+    bool has_read_event = false;
 
+    keyboard_event_t event;
+    char key_buffer[BUFSIZ];
     char last_key;
     uint8_t last_key_raw;
     bool is_shift = 0;
@@ -39,6 +43,9 @@ public:
     char get_key();
     uint8_t read_key();
     void read_keys(int len, char* data);
+
+    keyboard_event_t* get_keyboard_event();
+    bool can_read_event() { return !has_read_event; }
 };
 
 /* Currently Swedish Layout */
