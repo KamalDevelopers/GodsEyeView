@@ -239,11 +239,11 @@ void TaskManager::write_stdin(uint8_t* buffer, uint32_t length)
 
 int TaskManager::read_stdin(char* buffer, uint32_t length)
 {
-    is_reading_stdin = true;
+    task_reading_stdin = tasks[current_task]->pid;
     tasks[current_task]->sleeping = -SLEEP_WAIT_STDIN;
     yield();
     int size = Pipe::read(tasks[current_task]->get_stdin(), (uint8_t*)buffer, length);
-    is_reading_stdin = false;
+    task_reading_stdin = -1;
     return size;
 }
 

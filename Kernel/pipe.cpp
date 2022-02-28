@@ -95,6 +95,7 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
     if (size <= 0)
         return -1;
 
+    Mutex::lock(pipe_mutex);
     if (size + pipe->size > pipe->total_size) {
         uint8_t* temporary = new uint8_t[pipe->total_size];
         int temporary_size = pipe->total_size;
@@ -103,7 +104,6 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
         kfree(temporary);
     }
 
-    Mutex::lock(pipe_mutex);
     memcpy(pipe->buffer + pipe->size, buffer, size);
     pipe->size += size;
     Mutex::unlock(pipe_mutex);

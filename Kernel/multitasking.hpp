@@ -103,8 +103,8 @@ private:
     int testing_poll_task = -1;
     int scheduler_checked_tasks = 0;
     uint32_t current_ticks = 0;
+    int task_reading_stdin = -1;
     bool is_running = false;
-    bool is_reading_stdin = false;
     bool check_kill = false;
     Task* tasks[MAX_TASKS];
 
@@ -117,7 +117,7 @@ public:
     cpu_state* schedule(cpu_state* cpustate);
     void pick_next_task();
 
-    bool has_task_reading_stdin() { return is_reading_stdin; }
+    int reading_stdin() { return task_reading_stdin; }
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
     bool is_active() { return is_running; }

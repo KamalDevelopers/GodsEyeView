@@ -120,9 +120,6 @@ int main(int argc, char** argv)
         int read_size = read(0, input, sizeof(input));
         input[read_size - 1] = 0;
 
-        printf("\n");
-        flush();
-
         if (!strlen(input))
             continue;
 

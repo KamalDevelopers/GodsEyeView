@@ -42,7 +42,6 @@ keyboard_event_t* KeyboardDriver::get_keyboard_event()
     if (has_read_event)
         return 0;
     event.key = last_key;
-    event.is_reading = TM->has_task_reading_stdin();
     has_read_event = true;
     return &event;
 }
@@ -238,13 +237,13 @@ void KeyboardDriver::on_key(uint8_t keypress)
     if (keypress == ALTGR_RELEASED)
         is_altgr = 0;
 
-    if (key_a(keypress) != 0) {
-        last_key = key_a(keypress);
-
+    last_key = key_a(keypress);
+    if (last_key != 0) {
+        int task_reading_stdin = TM->reading_stdin();
         if (strlen(key_buffer) + 1 >= BUFSIZ)
             memset(key_buffer, 0, BUFSIZ);
 
-        if (TM->has_task_reading_stdin()) {
+        if (task_reading_stdin != -1) {
             if (last_key == '\b') {
                 key_buffer[strlen(key_buffer) - 1] = 0;
             } else {
@@ -254,10 +253,12 @@ void KeyboardDriver::on_key(uint8_t keypress)
         }
 
         if ((last_key == '\b' && keys_pressed - 1 >= 0) || last_key != '\b') {
+            if (task_reading_stdin != -1)
+                Pipe::append(TM->task(task_reading_stdin)->get_stdout(), (uint8_t*)&last_key, 1);
             has_read_event = false;
             TM->test_poll();
 
-            if (TM->has_task_reading_stdin())
+            if (task_reading_stdin != -1)
                 keys_pressed += (last_key == '\b') ? -1 : 1;
             if (last_key == 10) {
                 TM->write_stdin((uint8_t*)key_buffer, strlen(key_buffer));

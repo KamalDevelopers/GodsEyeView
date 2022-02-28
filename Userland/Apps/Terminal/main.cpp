@@ -29,13 +29,6 @@ int main(int argc, char** argv)
                 memcpy(&keyboard_event, &event.keyboard, sizeof(keyboard_event_t));
                 if (keyboard_event.key == 27)
                     break;
-                if (keyboard_event.key == 10)
-                    continue;
-                if (!keyboard_event.is_reading)
-                    continue;
-                key_input[0] = keyboard_event.key;
-                draw_text(&canvas, key_input);
-                request_update_window();
             }
 
             if (event.type == DISPLAY_EVENT_RESIZE) {
