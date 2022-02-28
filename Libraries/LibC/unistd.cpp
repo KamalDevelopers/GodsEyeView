@@ -128,6 +128,6 @@ int getpid()
     int pid;
     asm volatile("int $0x80"
                  : "=a"(pid)
-                 : "a"(22));
+                 : "a"(20));
     return pid;
 }

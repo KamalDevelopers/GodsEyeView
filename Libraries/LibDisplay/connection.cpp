@@ -18,8 +18,9 @@ int request_display_window(canvas_t* canvas, uint32_t width, uint32_t height)
     display_event_t event;
     char events_file_name[50];
     char pid[10];
+    memset(pid, 0, sizeof(pid));
     memset(events_file_name, 0, sizeof(events_file_name));
-    itoa(getpid(), pid);
+    itoa(request.pid, pid);
     strcat(events_file_name, (char*)"/pipe/display/events/");
     strcat(events_file_name, pid);
 
