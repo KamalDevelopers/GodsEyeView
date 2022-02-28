@@ -64,6 +64,15 @@ int open(char* file_name, int flags)
     return fd;
 }
 
+int fchown(int descriptor, uint32_t owner, uint32_t group)
+{
+    int status;
+    asm volatile("int $0x80"
+                 : "=a"(descriptor)
+                 : "a"(95), "b"(descriptor), "c"(owner), "d"(group));
+    return status;
+}
+
 void sleep(int sec)
 {
     asm volatile("int $0x80"

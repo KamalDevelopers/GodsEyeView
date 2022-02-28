@@ -25,10 +25,10 @@ int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
 {
     /* FIXME: Resize framebuffer */
     /*
-     * if (canvas->framebuffer != 0)
-     *     free(canvas->framebuffer);
-     * canvas->framebuffer = (uint32_t*)malloc(canvas->size * sizeof(int32_t));
-     */
+    if (canvas->framebuffer != 0)
+        free(canvas->framebuffer);
+    canvas->framebuffer = (uint32_t*)malloc(canvas->size * sizeof(int32_t));
+    */
 
     canvas->size = height * width;
     canvas->width = width;

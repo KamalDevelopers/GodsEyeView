@@ -37,6 +37,7 @@ private:
     int8_t sys_kill(int pid, int sig);
     uint32_t sys_mmap(void* addr, size_t length);
     int sys_munmap(void* addr, size_t length);
+    int sys_fchown(int fd, uint32_t owner, uint32_t group);
     int sys_uname(utsname* buffer);
     int sys_sleep(int time);
     int sys_spawn(char* file, char** args);

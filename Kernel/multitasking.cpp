@@ -27,10 +27,13 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     cpustate->eflags = 0x202;
     this->parent = parent;
 
-    if (parent != -1)
+    if (parent != -1) {
         tty = TM->task(parent)->tty;
-    else
+        is_inherited_tty = true;
+    } else {
         tty = new TTY;
+        is_inherited_tty = false;
+    }
 
     execute = 0;
     state = 0;
@@ -43,7 +46,7 @@ Task::~Task()
 {
     /* FIXME: If the child runs when the parent is dead,
      *        the child tty will cause a page fault. */
-    if (parent != -1)
+    if (!is_inherited_tty)
         kfree(tty);
 
     if (is_executable)
@@ -104,6 +107,16 @@ void Task::cwd(char* buffer)
     strcpy(buffer, working_directory);
 }
 
+int Task::become_tty_master()
+{
+    if (!is_inherited_tty)
+        return 1;
+
+    tty = new TTY;
+    is_inherited_tty = true;
+    return 0;
+}
+
 int Task::poll(pollfd* pollfds, uint32_t npolls)
 {
     if (npolls >= sizeof(polls) / sizeof(pollfd))
@@ -124,11 +137,6 @@ void Task::wake_from_poll()
     sleeping = 0;
 }
 
-void Task::sleep(int sleeping_modifier)
-{
-    sleeping = sleeping_modifier;
-}
-
 void Task::test_poll()
 {
     for (uint32_t i = 0; i < num_poll; i++) {
@@ -145,6 +153,11 @@ void Task::test_poll()
                 return wake_from_poll();
         }
     }
+}
+
+void Task::sleep(int sleeping_modifier)
+{
+    sleeping = sleeping_modifier;
 }
 
 TaskManager::TaskManager(GDT* gdt)

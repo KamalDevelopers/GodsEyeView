@@ -59,6 +59,7 @@ private:
     uint32_t num_poll = 0;
     bool is_executable = false;
     bool is_child = false;
+    bool is_inherited_tty = false;
     int sleeping = 0;
     int wake_pid_on_exit = 0;
     int parent = -1;
@@ -81,6 +82,7 @@ public:
     void cwd(char* buffer);
     int poll(pollfd* pollfds, uint32_t npolls);
     void sleep(int sleeping_modifier);
+    int become_tty_master();
     void wake_from_poll();
     void test_poll();
 

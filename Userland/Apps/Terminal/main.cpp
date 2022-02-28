@@ -3,10 +3,14 @@
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
+#include <LibC/unistd.hpp>
 #include <LibDisplay/connection.hpp>
 
 int main(int argc, char** argv)
 {
+    /* Become TTY master */
+    fchown(0, 1, 0);
+
     canvas_t canvas;
     int events_file = request_display_window(&canvas, 700, 500);
     if (events_file == -1)
@@ -25,6 +29,14 @@ int main(int argc, char** argv)
     bool continuous_stdout = false;
     memset(stdout_buffer, 0, sizeof(stdout_buffer));
 
+    struct pollfd polls[3];
+    polls[0].events = POLLIN;
+    polls[0].fd = 0;
+    polls[1].events = POLLIN;
+    polls[1].fd = 1;
+    polls[2].events = POLLIN;
+    polls[2].fd = events_file;
+
     while (1) {
         display_event_t event;
         if (receive_event(&event)) {
@@ -39,12 +51,13 @@ int main(int argc, char** argv)
 
                 keys_pressed += (keyboard_event.key == '\b') ? -1 : 1;
                 write(0, &keyboard_event.key, 1);
-                flush();
             }
 
             if (event.type == DISPLAY_EVENT_RESIZE) {
                 memcpy(&canvas, event.canvas, sizeof(canvas_t));
                 clear_text(&canvas);
+                draw_text(&canvas, (char*)"this window has been resized!");
+                request_update_window();
             }
         }
 
@@ -55,6 +68,8 @@ int main(int argc, char** argv)
             continuous_stdout = false;
             request_update_window();
         }
+        if (!continuous_stdout)
+            poll(polls, 3);
     }
 
     request_destroy_window();

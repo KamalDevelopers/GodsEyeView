@@ -149,6 +149,15 @@ int Syscalls::sys_munmap(void* addr, size_t length)
     return PMM->free_pages((uint32_t)addr, length);
 }
 
+int Syscalls::sys_fchown(int fd, uint32_t owner, uint32_t group)
+{
+    if ((fd == 0) || (fd == 1) && (owner == 1))
+        return TM->task()->become_tty_master();
+
+    /* Not implemented */
+    return -1;
+}
+
 int Syscalls::sys_uname(utsname* buffer)
 {
     strcpy(buffer->sysname, "GevOS");
@@ -250,6 +259,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 91:
         cpu->eax = sys_munmap((void*)cpu->ebx, (size_t)cpu->ecx);
+        break;
+
+    case 95:
+        cpu->eax = sys_fchown((int)cpu->ebx, (uint32_t)cpu->ecx, (uint32_t)cpu->edx);
         break;
 
     case 109:
