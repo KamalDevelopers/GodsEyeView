@@ -19,7 +19,7 @@
 #define SIG_SEGV 3
 #define SLEEP_WAIT_WAKE 1
 #define SLEEP_WAIT_STDIN 2
-#define SLEEP_WAIT_POLL 2
+#define SLEEP_WAIT_POLL 3
 #define MAX_PIDS 1000
 #define MAX_TASKS 256
 #define TM TaskManager::active
@@ -50,10 +50,8 @@ class Task {
 private:
     uint8_t stack[4096];
     cpu_state* cpustate;
-    char stdin_buffer[200];
 
-    pipe_t* pipe_stdout = 0;
-    pipe_t* pipe_stdin = 0;
+    TTY* tty;
     executable_t loaded_executable;
     file_table_t process_file_table;
     pollfd polls[10];
@@ -82,14 +80,13 @@ public:
     int chdir(char* dir);
     void cwd(char* buffer);
     int poll(pollfd* pollfds, uint32_t npolls);
+    void sleep(int sleeping_modifier);
     void wake_from_poll();
     void test_poll();
 
     file_table_t* get_file_table() { return &process_file_table; }
     int get_pid() { return pid; }
     char* get_name() { return name; }
-    pipe_t* get_stdout() { return pipe_stdout; }
-    pipe_t* get_stdin() { return pipe_stdin; }
 
     Task(char* task_name, uint32_t eip = 0, int privilege_level = 0, int parent = -1);
     ~Task();
@@ -103,7 +100,6 @@ private:
     int testing_poll_task = -1;
     int scheduler_checked_tasks = 0;
     uint32_t current_ticks = 0;
-    int task_reading_stdin = -1;
     bool is_running = false;
     bool check_kill = false;
     Task* tasks[MAX_TASKS];
@@ -117,22 +113,18 @@ public:
     cpu_state* schedule(cpu_state* cpustate);
     void pick_next_task();
 
-    int reading_stdin() { return task_reading_stdin; }
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
     bool is_active() { return is_running; }
     void yield() { asm volatile("int $0x20"); }
     Task* task() { return tasks[current_task]; }
-    file_table_t* get_file_table();
+    TTY* tty() { return tasks[current_task]->tty; }
+    file_table_t* file_table();
     Task* task(int pid);
-
-    void reset_stdin();
-    int read_stdin(char* buffer, uint32_t length);
-    void write_stdin(uint8_t* buffer, uint32_t length);
-    void test_poll();
 
     void sleep(uint32_t ticks);
     int waitpid(int pid);
+    void test_poll();
     int spawn(char* file, char** args);
     bool append_tasks(int count, ...);
     int8_t send_signal(int pid, int sig);

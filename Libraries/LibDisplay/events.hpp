@@ -11,7 +11,6 @@ typedef struct mouse_event {
 
 typedef struct keyboard_event {
     char key = 0;
-    bool is_reading = false;
 } keyboard_event_t;
 
 #endif

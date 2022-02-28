@@ -29,18 +29,26 @@ MouseDriver::~MouseDriver()
 {
 }
 
-mouse_event_t* MouseDriver::get_mouse_event()
+bool MouseDriver::has_unread_event()
 {
-    if (has_read_event)
+    if (current_event >= events_index)
+        return false;
+    return true;
+}
+
+int MouseDriver::mouse_event(mouse_event_t* event)
+{
+    if (current_event >= events_index)
         return 0;
-    event.modifier = 0;
-    if (!has_read_klick)
-        event.modifier = mouse_press;
-    event.x = mouse_x;
-    event.y = mouse_y;
-    has_read_event = true;
-    has_read_klick = true;
-    return &event;
+
+    memcpy(event, &events[current_event], sizeof(mouse_event_t));
+    current_event++;
+
+    if (current_event >= events_index) {
+        current_event = 0;
+        events_index = 0;
+    }
+    return sizeof(mouse_event_t);
 }
 
 void MouseDriver::on_mouse_move(int x, int y)
@@ -59,6 +67,17 @@ void MouseDriver::on_mouse_move(int x, int y)
 
     mouse_x = new_mouse_x;
     mouse_y = new_mouse_y;
+
+    events[events_index].x = mouse_x;
+    events[events_index].y = mouse_y;
+    events_index++;
+
+    if (events_index >= MAX_MOUSE_EVENTS) {
+        events_index = 0;
+        current_event = 0;
+    } else {
+        TM->test_poll();
+    }
 }
 
 void MouseDriver::on_mouse_up()
@@ -68,14 +87,23 @@ void MouseDriver::on_mouse_up()
 
 void MouseDriver::on_mouse_down(int b)
 {
-    if (b == 9) {
-        mouse_press = 1; // Left Click
-    }
-    if (b == 10) {
-        mouse_press = 2; // Right Click
-    }
-    if (b == 12) {
-        mouse_press = 3; // Middle Click
+    if (b == 9)
+        mouse_press = MOUSE_MODIFIER_L;
+    if (b == 10)
+        mouse_press = MOUSE_MODIFIER_R;
+    if (b == 12)
+        mouse_press = MOUSE_MODIFIER_M;
+
+    events[events_index].x = mouse_x;
+    events[events_index].y = mouse_y;
+    events[events_index].modifier = mouse_press;
+    events_index++;
+
+    if (events_index >= MAX_MOUSE_EVENTS) {
+        events_index = 0;
+        current_event = 0;
+    } else {
+        TM->test_poll();
     }
 }
 
@@ -85,7 +113,6 @@ uint32_t MouseDriver::interrupt(uint32_t esp)
     if (!(status & 0x20) || (is_active == 0))
         return esp;
 
-    has_read_event = false;
     TM->test_poll();
     buffer[offset] = data_port.read();
     offset = (offset + 1) % 3;
@@ -96,7 +123,6 @@ uint32_t MouseDriver::interrupt(uint32_t esp)
 
         for (uint8_t i = 0; i < 3; i++) {
             if ((buffer[0] & (0x1 << i)) != (buttons & (0x1 << i))) {
-                has_read_klick = false;
                 if (buttons & (0x1 << i))
                     on_mouse_up();
                 else

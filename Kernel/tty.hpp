@@ -2,23 +2,34 @@
 #define TTY_HPP
 
 #include "Hardware/Drivers/qemu.hpp"
-#include "Hardware/port.hpp"
-#include "mutex.hpp"
-#include <LibC/stdio.hpp>
+#include "pipe.hpp"
+#include <LibC/poll.hpp>
 #include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
+#include <LibC/types.hpp>
 
-#define MAX_ROWS 25
-#define MAX_COLS 80
 #define klog QemuSerial::active->qemu_debug
 
-void kprintf(const char* format, ...);
-void write_string(char* str);
-void write_char(char c);
-void clear_line(uint32_t y);
-void clear_screen();
-void set_color(uint8_t fg, uint8_t bg);
-void update_cursor();
-void set_cursor(bool enable);
+class TTY {
+private:
+    pipe_t* pipe_stdout = 0;
+    pipe_t* pipe_stdin = 0;
+    int read_stdin_size = 0;
+    int stdin_keypress_size = 0;
+
+public:
+    TTY();
+    ~TTY();
+
+    bool can_backspace() { return (stdin_keypress_size > 0); }
+    int stdin_size() { return pipe_stdin->size; }
+    int stdout_size() { return pipe_stdout->size; }
+    bool should_wake_stdin();
+
+    int write_stdin(uint8_t* buffer, uint32_t size);
+    int write_stdout(uint8_t* buffer, uint32_t size);
+    int read_stdin(uint8_t* buffer, uint32_t size);
+    int read_stdout(uint8_t* buffer, uint32_t size);
+    int task_read_stdin(uint8_t* buffer, uint32_t size);
+};
 
 #endif

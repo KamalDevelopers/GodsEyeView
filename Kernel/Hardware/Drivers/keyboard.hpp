@@ -3,11 +3,12 @@
 
 #include "../interrupts.hpp"
 #include "../port.hpp"
-#include "vga.hpp"
 #include <LibC/stdio.hpp>
 #include <LibC/string.hpp>
 #include <LibC/types.hpp>
 #include <LibDisplay/events.hpp>
+
+#define MAX_KEYBOARD_EVENTS 100
 
 class KeyboardDriver : public InterruptHandler {
     Port8Bit data_port;
@@ -19,10 +20,11 @@ private:
 
     int keys_pressed = 0;
     int keys_pressed_raw = 0;
-    bool has_read_event = false;
 
-    keyboard_event_t event;
-    char key_buffer[BUFSIZ];
+    keyboard_event_t events[MAX_KEYBOARD_EVENTS];
+    uint32_t events_index = 0;
+    uint32_t current_event = 0;
+
     char last_key;
     uint8_t last_key_raw;
     bool is_shift = 0;
@@ -42,10 +44,9 @@ public:
     int get_key_presses(int raw = 0);
     char get_key();
     uint8_t read_key();
-    void read_keys(int len, char* data);
 
-    keyboard_event_t* get_keyboard_event();
-    bool can_read_event() { return !has_read_event; }
+    bool has_unread_event();
+    int keyboard_event(keyboard_event_t* event);
 };
 
 /* Currently Swedish Layout */

@@ -132,7 +132,8 @@ bool VGA::set_mode(uint32_t width, uint32_t height, uint32_t colordepth)
         write_registers(g_320x200x256);
         return true;
     }
-    write_string("VGA Error: Mode not supported.");
+
+    klog("VGA error: mode not supported");
     screen_colordepth = 0;
     return false;
 }

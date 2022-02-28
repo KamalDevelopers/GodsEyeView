@@ -17,6 +17,7 @@
 #define CHUNK_SIZE PAGE_SIZE
 #define SB16 SoundBlaster16::active
 
+#include "../../mutex.hpp"
 #include "../audio.hpp"
 #include "../interrupts.hpp"
 #include "../pci.hpp"

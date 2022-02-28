@@ -30,20 +30,32 @@ KeyboardDriver::KeyboardDriver(InterruptManager* interrupt_manager)
     command_port.write(0x60);
     data_port.write(status);
     data_port.write(0xf4);
-    memset(key_buffer, 0, BUFSIZ);
 }
 
 KeyboardDriver::~KeyboardDriver()
 {
 }
 
-keyboard_event_t* KeyboardDriver::get_keyboard_event()
+bool KeyboardDriver::has_unread_event()
 {
-    if (has_read_event)
+    if (current_event >= events_index)
+        return false;
+    return true;
+}
+
+int KeyboardDriver::keyboard_event(keyboard_event_t* event)
+{
+    if (current_event >= events_index)
         return 0;
-    event.key = last_key;
-    has_read_event = true;
-    return &event;
+
+    memcpy(event, &events[current_event], sizeof(keyboard_event_t));
+    current_event++;
+
+    if (current_event >= events_index) {
+        current_event = 0;
+        events_index = 0;
+    }
+    return sizeof(keyboard_event_t);
 }
 
 /* TODO: English layout & more character support */
@@ -187,42 +199,6 @@ char KeyboardDriver::get_last_key(int raw)
     return last_key;
 }
 
-void KeyboardDriver::read_keys(int len, char* data)
-{
-    /* Disable Mouse */
-    outb(0x64, 0xD4);
-    outb(0x60, 0xF5);
-
-    char c = 0;
-    int key_stroke = 0;
-    char buffer[512];
-
-    while (c != 10) {
-        while (!(c = KeyboardDriver::active->get_key()))
-            ;
-        if (c == '\b') {
-            if (key_stroke > 0) {
-                key_stroke--;
-                kprintf("%c", c);
-            }
-        } else {
-            buffer[key_stroke] = c;
-            key_stroke++;
-            kprintf("%c", c);
-        }
-    }
-
-    len -= len - key_stroke;
-    buffer[key_stroke + 1] = '\0';
-
-    strncpy(data, buffer, len);
-    data[len - 1] = '\0';
-
-    /* Enable Mouse */
-    outb(0x64, 0xD4);
-    outb(0x60, 0xF4);
-}
-
 void KeyboardDriver::on_key(uint8_t keypress)
 {
     if (keypress == SHIFT_PRESSED)
@@ -239,37 +215,20 @@ void KeyboardDriver::on_key(uint8_t keypress)
 
     last_key = key_a(keypress);
     if (last_key != 0) {
-        int task_reading_stdin = TM->reading_stdin();
-        if (strlen(key_buffer) + 1 >= BUFSIZ)
-            memset(key_buffer, 0, BUFSIZ);
+        events[events_index].key = last_key;
+        events_index++;
 
-        if (task_reading_stdin != -1) {
-            if (last_key == '\b') {
-                key_buffer[strlen(key_buffer) - 1] = 0;
-            } else {
-                key_buffer[strlen(key_buffer)] = last_key;
-                key_buffer[strlen(key_buffer)] = 0;
-            }
-        }
-
-        if ((last_key == '\b' && keys_pressed - 1 >= 0) || last_key != '\b') {
-            if (task_reading_stdin != -1)
-                Pipe::append(TM->task(task_reading_stdin)->get_stdout(), (uint8_t*)&last_key, 1);
-            has_read_event = false;
+        if (events_index >= MAX_KEYBOARD_EVENTS) {
+            events_index = 0;
+            current_event = 0;
+        } else {
             TM->test_poll();
-
-            if (task_reading_stdin != -1)
-                keys_pressed += (last_key == '\b') ? -1 : 1;
-            if (last_key == 10) {
-                TM->write_stdin((uint8_t*)key_buffer, strlen(key_buffer));
-                memset(key_buffer, 0, BUFSIZ);
-            }
         }
-
-        if (last_key == 10)
-            keys_pressed = 0;
     }
 
+    keys_pressed += (last_key == '\b') ? -1 : 1;
+    if (last_key == 10)
+        keys_pressed = 0;
     last_key_raw = keypress;
     keys_pressed_raw++;
 }

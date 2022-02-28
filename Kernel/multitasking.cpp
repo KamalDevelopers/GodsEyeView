@@ -9,6 +9,8 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     if (strlen(task_name) > 20)
         task_name = "unknown";
 
+    memset(arguments, 0, 500);
+    memset(working_directory, 0, MAX_PATH_SIZE);
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
 
@@ -23,19 +25,12 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     cpustate->eip = eip;
     cpustate->cs = GDT::active->get_code_segment_selector();
     cpustate->eflags = 0x202;
-
-    memset(arguments, 0, 500);
-    memset(stdin_buffer, 0, 200);
-    memset(working_directory, 0, MAX_PATH_SIZE);
-
     this->parent = parent;
-    if (parent != -1) {
-        pipe_stdout = TM->task(parent)->get_stdout();
-        pipe_stdin = TM->task(parent)->get_stdin();
-    } else {
-        pipe_stdout = Pipe::create();
-        pipe_stdin = Pipe::create();
-    }
+
+    if (parent != -1)
+        tty = TM->task(parent)->tty;
+    else
+        tty = new TTY;
 
     execute = 0;
     state = 0;
@@ -46,10 +41,10 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
 
 Task::~Task()
 {
-    if (parent != -1) {
-        Pipe::destroy(pipe_stdout);
-        Pipe::destroy(pipe_stdin);
-    }
+    /* FIXME: If the child runs when the parent is dead,
+     *        the child tty will cause a page fault. */
+    if (parent != -1)
+        kfree(tty);
 
     if (is_executable)
         kfree((void*)loaded_executable.memory.physical_address);
@@ -129,15 +124,22 @@ void Task::wake_from_poll()
     sleeping = 0;
 }
 
+void Task::sleep(int sleeping_modifier)
+{
+    sleeping = sleeping_modifier;
+}
+
 void Task::test_poll()
 {
     for (uint32_t i = 0; i < num_poll; i++) {
         if (polls[i].events & POLLIN) {
-            if ((polls[i].fd == DEV_KEYBOARD_FD) && (KeyboardDriver::active->can_read_event()))
+            if ((polls[i].fd == DEV_KEYBOARD_FD) && (KeyboardDriver::active->has_unread_event()))
                 return wake_from_poll();
-            if ((polls[i].fd == DEV_MOUSE_FD) && (MouseDriver::active->can_read_event()))
+            if ((polls[i].fd == DEV_MOUSE_FD) && (MouseDriver::active->has_unread_event()))
                 return wake_from_poll();
-            if ((polls[i].fd == 1) && (get_stdout()->size > 0))
+            if ((polls[i].fd == 1) && (tty->stdout_size() > 0))
+                return wake_from_poll();
+            if ((polls[i].fd == 0) && (tty->stdin_size() > 0))
                 return wake_from_poll();
             if (VFS->size(polls[i].fd) > 0)
                 return wake_from_poll();
@@ -206,7 +208,7 @@ Task* TaskManager::task(int pid)
     return 0;
 }
 
-file_table_t* TaskManager::get_file_table()
+file_table_t* TaskManager::file_table()
 {
     if (testing_poll_task == -1)
         return tasks[current_task]->get_file_table();
@@ -223,30 +225,6 @@ int8_t TaskManager::send_signal(int pid, int sig)
     return receiver->notify(sig);
 }
 
-void TaskManager::write_stdin(uint8_t* buffer, uint32_t length)
-{
-    int reading_stdin_task = -1;
-    for (uint32_t i = 0; i < num_tasks; i++)
-        if (tasks[i]->sleeping == -SLEEP_WAIT_STDIN)
-            reading_stdin_task = i;
-
-    if (reading_stdin_task == -1)
-        return;
-
-    tasks[reading_stdin_task]->sleeping = 0;
-    Pipe::write(tasks[reading_stdin_task]->get_stdin(), buffer, length);
-}
-
-int TaskManager::read_stdin(char* buffer, uint32_t length)
-{
-    task_reading_stdin = tasks[current_task]->pid;
-    tasks[current_task]->sleeping = -SLEEP_WAIT_STDIN;
-    yield();
-    int size = Pipe::read(tasks[current_task]->get_stdin(), (uint8_t*)buffer, length);
-    task_reading_stdin = -1;
-    return size;
-}
-
 void TaskManager::sleep(uint32_t ticks)
 {
     tasks[current_task]->sleeping = current_ticks + ticks;
@@ -259,6 +237,9 @@ void TaskManager::test_poll()
             testing_poll_task = i;
             tasks[i]->test_poll();
         }
+
+        if ((tasks[i]->sleeping == -SLEEP_WAIT_STDIN) && tasks[i]->tty->should_wake_stdin())
+            return tasks[i]->wake_from_poll();
     }
     testing_poll_task = -1;
 }

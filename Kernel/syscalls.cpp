@@ -23,24 +23,19 @@ int Syscalls::sys_read(int fd, void* data, int length)
 
     switch (fd) {
     case 0:
-        size = TM->read_stdin((char*)data, length);
+        size = TM->tty()->task_read_stdin((uint8_t*)data, length);
         break;
 
     case 1:
-        memset(data, 0, length);
-        size = Pipe::read(TM->task()->get_stdout(), (uint8_t*)data, length);
+        size = TM->tty()->read_stdout((uint8_t*)data, length);
         break;
 
     case DEV_MOUSE_FD:
-        if (MouseDriver::active->can_read_event())
-            size = sizeof(mouse_event_t);
-        memcpy(data, MouseDriver::active->get_mouse_event(), size);
+        size = MouseDriver::active->mouse_event((mouse_event_t*)data);
         break;
 
     case DEV_KEYBOARD_FD:
-        if (KeyboardDriver::active->can_read_event())
-            size = sizeof(keyboard_event_t);
-        memcpy(data, KeyboardDriver::active->get_keyboard_event(), size);
+        size = KeyboardDriver::active->keyboard_event((keyboard_event_t*)data);
         break;
 
     default:
@@ -58,8 +53,12 @@ int Syscalls::sys_write(int fd, void* data, int length)
         return -1;
 
     switch (fd) {
+    case 0:
+        TM->tty()->write_stdin((uint8_t*)data, length);
+        break;
+
     case 1:
-        Pipe::append(TM->task()->get_stdout(), (uint8_t*)data, length);
+        TM->tty()->write_stdout((uint8_t*)data, length);
         break;
 
     case DEV_AUDIO_FD:

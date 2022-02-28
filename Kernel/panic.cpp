@@ -12,16 +12,16 @@ void dump_stack()
 
     for (unsigned int frame = 0; stk && frame < 4096; ++frame) {
         if (stk->eip)
-            kprintf("0x%x ", stk->eip);
+            klog("0x%x ", stk->eip);
         stk = stk->ebp;
     }
 }
 
 [[noreturn]] void panic(char* error, const char* file, uint32_t line)
 {
-    kprintf("\33\x2\x4Kernel Panic! \33\x2\xF%s : %d \33\x2\x7\n* %s\n", file, line, error);
+    klog("\33\x2\x4Kernel Panic! \33\x2\xF%s : %d \33\x2\x7\n* %s\n", file, line, error);
     IRQ::deactivate();
-    kprintf("Stack Trace: ");
+    klog("Stack Trace: ");
     dump_stack();
 
     while (1)

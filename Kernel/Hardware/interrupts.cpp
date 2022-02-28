@@ -159,7 +159,7 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
             uint32_t faulting_addr;
             asm volatile("mov %%cr2, %0"
                          : "=r"(faulting_addr));
-            kprintf("\n{Faulty address 0x%x}\n", faulting_addr);
+            klog("\n{Faulty address 0x%x}\n", faulting_addr);
             PANIC("Page fault");
         }
     }

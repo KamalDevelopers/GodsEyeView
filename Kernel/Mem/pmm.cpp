@@ -17,8 +17,8 @@ PhysicalMemoryManager::~PhysicalMemoryManager()
 
 void PhysicalMemoryManager::info()
 {
-    kprintf("total memory: %d MB (%d pages)\n", (available_pages * PAGE_SIZE) / MB, available_pages);
-    kprintf("used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
+    klog("total memory: %d MB (%d pages)\n", (available_pages * PAGE_SIZE) / MB, available_pages);
+    klog("used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
 }
 
 uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
@@ -31,7 +31,7 @@ uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
     uint32_t address = PHYSICAL_MEMORY_START + index * PAGE_SIZE;
 
     if (debug)
-        kprintf("allocating (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
+        klog("allocating (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
 
     for (uint32_t i = 0; i < pages; i++) {
         uint32_t map_address = address + (i * PAGE_SIZE);
@@ -62,7 +62,7 @@ int PhysicalMemoryManager::free_pages(uint32_t address, size_t size)
     uint32_t index = (address - PHYSICAL_MEMORY_START) / PAGE_SIZE;
 
     if (debug)
-        kprintf("freeing (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
+        klog("freeing (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
 
     for (uint32_t i = 0; i < pages; i++) {
         uint32_t map_address = virtual_address + (i * PAGE_SIZE);

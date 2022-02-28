@@ -1,6 +1,7 @@
 #include "vfs.hpp"
 #include "../Mem/mm.hpp"
 #include "../multitasking.hpp"
+#include "../tty.hpp"
 
 VirtualFilesystem* VirtualFilesystem::active = 0;
 VirtualFilesystem::VirtualFilesystem()
@@ -21,7 +22,7 @@ VirtualFilesystem::VirtualFilesystem()
 file_table* VirtualFilesystem::ft()
 {
     if (TM->is_active())
-        return TM->get_file_table();
+        return TM->file_table();
     return &kernel_file_table;
 }
 

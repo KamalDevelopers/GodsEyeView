@@ -1,182 +1,71 @@
 #include "tty.hpp"
+#include "multitasking.hpp"
 
-MUTEX(console);
-
-uint16_t* video_memory = (unsigned short*)0xb8000;
-bool serial_enabled = false;
-bool cursor_enabled = true;
-int video_memory_index = 0;
-int new_line_index = 0;
-uint32_t default_color = 0;
-uint32_t color = 0;
-
-void kprintf(const char* format, ...)
+TTY::TTY()
 {
-    va_list arg;
-
-    TM->deactivate();
-    puts_hook(write_string);
-    va_start(arg, format);
-    vprintf(format, arg);
-    va_end(arg);
-    puts_hook(0);
-    TM->activate();
+    pipe_stdout = Pipe::create();
+    pipe_stdin = Pipe::create();
 }
 
-static inline uint8_t vga_entry_color(uint8_t fg, uint8_t bg)
+TTY::~TTY()
 {
-    return fg | bg << 4;
 }
 
-static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
+int TTY::write_stdout(uint8_t* buffer, uint32_t size)
 {
-    return (uint16_t)uc | (uint16_t)color << 8;
+    return Pipe::append(pipe_stdout, buffer, size);
 }
 
-static int8_t esc_flag = 0;
-void write_string(char* str)
+int TTY::read_stdout(uint8_t* buffer, uint32_t size)
 {
-    Mutex::lock(console);
-    for (uint32_t i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '\b' && !esc_flag) {
-            if (video_memory_index <= 0)
-                continue;
-            video_memory_index--;
-            write_char(' ');
-            video_memory_index--;
-            update_cursor();
-            continue;
-        }
-
-        write_char(str[i]);
-    }
-    Mutex::unlock(console);
+    memset(buffer, 0, size);
+    return Pipe::read(pipe_stdout, buffer, size);
 }
 
-void write_char(char c)
+int TTY::write_stdin(uint8_t* buffer, uint32_t size)
 {
-    if (c == '\33' && !esc_flag) {
-        esc_flag = 1;
-        return;
-    }
+    /* FIXME: Properly handle backspace characters */
+    bool is_backspace = (buffer[size - 1] == '\b');
+    if (read_stdin_size <= 0)
+        return 0;
 
-    if (esc_flag == 1) {
-        esc_flag = 0;
-        switch (c) {
-        case 1:
-            clear_screen();
-            return;
-        case 2:
-            esc_flag = 2;
-            return;
-        case 3:
-            color = default_color;
-            return;
-        case 4:
-            esc_flag = 3;
-            return;
-        case 5:
-            esc_flag = 4;
-            return;
+    if ((is_backspace && can_backspace()) || !is_backspace) {
+        write_stdout(buffer, size);
+        stdin_keypress_size += is_backspace ? -1 : 1;
+
+        if (is_backspace) {
+            if (!pipe_stdin->size)
+                return 0;
+            pipe_stdin->buffer[pipe_stdin->size - 1] = 0;
+            pipe_stdin->size--;
+        } else {
+            return Pipe::append(pipe_stdin, buffer, size);
         }
     }
 
-    if (esc_flag == 2) {
-        esc_flag = 0;
-        set_color(c, 0);
-        return;
-    }
-
-    if (esc_flag == 3) {
-        esc_flag = 0;
-        video_memory_index = c - 1;
-        return;
-    }
-
-    if (esc_flag == 4) {
-        esc_flag = 0;
-        new_line_index = c - 1;
-        return;
-    }
-
-    if (c == 10) {
-        new_line_index++;
-        video_memory_index = 0;
-        clear_line(new_line_index);
-    } else {
-        video_memory[80 * new_line_index + video_memory_index] = vga_entry(c, color);
-        video_memory_index++;
-    }
-
-    if (new_line_index >= MAX_ROWS) {
-        for (uint32_t y = 0; y < MAX_ROWS; y++) {
-            for (uint32_t x = 0; x < MAX_COLS; x++) {
-                video_memory[80 * y + x] = video_memory[80 * (y + 1) + x];
-            }
-        }
-
-        video_memory_index = 0;
-        new_line_index = MAX_ROWS - 1;
-    }
-
-    if (video_memory_index >= MAX_COLS) {
-        video_memory_index = 0;
-        new_line_index++;
-    }
-
-    update_cursor();
+    return 0;
 }
 
-void clear_line(uint32_t y)
+int TTY::read_stdin(uint8_t* buffer, uint32_t size)
 {
-    for (uint32_t x = 0; x < MAX_COLS; x++) {
-        video_memory[80 * new_line_index + x] = (video_memory[80 * new_line_index + x] & 0xff00) | ' ';
-        video_memory[80 * new_line_index + x] = vga_entry(' ', color);
-    }
+    memset(buffer, 0, size);
+    return Pipe::read(pipe_stdin, buffer, size);
 }
 
-void clear_screen()
+bool TTY::should_wake_stdin()
 {
-    video_memory_index = 0;
-    new_line_index = 0;
-    for (uint32_t i = 0; i < MAX_COLS * MAX_ROWS; i++) {
-        video_memory[i] = (video_memory[i] & 0xff00) | ' ';
-        video_memory[i] = vga_entry(' ', color);
-    }
+    if (pipe_stdin->size == 0)
+        return false;
+    return ((pipe_stdin->size == read_stdin_size)
+        || (pipe_stdin->buffer[pipe_stdin->size - 1] == 10));
 }
 
-void set_color(uint8_t fg, uint8_t bg)
+int TTY::task_read_stdin(uint8_t* buffer, uint32_t size)
 {
-    color = vga_entry_color(fg, bg);
-    if (default_color == 0)
-        default_color = color;
-}
-
-void update_cursor()
-{
-    if (!cursor_enabled)
-        return;
-
-    uint32_t pos = new_line_index * 80 + video_memory_index;
-    outb(0x3D4, 15);
-    outb(0x3D5, (uint8_t)(pos & 0xFF));
-    outb(0x3D4, 14);
-    outb(0x3D5, (uint8_t)(pos >> 8) & 0xFF);
-}
-
-void set_cursor(bool enable)
-{
-    if (!enable) {
-        cursor_enabled = false;
-        outb(0x3D4, 0x0A);
-        outb(0x3D5, 0x20);
-        return;
-    }
-
-    cursor_enabled = true;
-    outb(0x3D4, 0x0A);
-    outb(0x3D5, (inb(0x3D5) & 0xC0) | 14);
-    outb(0x3D4, 0x0B);
-    outb(0x3D5, (inb(0x3D5) & 0xE0) | 15);
-    update_cursor();
+    read_stdin_size = size;
+    TM->task()->sleep(-SLEEP_WAIT_STDIN);
+    TM->yield();
+    read_stdin_size = 0;
+    stdin_keypress_size = 0;
+    return Pipe::read(pipe_stdin, buffer, size);
 }
