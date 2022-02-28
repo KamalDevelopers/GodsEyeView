@@ -1,8 +1,7 @@
 #include "tty.hpp"
 
 MUTEX(console);
-constexpr char* datacolorblue = "\033[01;34m[GevOS]: ";
-constexpr char* datacoloroff = "\033[0m";
+
 uint16_t* video_memory = (unsigned short*)0xb8000;
 bool serial_enabled = false;
 bool cursor_enabled = true;
@@ -22,62 +21,6 @@ void kprintf(const char* format, ...)
     va_end(arg);
     puts_hook(0);
     TM->activate();
-}
-
-void init_serial()
-{
-    outb(COMPORT + 1, 0x00);
-    outb(COMPORT + 3, 0x80);
-    outb(COMPORT + 0, 0x03);
-    outb(COMPORT + 1, 0x00);
-    outb(COMPORT + 3, 0x03);
-    outb(COMPORT + 2, 0xC7);
-    outb(COMPORT + 4, 0x0B);
-    serial_enabled = true;
-}
-
-int transmit_empty()
-{
-    return inb(COMPORT + 5) & 0x20;
-}
-
-void log_putc(char c)
-{
-    if (!serial_enabled)
-        return;
-
-    while (transmit_empty() == 0)
-        ;
-    outb(COMPORT, c);
-}
-
-void log_puts(char* str)
-{
-    for (int i = 0; str[i] != '\0'; i++)
-        log_putc(str[i]);
-}
-
-void klog(const char* format, ...)
-{
-    for (int i = 0; i < strlen(datacolorblue); i++)
-        log_putc(datacolorblue[i]); // color on
-
-    va_list arg;
-
-    puts_hook(log_puts);
-    va_start(arg, format);
-    vprintf(format, arg);
-    va_end(arg);
-    puts("\n");
-    puts_hook(0);
-
-    for (int i = 0; i < strlen(datacoloroff); i++)
-        log_putc(datacoloroff[i]); // color off
-}
-
-void klog(int num)
-{
-    klog("%d", num);
 }
 
 static inline uint8_t vga_entry_color(uint8_t fg, uint8_t bg)

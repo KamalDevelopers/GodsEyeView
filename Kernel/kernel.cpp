@@ -51,9 +51,8 @@ multiboot_info_t* multiboot_info_ptr;
 
 extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int magicnumber)
 {
-    init_serial();
-    klog("Kernel started");
-
+    QemuSerial qemu_serial;
+    klog("Kernel initialization started");
     set_color(VGA16::white, VGA16::black);
     clear_screen();
 

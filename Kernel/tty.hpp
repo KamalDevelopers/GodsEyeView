@@ -1,24 +1,16 @@
 #ifndef TTY_HPP
 #define TTY_HPP
 
-#define COMPORT 0x3f8
-#define MAX_ROWS 25
-#define MAX_COLS 80
-
+#include "Hardware/Drivers/qemu.hpp"
 #include "Hardware/port.hpp"
 #include "mutex.hpp"
 #include <LibC/stdio.hpp>
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
-#include <stdarg.h>
 
-/* Qemu serials */
-void init_serial();
-int transmit_empty();
-void log_putc(char c);
-void log_puts(char* str);
-void klog(const char* format, ...);
-void klog(int num);
+#define MAX_ROWS 25
+#define MAX_COLS 80
+#define klog QemuSerial::active->qemu_debug
 
 void kprintf(const char* format, ...);
 void write_string(char* str);
