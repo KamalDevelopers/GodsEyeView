@@ -5,7 +5,6 @@
 #include "../interrupts.hpp"
 #include <LibC/stdlib.hpp>
 #include <LibC/types.hpp>
-#include <LibDisplay/canvas.hpp>
 
 #define VESA Vesa::active
 

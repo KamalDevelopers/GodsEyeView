@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     int pid = spawn((char*)"shell", 0);
     request_update_window();
     keyboard_event_t keyboard_event;
+    bool continuous_stdout = false;
 
     while (1) {
         display_event_t event;
@@ -45,6 +46,9 @@ int main(int argc, char** argv)
 
         if (read(1, stdout_buffer, sizeof(stdout_buffer))) {
             draw_text(&canvas, stdout_buffer);
+            continuous_stdout = true;
+        } else if (continuous_stdout) {
+            continuous_stdout = false;
             request_update_window();
         }
     }
