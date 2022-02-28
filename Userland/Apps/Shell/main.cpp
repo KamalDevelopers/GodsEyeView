@@ -89,8 +89,9 @@ int command(char* input)
     }
 
     int pid = spawn(program, arguments);
-    if (pid != -1)
-        waitpid(pid);
+    if (strcmp(arguments[0], "&") != 0)
+        if (pid != -1)
+            waitpid(pid);
 
     for (uint32_t i = 0; i < 10; i++)
         free(arguments[i]);
