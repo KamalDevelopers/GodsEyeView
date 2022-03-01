@@ -21,6 +21,7 @@ public:
     ~TTY();
 
     bool can_backspace() { return (stdin_keypress_size > 0); }
+    bool is_reading_stdin() { return (read_stdin_size != 0); }
     int stdin_size() { return pipe_stdin->size; }
     int stdout_size() { return pipe_stdout->size; }
     bool should_wake_stdin();

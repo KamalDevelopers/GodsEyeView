@@ -139,9 +139,6 @@ void Task::wake_from_poll()
 
 void Task::test_poll()
 {
-    /* FIXME: The Task constantly tests for poll when data is available in stdin/stdout,
-     *        instead of just test polling once like intended. */
-
     for (uint32_t i = 0; i < num_poll; i++) {
         if (polls[i].events & POLLIN) {
             if ((polls[i].fd == DEV_KEYBOARD_FD) && (KeyboardDriver::active->has_unread_event()))
@@ -150,7 +147,7 @@ void Task::test_poll()
                 return wake_from_poll();
             if ((polls[i].fd == 1) && (tty->stdout_size() > 0))
                 return wake_from_poll();
-            if ((polls[i].fd == 0) && (tty->stdin_size() > 0))
+            if ((polls[i].fd == 0) && (!tty->is_reading_stdin()))
                 return wake_from_poll();
             if (VFS->size(polls[i].fd) > 0)
                 return wake_from_poll();
