@@ -131,3 +131,12 @@ int getpid()
                  : "a"(20));
     return pid;
 }
+
+int setsid()
+{
+    int pid;
+    asm volatile("int $0x80"
+                 : "=a"(pid)
+                 : "a"(66));
+    return pid;
+}

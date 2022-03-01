@@ -19,5 +19,6 @@ int chdir(char* dir);
 void getcwd(char* buffer);
 int listdir(char* dirname, char** entries);
 int getpid();
+int setsid();
 
 #endif

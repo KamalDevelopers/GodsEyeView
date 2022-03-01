@@ -8,8 +8,9 @@
 
 int main(int argc, char** argv)
 {
-    /* Become TTY master */
+    /* Become TTY master and process group leader */
     fchown(0, 1, 0);
+    setsid();
 
     canvas_t canvas;
     int events_file = request_display_window(canvas, 700, 500);
@@ -69,7 +70,7 @@ int main(int argc, char** argv)
                 request_update_window();
 
                 /* Force new prompt */
-                kill(pid, 2);
+                kill(pid, 15);
                 pid = spawn((char*)"shell", 0);
             }
         }

@@ -74,6 +74,7 @@ private:
     bool is_inherited_tty = false;
     int sleeping = 0;
     int wake_pid_on_exit = 0;
+    int process_group = 0;
     int parent = -1;
 
     int pid;
@@ -89,14 +90,17 @@ public:
     int8_t notify(int signal);
     void suicide(int error_code);
     void executable(executable_t exec);
+    void sleep(int sleeping_modifier);
     void wake() { sleeping = 0; }
+
     int chdir(char* dir);
     void cwd(char* buffer);
     int poll(pollfd* pollfds, uint32_t npolls);
-    void sleep(int sleeping_modifier);
+
     int become_tty_master();
     void wake_from_poll();
     void test_poll();
+    int setsid();
 
     file_table_t* get_file_table() { return &process_file_table; }
     int get_pid() { return pid; }

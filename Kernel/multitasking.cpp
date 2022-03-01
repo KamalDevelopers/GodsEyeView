@@ -27,19 +27,22 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     cpustate->eflags = 0x202;
     this->parent = parent;
 
+    pid = pid_bitmap.find_unset();
+    pid_bitmap.bit_set(pid);
+
     if (parent != -1) {
         tty = TM->task(parent)->tty;
         is_inherited_tty = true;
+        process_group = TM->task(parent)->process_group;
     } else {
         tty = new TTY;
         is_inherited_tty = false;
+        process_group = pid;
     }
 
     execute = 0;
     state = 0;
     privilege = privilege_level;
-    pid = pid_bitmap.find_unset();
-    pid_bitmap.bit_set(pid);
 }
 
 Task::~Task()
@@ -90,6 +93,12 @@ void Task::suicide(int error)
 {
     state = error;
     TM->task_has_died();
+}
+
+int Task::setsid()
+{
+    process_group = pid;
+    return pid;
 }
 
 int Task::chdir(char* dir)
@@ -242,7 +251,7 @@ int8_t TaskManager::send_signal(int pid, int sig)
     /* TODO: Implement process groups */
     if (pid == 0) {
         for (uint32_t i = 0; i < num_tasks; i++)
-            if (tasks[i]->parent == tasks[current_task]->pid)
+            if ((tasks[i]->process_group == tasks[current_task]->pid) && (current_task != i))
                 tasks[i]->notify(sig);
         return 0;
     }
@@ -302,8 +311,7 @@ int TaskManager::spawn(char* file, char** args)
     if (!exec.valid)
         return -1;
 
-    int parent_pid = (task()->parent == -1) ? task()->get_pid() : task()->parent;
-    Task* child = new Task(file, 0, 0, parent_pid);
+    Task* child = new Task(file, 0, 0, task()->get_pid());
     strcpy(child->working_directory, tasks[current_task]->working_directory);
     child->executable(exec);
 

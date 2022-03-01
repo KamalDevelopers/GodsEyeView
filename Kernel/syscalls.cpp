@@ -116,6 +116,11 @@ int Syscalls::sys_getpid()
     return TM->task()->get_pid();
 }
 
+int Syscalls::sys_setsid()
+{
+    return TM->task()->setsid();
+}
+
 void Syscalls::sys_reboot(int cmd)
 {
     switch (cmd) {
@@ -247,6 +252,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 37:
         cpu->eax = sys_kill((int)cpu->ebx, (int)cpu->ecx);
+        break;
+
+    case 66:
+        cpu->eax = sys_setsid();
         break;
 
     case 88:

@@ -33,6 +33,7 @@ private:
     int sys_stat(char* file, struct stat* buffer);
     int sys_fstat(int file_handle, struct stat* buffer);
     int sys_getpid();
+    int sys_setsid();
     void sys_reboot(int cmd);
     int8_t sys_kill(int pid, int sig);
     uint32_t sys_mmap(void* addr, size_t length);
