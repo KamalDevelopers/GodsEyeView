@@ -43,6 +43,7 @@ public:
     int read_bitmap(const char* file_name, canvas_t* canvas);
     void update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack = false);
 
+    void render_borders(canvas_t* canvas);
     void render_canvas(canvas_t* canvas);
     void render_stack();
 

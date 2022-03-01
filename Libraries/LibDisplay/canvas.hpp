@@ -10,6 +10,7 @@ typedef struct canvas {
     uint32_t height = 0;
     uint32_t x = 0;
     uint32_t y = 0;
+    uint32_t border_decoration = 0;
 } canvas_t;
 
 canvas_t* request_canvas(uint32_t width, uint32_t height);

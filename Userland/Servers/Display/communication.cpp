@@ -13,7 +13,7 @@ bool receive_connections(WindowManager* wm)
     display_request_t request;
     if (read(client_communication_file, (void*)&request, sizeof(display_request_t))) {
         if (request.type == DISPLAY_UPDATE)
-            wm->require_update();
+            wm->require_update(request.pid);
         if (request.type == DISPLAY_DESTROY)
             wm->destroy_window_pid(request.pid);
         if (request.type == DISPLAY_CREATE)

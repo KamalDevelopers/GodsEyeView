@@ -17,12 +17,23 @@ int WindowManager::find_window_with_pid(int pid)
     return -1;
 }
 
+void WindowManager::set_active_window(uint32_t index)
+{
+    uint32_t old_active_window = active_window;
+    active_window = index;
+    if (active_window != -1)
+        update_window_border(active_window);
+    if (old_active_window != -1)
+        update_window_border(old_active_window);
+    compositor->require_update();
+}
+
 void WindowManager::mouse_event(mouse_event_t* event)
 {
     if (event->modifier == 1) {
         for (uint32_t i = 0; i < window_index; i++)
             if (windows[i]->is_point_in_window(event->x, event->y))
-                active_window = i;
+                set_active_window(i);
     }
 
     if (active_window != -1)
@@ -35,6 +46,21 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
 {
     if (active_window != -1)
         windows[active_window]->keyboard_event(event);
+}
+
+void WindowManager::require_update(int pid)
+{
+    int window_index = find_window_with_pid(pid);
+    if (window_index == -1)
+        return;
+
+    update_window_border(window_index);
+    compositor->require_update();
+}
+
+void WindowManager::update_window_border(uint32_t index)
+{
+    windows[index]->get_canvas()->border_decoration = (index == active_window) ? WINDOW_ACTIVE_BORDER_COLOR : WINDOW_BORDER_COLOR;
 }
 
 void WindowManager::update_window_positions()
@@ -82,12 +108,13 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
     Window* window = compose_window(pid);
     windows[window_index] = window;
 
-    active_window = window_index;
     window_index++;
     update_window_positions();
 
     compositor->add_render_layer(window->get_canvas());
     window->create_process_connection();
+
+    set_active_window(window_index - 1);
 }
 
 void WindowManager::destroy_window(uint32_t index)

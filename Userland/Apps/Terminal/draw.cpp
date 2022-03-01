@@ -32,11 +32,11 @@ void clear_text(canvas_t* canvas)
 void scroll_text(canvas_t* canvas)
 {
     pos_x = TEXT_GAP_X;
-    for (uint32_t y = TEXT_GAP_Y; y < canvas->height - TEXT_GAP_Y; y++)
+    for (uint32_t y = TEXT_GAP_Y; y < canvas->height - TEXT_GAP_Y - 1; y++)
         for (uint32_t x = 0; x < canvas->width; x++)
             canvas->framebuffer[y * canvas->width + x] = canvas->framebuffer[(y + TEXT_GAP_Y) * canvas->width + x];
     /* Clear last line */
-    canvas_set((uint32_t*)canvas->framebuffer + canvas->size - TEXT_GAP_Y * canvas->width, BACKGROUND_COLOR, TEXT_GAP_Y * canvas->width);
+    canvas_set((uint32_t*)canvas->framebuffer + canvas->size - (TEXT_GAP_Y + 1) * canvas->width, BACKGROUND_COLOR, TEXT_GAP_Y * canvas->width);
 }
 
 void next_line(canvas_t* canvas)

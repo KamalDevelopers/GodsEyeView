@@ -37,14 +37,31 @@ void Compositor::render_canvas(canvas_t* canvas)
     }
 }
 
+void Compositor::render_borders(canvas_t* canvas)
+{
+    uint32_t border_color = canvas->border_decoration;
+    if (!border_color)
+        return;
+
+    canvas_set(canvas->framebuffer, border_color, canvas->width);
+    canvas_set(canvas->framebuffer + canvas->size - canvas->width, border_color, canvas->width);
+    for (uint32_t i = 0; i < canvas->size; i += canvas->width) {
+        canvas->framebuffer[i] = border_color;
+        canvas->framebuffer[i + canvas->width - 1] = border_color;
+    }
+}
+
 void Compositor::render_stack()
 {
     if (!needs_update)
         return;
 
+    /* TODO: Make this faster by reducing draw areas ! */
     render_canvas(root_layer);
-    for (uint32_t i = 0; i < layer_index; i++)
+    for (uint32_t i = 0; i < layer_index; i++) {
+        render_borders(layers[i]);
         render_canvas(layers[i]);
+    }
 
     update_mouse_position(mouse_layer->x, mouse_layer->y, true);
     canvas_copy((uint32_t*)display_framebuffer, final_layer->framebuffer, final_layer->size);

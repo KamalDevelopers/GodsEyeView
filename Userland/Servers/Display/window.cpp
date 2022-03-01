@@ -66,10 +66,10 @@ bool Window::is_point_in_window(uint32_t x, uint32_t y)
 
 void Window::resize_event(canvas_t* canvas)
 {
-    display_event_t send_event;
-    send_event.type = DISPLAY_EVENT_RESIZE;
-    memcpy(&send_event.canvas, canvas, sizeof(canvas_t));
-    write(process_send_event_file, &send_event, sizeof(display_event_t));
+    display_event_t event;
+    event.type = DISPLAY_EVENT_RESIZE;
+    memcpy(&event.canvas, canvas, sizeof(canvas_t));
+    write(process_send_event_file, &event, sizeof(display_event_t));
 }
 
 void Window::mouse_event(mouse_event_t* event)
