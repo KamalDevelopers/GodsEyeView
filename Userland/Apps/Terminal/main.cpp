@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
                 if ((keyboard_event.key == 'c') && (keyboard_event.modifier == 2)) {
                     kill(0, 2);
-                    draw_text(&canvas, "\n");
+                    draw_text(&canvas, (char*)"\n");
                     pid = spawn((char*)"shell", 0);
                     continue;
                 }

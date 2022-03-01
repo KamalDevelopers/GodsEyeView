@@ -64,14 +64,23 @@ void Task::executable(executable_t exec)
 int8_t Task::notify(int signal)
 {
     switch (signal) {
-    case SIG_ILL:
-        suicide(SIG_ILL);
+    case SIGILL:
+        suicide(SIGILL);
         break;
-    case SIG_TERM:
-        suicide(SIG_TERM);
+    case SIGTERM:
+        suicide(SIGTERM);
         break;
-    case SIG_SEGV:
-        suicide(SIG_SEGV);
+    case SIGQUIT:
+        suicide(SIGQUIT);
+        break;
+    case SIGKILL:
+        suicide(SIGKILL);
+        break;
+    case SIGHUP:
+        suicide(SIGHUP);
+        break;
+    case SIGINT:
+        suicide(SIGINT);
         break;
     }
     return 0;
@@ -80,6 +89,7 @@ int8_t Task::notify(int signal)
 void Task::suicide(int error)
 {
     state = error;
+    TM->task_has_died();
 }
 
 int Task::chdir(char* dir)
@@ -209,8 +219,7 @@ bool TaskManager::append_tasks(int count, ...)
 
 void TaskManager::kill()
 {
-    check_kill = true;
-    tasks[current_task]->suicide(SIG_TERM);
+    tasks[current_task]->suicide(SIGTERM);
 }
 
 Task* TaskManager::task(int pid)
@@ -234,7 +243,7 @@ int8_t TaskManager::send_signal(int pid, int sig)
     if (pid == 0) {
         for (uint32_t i = 0; i < num_tasks; i++)
             if (tasks[i]->parent == tasks[current_task]->pid)
-                tasks[i]->suicide(sig);
+                tasks[i]->notify(sig);
         return 0;
     }
 

@@ -13,17 +13,30 @@
 #include <LibC/types.hpp>
 #include <stdarg.h>
 
+#define SIGHUP 1
+#define SIGINT 2
+#define SIGQUIT 3
+#define SIGILL 4
+#define SIGTRAP 5
+#define SIGABRT 6
+#define SIGIOT 6
+#define SIGBUS 7
+#define SIGFPE 8
+#define SIGKILL 9
+#define SIGUSR1 10
+#define SIGSEGV 11
+#define SIGUSR2 12
+#define SIGPIPE 13
+#define SIGALRM 14
+#define SIGTERM 15
+
 #define ALIVE 0
-#define SIG_ILL 1
-#define SIG_TERM 2
-#define SIG_SEGV 3
 #define SLEEP_WAIT_WAKE 1
 #define SLEEP_WAIT_STDIN 2
 #define SLEEP_WAIT_POLL 3
-#define MAX_PIDS 1000
+#define MAX_PIDS 512
 #define MAX_TASKS 256
 #define TM TaskManager::active
-#define KB 1000
 
 struct cpu_state {
     uint32_t eax;
@@ -116,6 +129,8 @@ public:
 
     void activate() { is_running = 1; }
     void deactivate() { is_running = 0; }
+    void task_has_died() { check_kill = true; }
+
     bool is_active() { return is_running; }
     void yield() { asm volatile("int $0x20"); }
     Task* task() { return tasks[current_task]; }

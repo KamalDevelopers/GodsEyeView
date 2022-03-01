@@ -15,7 +15,7 @@ private:
     int process_send_event_file = 0;
 
 public:
-    Window(int pid=-1);
+    Window(int pid = -1);
     ~Window();
 
     canvas_t* get_canvas() { return canvas; }
