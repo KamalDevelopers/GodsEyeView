@@ -39,11 +39,10 @@ typedef unsigned int uintptr_t;
 #define LIBALLOC_MAGIC 0xc001c0de
 #define LIBALLOC_DEAD 0xdeaddead
 
-#if defined DEBUG || defined INFO
-#    include <stdio.h>
-#    include <stdlib.h>
-
-#    define FLUSH() fflush(stdout)
+#define EDEBUG
+#if defined DEBUG || defined INFO || defined EDEBUG
+#    include <LibC/stdio.hpp>
+#    define FLUSH() flush()
 
 #endif
 
@@ -309,7 +308,7 @@ void*(malloc)(size_t req_size)
 #    ifdef DEBUG
         printf("liballoc: initialization of liballoc " VERSION "\n");
 #    endif
-        atexit(liballoc_dump);
+        // atexit(liballoc_dump);
         FLUSH();
 #endif
 
@@ -615,7 +614,7 @@ void(free)(void* ptr)
         if (
             ((min->magic & 0xFFFFFF) == (LIBALLOC_MAGIC & 0xFFFFFF)) || ((min->magic & 0xFFFF) == (LIBALLOC_MAGIC & 0xFFFF)) || ((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF))) {
             l_possibleOverruns += 1;
-#if defined DEBUG || defined INFO
+#if defined EDEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                 min->magic,
                 LIBALLOC_MAGIC);
@@ -624,14 +623,14 @@ void(free)(void* ptr)
         }
 
         if (min->magic == LIBALLOC_DEAD) {
-#if defined DEBUG || defined INFO
+#if defined EDEBUG || defined INFO
             printf("liballoc: ERROR: multiple (free)() attempt on %x from %x.\n",
                 ptr,
                 __builtin_return_address(0));
             FLUSH();
 #endif
         } else {
-#if defined DEBUG || defined INFO
+#if defined EDEBUG || defined INFO
             printf("liballoc: ERROR: Bad (free)( %x ) called from %x\n",
                 ptr,
                 __builtin_return_address(0));
@@ -747,7 +746,7 @@ void*(realloc)(void* p, size_t size)
         if (
             ((min->magic & 0xFFFFFF) == (LIBALLOC_MAGIC & 0xFFFFFF)) || ((min->magic & 0xFFFF) == (LIBALLOC_MAGIC & 0xFFFF)) || ((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF))) {
             l_possibleOverruns += 1;
-#if defined DEBUG || defined INFO
+#if defined EDEBUG || defined INFO
             printf("liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
                 min->magic,
                 LIBALLOC_MAGIC);
@@ -756,14 +755,14 @@ void*(realloc)(void* p, size_t size)
         }
 
         if (min->magic == LIBALLOC_DEAD) {
-#if defined DEBUG || defined INFO
+#if defined EDEBUG || defined INFO
             printf("liballoc: ERROR: multiple (free)() attempt on %x from %x.\n",
                 ptr,
                 __builtin_return_address(0));
             FLUSH();
 #endif
         } else {
-#if defined DEBUG || defined INFO
+#if defined EDEBUG || defined INFO
             printf("liballoc: ERROR: Bad (free)( %x ) called from %x\n",
                 ptr,
                 __builtin_return_address(0));
