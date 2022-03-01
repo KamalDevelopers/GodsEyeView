@@ -39,18 +39,34 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
 
 void WindowManager::update_window_positions()
 {
-    uint32_t section = SCREEN_WIDTH;
-    if (window_index > 1)
-        section = SCREEN_WIDTH / window_index;
+    uint32_t position_x = WINDOW_GAP;
+    uint32_t position_y = WINDOW_GAP;
+    uint32_t windows_tile_vertical = 2;
+    uint32_t tile_vertical_max = clamp<int>(window_index, 1, windows_tile_vertical);
+    uint32_t tile_horizontal_max = (window_index > windows_tile_vertical) ? window_index - 1 : 1;
+    uint32_t vertical_section = SCREEN_WIDTH / tile_vertical_max;
+    uint32_t horizontal_section = SCREEN_HEIGHT / tile_horizontal_max;
 
     for (uint32_t index = 0; index < window_index; index++) {
-        uint32_t height = SCREEN_HEIGHT - WINDOW_GAP * 2;
-        uint32_t width = section - WINDOW_GAP * 2;
-        uint32_t x = section * index + WINDOW_GAP;
-        uint32_t y = WINDOW_GAP;
+        uint32_t height = horizontal_section - WINDOW_GAP * 2;
+        uint32_t width = vertical_section - WINDOW_GAP;
+
+        if (index >= tile_vertical_max - 1)
+            width -= WINDOW_GAP;
+        if (index == 0)
+            height = SCREEN_HEIGHT - WINDOW_GAP * 2;
+        if (index > windows_tile_vertical)
+            height += WINDOW_GAP;
 
         windows[index]->resize(width, height);
-        windows[index]->set_position(x, y);
+        windows[index]->set_position(position_x, position_y);
+
+        if (windows_tile_vertical > 1) {
+            position_x += width + WINDOW_GAP;
+            windows_tile_vertical--;
+        } else {
+            position_y += height + WINDOW_GAP;
+        }
     }
     compositor->require_update();
 }

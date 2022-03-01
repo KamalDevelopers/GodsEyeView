@@ -3,6 +3,7 @@
 
 #include "compositor.hpp"
 #include "window.hpp"
+#include <LibC/stdlib.hpp>
 
 #define MAX_WINDOWS 100
 #define WINDOW_GAP 15

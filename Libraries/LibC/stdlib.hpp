@@ -59,4 +59,14 @@ T abs(T num)
     return num >= 0 ? num : (-1) * num;
 }
 
+template<typename T>
+T clamp(T x, T min, T max)
+{
+    if (x < min)
+        x = min;
+    if (x > max)
+        x = max;
+    return x;
+}
+
 #endif
