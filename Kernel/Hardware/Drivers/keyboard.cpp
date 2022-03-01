@@ -71,79 +71,79 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
         return '\b';
 
     if (key == POINT_RELEASED) {
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return ':';
         return '.';
     }
 
     if (key == COMMA_PRESSED) {
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return ';';
         return ',';
     }
 
     if (key == SLASH_RELEASED) {
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return '_';
         return '-';
     }
 
     if (key == ZERO_PRESSED) {
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return shift_l0[9];
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return altgr_l0[9];
         return '0';
     }
 
     if (key == PLUS_PRESSED) {
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return '?';
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return '\\';
         return '+';
     }
 
     if (key == PIPE_PRESSED) {
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return '>';
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return '|';
         return '<';
     }
 
     /* Row 1 */
     if (key >= ONE_PRESSED && key <= NINE_PRESSED) {
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return altgr_l0[key - ONE_PRESSED];
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return shift_l0[key - ONE_PRESSED];
         return l0[key - ONE_PRESSED];
     }
 
     /* Row 2 */
     if (key >= Q_PRESSED && key <= ENTER_PRESSED) {
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return altgr_l1[key - Q_PRESSED];
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return shift_l1[key - Q_PRESSED];
         return l1[key - Q_PRESSED];
     }
 
     /* Row 3 */
     else if (key >= A_PRESSED && key <= L_PRESSED) {
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return altgr_l2[key - A_PRESSED];
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return shift_l2[key - A_PRESSED];
         return l2[key - A_PRESSED];
     }
 
     /* Row 4 */
     else if (key >= Y_PRESSED && key <= M_PRESSED) {
-        if (is_altgr)
+        if (modifier == KEYBOARD_MODIFIER_ALTGR)
             return altgr_l3[key - Y_PRESSED];
-        if (is_shift)
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return shift_l3[key - Y_PRESSED];
         return l3[key - Y_PRESSED];
     }
@@ -155,13 +155,6 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
     return 0;
 }
 
-int KeyboardDriver::get_key_presses(int raw)
-{
-    if (raw == 1)
-        return keys_pressed_raw;
-    return keys_pressed;
-}
-
 uint8_t KeyboardDriver::read_key()
 {
     uint8_t lastkey = 0;
@@ -170,52 +163,25 @@ uint8_t KeyboardDriver::read_key()
     return lastkey;
 }
 
-char KeyboardDriver::get_key()
-{
-    uint8_t c = 0;
-    while (c == 0) {
-        c = read_key();
-        if (c == SHIFT_PRESSED)
-            is_shift = 1;
-
-        if (c == SHIFT_RELEASED)
-            is_shift = 0;
-
-        if (c == ALTGR_PRESSED)
-            is_altgr = 1;
-
-        if (c == ALTGR_RELEASED)
-            is_altgr = 0;
-    }
-    if (key_a(c) != 0)
-        return key_a(c);
-    return 0;
-}
-
-char KeyboardDriver::get_last_key(int raw)
-{
-    if (raw == 1)
-        return last_key_raw;
-    return last_key;
-}
-
 void KeyboardDriver::on_key(uint8_t keypress)
 {
     if (keypress == SHIFT_PRESSED)
-        is_shift = 1;
-
+        modifier = KEYBOARD_MODIFIER_SHIFT;
     if (keypress == SHIFT_RELEASED)
-        is_shift = 0;
-
+        modifier = 0;
     if (keypress == ALTGR_PRESSED)
-        is_altgr = 1;
-
+        modifier = KEYBOARD_MODIFIER_ALTGR;
     if (keypress == ALTGR_RELEASED)
-        is_altgr = 0;
+        modifier = 0;
+    if (keypress == CTRL_PRESSED)
+        modifier = KEYBOARD_MODIFIER_CTRL;
+    if (keypress == CTRL_RELEASED)
+        modifier = 0;
 
     last_key = key_a(keypress);
     if (last_key != 0) {
         events[events_index].key = last_key;
+        events[events_index].modifier = modifier;
         events_index++;
 
         if (events_index >= MAX_KEYBOARD_EVENTS) {

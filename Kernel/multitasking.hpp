@@ -58,7 +58,6 @@ private:
 
     uint32_t num_poll = 0;
     bool is_executable = false;
-    bool is_child = false;
     bool is_inherited_tty = false;
     int sleeping = 0;
     int wake_pid_on_exit = 0;

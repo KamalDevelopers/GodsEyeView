@@ -45,10 +45,19 @@ int main(int argc, char** argv)
                 memcpy(&keyboard_event, &event.keyboard, sizeof(keyboard_event_t));
                 if (keyboard_event.key == 27)
                     break;
+
                 if (keyboard_event.key == 10)
                     keys_pressed = -1;
+
                 if ((keyboard_event.key == '\b') && (keys_pressed <= 0))
                     continue;
+
+                if ((keyboard_event.key == 'c') && (keyboard_event.modifier == 2)) {
+                    kill(0, 2);
+                    draw_text(&canvas, "\n");
+                    pid = spawn((char*)"shell", 0);
+                    continue;
+                }
 
                 keys_pressed += (keyboard_event.key == '\b') ? -1 : 1;
                 write(0, &keyboard_event.key, 1);

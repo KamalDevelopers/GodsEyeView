@@ -215,7 +215,7 @@ void TaskManager::kill()
 
 Task* TaskManager::task(int pid)
 {
-    for (int i = 0; i < num_tasks; i++)
+    for (uint32_t i = 0; i < num_tasks; i++)
         if (tasks[i]->pid == pid)
             return tasks[i];
     return 0;
@@ -230,6 +230,14 @@ file_table_t* TaskManager::file_table()
 
 int8_t TaskManager::send_signal(int pid, int sig)
 {
+    /* TODO: Implement process groups */
+    if (pid == 0) {
+        for (uint32_t i = 0; i < num_tasks; i++)
+            if (tasks[i]->parent == tasks[current_task]->pid)
+                tasks[i]->suicide(sig);
+        return 0;
+    }
+
     Task* receiver = task(pid);
     if (receiver == 0)
         return -1;
@@ -285,10 +293,10 @@ int TaskManager::spawn(char* file, char** args)
     if (!exec.valid)
         return -1;
 
-    Task* child = new Task(file, 0, 0, task()->get_pid());
+    int parent_pid = (task()->parent == -1) ? task()->get_pid() : task()->parent;
+    Task* child = new Task(file, 0, 0, parent_pid);
     strcpy(child->working_directory, tasks[current_task]->working_directory);
     child->executable(exec);
-    child->is_child = true;
 
     if (args) {
         for (uint32_t i = 0; i < 10; i++) {

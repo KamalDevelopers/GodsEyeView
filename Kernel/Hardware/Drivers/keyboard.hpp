@@ -9,14 +9,17 @@
 #include <LibDisplay/events.hpp>
 
 #define MAX_KEYBOARD_EVENTS 100
+#define KEYBOARD_MODIFIER_SHIFT 1
+#define KEYBOARD_MODIFIER_CTRL 2
+#define KEYBOARD_MODIFIER_ALTGR 3
 
 class KeyboardDriver : public InterruptHandler {
     Port8Bit data_port;
     Port8Bit command_port;
 
 private:
-    int x_offset;
-    int y_offset;
+    int x_offset = 0;
+    int y_offset = 0;
 
     int keys_pressed = 0;
     int keys_pressed_raw = 0;
@@ -25,10 +28,9 @@ private:
     uint32_t events_index = 0;
     uint32_t current_event = 0;
 
-    char last_key;
-    uint8_t last_key_raw;
-    bool is_shift = 0;
-    bool is_altgr = 0;
+    char last_key = 0;
+    uint8_t last_key_raw = 0;
+    uint32_t modifier = 0;
 
     void on_key(uint8_t keypress);
     uint8_t key_a(uint8_t key);
@@ -40,9 +42,6 @@ public:
     static KeyboardDriver* active;
 
     virtual uint32_t interrupt(uint32_t esp) override;
-    char get_last_key(int raw = 0);
-    int get_key_presses(int raw = 0);
-    char get_key();
     uint8_t read_key();
 
     bool has_unread_event();
@@ -116,7 +115,6 @@ enum KEYCODE {
 
     POINT_PRESSED = 0x34,
     POINT_RELEASED = 0xB4,
-
     SLASH_RELEASED = 0xB5,
 
     BACKSPACE_PRESSED = 0xE,
@@ -128,7 +126,8 @@ enum KEYCODE {
 
     SHIFT_PRESSED = 0x2A,
     SHIFT_RELEASED = 0xAA,
-
+    CTRL_PRESSED = 0x1D,
+    CTRL_RELEASED = 0x9D,
     ALTGR_PRESSED = 0x38,
     ALTGR_RELEASED = 0xB8
 };
