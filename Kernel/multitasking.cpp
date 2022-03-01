@@ -51,7 +51,7 @@ Task::~Task()
 
     if (is_executable)
         kfree((void*)loaded_executable.memory.physical_address);
-    kfree(this);
+    /* kfree(this); */
 }
 
 void Task::executable(executable_t exec)

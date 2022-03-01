@@ -39,15 +39,14 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
 
 void WindowManager::update_window_positions()
 {
-    /* FIXME: Crashes? */
     uint32_t section = SCREEN_WIDTH;
-    if (window_index > 0)
+    if (window_index > 1)
         section = SCREEN_WIDTH / window_index;
 
     for (uint32_t index = 0; index < window_index; index++) {
         uint32_t height = SCREEN_HEIGHT - WINDOW_GAP * 2;
         uint32_t width = section - WINDOW_GAP * 2;
-        uint32_t x = WINDOW_GAP + section * index;
+        uint32_t x = section * index + WINDOW_GAP;
         uint32_t y = WINDOW_GAP;
 
         windows[index]->resize(width, height);
@@ -58,35 +57,38 @@ void WindowManager::update_window_positions()
 
 Window* WindowManager::compose_window(int pid)
 {
-    uint32_t section = SCREEN_WIDTH;
-    if (window_index > 0)
-        section = SCREEN_WIDTH / (window_index + 1);
-    uint32_t height = SCREEN_HEIGHT - WINDOW_GAP * 2;
-    uint32_t width = section - WINDOW_GAP * 2;
-    Window* window = new Window(width, height, pid);
+    Window* window = new Window(pid);
     return window;
 }
 
 void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
 {
     Window* window = compose_window(pid);
-    window->create_process_connection();
     windows[window_index] = window;
-    compositor->add_render_layer(window->get_canvas());
 
     active_window = window_index;
     window_index++;
     update_window_positions();
+
+    compositor->add_render_layer(window->get_canvas());
+    window->create_process_connection();
 }
 
 void WindowManager::destroy_window(uint32_t index)
 {
     compositor->remove_render_layer(windows[index]->get_canvas());
     windows[index]->~Window();
+    if (index == active_window) {
+        if (index == window_index - 1)
+            active_window = index - 1;
+    }
+
     free(windows[index]);
     delete_element(index, window_index, windows);
     window_index--;
-    compositor->require_update();
+
+    if (!window_index)
+        active_window = -1;
 }
 
 void WindowManager::destroy_window_pid(int pid)
@@ -95,4 +97,6 @@ void WindowManager::destroy_window_pid(int pid)
     if (window_index == -1)
         return;
     destroy_window(window_index);
+    update_window_positions();
+    compositor->require_update();
 }

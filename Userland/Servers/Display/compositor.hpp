@@ -19,7 +19,6 @@ class Compositor {
 private:
     canvas_t* layers[MAX_LAYERS];
 
-    int active_window_index = -1;
     uint32_t layer_index = 0;
     uint32_t* mouse_bitmap = 0;
     uint32_t display_framebuffer = 0;

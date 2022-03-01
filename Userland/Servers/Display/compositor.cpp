@@ -116,7 +116,7 @@ int Compositor::remove_render_layer(canvas_t* canvas)
     if (index == -1)
         return -1;
 
-    delete_element(index, layer_index, layers - 1);
+    delete_element(index, layer_index, layers);
     layer_index--;
     return 0;
 }

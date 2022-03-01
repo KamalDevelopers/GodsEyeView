@@ -1,9 +1,9 @@
 #include "window.hpp"
+#include "compositor.hpp"
 
-Window::Window(uint32_t width, uint32_t height, int pid)
+Window::Window(int pid)
 {
     associated_pid = pid;
-    canvas = request_canvas(width, height);
 }
 
 Window::~Window()
@@ -19,11 +19,15 @@ void Window::set_position(uint32_t x, uint32_t y)
 
 void Window::resize(uint32_t width, uint32_t height)
 {
+    /* FIXME: How should we make the canvas the correct window size,
+     *        and still support resize events? */
+
+    if (canvas == 0)
+        canvas = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+
     if ((width == canvas->width) && (height == canvas->height))
         return;
 
-    /* FIXME: What should we do with the framebuffer
-     *        if the resize makes the window larger? */
     canvas->width = width;
     canvas->height = height;
     canvas->size = width * height;
