@@ -7,7 +7,7 @@
 
 #define MAX_WINDOWS 100
 #define WINDOW_GAP 12
-#define WINDOW_BORDER_COLOR 0
+#define WINDOW_BORDER_COLOR 0x1E1E1E
 #define WINDOW_ACTIVE_BORDER_COLOR 0x70C2FF
 
 class WindowManager {
