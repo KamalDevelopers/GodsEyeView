@@ -5,7 +5,7 @@
 #include "window.hpp"
 
 #define MAX_WINDOWS 100
-#define WINDOW_GAP 40
+#define WINDOW_GAP 15
 
 class WindowManager {
 private:

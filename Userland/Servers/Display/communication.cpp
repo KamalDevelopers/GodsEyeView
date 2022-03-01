@@ -1,6 +1,6 @@
 #include "communication.hpp"
 
-int client_communication_file = 0;
+static int client_communication_file = 0;
 int init_communications()
 {
     /* Create service FIFO */

@@ -8,7 +8,6 @@ Window::Window(uint32_t width, uint32_t height, int pid)
 
 Window::~Window()
 {
-    request_canvas_destroy(canvas);
     close(process_send_event_file);
 }
 
@@ -22,7 +21,12 @@ void Window::resize(uint32_t width, uint32_t height)
 {
     if ((width == canvas->width) && (height == canvas->height))
         return;
-    request_canvas_resize(canvas, width, height);
+
+    /* FIXME: What should we do with the framebuffer
+     *        if the resize makes the window larger? */
+    canvas->width = width;
+    canvas->height = height;
+    canvas->size = width * height;
     resize_event(canvas);
 }
 
@@ -43,7 +47,7 @@ void Window::create_process_connection()
 
     display_event_t event;
     event.type = DISPLAY_EVENT_RESPONSE;
-    event.canvas = canvas;
+    memcpy(&event.canvas, canvas, sizeof(canvas_t));
     write(process_send_event_file, &event, sizeof(display_event_t));
 }
 
@@ -60,7 +64,7 @@ void Window::resize_event(canvas_t* canvas)
 {
     display_event_t send_event;
     send_event.type = DISPLAY_EVENT_RESIZE;
-    send_event.canvas = canvas;
+    memcpy(&send_event.canvas, canvas, sizeof(canvas_t));
     write(process_send_event_file, &send_event, sizeof(display_event_t));
 }
 

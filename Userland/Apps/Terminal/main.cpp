@@ -12,12 +12,13 @@ int main(int argc, char** argv)
     fchown(0, 1, 0);
 
     canvas_t canvas;
-    int events_file = request_display_window(&canvas, 700, 500);
+    int events_file = request_display_window(canvas, 700, 500);
     if (events_file == -1)
         return 0;
 
     canvas_set(canvas.framebuffer, 0x080808, canvas.size);
     int pid = spawn((char*)"shell", 0);
+
     request_update_window();
 
     keyboard_event_t keyboard_event;
@@ -54,10 +55,13 @@ int main(int argc, char** argv)
             }
 
             if (event.type == DISPLAY_EVENT_RESIZE) {
-                memcpy(&canvas, event.canvas, sizeof(canvas_t));
+                canvas = event.canvas;
                 clear_text(&canvas);
-                draw_text(&canvas, (char*)"this window has been resized!");
                 request_update_window();
+
+                /* Force new prompt */
+                kill(pid, 2);
+                pid = spawn((char*)"shell", 0);
             }
         }
 
@@ -68,6 +72,7 @@ int main(int argc, char** argv)
             continuous_stdout = false;
             request_update_window();
         }
+
         if (!continuous_stdout)
             poll(polls, 3);
     }

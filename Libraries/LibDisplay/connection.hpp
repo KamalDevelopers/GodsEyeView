@@ -28,10 +28,10 @@ typedef struct display_event {
     int type = 0;
     mouse_event_t mouse;
     keyboard_event_t keyboard;
-    canvas_t* canvas;
+    canvas_t canvas;
 } display_event_t;
 
-int request_display_window(canvas_t* canvas, uint32_t width, uint32_t height);
+int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height);
 void request_update_window();
 void request_destroy_window();
 bool receive_event(display_event_t* event);

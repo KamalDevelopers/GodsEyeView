@@ -19,6 +19,12 @@ int WindowManager::find_window_with_pid(int pid)
 
 void WindowManager::mouse_event(mouse_event_t* event)
 {
+    if (event->modifier == 1) {
+        for (uint32_t i = 0; i < window_index; i++)
+            if (windows[i]->is_point_in_window(event->x, event->y))
+                active_window = i;
+    }
+
     if (active_window != -1)
         windows[active_window]->mouse_event(event);
     compositor->update_mouse_position(event->x, event->y);
@@ -42,8 +48,9 @@ void WindowManager::update_window_positions()
         uint32_t width = section - WINDOW_GAP * 2;
         uint32_t x = WINDOW_GAP + section * index;
         uint32_t y = WINDOW_GAP;
-        windows[index]->set_position(x, y);
+
         windows[index]->resize(width, height);
+        windows[index]->set_position(x, y);
     }
     compositor->require_update();
 }
@@ -64,11 +71,11 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
     Window* window = compose_window(pid);
     window->create_process_connection();
     windows[window_index] = window;
+    compositor->add_render_layer(window->get_canvas());
 
     active_window = window_index;
     window_index++;
     update_window_positions();
-    compositor->add_render_layer(window->get_canvas());
 }
 
 void WindowManager::destroy_window(uint32_t index)

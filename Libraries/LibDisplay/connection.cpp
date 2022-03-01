@@ -3,7 +3,7 @@
 static int events_file = -1;
 static int display_file = -1;
 
-int request_display_window(canvas_t* canvas, uint32_t width, uint32_t height)
+int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height)
 {
     display_request_t request;
     request.pid = getpid();
@@ -32,7 +32,7 @@ int request_display_window(canvas_t* canvas, uint32_t width, uint32_t height)
     while (read_size < 1) {
         read_size = read(events_file, (void*)&event, sizeof(display_event_t));
         if (event.type == DISPLAY_EVENT_RESPONSE) {
-            memcpy(canvas, event.canvas, sizeof(canvas_t));
+            canvas = event.canvas;
             return events_file;
         }
     }

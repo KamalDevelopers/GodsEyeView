@@ -14,7 +14,7 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     memcpy(name, task_name, strlen(task_name));
     name[strlen(task_name)] = '\0';
 
-    cpustate = (cpu_state*)(stack + 4096 - sizeof(cpu_state));
+    cpustate = (cpu_state*)(stack + sizeof(stack) - sizeof(cpu_state));
     cpustate->eax = 0;
     cpustate->ebx = 0;
     cpustate->ecx = 0;
@@ -139,6 +139,9 @@ void Task::wake_from_poll()
 
 void Task::test_poll()
 {
+    /* FIXME: The Task constantly tests for poll when data is available in stdin/stdout,
+     *        instead of just test polling once like intended. */
+
     for (uint32_t i = 0; i < num_poll; i++) {
         if (polls[i].events & POLLIN) {
             if ((polls[i].fd == DEV_KEYBOARD_FD) && (KeyboardDriver::active->has_unread_event()))
@@ -275,12 +278,12 @@ int TaskManager::spawn(char* file, char** args)
         return -1;
 
     int size = VFS->size(fd);
+    /* FIXME: Free elfdata when task is dead */
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
     VFS->read(fd, elfdata, size);
     VFS->close(fd);
 
     executable_t exec = Loader::load->exec(elfdata);
-    kfree(elfdata);
 
     if (!exec.valid)
         return -1;
@@ -299,7 +302,6 @@ int TaskManager::spawn(char* file, char** args)
 
     child->cpustate->edx = (uint32_t)&child->arguments;
     add_task(child);
-
     return child->pid;
 }
 

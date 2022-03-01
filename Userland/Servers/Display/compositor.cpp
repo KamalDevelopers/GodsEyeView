@@ -87,8 +87,6 @@ void Compositor::update_mouse_position(uint32_t x, uint32_t y, bool is_updating_
     if (y + mouse_layer->height > SCREEN_HEIGHT)
         mouse_layer->y = SCREEN_HEIGHT - mouse_layer->height;
 
-    /* FIXME: At this point the mouse flickers due to removing ghost mouse */
-
     canvas_copy(mouse_layer, final_layer);
     mouse_ghost_layer->x = mouse_layer->x;
     mouse_ghost_layer->y = mouse_layer->y;

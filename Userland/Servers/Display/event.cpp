@@ -1,6 +1,6 @@
 #include "event.hpp"
 
-events_files_t events_files;
+static events_files_t events_files;
 bool mouse_events(mouse_event_t* event)
 {
     if (read(events_files.mouse, (void*)event, sizeof(mouse_event_t)))

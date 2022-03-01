@@ -6,6 +6,7 @@
 void _exit(int status);
 void _shutdown();
 void _reboot();
+int kill(int pid, int sig);
 int close(int descriptor);
 int read(int descriptor, void* buffer, int length);
 int write(int descriptor, void* buffer, int length);
