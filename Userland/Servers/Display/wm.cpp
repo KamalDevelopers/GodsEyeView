@@ -27,7 +27,8 @@ void WindowManager::mouse_event(mouse_event_t* event)
 
     if (active_window != -1)
         windows[active_window]->mouse_event(event);
-    compositor->update_mouse_position(event->x, event->y);
+    if (!event->modifier)
+        compositor->update_mouse_position(event->x, event->y);
 }
 
 void WindowManager::keyboard_event(keyboard_event_t* event)

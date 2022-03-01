@@ -70,6 +70,7 @@ void MouseDriver::on_mouse_move(int x, int y)
 
     events[events_index].x = mouse_x;
     events[events_index].y = mouse_y;
+    events[events_index].modifier = 0;
     events_index++;
 
     if (events_index >= MAX_MOUSE_EVENTS) {
@@ -94,17 +95,13 @@ void MouseDriver::on_mouse_down(int b)
     if (b == 12)
         mouse_press = MOUSE_MODIFIER_M;
 
+    events_index = 0;
+    current_event = 0;
     events[events_index].x = mouse_x;
     events[events_index].y = mouse_y;
     events[events_index].modifier = mouse_press;
     events_index++;
-
-    if (events_index >= MAX_MOUSE_EVENTS) {
-        events_index = 0;
-        current_event = 0;
-    } else {
-        TM->test_poll();
-    }
+    TM->test_poll();
 }
 
 uint32_t MouseDriver::interrupt(uint32_t esp)
