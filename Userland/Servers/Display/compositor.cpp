@@ -106,17 +106,17 @@ void Compositor::add_render_layer(canvas_t* canvas)
     layer_index++;
 }
 
-void Compositor::remove_render_layer(canvas_t* canvas)
+int Compositor::remove_render_layer(canvas_t* canvas)
 {
     int index = -1;
-    for (uint32_t i = 0; i < layer_index; i++) {
+    for (uint32_t i = 0; i < layer_index; i++)
         if (canvas == layers[i])
             index = i;
-    }
 
     if (index == -1)
-        return;
+        return -1;
 
-    delete_element(index, layer_index, layers);
+    delete_element(index, layer_index, layers - 1);
     layer_index--;
+    return 0;
 }

@@ -48,7 +48,7 @@ public:
     void render_stack();
 
     void add_render_layer(canvas_t* canvas);
-    void remove_render_layer(canvas_t* canvas);
+    int remove_render_layer(canvas_t* canvas);
 };
 
 #endif
