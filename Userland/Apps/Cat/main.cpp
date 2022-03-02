@@ -8,10 +8,14 @@ bool print_file(char* file_name)
     int file_descriptor = open(file_name);
     if (file_descriptor < 0)
         return false;
-    char buffer[1024];
 
-    while (read(file_descriptor, buffer, sizeof(buffer)) > 0) {
-        write(1, buffer, sizeof(buffer));
+    char buffer[BUFSIZ];
+    int size = 1;
+    memset(buffer, 0, sizeof(buffer));
+
+    while (size > 0) {
+        size = read(file_descriptor, buffer, sizeof(buffer));
+        write(1, buffer, size);
     }
 
     close(file_descriptor);
