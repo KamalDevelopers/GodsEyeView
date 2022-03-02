@@ -88,8 +88,8 @@ int command(char* input)
         _reboot();
     }
 
-    char program_path[50];
-    memset(program_path, 0, 50);
+    char program_path[100];
+    memset(program_path, 0, sizeof(program_path));
 
     int fd = open(program);
     if (fd == -1)
@@ -120,13 +120,14 @@ int main(int argc, char** argv)
 
     const char* user = "terry";
     lowercase(uname_struct.sysname);
+    char input[100];
 
     while (1) {
         getcwd(current_path);
         printf(ps1, user, uname_struct.sysname, current_path);
         flush();
 
-        char input[300];
+        memset(input, 0, sizeof(input));
         int read_size = read(0, input, sizeof(input));
         input[read_size - 1] = 0;
 

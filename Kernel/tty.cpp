@@ -56,7 +56,7 @@ bool TTY::should_wake_stdin()
 {
     if (pipe_stdin->size == 0)
         return false;
-    return ((pipe_stdin->size == read_stdin_size)
+    return ((pipe_stdin->size >= read_stdin_size)
         || (pipe_stdin->buffer[pipe_stdin->size - 1] == 10));
 }
 
