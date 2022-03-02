@@ -88,6 +88,7 @@ int main(int argc, char** argv)
             poll(polls, 3);
     }
 
+    kill(0, 2);
     request_destroy_window();
     return 0;
 }
