@@ -1,6 +1,7 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
+#include <LibC/stat.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/string.hpp>
 #include <LibC/types.hpp>
