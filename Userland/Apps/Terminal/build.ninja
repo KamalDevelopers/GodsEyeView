@@ -10,6 +10,7 @@ rule link
 
 build main.o: cpp ./main.cpp
 build draw.o: cpp ./draw.cpp
-build ./terminal: link ./main.o ./draw.o
+build font.o: cpp ./font.cpp
+build ./terminal: link ./main.o ./draw.o ./font.o
 build move: move
 default ./terminal

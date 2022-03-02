@@ -10,6 +10,18 @@ static uint32_t pos_x = TEXT_GAP_X;
 static uint32_t pos_y = TEXT_GAP_Y;
 static uint32_t color = 0xd4d4d4;
 static int escape_flag = 0;
+static uint8_t* font_buffer = 0;
+
+void load_font(char* name)
+{
+    struct stat statbuffer;
+    int file_descriptor = open(name);
+    fstat(file_descriptor, &statbuffer);
+    font_buffer = (uint8_t*)malloc(sizeof(char) * statbuffer.st_size);
+
+    read(file_descriptor, font_buffer, statbuffer.st_size);
+    close(file_descriptor);
+}
 
 void cursor_set(canvas_t* canvas, bool show)
 {
@@ -80,9 +92,9 @@ void character_set(canvas_t* canvas, int index)
     if (index == 8) {
         if (pos_x >= 18) {
             cursor_set(canvas, false);
-            pos_x -= FONT_WIDTH;
-            character_set(canvas, 0);
-            pos_x -= FONT_WIDTH;
+            pos_x -= ((psf_font_t*)font_buffer)->width + 1;
+            character_set(canvas, 32);
+            pos_x -= ((psf_font_t*)font_buffer)->width + 1;
         }
         return;
     }
@@ -93,24 +105,10 @@ void character_set(canvas_t* canvas, int index)
         return;
     }
 
-    uint32_t rgb = color;
-
     cursor_set(canvas, false);
-    for (uint32_t x = 0; x < FONT_WIDTH; x++) {
-        for (uint32_t y = 0; y < FONT_HEIGHT; y++) {
-            canvas->framebuffer[(pos_y + y) * canvas->width + (pos_x + x)] = BACKGROUND_COLOR;
-            if (index == 0) {
-                rgb = BACKGROUND_COLOR;
-                continue;
-            }
-            if ((index - 33 >= 100) || (index - 33 < 0))
-                continue;
-            if (font8x8[index - 33][y] & 1 << x)
-                canvas->framebuffer[(pos_y + y) * canvas->width + (pos_x + x)] = color;
-        }
-    }
+    display_character(canvas, (psf_font_t*)font_buffer, index, pos_x, pos_y, color, BACKGROUND_COLOR);
 
-    pos_x += FONT_WIDTH;
+    pos_x += ((psf_font_t*)font_buffer)->width + 1;
     if (pos_x >= canvas->width - TEXT_GAP_X)
         next_line(canvas);
 }

@@ -18,6 +18,7 @@ int main(int argc, char** argv)
         return 0;
 
     canvas_set(canvas.framebuffer, 0x080808, canvas.size);
+    load_font((char*)"bitmaps/lat9u-10.psf");
     int pid = spawn((char*)"shell", 0);
 
     request_update_window();
