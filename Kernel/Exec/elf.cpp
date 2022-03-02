@@ -66,7 +66,7 @@ executable_t Elf::exec(uint8_t* file_data)
     }
 
     elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
-    executable.memory.physical_address = (uint32_t)kmalloc(size);
+    executable.memory.physical_address = (uint32_t)PMM->allocate_pages(size);
     executable.memory.size = size;
 
     for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {

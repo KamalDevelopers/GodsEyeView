@@ -52,9 +52,11 @@ Task::~Task()
     if (!is_inherited_tty)
         kfree(tty);
 
-    if (is_executable)
-        kfree((void*)loaded_executable.memory.physical_address);
-    /* kfree(this); */
+    /* FIXME: Freeing bugs here? */
+    /* if (is_executable)
+           kfree((void*)loaded_executable.memory.physical_address);
+       kfree(this);
+    */
 }
 
 void Task::executable(executable_t exec)
@@ -341,6 +343,8 @@ void TaskManager::kill_zombie_tasks()
 
         pid_bitmap.bit_clear(tasks[i]->get_pid());
         tasks[i]->~Task();
+
+        PMM->free_pages(tasks[i]->loaded_executable.memory.physical_address, tasks[i]->loaded_executable.memory.size);
         delete_element(i, num_tasks, tasks);
         num_tasks--;
     }
