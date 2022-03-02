@@ -4,6 +4,7 @@
 #include "compositor.hpp"
 #include "window.hpp"
 #include <LibC/stdlib.hpp>
+#include <LibC/unistd.hpp>
 
 #define MAX_WINDOWS 100
 #define WINDOW_GAP 12
