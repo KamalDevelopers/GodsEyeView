@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 
     canvas_set(canvas.framebuffer, 0x080808, canvas.size);
     load_font((char*)"bitmaps/lat9u-10.psf");
-    int pid = spawn((char*)"shell", 0);
+    int pid = spawn((char*)"bin/shell", 0);
 
     request_update_window();
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
                 if ((keyboard_event.key == 'c') && (keyboard_event.modifier == 2)) {
                     kill(0, 2);
                     draw_text(&canvas, (char*)"\n");
-                    pid = spawn((char*)"shell", 0);
+                    pid = spawn((char*)"bin/shell", 0);
                     continue;
                 }
 
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 
                 /* Force new prompt */
                 kill(pid, 15);
-                pid = spawn((char*)"shell", 0);
+                pid = spawn((char*)"bin/shell", 0);
                 request_update_window();
             }
         }

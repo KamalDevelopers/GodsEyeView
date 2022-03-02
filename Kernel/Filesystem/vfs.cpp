@@ -92,7 +92,8 @@ int VirtualFilesystem::open(char* file_name, int flags)
 
     char file_path[MAX_PATH_SIZE];
     memset(file_path, 0, MAX_PATH_SIZE);
-    TM->task()->cwd(file_path);
+    if (file_name[0] != '/')
+        TM->task()->cwd(file_path);
     strcat(file_path, file_name);
     path_resolver(file_path, false);
 

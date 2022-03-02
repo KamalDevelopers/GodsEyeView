@@ -88,7 +88,16 @@ int command(char* input)
         _reboot();
     }
 
-    int pid = spawn(program, arguments);
+    char program_path[50];
+    memset(program_path, 0, 50);
+
+    int fd = open(program);
+    if (fd == -1)
+        strcat(program_path, (char*)"/bin/");
+    close(fd);
+    strcat(program_path, program);
+
+    int pid = spawn(program_path, arguments);
     if (strcmp(arguments[0], "&") != 0)
         if (pid != -1)
             waitpid(pid);

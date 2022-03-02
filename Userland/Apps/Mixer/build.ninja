@@ -1,6 +1,6 @@
 rule move
     pool = console
-    command = mv ./mixer ../../../Base/root/ && ninja -t clean
+    command = mv ./mixer ../../../Base/root/bin/ && ninja -t clean
 
 rule cpp
     command = i686-elf-g++ -fPIC -T link.ld -o mixer $in ../../../Libraries/libc.a -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -O2 -I../../../Libraries -lgcc

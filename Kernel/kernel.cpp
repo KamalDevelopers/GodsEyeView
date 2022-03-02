@@ -121,7 +121,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Loader loader;
     loader.add(&elf_load);
 
-    int terminal_file_descriptor = VFS->open("terminal");
+    int terminal_file_descriptor = VFS->open("bin/terminal");
     int size = VFS->size(terminal_file_descriptor);
     uint8_t* elf_data_terminal = new uint8_t[size];
     VFS->read(terminal_file_descriptor, elf_data_terminal, size);
