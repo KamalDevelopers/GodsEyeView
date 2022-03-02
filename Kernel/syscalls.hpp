@@ -45,7 +45,6 @@ private:
     int sys_poll(pollfd* fds, uint32_t nfds);
     int sys_listdir(char* dirname, char** entries);
     void sys_getcwd(char* buffer);
-    uint32_t sys_display();
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);

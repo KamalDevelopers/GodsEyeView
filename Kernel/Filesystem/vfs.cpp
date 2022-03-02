@@ -83,6 +83,9 @@ int VirtualFilesystem::open(char* file_name, int flags)
     if (strcmp(file_name, "/dev/keyboard") == 0)
         return DEV_KEYBOARD_FD;
 
+    if (strcmp(file_name, "/dev/display") == 0)
+        return DEV_DISPLAY_FD;
+
     int fifo = open_fifo(file_name, flags);
     if (fifo != -1)
         return fifo;

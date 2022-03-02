@@ -38,11 +38,11 @@ int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
 
 uint32_t request_framebuffer()
 {
-    uint32_t address;
-    asm volatile("int $0x80"
-                 : "=a"(address)
-                 : "a"(404));
-    return address;
+    int fd = open("/dev/display");
+    uint32_t buffer[1];
+    if (read(fd, buffer, sizeof(uint32_t)))
+        return buffer[0];
+    return 0;
 }
 
 void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size)

@@ -38,6 +38,11 @@ int Syscalls::sys_read(int fd, void* data, int length)
         size = KeyboardDriver::active->keyboard_event((keyboard_event_t*)data);
         break;
 
+    case DEV_DISPLAY_FD:
+        ((uint32_t*)data)[0] = Vesa::active->get_framebuffer();
+        size = sizeof(uint32_t);
+        break;
+
     default:
         size = VFS->read(fd, (uint8_t*)data, length);
         break;
@@ -199,11 +204,6 @@ void Syscalls::sys_getcwd(char* buffer)
     TM->task()->cwd(buffer);
 }
 
-uint32_t Syscalls::sys_display()
-{
-    return Vesa::active->get_framebuffer();
-}
-
 uint32_t Syscalls::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
@@ -295,10 +295,6 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 402:
         cpu->eax = sys_listdir((char*)cpu->ebx, (char**)cpu->ecx);
-        break;
-
-    case 404:
-        cpu->eax = sys_display();
         break;
     }
 
