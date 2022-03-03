@@ -23,6 +23,12 @@ void load_font(char* name)
     close(file_descriptor);
 }
 
+void unload_font()
+{
+    if (font_buffer)
+        free(font_buffer);
+}
+
 void cursor_set(canvas_t* canvas, bool show)
 {
     for (uint32_t y = 0; y < 12; y++) {

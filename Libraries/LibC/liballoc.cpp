@@ -331,7 +331,7 @@ void*(malloc)(size_t req_size)
 #endif
     }
 
-#if defined DEBUG || defined EDEBUG
+#if defined DEBUG
     printf("liballoc: %x (malloc)( %i ): ",
         __builtin_return_address(0),
         size);

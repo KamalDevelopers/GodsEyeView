@@ -8,6 +8,7 @@ Window::Window(int pid)
 
 Window::~Window()
 {
+    request_canvas_destroy(canvas);
     close(process_send_event_file);
 }
 

@@ -125,13 +125,12 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
 void WindowManager::destroy_window(uint32_t index)
 {
     compositor->remove_render_layer(windows[index]->get_canvas());
-    windows[index]->~Window();
     if (index == active_window) {
         if (index == window_index - 1)
             active_window = index - 1;
     }
 
-    free(windows[index]);
+    delete windows[index];
     delete_element(index, window_index, windows);
     window_index--;
 

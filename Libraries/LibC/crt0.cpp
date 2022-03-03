@@ -9,7 +9,7 @@ void* operator new(long unsigned int size)
     return malloc(size);
 }
 
-void operator delete(void* ptr)
+void operator delete(void* ptr, size_t size)
 {
     free(ptr);
 }
@@ -34,6 +34,8 @@ int main(int argc, char** argv);
         : "=r"(argument_pointer));
 
     memory_hooks(0, 0);
+    flush();
+
     arguments = (char**)malloc(sizeof(char*) * 10);
     for (uint32_t i = 0; i < 10; ++i)
         arguments[i] = (char*)malloc(50);

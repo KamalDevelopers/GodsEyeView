@@ -70,7 +70,7 @@ int main(int argc, char** argv)
                 clear_text(&canvas);
 
                 /* Force new prompt */
-                kill(pid, 15);
+                kill(0, 2);
                 pid = spawn((char*)"bin/shell", 0);
                 request_update_window();
             }
@@ -88,6 +88,7 @@ int main(int argc, char** argv)
             poll(polls, 3);
     }
 
+    unload_font();
     request_destroy_window();
     kill(0, 2);
     return 0;
