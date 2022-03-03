@@ -56,7 +56,7 @@ void Compositor::render_stack()
     if (!needs_update)
         return;
 
-    /* TODO: Make this faster by reducing draw areas ! */
+    /* TODO: Make this faster by reducing draw areas! */
     render_canvas(root_layer);
     for (uint32_t i = 0; i < layer_index; i++) {
         render_borders(layers[i]);

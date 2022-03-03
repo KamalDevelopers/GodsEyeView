@@ -34,7 +34,7 @@ public:
     virtual int write_file(char* file_name, uint8_t* data, int size) { return 0; }
     virtual int read_file(char* file_name, uint8_t* data, int size, int seek = 0) { return 0; }
     virtual int find_file(char* file_name) { return 0; }
-    virtual int read_dir(char* dirname, char** entries) { return 0; }
+    virtual int read_dir(char* dirname, fs_entry_t* entries, uint32_t count) { return 0; }
 };
 
 typedef struct file_entry {
@@ -72,7 +72,7 @@ public:
     static VirtualFilesystem* active;
     void mount(Filesystem* fs);
 
-    int listdir(char* dirname, char** entries);
+    int listdir(char* dirname, fs_entry_t* entries, uint32_t count);
     int open_fifo(char* file_name, int flags);
     int open(char* file_name, int flags = 0);
     int close_fifo(int index);

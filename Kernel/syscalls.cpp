@@ -194,9 +194,9 @@ int Syscalls::sys_poll(pollfd* fds, uint32_t nfds)
 }
 
 /* TODO: Replace with getdents */
-int Syscalls::sys_listdir(char* dirname, char** entries)
+int Syscalls::sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count)
 {
-    return VFS->listdir(dirname, entries);
+    return VFS->listdir(dirname, entries, count);
 }
 
 void Syscalls::sys_getcwd(char* buffer)
@@ -294,7 +294,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 402:
-        cpu->eax = sys_listdir((char*)cpu->ebx, (char**)cpu->ecx);
+        cpu->eax = sys_listdir((char*)cpu->ebx, (fs_entry_t*)cpu->ecx, (uint32_t)cpu->edx);
         break;
     }
 

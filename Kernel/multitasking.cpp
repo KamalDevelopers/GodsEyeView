@@ -106,6 +106,7 @@ int Task::setsid()
 int Task::chdir(char* dir)
 {
     char dir_path[MAX_PATH_SIZE];
+    fs_entry_t entries[1];
     memset(dir_path, 0, MAX_PATH_SIZE);
     strcat(dir_path, working_directory);
     strcat(dir_path, dir);
@@ -116,7 +117,7 @@ int Task::chdir(char* dir)
         return 0;
     }
 
-    if (VFS->listdir(dir_path, 0) == -1)
+    if (VFS->listdir(dir_path, entries, 1) == 0)
         return -1;
 
     strcpy(working_directory, dir_path);

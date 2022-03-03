@@ -3,6 +3,11 @@
 
 #include <LibC/types.hpp>
 
+typedef struct fs_entry {
+    char name[100];
+    int type = 0;
+} fs_entry_t;
+
 void _exit(int status);
 void _shutdown();
 void _reboot();
@@ -17,7 +22,7 @@ int spawn(char* file_name, char** args);
 int waitpid(int pid);
 int chdir(char* dir);
 void getcwd(char* buffer);
-int listdir(char* dirname, char** entries);
+int listdir(char* dirname, fs_entry_t* entries, int count);
 int getpid();
 int setsid();
 

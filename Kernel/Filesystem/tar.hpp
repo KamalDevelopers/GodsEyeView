@@ -67,7 +67,7 @@ public:
 
     int rename_file(char* file_name, char* new_file_name);
     int unlink(char* path, bool should_update = 1);
-    int read_dir(char* dirname, char** entries);
+    int read_dir(char* dirname, fs_entry_t* entries, uint32_t count);
     int exists(char* name);
     int chmod(char* file_name, char* permissions);
 

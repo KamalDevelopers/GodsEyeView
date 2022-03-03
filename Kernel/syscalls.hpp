@@ -43,7 +43,7 @@ private:
     int sys_sleep(int time);
     int sys_spawn(char* file, char** args);
     int sys_poll(pollfd* fds, uint32_t nfds);
-    int sys_listdir(char* dirname, char** entries);
+    int sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count);
     void sys_getcwd(char* buffer);
 
 public:

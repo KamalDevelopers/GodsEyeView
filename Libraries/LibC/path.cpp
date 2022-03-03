@@ -3,22 +3,6 @@
 #include "string.hpp"
 #include "unistd.hpp"
 
-bool is_dir(char* name)
-{
-    int fd = open(name);
-    close(fd);
-
-    if (fd == -1) {
-        if (listdir(name, 0) != -1)
-            return true;
-    }
-
-    if (name[strlen(name) - 1] == '/')
-        name[strlen(name) - 1] = 0;
-
-    return false;
-}
-
 int path_resolver(char* input, bool is_dir)
 {
     char path_buffer[MAX_PATH_SIZE];

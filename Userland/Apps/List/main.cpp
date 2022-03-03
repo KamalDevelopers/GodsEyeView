@@ -6,36 +6,21 @@
 
 int read_dir(char* name, bool root)
 {
-    char* names[50];
-    for (uint32_t i = 0; i < 50; i++) {
-        names[i] = (char*)malloc(sizeof(char) * 100);
-        memset(names[i], 0, 100);
-    }
+    fs_entry_t entries[100];
+    int count = listdir(name, entries, 100);
 
-    if (listdir(name, (char**)names) == -1) {
+    if (count == 0) {
         printf("Folder does not exist");
         return -1;
     }
 
-    chdir((char*)"");
-    for (uint32_t i = 0; i < 50; i++) {
-        char* file_name = names[i];
-        if (!strlen(file_name))
-            break;
-
-        if (strncmp(file_name, name, strlen(name)) == 0)
-            file_name += strlen(name);
-
-        if (is_dir(names[i])) {
-            printf("\33\x2\xC%s\33\x3 ", file_name);
-            continue;
-        }
-
-        printf("%s ", file_name);
+    for (uint32_t i = 0; i < count; i++) {
+        if (entries[i].type == FS_ENTRY_DIR)
+            printf("\33\x2\xC%s\33\x3 ", entries[i].name);
+        else
+            printf("%s ", entries[i].name);
     }
 
-    for (uint32_t i = 0; i < 20; i++)
-        free(names[i]);
     return 0;
 }
 

@@ -114,12 +114,12 @@ void getcwd(char* buffer)
                  : "a"(183), "b"(buffer));
 }
 
-int listdir(char* dirname, char** entries)
+int listdir(char* dirname, fs_entry_t* entries, int count)
 {
     int result;
     asm volatile("int $0x80"
                  : "=a"(result)
-                 : "a"(402), "b"(dirname), "c"(entries));
+                 : "a"(402), "b"(dirname), "c"(entries), "d"(count));
     return result;
 }
 

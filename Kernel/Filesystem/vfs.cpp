@@ -223,14 +223,9 @@ int VirtualFilesystem::gid(int descriptor)
     return mounts[ft()->files[index].mountfs]->get_gid(ft()->files[index].file_name);
 }
 
-int VirtualFilesystem::listdir(char* dirname, char** entries)
+int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t count)
 {
     path_resolver(dirname);
-
-    int exists = -1;
-    for (int i = 0; i < num_mounts; i++) {
-        if (mounts[i]->read_dir(dirname, entries) == 0)
-            exists = 0;
-    }
-    return exists;
+    int fscount = mounts[0]->read_dir(dirname, entries, count);
+    return fscount;
 }
