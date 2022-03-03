@@ -215,11 +215,11 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 3:
-        cpu->eax = sys_read((int)cpu->ebx, (char*)cpu->ecx, (int)cpu->edx);
+        cpu->eax = sys_read((int)cpu->ebx, (void*)cpu->ecx, (int)cpu->edx);
         break;
 
     case 4:
-        cpu->eax = sys_write((int)cpu->ebx, (uint8_t*)cpu->ecx, (int)cpu->edx);
+        cpu->eax = sys_write((int)cpu->ebx, (void*)cpu->ecx, (int)cpu->edx);
         break;
 
     case 5:

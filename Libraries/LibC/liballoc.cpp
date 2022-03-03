@@ -15,6 +15,9 @@
 #define USE_CASE5
 typedef unsigned int uintptr_t;
 
+static uint32_t (*hpmalloc)(size_t) = 0;
+static int (*hpfree)(uint32_t, size_t) = 0;
+
 /** This macro will conveniently align our pointer upwards */
 #define ALIGN(ptr)                                                         \
     if (ALIGNMENT > 1) {                                                   \
@@ -39,7 +42,6 @@ typedef unsigned int uintptr_t;
 #define LIBALLOC_MAGIC 0xc001c0de
 #define LIBALLOC_DEAD 0xdeaddead
 
-#define EDEBUG
 #if defined DEBUG || defined INFO || defined EDEBUG
 #    include <LibC/stdio.hpp>
 #    define FLUSH() flush()
@@ -316,7 +318,7 @@ void*(malloc)(size_t req_size)
         l_memRoot = allocate_new_page(size);
         if (l_memRoot == NULL) {
             liballoc_unlock();
-#ifdef DEBUG
+#if defined DEBUG || defined EDEBUG
             printf("liballoc: initial l_memRoot initialization failed\n", p);
             FLUSH();
 #endif
@@ -329,7 +331,7 @@ void*(malloc)(size_t req_size)
 #endif
     }
 
-#ifdef DEBUG
+#if defined DEBUG || defined EDEBUG
     printf("liballoc: %x (malloc)( %i ): ",
         __builtin_return_address(0),
         size);
@@ -574,7 +576,7 @@ void*(malloc)(size_t req_size)
 
     liballoc_unlock(); // release the lock
 
-#ifdef DEBUG
+#if defined DEBUG || defined EDEBUG
     printf("All cases exhausted. No memory available.\n");
     FLUSH();
 #endif

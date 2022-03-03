@@ -9,11 +9,7 @@
 #include "unistd.hpp"
 #include <stdarg.h>
 
-static char write_buffer[BUFSIZ];
-static int write_index = 0;
-static void (*hwrite)(char*) = 0;
 void puts_hook(void (*t)(char*));
-
 void flush();
 void puts(char* str);
 void puti(int num);
@@ -23,7 +19,7 @@ void vprintf(const char* format, va_list v);
 void printf(const char* format, ...);
 void clear();
 void beep(uint32_t ms_time, uint32_t frequency);
-static void newline()
+inline void newline()
 {
     putc(10);
 }

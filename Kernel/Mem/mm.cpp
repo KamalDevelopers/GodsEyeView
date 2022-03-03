@@ -61,7 +61,7 @@ void* operator new[](size_t size, void* ptr)
     return ptr;
 }
 
-void operator delete(void* ptr)
+void operator delete(void* ptr, size_t size)
 {
     kfree(ptr);
 }
