@@ -33,6 +33,7 @@ int main(int argc, char** argv);
     asm("movl %%edx, %0;"
         : "=r"(argument_pointer));
 
+    memory_hooks(0, 0);
     arguments = (char**)malloc(sizeof(char*) * 10);
     for (uint32_t i = 0; i < 10; ++i)
         arguments[i] = (char*)malloc(50);

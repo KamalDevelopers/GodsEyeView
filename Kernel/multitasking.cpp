@@ -51,12 +51,6 @@ Task::~Task()
      *        the child tty will cause a page fault. */
     if (!is_inherited_tty)
         kfree(tty);
-
-    /* FIXME: Freeing bugs here? */
-    /* if (is_executable)
-           kfree((void*)loaded_executable.memory.physical_address);
-       kfree(this);
-    */
 }
 
 void Task::executable(executable_t exec)
@@ -310,6 +304,7 @@ int TaskManager::spawn(char* file, char** args)
     VFS->close(fd);
 
     executable_t exec = Loader::load->exec(elfdata);
+    kfree(elfdata);
 
     if (!exec.valid)
         return -1;
@@ -343,9 +338,11 @@ void TaskManager::kill_zombie_tasks()
             task(tasks[i]->wake_pid_on_exit)->wake();
 
         pid_bitmap.bit_clear(tasks[i]->get_pid());
-        tasks[i]->~Task();
 
-        PMM->free_pages(tasks[i]->loaded_executable.memory.physical_address, tasks[i]->loaded_executable.memory.size);
+        if (tasks[i]->is_executable)
+            PMM->free_pages(tasks[i]->loaded_executable.memory.physical_address, tasks[i]->loaded_executable.memory.size);
+        delete tasks[i];
+
         delete_element(i, num_tasks, tasks);
         num_tasks--;
     }
