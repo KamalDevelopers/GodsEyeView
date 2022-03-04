@@ -69,6 +69,7 @@ int Pipe::read(pipe_t* pipe, uint8_t* buffer, size_t size)
     }
 
     pipe->size = pipe->size - size;
+    buffer[size] = 0;
     Mutex::unlock(pipe_mutex);
     return size;
 }
