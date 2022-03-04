@@ -5,7 +5,6 @@
 #include "types.hpp"
 
 int len(const char* arr);
-int str_len(char arr[]);
 size_t strlen(const char* str);
 
 size_t strspn(char* str1, char* str2);

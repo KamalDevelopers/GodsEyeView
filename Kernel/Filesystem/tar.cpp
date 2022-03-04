@@ -301,7 +301,7 @@ posix_header* Tar::file_calculate_checksum(posix_header* header_data)
     int check = calculate_checksum(header_data);
 
     itoa(check, checksumdata);
-    int octal_offset_check = 6 - str_len(checksumdata);
+    int octal_offset_check = 6 - strlen(checksumdata);
 
     char* checksum = new char[octal_offset_check];
 
@@ -353,7 +353,7 @@ int Tar::write_file(char* file_name, uint8_t* data, int size)
     char sizedata[12];
     char tsize[12];
     itoa(bin_oct(size), sizedata);
-    int octal_offset = 11 - str_len(sizedata);
+    int octal_offset = 11 - strlen(sizedata);
 
     tsize[octal_offset] = '\0';
     for (int i = 0; i < octal_offset; i++)

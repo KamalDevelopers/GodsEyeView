@@ -67,11 +67,7 @@ int main(int argc, char** argv)
 
             if (event.type == DISPLAY_EVENT_RESIZE) {
                 canvas = event.canvas;
-                clear_text(&canvas);
-
-                /* Force new prompt */
-                kill(0, 2);
-                pid = spawn((char*)"bin/shell", 0);
+                resize_text(&canvas);
                 request_update_window();
             }
         }

@@ -11,6 +11,13 @@ static uint32_t pos_y = TEXT_GAP_Y;
 static uint32_t color = 0xd4d4d4;
 static int escape_flag = 0;
 static uint8_t* font_buffer = 0;
+static char terminal_text_buffer[1024];
+
+void resize_text(canvas_t* canvas)
+{
+    clear_text(canvas);
+    draw_text(canvas, terminal_text_buffer);
+}
 
 void load_font(char* name)
 {
@@ -21,6 +28,8 @@ void load_font(char* name)
 
     read(file_descriptor, font_buffer, statbuffer.st_size);
     close(file_descriptor);
+
+    memset(terminal_text_buffer, 0, 1024);
 }
 
 void unload_font()
@@ -121,6 +130,9 @@ void character_set(canvas_t* canvas, int index)
 
 void draw_text(canvas_t* canvas, char* str)
 {
+    if (strlen(str) < 1024)
+        strcpy(terminal_text_buffer, str);
+
     for (uint32_t i = 0; i < strlen(str); i++)
         character_set(canvas, str[i]);
     cursor_set(canvas, true);

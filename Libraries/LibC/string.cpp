@@ -1,17 +1,11 @@
 #include "string.hpp"
 
-int str_len(char arr[])
-{
-    int l = 0;
-    while (arr[l] != '\0') {
-        l++;
-    }
-    return l;
-}
-
 size_t strlen(const char* str)
 {
-    return str_len((char*)str);
+    int l = 0;
+    while (str[l] != '\0')
+        l++;
+    return l;
 }
 
 size_t strspn(char* str1, char* str2)
@@ -134,7 +128,7 @@ char* findchar(const char* str, int c)
 char* strcat(char* dest, char* src)
 {
     size_t i, j;
-    i = str_len(dest);
+    i = strlen(dest);
     for (j = 0; src[j] != '\0'; j++)
         dest[i + j] = src[j];
     dest[i + j] = '\0';
@@ -194,12 +188,12 @@ char* strtok(char* str, char* delimiter)
 
 char strpbrk(char* str, char* cmp)
 {
-    int l = str_len(str);
+    int l = strlen(str);
     int x = 0;
     int y = 0;
 
     while (x < l) {
-        while (y < str_len(cmp)) {
+        while (y < strlen(cmp)) {
             if (str[x] == cmp[y]) {
                 return str[x];
             }
