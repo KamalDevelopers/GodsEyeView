@@ -9,6 +9,8 @@ TTY::TTY()
 
 TTY::~TTY()
 {
+    Pipe::destroy(pipe_stdout);
+    Pipe::destroy(pipe_stdin);
 }
 
 int TTY::write_stdout(uint8_t* buffer, uint32_t size)
