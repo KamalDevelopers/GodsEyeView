@@ -298,7 +298,6 @@ int TaskManager::spawn(char* file, char** args)
         return -1;
 
     int size = VFS->size(fd);
-    /* FIXME: Free elfdata when task is dead */
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
     VFS->read(fd, elfdata, size);
     VFS->close(fd);

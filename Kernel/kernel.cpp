@@ -121,27 +121,10 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Loader loader;
     loader.add(&elf_load);
 
-    int terminal_file_descriptor = VFS->open("bin/terminal");
-    int size = VFS->size(terminal_file_descriptor);
-    uint8_t* elf_data_terminal = new uint8_t[size];
-    VFS->read(terminal_file_descriptor, elf_data_terminal, size);
-    VFS->close(terminal_file_descriptor);
-    executable_t execute_terminal = Loader::load->exec(elf_data_terminal);
-
-    int display_file_descriptor = VFS->open("servers/display");
-    size = VFS->size(display_file_descriptor);
-    uint8_t* elf_data_display = new uint8_t[size];
-    VFS->read(display_file_descriptor, elf_data_display, size);
-    VFS->close(display_file_descriptor);
-    executable_t execute = Loader::load->exec(elf_data_display);
-
     Task idle("idle", (uint32_t)kernel_idle, 1);
-    Task display("servers/display");
-    Task terminal("terminal");
-
-    display.executable(execute);
-    terminal.executable(execute_terminal);
-    TM->append_tasks(3, &display, &terminal, &idle);
+    TM->append_tasks(1, &idle);
+    TM->spawn("servers/display", 0);
+    TM->spawn("bin/terminal", 0);
 
     Mutex::enable();
     TM->activate();
