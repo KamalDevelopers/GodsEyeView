@@ -15,7 +15,7 @@ unsigned int random(unsigned int seed, unsigned int max);
 void exit(int status);
 void* memcpy32(void* dst, const void* src, size_t cnt);
 void* memcpy(void* dst, const void* src, unsigned int cnt);
-void* memset(void* b, char c, int len);
+void* memset(void* s, int c, size_t n);
 int itoan(int x, char str[], int d);
 void itoa(unsigned int num, char* number);
 int atoi(char* str);

@@ -46,15 +46,12 @@ void* memcpy32(void* dst, const void* src, size_t cnt)
     return dst;
 }
 
-void* memset(void* b, char c, int len)
+void* memset(void* s, int c, size_t n)
 {
-    char* b_char = (char*)b;
-    while (*b_char && len > 0) {
-        *b_char = c;
-        b_char++;
-        len--;
-    }
-    return b;
+    unsigned int i;
+    for (i = 0; i < n; i++)
+        ((char*)s)[i] = c;
+    return s;
 }
 
 void reverse(char* str, int len)
