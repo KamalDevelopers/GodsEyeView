@@ -308,7 +308,8 @@ int TaskManager::spawn(char* file, char** args)
     if (!exec.valid)
         return -1;
 
-    Task* child = new Task(file, 0, 0, task()->get_pid());
+    int parent = (current_task != -1) ? task()->get_pid() : -1;
+    Task* child = new Task(file, 0, 0, parent);
     strcpy(child->working_directory, tasks[current_task]->working_directory);
     child->executable(exec);
 
