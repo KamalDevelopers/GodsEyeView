@@ -13,6 +13,12 @@ uint32_t Paging::virtual_to_physical(uint32_t virtual_address)
     return address;
 }
 
+inline void flush_tlb_single(unsigned long addr)
+{
+    asm volatile("invlpg (%0)" ::"r"(addr)
+                 : "memory");
+}
+
 void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
 {
     uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
@@ -42,6 +48,7 @@ void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
     table->pages[table_index].reserved2 = 0;
     table->pages[table_index].available = 0;
     table->pages[table_index].frame = physical_address >> 12;
+    flush_tlb_single(virtual_address);
 }
 
 int Paging::unmap_page(uint32_t virtual_address)

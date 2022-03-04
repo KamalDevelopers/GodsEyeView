@@ -55,9 +55,8 @@ executable_t Elf::exec(uint8_t* file_data)
     elf32_shdr* elf_section_header = (elf32_shdr*)(file_data + elf_header->e_shoff);
 
     uint32_t base_address = UINT32_MAX;
-    for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++) {
+    for (int i = 0; i < elf_header->e_phnum; i++, elf_program_header++)
         base_address = MIN(base_address, elf_program_header->p_vaddr);
-    }
 
     elf_program_header = (elf32_phdr*)(file_data + elf_header->e_phoff);
     uint32_t size = 0;
