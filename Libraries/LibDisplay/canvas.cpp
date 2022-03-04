@@ -23,16 +23,17 @@ int request_canvas_destroy(canvas_t* canvas)
 
 int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
 {
-    /* FIXME: Resize framebuffer */
-    /*
-    if (canvas->framebuffer != 0)
-        free(canvas->framebuffer);
-    canvas->framebuffer = (uint32_t*)malloc(canvas->size * sizeof(int32_t));
-    */
-
+    uint32_t previous_size = canvas->size;
     canvas->size = height * width;
     canvas->width = width;
     canvas->height = height;
+
+    if (canvas->size <= previous_size)
+        return 0;
+
+    if (canvas->framebuffer != 0)
+        free(canvas->framebuffer);
+    canvas->framebuffer = (uint32_t*)malloc(canvas->size * sizeof(int32_t));
     return 0;
 }
 
