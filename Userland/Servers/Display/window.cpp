@@ -4,6 +4,7 @@
 Window::Window(int pid)
 {
     associated_pid = pid;
+    canvas = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 Window::~Window()
@@ -22,9 +23,6 @@ void Window::resize(uint32_t width, uint32_t height)
 {
     /* FIXME: How should we make the canvas the correct window size,
      *        and still support resize events? */
-
-    if (canvas == 0)
-        canvas = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     if ((width == canvas->width) && (height == canvas->height))
         return;
