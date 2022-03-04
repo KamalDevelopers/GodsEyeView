@@ -47,6 +47,11 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
 
 Task::~Task()
 {
+    if (is_executable) {
+        PMM->free_pages(loaded_executable.memory.physical_address, loaded_executable.memory.size);
+        kfree(loaded_executable.program_data);
+    }
+
     /* FIXME: If the child runs when the parent is dead,
      *        the child tty will cause a page fault. */
     if (!is_inherited_tty)
@@ -303,7 +308,7 @@ int TaskManager::spawn(char* file, char** args)
     VFS->close(fd);
 
     executable_t exec = Loader::load->exec(elfdata);
-    kfree(elfdata);
+    exec.program_data = elfdata;
 
     if (!exec.valid)
         return -1;
@@ -338,9 +343,6 @@ void TaskManager::kill_zombie_tasks()
             task(tasks[i]->wake_pid_on_exit)->wake();
 
         pid_bitmap.bit_clear(tasks[i]->get_pid());
-
-        if (tasks[i]->is_executable)
-            PMM->free_pages(tasks[i]->loaded_executable.memory.physical_address, tasks[i]->loaded_executable.memory.size);
         delete tasks[i];
 
         delete_element(i, num_tasks, tasks);

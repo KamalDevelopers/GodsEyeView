@@ -16,6 +16,7 @@ typedef struct memory_region {
 typedef struct executable {
     bool valid = false;
     uint32_t eip = 0;
+    uint8_t* program_data = 0;
     memory_region_t memory;
 } executable_t;
 
