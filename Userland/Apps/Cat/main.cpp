@@ -5,7 +5,7 @@
 
 bool print_file(char* file_name)
 {
-    int file_descriptor = open(file_name);
+    int file_descriptor = open(file_name, O_RDONLY);
     if (file_descriptor < 0)
         return false;
 

@@ -6,7 +6,7 @@
 
 bool play(char* file_name, uint16_t sample_rate)
 {
-    int file_descriptor = open(file_name);
+    int file_descriptor = open(file_name, O_RDONLY);
     struct stat statbuffer;
 
     fstat(file_descriptor, &statbuffer);

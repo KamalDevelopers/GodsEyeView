@@ -55,21 +55,30 @@ int write(int fd, void* buffer, int length)
     return 0;
 }
 
-int open(char* file_name, int flags)
+int open(char* pathname, int flags)
 {
     int fd;
     asm volatile("int $0x80"
                  : "=a"(fd)
-                 : "a"(5), "b"(file_name), "c"(flags));
+                 : "a"(5), "b"(pathname), "c"(flags));
     return fd;
 }
 
-int fchown(int descriptor, uint32_t owner, uint32_t group)
+int mkfifo(char* pathname, int flags)
+{
+    int fd;
+    asm volatile("int $0x80"
+                 : "=a"(fd)
+                 : "a"(400), "b"(pathname), "c"(flags));
+    return fd;
+}
+
+int fchown(int fd, uint32_t owner, uint32_t group)
 {
     int status;
     asm volatile("int $0x80"
-                 : "=a"(descriptor)
-                 : "a"(95), "b"(descriptor), "c"(owner), "d"(group));
+                 : "=a"(fd)
+                 : "a"(95), "b"(fd), "c"(owner), "d"(group));
     return status;
 }
 
@@ -80,12 +89,12 @@ void sleep(int sec)
                  : "a"(162), "b"(sec));
 }
 
-int spawn(char* file_name, char** args)
+int spawn(char* pathname, char** args)
 {
     int pid;
     asm volatile("int $0x80"
                  : "=a"(pid)
-                 : "a"(401), "b"(file_name), "c"(args));
+                 : "a"(401), "b"(pathname), "c"(args));
     return pid;
 }
 

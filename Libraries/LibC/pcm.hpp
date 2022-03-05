@@ -14,7 +14,7 @@ typedef struct pcm_header {
 
 inline void audio_device_write(pcm_header_t buffer)
 {
-    int fd = open((char*)"/dev/audio");
+    int fd = open((char*)"/dev/audio", O_RDWR);
     write(fd, (void*)&buffer, sizeof(pcm_header_t));
     close(fd);
 }

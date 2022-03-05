@@ -4,7 +4,7 @@ static int client_communication_file = 0;
 int init_communications()
 {
     /* Create service FIFO */
-    client_communication_file = open((char*)"/pipe/display", 1);
+    client_communication_file = mkfifo((char*)"/pipe/display", O_RDWR);
     return client_communication_file;
 }
 

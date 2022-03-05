@@ -71,7 +71,7 @@ void Compositor::render_stack()
 
 int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)
 {
-    int file_descriptor = open((char*)file_name);
+    int file_descriptor = open((char*)file_name, O_RDONLY);
     if (file_descriptor < 0)
         return 0;
 

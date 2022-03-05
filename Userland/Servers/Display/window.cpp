@@ -45,7 +45,7 @@ void Window::create_process_connection()
     itoa(associated_pid, pid);
     strcat(events_file_name, (char*)"/pipe/display/events/");
     strcat(events_file_name, pid);
-    process_send_event_file = open(events_file_name, 1);
+    process_send_event_file = mkfifo(events_file_name, O_RDWR);
 
     display_event_t event;
     event.type = DISPLAY_EVENT_RESPONSE;

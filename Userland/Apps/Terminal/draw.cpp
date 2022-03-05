@@ -16,7 +16,7 @@ static char terminal_text_buffer[2048];
 void load_font(char* name)
 {
     struct stat statbuffer;
-    int file_descriptor = open(name);
+    int file_descriptor = open(name, O_RDONLY);
     fstat(file_descriptor, &statbuffer);
     font_buffer = (uint8_t*)malloc(sizeof(char) * statbuffer.st_size);
 

@@ -91,7 +91,7 @@ int command(char* input)
     char program_path[100];
     memset(program_path, 0, sizeof(program_path));
 
-    int fd = open(program);
+    int fd = open(program, O_RDONLY);
     if (fd == -1)
         strcat(program_path, (char*)"/bin/");
     close(fd);

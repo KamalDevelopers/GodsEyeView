@@ -21,10 +21,12 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height)
     request.width = width;
     request.height = height;
 
+    display_file = -1;
     while (display_file == -1) {
-        display_file = open((char*)"/pipe/display");
+        display_file = open((char*)"/pipe/display", O_RDWR);
         sleep(5);
     }
+
     wait_for_pipe(display_file);
     write(display_file, &request, sizeof(display_request_t));
 
@@ -39,7 +41,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height)
 
     events_file = -1;
     while (events_file == -1) {
-        events_file = open(events_file_name);
+        events_file = open(events_file_name, O_RDWR);
         sleep(5);
     }
 
@@ -60,6 +62,7 @@ void request_update_window()
 {
     if (display_file == -1)
         return;
+
     display_request_t request;
     request.pid = getpid();
     request.type = DISPLAY_UPDATE;
@@ -71,6 +74,7 @@ void request_destroy_window()
 {
     if (display_file == -1)
         return;
+
     display_request_t request;
     request.pid = getpid();
     request.type = DISPLAY_DESTROY;

@@ -19,9 +19,8 @@
 #define DEV_DISPLAY_FD MAX_FILE_DESCRIPTORS + 4
 #define VFS VirtualFilesystem::active
 
-#define FS_FILE 1
-#define FS_FIFO 2
-#define FS_CREATE_FIFO 1
+#define FS_TYPE_FILE 1
+#define FS_TYPE_FIFO 2
 
 class Filesystem {
 public:
@@ -33,8 +32,8 @@ public:
     virtual int get_size(char* file_name) { return 0; }
     virtual int write_file(char* file_name, uint8_t* data, int size) { return 0; }
     virtual int read_file(char* file_name, uint8_t* data, int size, int seek = 0) { return 0; }
-    virtual int find_file(char* file_name) { return 0; }
     virtual int read_dir(char* dirname, fs_entry_t* entries, uint32_t count) { return 0; }
+    virtual int find_file(char* file_name) { return 0; }
 };
 
 typedef struct file_entry {
@@ -44,6 +43,7 @@ typedef struct file_entry {
     int file_position = 0;
     int size = 0;
     int type = 0;
+    int flags = 0;
     pipe_t* pipe;
 } file_entry_t;
 
@@ -73,7 +73,7 @@ public:
     void mount(Filesystem* fs);
 
     int listdir(char* dirname, fs_entry_t* entries, uint32_t count);
-    int open_fifo(char* file_name, int flags);
+    int open_fifo(char* file_name, int flags = 0);
     int open(char* file_name, int flags = 0);
     int close_fifo(int index);
     int close(int descriptor);

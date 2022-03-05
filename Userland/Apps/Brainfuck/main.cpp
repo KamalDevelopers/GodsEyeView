@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     int file_descriptor;
     struct stat statbuffer;
 
-    file_descriptor = open(argv[0]);
+    file_descriptor = open(argv[0], O_RDONLY);
     fstat(file_descriptor, &statbuffer);
 
     if (statbuffer.st_size == -1) {

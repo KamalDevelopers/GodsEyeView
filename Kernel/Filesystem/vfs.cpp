@@ -43,20 +43,21 @@ int VirtualFilesystem::open_fifo(char* file_name, int flags)
         if (strcmp(file_name, kernel_file_table.files[i].file_name) == 0) {
             ft()->files[ft()->num_open_files] = kernel_file_table.files[i];
             ft()->files[ft()->num_open_files].descriptor = ft()->descriptor_index;
+            ft()->files[ft()->num_open_files].flags = flags;
             ft()->descriptor_index++;
             ft()->num_open_files++;
             return ft()->descriptor_index - 1;
         }
     }
 
-    if (flags != FS_CREATE_FIFO)
+    if ((flags & O_CREAT) == 0)
         return -1;
 
     file_entry file;
     pipe_t* pipe = Pipe::create();
     strcpy(file.file_name, file_name);
     file.pipe = pipe;
-    file.type = FS_FIFO;
+    file.type = FS_TYPE_FIFO;
     file.descriptor = kernel_file_table.descriptor_index;
     kernel_file_table.files[kernel_file_table.num_open_files] = file;
 
@@ -69,7 +70,7 @@ int VirtualFilesystem::open_fifo(char* file_name, int flags)
     kernel_file_table.descriptor_index++;
 
     /* Make sure we get a copy of the pipe file entry */
-    return open_fifo(file_name, 0);
+    return open_fifo(file_name, flags);
 }
 
 int VirtualFilesystem::open(char* file_name, int flags)
@@ -86,7 +87,7 @@ int VirtualFilesystem::open(char* file_name, int flags)
     if (strcmp(file_name, "/dev/display") == 0)
         return DEV_DISPLAY_FD;
 
-    int fifo = open_fifo(file_name, flags);
+    int fifo = open_fifo(file_name, flags & ~(O_CREAT));
     if (fifo != -1)
         return fifo;
 
@@ -110,7 +111,8 @@ int VirtualFilesystem::open(char* file_name, int flags)
     file.mountfs = mount;
     file.descriptor = ft()->descriptor_index;
     file.size = mounts[mount]->get_size(file_path);
-    file.type = FS_FILE;
+    file.type = FS_TYPE_FILE;
+    file.flags = flags;
     ft()->files[ft()->num_open_files] = file;
 
     if (ft()->descriptor_index >= MAX_FILE_DESCRIPTORS) {
@@ -148,7 +150,7 @@ int VirtualFilesystem::close(int descriptor)
     if (index == -1)
         return -1;
 
-    if (ft()->files[index].type == FS_FIFO) {
+    if (ft()->files[index].type == FS_TYPE_FIFO) {
         close_fifo(index);
         if (ft() == &kernel_file_table)
             return 0;
@@ -175,8 +177,11 @@ int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
     if ((index == -1) || (size <= 0))
         return -1;
 
+    if (ft()->files[index].flags == O_RDONLY)
+        return -1;
+
     TM->test_poll();
-    if (ft()->files[index].type == FS_FIFO)
+    if (ft()->files[index].type == FS_TYPE_FIFO)
         return Pipe::write(ft()->files[index].pipe, data, size);
     return mounts[ft()->files[index].mountfs]->write_file(ft()->files[index].file_name, data, size);
 }
@@ -187,7 +192,10 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data, int size)
     if (index == -1)
         return -1;
 
-    if (ft()->files[index].type == FS_FIFO)
+    if (ft()->files[index].flags & O_WRONLY)
+        return -1;
+
+    if (ft()->files[index].type == FS_TYPE_FIFO)
         return Pipe::read(ft()->files[index].pipe, data, size);
 
     int read_size = mounts[ft()->files[index].mountfs]->read_file(ft()->files[index].file_name, data, size, ft()->files[index].file_position);
@@ -202,7 +210,7 @@ int VirtualFilesystem::size(int descriptor)
     if (index == -1)
         return -1;
 
-    if (ft()->files[index].type == FS_FIFO)
+    if (ft()->files[index].type == FS_TYPE_FIFO)
         return ft()->files[index].pipe->size;
     return mounts[ft()->files[index].mountfs]->get_size(ft()->files[index].file_name);
 }

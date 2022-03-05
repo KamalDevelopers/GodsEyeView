@@ -164,7 +164,7 @@ int Syscalls::sys_fchown(int fd, uint32_t owner, uint32_t group)
     if ((fd == 0) || (fd == 1) && (owner == 1))
         return TM->task()->become_tty_master();
 
-    /* Not implemented */
+    /* TODO: Not implemented */
     return -1;
 }
 
@@ -202,6 +202,11 @@ int Syscalls::sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count)
 void Syscalls::sys_getcwd(char* buffer)
 {
     TM->task()->cwd(buffer);
+}
+
+int Syscalls::sys_mkfifo(char* pathname, int mode)
+{
+    return VFS->open_fifo(pathname, mode | O_CREAT);
 }
 
 uint32_t Syscalls::interrupt(uint32_t esp)
@@ -284,9 +289,14 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 168:
         cpu->eax = sys_poll((pollfd*)cpu->ebx, (uint32_t)cpu->ecx);
+        break;
 
     case 183:
         sys_getcwd((char*)cpu->ebx);
+        break;
+
+    case 400:
+        cpu->eax = sys_mkfifo((char*)cpu->ebx, (int)cpu->ecx);
         break;
 
     case 401:

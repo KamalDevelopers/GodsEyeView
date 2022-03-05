@@ -39,7 +39,7 @@ int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
 
 uint32_t request_framebuffer()
 {
-    int fd = open("/dev/display");
+    int fd = open("/dev/display", O_RDONLY);
     uint32_t buffer[1];
     if (read(fd, buffer, sizeof(uint32_t)))
         return buffer[0];
