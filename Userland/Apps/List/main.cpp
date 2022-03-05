@@ -6,11 +6,12 @@
 
 int read_dir(char* name, bool root)
 {
-    fs_entry_t entries[100];
+    fs_entry_t* entries = (fs_entry_t*)malloc(sizeof(fs_entry_t) * 100);
     int count = listdir(name, entries, 100);
 
     if (count == 0) {
         printf("Folder does not exist");
+        free(entries);
         return -1;
     }
 
@@ -21,6 +22,7 @@ int read_dir(char* name, bool root)
             printf("%s ", entries[i].name);
     }
 
+    free(entries);
     return 0;
 }
 

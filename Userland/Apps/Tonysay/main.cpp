@@ -2,7 +2,7 @@
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
 
-void draw(char* buffer)
+void tonysay(char* buffer)
 {
     int size = strlen(buffer);
     for (int i = 0; i < 32 - (size + 2) / 2; i++)
@@ -44,9 +44,10 @@ int main(int argc, char** argv)
 {
     const char* default_msg = "I'm Tony the dog!";
     char msg[50];
+    memset(msg, 0, 50);
 
     if (!argc) {
-        draw((char*)default_msg);
+        tonysay((char*)default_msg);
         return 0;
     }
 
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
         if (i != argc - 1)
             strcat(msg, (char*)" ");
     }
-    draw(msg);
 
+    tonysay(msg);
     return 0;
 }
