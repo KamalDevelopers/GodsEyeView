@@ -151,11 +151,16 @@ int8_t Syscalls::sys_kill(int pid, int sig)
 
 uint32_t Syscalls::sys_mmap(void* addr, size_t length)
 {
-    return PMM->allocate_pages(length);
+    uint32_t address = PMM->allocate_pages(length);
+    addr = (!addr) ? (void*)address : addr;
+    TM->task()->process_mmap({ (uint32_t)addr, address, length });
+    return address;
 }
 
 int Syscalls::sys_munmap(void* addr, size_t length)
 {
+    uint32_t physical_address = Paging::virtual_to_physical((uint32_t)addr);
+    TM->task()->process_munmap({ (uint32_t)addr, physical_address, length });
     return PMM->free_pages((uint32_t)addr, length);
 }
 

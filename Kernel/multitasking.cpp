@@ -52,6 +52,9 @@ Task::~Task()
         kfree(loaded_executable.program_data);
     }
 
+    for (uint32_t i = 0; i < allocated_memory.size(); i++)
+        PMM->free_pages(allocated_memory.at(i).physical_address, allocated_memory.at(i).size);
+
     /* FIXME: If the child runs when the parent is dead,
      *        the child tty will cause a page fault. */
     if (!is_inherited_tty)
@@ -172,6 +175,23 @@ void Task::test_poll()
                 return wake_from_poll();
             if (VFS->size(polls[i].fd) > 0)
                 return wake_from_poll();
+        }
+    }
+}
+
+void Task::process_mmap(memory_region_t region)
+{
+    if (allocated_memory.size() >= MAX_MEMORY_REGIONS)
+        klog("Kernel lost track of task %s allocations", name);
+    allocated_memory.append(region);
+}
+
+void Task::process_munmap(memory_region_t region)
+{
+    for (uint32_t i = 0; i < allocated_memory.size(); i++) {
+        if (allocated_memory.at(i).virtual_address == region.virtual_address) {
+            allocated_memory.remove_at(i);
+            break;
         }
     }
 }

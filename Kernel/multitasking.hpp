@@ -38,6 +38,7 @@
 #define SLEEP_WAIT_POLL 3
 #define MAX_PIDS 512
 #define MAX_TASKS 512
+#define MAX_MEMORY_REGIONS 256
 #define TM TaskManager::active
 
 struct cpu_state {
@@ -69,6 +70,7 @@ private:
     TTY* tty;
     executable_t loaded_executable;
     file_table_t process_file_table;
+    Vector<memory_region_t, MAX_MEMORY_REGIONS> allocated_memory;
     pollfd polls[10];
 
     uint32_t num_poll = 0;
@@ -103,6 +105,9 @@ public:
     void wake_from_poll();
     void test_poll();
     int setsid();
+
+    void process_mmap(memory_region_t region);
+    void process_munmap(memory_region_t region);
 
     file_table_t* get_file_table() { return &process_file_table; }
     int get_pid() { return pid; }
