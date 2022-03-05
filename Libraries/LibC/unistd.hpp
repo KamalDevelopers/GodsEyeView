@@ -31,6 +31,7 @@ int mkfifo(char* pathname, int flags);
 int fchown(int fd, uint32_t owner, uint32_t group);
 void sleep(int sec);
 int spawn(char* pathname, char** args);
+int nice(int inc);
 int waitpid(int pid);
 int chdir(char* dir);
 void getcwd(char* buffer);

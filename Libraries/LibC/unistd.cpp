@@ -75,11 +75,11 @@ int mkfifo(char* pathname, int flags)
 
 int fchown(int fd, uint32_t owner, uint32_t group)
 {
-    int status;
+    int error;
     asm volatile("int $0x80"
-                 : "=a"(fd)
+                 : "=a"(error)
                  : "a"(95), "b"(fd), "c"(owner), "d"(group));
-    return status;
+    return error;
 }
 
 void sleep(int sec)
@@ -100,11 +100,11 @@ int spawn(char* pathname, char** args)
 
 int waitpid(int pid)
 {
-    int status;
+    int error;
     asm volatile("int $0x80"
-                 : "=a"(status)
+                 : "=a"(error)
                  : "a"(7), "b"(pid));
-    return status;
+    return error;
 }
 
 int chdir(char* dir)
@@ -121,6 +121,15 @@ void getcwd(char* buffer)
     asm volatile("int $0x80"
                  :
                  : "a"(183), "b"(buffer));
+}
+
+int nice(int inc)
+{
+    int error;
+    asm volatile("int $0x80"
+                 : "=a"(error)
+                 : "a"(34), "b"(inc));
+    return error;
 }
 
 int listdir(char* dirname, fs_entry_t* entries, int count)

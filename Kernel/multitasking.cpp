@@ -155,6 +155,18 @@ int Task::poll(pollfd* pollfds, uint32_t npolls)
     return npolls;
 }
 
+int Task::nice(int inc)
+{
+    priority += inc;
+    if (priority > MAX_PRIORITIES)
+        priority = MAX_PRIORITIES;
+    if (priority < 1) {
+        priority = 1;
+        return 1;
+    }
+    return 0;
+}
+
 void Task::wake_from_poll()
 {
     num_poll = 0;
@@ -219,6 +231,7 @@ bool TaskManager::add_task(Task* task)
         /* The first task in 'tasks' should always be the idle task */
         if (tasks.size() > 0)
             return false;
+        task->priority = MAX_PRIORITIES + 1;
         tasks.append(task);
         return true;
     }
@@ -380,6 +393,9 @@ void TaskManager::pick_next_task()
     if (current_task >= tasks.size())
         current_task = 0;
 
+    if (tasks.at(current_task)->priority != scheduler_priority)
+        pick_next_task();
+
     if (tasks.at(current_task)->state != ALIVE)
         pick_next_task();
 
@@ -401,8 +417,20 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     if ((tasks.size() <= 0) || (is_running == 0))
         return cpustate;
 
-    scheduler_checked_tasks = 0;
     kill_zombie_tasks();
-    pick_next_task();
+
+    uint32_t last_task = current_task;
+    uint32_t last_priority = scheduler_priority;
+    scheduler_priority = 0;
+
+    for (; scheduler_priority <= MAX_PRIORITIES + 1; scheduler_priority++) {
+        current_task = (scheduler_priority >= last_priority) ? last_task : 0;
+        scheduler_checked_tasks = 0;
+        pick_next_task();
+
+        if (current_task != 0)
+            break;
+    }
+
     return tasks.at(current_task)->cpustate;
 }

@@ -117,10 +117,12 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
     Window* window = compose_window(pid);
     windows.append(window);
     update_window_positions();
+    nice(2);
 
     compositor->add_render_layer(window->get_canvas());
     window->create_process_connection();
     set_active_window(windows.size() - 1);
+    nice(-2);
 }
 
 void WindowManager::destroy_window(uint32_t index)

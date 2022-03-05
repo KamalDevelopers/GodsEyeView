@@ -35,6 +35,7 @@ private:
     int sys_getpid();
     int sys_setsid();
     void sys_reboot(int cmd);
+    int sys_nice(int inc);
     int8_t sys_kill(int pid, int sig);
     uint32_t sys_mmap(void* addr, size_t length);
     int sys_munmap(void* addr, size_t length);

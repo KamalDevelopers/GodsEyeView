@@ -36,6 +36,7 @@
 #define SLEEP_WAIT_WAKE 1
 #define SLEEP_WAIT_STDIN 2
 #define SLEEP_WAIT_POLL 3
+#define MAX_PRIORITIES 6
 #define MAX_PIDS 512
 #define MAX_TASKS 512
 #define MAX_MEMORY_REGIONS 256
@@ -80,6 +81,7 @@ private:
     int wake_pid_on_exit = 0;
     int process_group = 0;
     int parent = -1;
+    int priority = 3;
 
     int pid;
     int execute;
@@ -100,6 +102,7 @@ public:
     int chdir(char* dir);
     void cwd(char* buffer);
     int poll(pollfd* pollfds, uint32_t npolls);
+    int nice(int inc);
 
     int become_tty_master();
     void wake_from_poll();
@@ -122,6 +125,7 @@ private:
     int current_task = 0;
     int testing_poll_task = -1;
     int scheduler_checked_tasks = 0;
+    int scheduler_priority = 0;
     uint32_t current_ticks = 0;
     bool is_running = false;
     bool check_kill = false;

@@ -6,6 +6,7 @@
 
 int main(int argc, char** argv)
 {
+    nice(-1);
     events_files_t event_files = init_events();
     int client_communication_file = init_communications();
 

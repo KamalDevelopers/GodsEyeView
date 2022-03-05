@@ -144,6 +144,11 @@ void Syscalls::sys_reboot(int cmd)
     }
 }
 
+int Syscalls::sys_nice(int inc)
+{
+    return TM->task()->nice(inc);
+}
+
 int8_t Syscalls::sys_kill(int pid, int sig)
 {
     return TM->send_signal(pid, sig);
@@ -258,6 +263,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 28:
         cpu->eax = sys_fstat((int)cpu->ebx, (struct stat*)cpu->ecx);
+        break;
+
+    case 34:
+        cpu->eax = sys_nice((int)cpu->ebx);
         break;
 
     case 37:
