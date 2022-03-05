@@ -1,3 +1,6 @@
+#ifndef BITARRAY_HPP
+#define BITARRAY_HPP
+
 #include "types.hpp"
 
 template<uint32_t T>
@@ -89,3 +92,5 @@ public:
         return index;
     }
 };
+
+#endif
