@@ -58,7 +58,7 @@ void Compositor::render_stack()
 
     /* TODO: Make this faster by reducing draw areas! */
     render_canvas(root_layer);
-    for (uint32_t i = 0; i < layer_index; i++) {
+    for (uint32_t i = 0; i < layers.size(); i++) {
         render_borders(layers[i]);
         render_canvas(layers[i]);
     }
@@ -119,22 +119,19 @@ void Compositor::update_mouse_position(uint32_t x, uint32_t y, bool is_updating_
 
 void Compositor::add_render_layer(canvas_t* canvas)
 {
-    layers[layer_index] = canvas;
-    layer_index++;
+    layers.append(canvas);
 }
 
 int Compositor::remove_render_layer(canvas_t* canvas)
 {
     int index = -1;
-    for (uint32_t i = 0; i < layer_index; i++)
+    for (uint32_t i = 0; i < layers.size(); i++)
         if (canvas == layers[i])
             index = i;
 
     if (index == -1)
         return -1;
 
-    for (int j = index; j < layer_index - 1; j++)
-        layers[j] = layers[j + 1];
-    layer_index--;
+    layers.remove_at(index);
     return 0;
 }

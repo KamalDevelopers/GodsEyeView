@@ -2,6 +2,7 @@
 #define COMPOSITOR_HPP
 
 #include "window.hpp"
+#include <LibC++/vector.hpp>
 #include <LibC/stdio.hpp>
 #include <LibC/string.hpp>
 #include <LibC/unistd.hpp>
@@ -9,7 +10,7 @@
 #include <LibDisplay/connection.hpp>
 #include <LibDisplay/events.hpp>
 
-#define MAX_LAYERS 100
+#define MAX_LAYERS 50
 #define MOUSE_WIDTH 12
 #define MOUSE_HEIGHT 18
 #define SCREEN_WIDTH 1024
@@ -17,9 +18,6 @@
 
 class Compositor {
 private:
-    canvas_t* layers[MAX_LAYERS];
-
-    uint32_t layer_index = 0;
     uint32_t* mouse_bitmap = 0;
     uint32_t display_framebuffer = 0;
     bool needs_update = false;
@@ -29,6 +27,7 @@ private:
     canvas_t* root_layer = 0;
     canvas_t* mouse_layer = 0;
     canvas_t* mouse_ghost_layer = 0;
+    Vector<canvas_t*, MAX_LAYERS> layers;
 
 public:
     Compositor();

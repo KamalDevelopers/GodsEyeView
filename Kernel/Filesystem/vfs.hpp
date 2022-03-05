@@ -2,6 +2,7 @@
 #define VFS_HPP
 
 #include "../pipe.hpp"
+#include <LibC++/vector.hpp>
 #include <LibC/path.hpp>
 #include <LibC/poll.hpp>
 #include <LibC/stdio.hpp>
@@ -9,7 +10,7 @@
 #include <LibC/string.hpp>
 #include <LibC/types.hpp>
 
-#define MAX_OPENFILES 200
+#define MAX_OPENFILES 512
 #define MAX_FILE_NAME 100
 #define MAX_MOUNTS 5
 #define MAX_FILE_DESCRIPTORS INT_MAX - 10
@@ -48,9 +49,8 @@ typedef struct file_entry {
 } file_entry_t;
 
 typedef struct file_table {
-    file_entry files[MAX_OPENFILES];
+    Vector<file_entry_t, MAX_OPENFILES> files;
     int descriptor_index = 4;
-    int num_open_files = 0;
 } file_table_t;
 
 class VirtualFilesystem {

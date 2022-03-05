@@ -8,6 +8,7 @@
 #include "tty.hpp"
 
 #include <LibC++/bitarray.hpp>
+#include <LibC++/vector.hpp>
 #include <LibC/path.hpp>
 #include <LibC/poll.hpp>
 #include <LibC/stdio.hpp>
@@ -36,7 +37,7 @@
 #define SLEEP_WAIT_STDIN 2
 #define SLEEP_WAIT_POLL 3
 #define MAX_PIDS 512
-#define MAX_TASKS 256
+#define MAX_TASKS 512
 #define TM TaskManager::active
 
 struct cpu_state {
@@ -113,15 +114,13 @@ public:
 
 class TaskManager {
 private:
-    bool add_task(Task* task);
-    int num_tasks = 0;
     int current_task = 0;
     int testing_poll_task = -1;
     int scheduler_checked_tasks = 0;
     uint32_t current_ticks = 0;
     bool is_running = false;
     bool check_kill = false;
-    Task* tasks[MAX_TASKS];
+    Vector<Task*, MAX_TASKS> tasks;
 
 public:
     TaskManager(GDT* gdt);
@@ -138,8 +137,8 @@ public:
 
     bool is_active() { return is_running; }
     void yield() { asm volatile("int $0x20"); }
-    Task* task() { return tasks[current_task]; }
-    TTY* tty() { return tasks[current_task]->tty; }
+    Task* task() { return tasks.at(current_task); }
+    TTY* tty() { return tasks.at(current_task)->tty; }
     file_table_t* file_table();
     Task* task(int pid);
 
@@ -147,6 +146,7 @@ public:
     int waitpid(int pid);
     void test_poll();
     int spawn(char* file, char** args);
+    bool add_task(Task* task);
     bool append_tasks(int count, ...);
     int8_t send_signal(int pid, int sig);
     void kill_zombie_tasks();

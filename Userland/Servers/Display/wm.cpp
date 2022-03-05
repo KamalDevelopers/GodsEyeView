@@ -11,7 +11,7 @@ WindowManager::~WindowManager()
 
 int WindowManager::find_window_with_pid(int pid)
 {
-    for (uint32_t i = 0; i < window_index; i++)
+    for (uint32_t i = 0; i < windows.size(); i++)
         if (windows[i]->get_pid() == pid)
             return i;
     return -1;
@@ -31,7 +31,7 @@ void WindowManager::set_active_window(uint32_t index)
 void WindowManager::mouse_event(mouse_event_t* event)
 {
     if (event->modifier == 1) {
-        for (uint32_t i = 0; i < window_index; i++)
+        for (uint32_t i = 0; i < windows.size(); i++)
             if (windows[i]->is_point_in_window(event->x, event->y))
                 set_active_window(i);
     }
@@ -55,11 +55,11 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
 
 void WindowManager::require_update(int pid)
 {
-    int window_index = find_window_with_pid(pid);
-    if (window_index == -1)
+    int index = find_window_with_pid(pid);
+    if (index == -1)
         return;
 
-    update_window_border(window_index);
+    update_window_border(index);
     compositor->require_update();
 }
 
@@ -73,12 +73,12 @@ void WindowManager::update_window_positions()
     uint32_t position_x = WINDOW_GAP;
     uint32_t position_y = WINDOW_GAP;
     uint32_t windows_tile_vertical = 2;
-    uint32_t tile_vertical_max = CLAMP(window_index, 1, windows_tile_vertical);
-    uint32_t tile_horizontal_max = (window_index > windows_tile_vertical) ? window_index - 1 : 1;
+    uint32_t tile_vertical_max = CLAMP(windows.size(), 1, windows_tile_vertical);
+    uint32_t tile_horizontal_max = (windows.size() > windows_tile_vertical) ? windows.size() - 1 : 1;
     uint32_t vertical_section = SCREEN_WIDTH / tile_vertical_max;
     uint32_t horizontal_section = SCREEN_HEIGHT / tile_horizontal_max;
 
-    for (uint32_t index = 0; index < window_index; index++) {
+    for (uint32_t index = 0; index < windows.size(); index++) {
         uint32_t height = horizontal_section - WINDOW_GAP * 2;
         uint32_t width = vertical_section - WINDOW_GAP;
 
@@ -111,42 +111,39 @@ Window* WindowManager::compose_window(int pid)
 
 void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
 {
-    Window* window = compose_window(pid);
-    windows[window_index] = window;
+    if (windows.size() >= MAX_WINDOWS)
+        return;
 
-    window_index++;
+    Window* window = compose_window(pid);
+    windows.append(window);
     update_window_positions();
 
     compositor->add_render_layer(window->get_canvas());
     window->create_process_connection();
-
-    set_active_window(window_index - 1);
+    set_active_window(windows.size() - 1);
 }
 
 void WindowManager::destroy_window(uint32_t index)
 {
     compositor->remove_render_layer(windows[index]->get_canvas());
     if (index == active_window) {
-        if (index == window_index - 1)
+        if (index == windows.size() - 1)
             active_window = index - 1;
     }
 
     delete windows[index];
-
-    for (int j = index; j < window_index - 1; j++)
-        windows[j] = windows[j + 1];
-    window_index--;
-
-    if (!window_index)
+    windows.remove_at(index);
+    if (!windows.size())
         active_window = -1;
 }
 
 void WindowManager::destroy_window_pid(int pid)
 {
-    int window_index = find_window_with_pid(pid);
-    if (window_index == -1)
+    int index = find_window_with_pid(pid);
+    if (index == -1)
         return;
-    destroy_window(window_index);
+
+    destroy_window(index);
     update_window_positions();
     compositor->require_update();
 }
