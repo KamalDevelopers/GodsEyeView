@@ -345,7 +345,8 @@ void TaskManager::kill_zombie_tasks()
         pid_bitmap.bit_clear(tasks[i]->get_pid());
         delete tasks[i];
 
-        delete_element(i, num_tasks, tasks);
+        for (int j = i; j < num_tasks - 1; j++)
+            tasks[j] = tasks[j + 1];
         num_tasks--;
     }
 

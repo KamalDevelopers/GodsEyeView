@@ -21,52 +21,6 @@ void itoa(unsigned int num, char* number);
 int atoi(char* str);
 char* ftoa(float n, char* res, int afterpoint);
 div_t div(int numerator, int denominator);
-
-template<typename T>
-static void delete_element(int x, int size, T* arr[])
-{
-    for (int j = x; j < size - 1; j++)
-        arr[j] = arr[j + 1];
-}
-
-/* Generic search function */
-template<typename S>
-static int search(S elem, S* arr, int size)
-{
-    for (int i = 0; i < size; i++)
-        if (*arr++ == elem)
-            return i;
-}
-
-/* Binary search */
-static int bsearch(int elem, int arr[], int count, int start = 0)
-{
-    if (start <= count) {
-        int mid = (start + count) / 2;
-        if (arr[mid] == elem)
-            return mid;
-        if (arr[mid] > elem)
-            return bsearch(elem, arr, mid - 1, elem);
-        if (arr[mid] > elem)
-            return bsearch(elem, arr, mid + 1, count);
-    }
-    return -1;
-}
-
-template<typename T>
-T abs(T num)
-{
-    return num >= 0 ? num : (-1) * num;
-}
-
-template<typename T>
-T clamp(T x, T min, T max)
-{
-    if (x < min)
-        x = min;
-    if (x > max)
-        x = max;
-    return x;
-}
+int bsearch(int elem, int arr[], int count, int start);
 
 #endif

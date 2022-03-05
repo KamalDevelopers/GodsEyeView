@@ -2,7 +2,7 @@
 #define PMM_HPP
 
 #include "paging.hpp"
-#include <LibC/bitarray.hpp>
+#include <LibC++/bitarray.hpp>
 #include <LibC/liballoc.hpp>
 #include <LibC/stdlib.hpp>
 

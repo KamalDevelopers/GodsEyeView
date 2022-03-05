@@ -1,6 +1,5 @@
 #include "stdlib.hpp"
 #include "unistd.hpp"
-#include "utility.hpp"
 
 void exit(int status)
 {
@@ -56,9 +55,15 @@ void* memset(void* s, int c, size_t n)
 
 void reverse(char* str, int len)
 {
-    int i = 0, j = len - 1;
+    int i = 0;
+    int j = len - 1;
+    char temp;
     while (i < j) {
-        swap(str[i++], str[j--]);
+        temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
     }
 }
 
@@ -140,4 +145,18 @@ div_t div(int numerator, int denominator)
     res.quot = numerator / denominator;
     res.rem = numerator % denominator;
     return res;
+}
+
+int bsearch(int elem, int arr[], int count, int start)
+{
+    if (start <= count) {
+        int mid = (start + count) / 2;
+        if (arr[mid] == elem)
+            return mid;
+        if (arr[mid] > elem)
+            return bsearch(elem, arr, mid - 1, elem);
+        if (arr[mid] > elem)
+            return bsearch(elem, arr, mid + 1, count);
+    }
+    return -1;
 }

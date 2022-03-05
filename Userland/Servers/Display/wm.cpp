@@ -73,7 +73,7 @@ void WindowManager::update_window_positions()
     uint32_t position_x = WINDOW_GAP;
     uint32_t position_y = WINDOW_GAP;
     uint32_t windows_tile_vertical = 2;
-    uint32_t tile_vertical_max = clamp<int>(window_index, 1, windows_tile_vertical);
+    uint32_t tile_vertical_max = CLAMP(window_index, 1, windows_tile_vertical);
     uint32_t tile_horizontal_max = (window_index > windows_tile_vertical) ? window_index - 1 : 1;
     uint32_t vertical_section = SCREEN_WIDTH / tile_vertical_max;
     uint32_t horizontal_section = SCREEN_HEIGHT / tile_horizontal_max;
@@ -99,6 +99,7 @@ void WindowManager::update_window_positions()
             position_y += height + WINDOW_GAP;
         }
     }
+
     compositor->require_update();
 }
 
@@ -131,7 +132,9 @@ void WindowManager::destroy_window(uint32_t index)
     }
 
     delete windows[index];
-    delete_element(index, window_index, windows);
+
+    for (int j = index; j < window_index - 1; j++)
+        windows[j] = windows[j + 1];
     window_index--;
 
     if (!window_index)

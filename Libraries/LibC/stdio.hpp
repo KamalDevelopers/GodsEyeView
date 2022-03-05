@@ -19,6 +19,7 @@ void vprintf(const char* format, va_list v);
 void printf(const char* format, ...);
 void clear();
 void beep(uint32_t ms_time, uint32_t frequency);
+
 inline void newline()
 {
     putc(10);

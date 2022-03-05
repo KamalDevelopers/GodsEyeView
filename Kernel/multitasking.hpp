@@ -7,6 +7,7 @@
 #include "Mem/mm.hpp"
 #include "tty.hpp"
 
+#include <LibC++/bitarray.hpp>
 #include <LibC/path.hpp>
 #include <LibC/poll.hpp>
 #include <LibC/stdio.hpp>

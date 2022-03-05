@@ -14,10 +14,10 @@ bool play(char* file_name, uint16_t sample_rate)
         return false;
     }
 
-    uint8_t* data = (uint8_t*)malloc(statbuffer.st_size);
-    read(file_descriptor, data, statbuffer.st_size);
-    close(file_descriptor);
     uint32_t size = statbuffer.st_size;
+    uint8_t* data = (uint8_t*)malloc(size);
+    read(file_descriptor, data, size);
+    close(file_descriptor);
 
     pcm_header_t pcm;
     pcm.sample_rate = sample_rate;

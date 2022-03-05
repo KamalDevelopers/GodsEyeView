@@ -1,7 +1,7 @@
 #ifndef BITARRAY_HPP
 #define BITARRAY_HPP
 
-#include "types.hpp"
+#include <LibC/types.hpp>
 
 template<uint32_t T>
 class BitArray {
