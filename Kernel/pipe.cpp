@@ -22,9 +22,6 @@ void Pipe::destroy(pipe_t* pipe)
 
 void Pipe::expand(pipe_t* pipe, size_t size)
 {
-    if (pipe->total_size >= size)
-        return;
-
     if (pipe->total_size == 0)
         pipe->buffer = (uint8_t*)kmalloc(sizeof(int8_t) * size);
 
@@ -100,6 +97,7 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
     if (size + pipe->size > pipe->total_size) {
         uint8_t* temporary = new uint8_t[pipe->total_size];
         int temporary_size = pipe->total_size;
+        memcpy(temporary, pipe->buffer, pipe->size);
         expand(pipe, size + pipe->size);
         memcpy(pipe->buffer, temporary, temporary_size);
         kfree(temporary);
