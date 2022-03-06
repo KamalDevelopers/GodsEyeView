@@ -12,11 +12,10 @@ void puts_hook(void (*t)(char*))
 
 void flush()
 {
-    if (hwrite == 0) {
+    if (hwrite == 0)
         write(1, write_buffer, write_index);
-    } else {
+    else
         hwrite(write_buffer);
-    }
 
     memset(write_buffer, 0, BUFSIZ);
     write_index = 0;
@@ -32,7 +31,7 @@ void puts(char* str)
     uint32_t len = strlen(str);
     bool do_flush = false;
 
-    if (len > BUFSIZ) {
+    if (len >= BUFSIZ) {
         write(1, str, len);
         return;
     }

@@ -170,7 +170,6 @@ int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
     if (ft()->files.at(index).flags == O_RDONLY)
         return -1;
 
-    TM->test_poll();
     if (ft()->files.at(index).type == FS_TYPE_FIFO)
         return Pipe::write(ft()->files[index].pipe, data, size);
     return mounts[ft()->files[index].mountfs]->write_file(ft()->files[index].file_name, data, size);

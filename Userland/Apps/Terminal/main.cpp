@@ -28,9 +28,7 @@ int main(int argc, char** argv)
     int keys_pressed = 0;
     memset(key_input, 0, sizeof(key_input));
 
-    char stdout_buffer[1024];
-    bool continuous_stdout = false;
-    memset(stdout_buffer, 0, sizeof(stdout_buffer));
+    char stdout_buffer[BUFSIZ];
 
     struct pollfd polls[3];
     polls[0].events = POLLIN;
@@ -41,6 +39,8 @@ int main(int argc, char** argv)
     polls[2].fd = events_file;
 
     while (1) {
+        poll(polls, 3);
+
         display_event_t event;
         if (receive_event(&event)) {
             if (event.type == DISPLAY_EVENT_KEYBOARD) {
@@ -74,14 +74,9 @@ int main(int argc, char** argv)
 
         if (read(1, stdout_buffer, sizeof(stdout_buffer))) {
             draw_text(&canvas, stdout_buffer);
-            continuous_stdout = true;
-        } else if (continuous_stdout) {
-            continuous_stdout = false;
-            request_update_window();
+            memset(stdout_buffer, 0, sizeof(stdout_buffer));
         }
-
-        if (!continuous_stdout)
-            poll(polls, 3);
+        request_update_window();
     }
 
     unload_font();

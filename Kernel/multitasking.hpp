@@ -36,6 +36,7 @@
 #define SLEEP_WAIT_WAKE 1
 #define SLEEP_WAIT_STDIN 2
 #define SLEEP_WAIT_POLL 3
+#define PROCESS_QUANTUM 6
 #define MAX_PRIORITIES 6
 #define MAX_PIDS 512
 #define MAX_TASKS 512
@@ -78,6 +79,7 @@ private:
     bool is_executable = false;
     bool is_inherited_tty = false;
     int sleeping = 0;
+    int quantum = PROCESS_QUANTUM;
     int wake_pid_on_exit = 0;
     int process_group = 0;
     int parent = -1;

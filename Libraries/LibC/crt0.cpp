@@ -9,6 +9,11 @@ void* operator new(long unsigned int size)
     return malloc(size);
 }
 
+void* operator new[](size_t size)
+{
+    return malloc(size);
+}
+
 void operator delete(void* ptr, size_t size)
 {
     free(ptr);

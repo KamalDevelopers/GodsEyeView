@@ -18,16 +18,16 @@ int main(int argc, char** argv)
     compositor.require_update();
     compositor.render_stack();
 
-    while (1) {
-        struct pollfd polls[3];
-        polls[0].events = POLLIN;
-        polls[0].fd = event_files.mouse;
-        polls[1].events = POLLIN;
-        polls[1].fd = event_files.keyboard;
-        polls[2].events = POLLIN;
-        polls[2].fd = client_communication_file;
-        poll(polls, 3);
+    struct pollfd polls[3];
+    polls[0].events = POLLIN;
+    polls[0].fd = event_files.mouse;
+    polls[1].events = POLLIN;
+    polls[1].fd = event_files.keyboard;
+    polls[2].events = POLLIN;
+    polls[2].fd = client_communication_file;
 
+    while (1) {
+        poll(polls, 3);
         send_events(&wm);
         receive_connections(&wm);
         compositor.render_stack();

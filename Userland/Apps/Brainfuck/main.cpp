@@ -29,10 +29,10 @@ int run(char* input, int* tape)
             tape[pointer]--;
             break;
         case '.':
-            printf("%c", tape[pointer]);
-            flush();
+            putc(tape[pointer]);
             break;
         case ',':
+            flush();
             if (user_input[user_input_index] == 0) {
                 memset(user_input, 0, 50);
                 read(0, user_input, 50);

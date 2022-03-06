@@ -96,7 +96,9 @@ int8_t Task::notify(int signal)
 void Task::suicide(int error)
 {
     state = error;
+    quantum = 0;
     TM->task_has_died();
+    TM->yield();
 }
 
 int Task::setsid()
@@ -147,8 +149,11 @@ int Task::poll(pollfd* pollfds, uint32_t npolls)
         return -1;
 
     sleeping = -SLEEP_WAIT_POLL;
+    quantum = 0;
+
     for (uint32_t i = 0; i < npolls; i++)
         polls[i] = pollfds[i];
+
     num_poll = npolls;
     TM->test_poll();
     TM->yield();
@@ -211,6 +216,8 @@ void Task::process_munmap(memory_region_t region)
 void Task::sleep(int sleeping_modifier)
 {
     sleeping = sleeping_modifier;
+    quantum = 0;
+    TM->yield();
 }
 
 TaskManager::TaskManager(GDT* gdt)
@@ -298,7 +305,7 @@ int8_t TaskManager::send_signal(int pid, int sig)
 
 void TaskManager::sleep(uint32_t ticks)
 {
-    tasks.at(current_task)->sleeping = current_ticks + ticks;
+    tasks.at(current_task)->sleep(current_ticks + ticks);
 }
 
 void TaskManager::test_poll()
@@ -310,7 +317,7 @@ void TaskManager::test_poll()
         }
 
         if ((tasks.at(i)->sleeping == -SLEEP_WAIT_STDIN) && tasks.at(i)->tty->should_wake_stdin())
-            return tasks.at(i)->wake_from_poll();
+            tasks.at(i)->wake_from_poll();
     }
     testing_poll_task = -1;
 }
@@ -323,6 +330,7 @@ int TaskManager::waitpid(int pid)
 
     child->wake_pid_on_exit = tasks.at(current_task)->get_pid();
     tasks.at(current_task)->sleeping = -SLEEP_WAIT_WAKE;
+    tasks.at(current_task)->quantum = 0;
     return pid;
 }
 
@@ -417,6 +425,12 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     if ((tasks.size() <= 0) || (is_running == 0))
         return cpustate;
 
+    if (tasks.at(current_task)->quantum > 0) {
+        tasks.at(current_task)->quantum--;
+        return tasks.at(current_task)->cpustate;
+    }
+
+    tasks[current_task]->quantum = PROCESS_QUANTUM;
     kill_zombie_tasks();
 
     uint32_t last_task = current_task;
