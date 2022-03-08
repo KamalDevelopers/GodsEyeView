@@ -147,5 +147,4 @@ void WindowManager::destroy_window_pid(int pid)
 
     destroy_window(index);
     update_window_positions();
-    compositor->require_update();
 }

@@ -9,10 +9,12 @@
 #include <LibC/types.hpp>
 #include <LibDisplay/events.hpp>
 
-#define MAX_MOUSE_EVENTS 10
 #define MOUSE_MODIFIER_L 1
 #define MOUSE_MODIFIER_R 2
 #define MOUSE_MODIFIER_M 3
+#define MOUSE_BUTTON_L 0x1
+#define MOUSE_BUTTON_R 0x2
+#define MOUSE_BUTTON_M 0x4
 
 class MouseDriver : public InterruptHandler {
     Port8Bit data_port;
@@ -30,9 +32,10 @@ class MouseDriver : public InterruptHandler {
     uint32_t mouse_y = 0;
     uint32_t mouse_press = 0;
 
-    mouse_event_t events[MAX_MOUSE_EVENTS];
-    uint32_t events_index = 0;
-    uint32_t current_event = 0;
+    bool unread_click_event = false;
+    bool unread_move_event = false;
+    mouse_event_t move_event;
+    mouse_event_t click_event;
 
 public:
     MouseDriver(InterruptManager* manager, int screenw, int screenh);
@@ -46,7 +49,7 @@ public:
 
     void on_mouse_move(int x, int y);
     void on_mouse_up();
-    void on_mouse_down(int b);
+    void on_mouse_down(int button);
     int get_mouse_y() const { return mouse_y; }
     int get_mouse_x() const { return mouse_x; }
     int get_mouse_press() const { return mouse_press; }
