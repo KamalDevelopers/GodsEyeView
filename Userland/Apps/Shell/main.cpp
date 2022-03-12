@@ -9,13 +9,6 @@ static char current_path[100];
 
 int command(char* input)
 {
-    char** arguments = (char**)malloc(sizeof(char*) * 10);
-    for (uint32_t i = 0; i < 10; ++i)
-        arguments[i] = (char*)malloc(50);
-
-    for (uint32_t i = 0; i < 10; i++)
-        memset(arguments[i], 0, 50);
-
     char* program = strtok(input, (char*)" ");
 
     if (strcmp(program, "uname") == 0) {
@@ -57,7 +50,24 @@ int command(char* input)
         return 1;
     }
 
+    if (strcmp(program, "clear") == 0) {
+        clear();
+        return 2;
+    }
+
+    if (strcmp(program, "shutdown") == 0)
+        _shutdown();
+
+    if (strcmp(program, "reboot") == 0)
+        _reboot();
+
     char* arg = strtok(NULL, (char*)" ");
+
+    char** arguments = (char**)malloc(sizeof(char*) * 10);
+    for (uint32_t i = 0; i < 10; ++i) {
+        arguments[i] = (char*)malloc(50);
+        memset(arguments[i], 0, 50);
+    }
 
     uint32_t argc = 0;
     while (arg) {
@@ -66,26 +76,6 @@ int command(char* input)
             argc++;
         }
         arg = strtok(NULL, (char*)" ");
-    }
-
-    if (strcmp(program, "clear") == 0) {
-        clear();
-        return 2;
-    }
-
-    if (strcmp(program, "echo") == 0) {
-        for (uint32_t i = 0; i < 10; i++)
-            printf("%s ", arguments[i]);
-        flush();
-        return 1;
-    }
-
-    if (strcmp(program, "shutdown") == 0) {
-        _shutdown();
-    }
-
-    if (strcmp(program, "reboot") == 0) {
-        _reboot();
     }
 
     char program_path[100];
