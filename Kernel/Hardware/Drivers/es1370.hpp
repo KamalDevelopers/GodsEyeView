@@ -65,6 +65,7 @@ public:
     void set_sample_rate(uint16_t hz);
     void write_codec(int reg, uint16_t value);
     void write(uint8_t* buffer, uint32_t length);
+    bool is_playing();
     void wait();
 
     virtual uint32_t interrupt(uint32_t esp);

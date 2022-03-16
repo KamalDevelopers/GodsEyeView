@@ -52,6 +52,11 @@ void ES1370::wait()
     Mutex::unlock(es1370);
 }
 
+bool ES1370::is_playing()
+{
+    return es1370.locked;
+}
+
 void ES1370::set_sample_rate(uint16_t hz)
 {
     sample_rate = hz;
@@ -112,6 +117,7 @@ uint32_t ES1370::interrupt(uint32_t esp)
         control_port.write(ctrl & ~CTRL_DAC2_EN);
         serial_port.write(sctrl & ~SCTRL_P2INTEN);
         Mutex::unlock(es1370);
+        TM->test_poll();
     }
 
     return esp;

@@ -124,6 +124,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Task idle("idle", (uint32_t)kernel_idle, 1);
     TM->append_tasks(1, &idle);
     TM->spawn("servers/display", 0);
+    TM->spawn("servers/sound", 0);
     TM->spawn("bin/terminal", 0);
 
     Mutex::enable();

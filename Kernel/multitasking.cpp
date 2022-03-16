@@ -1,6 +1,7 @@
 #include "multitasking.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
+#include "Hardware/audio.hpp"
 
 BitArray<MAX_PIDS> pid_bitmap;
 
@@ -188,9 +189,14 @@ void Task::test_poll()
                 return wake_from_poll();
             if ((polls[i].fd == 1) && (tty->stdout_size() > 0))
                 return wake_from_poll();
-            if ((polls[i].fd == 0) && (!tty->is_reading_stdin()))
+            if ((polls[i].fd == 0) && (tty->is_reading_stdin()))
                 return wake_from_poll();
             if (VFS->size(polls[i].fd) > 0)
+                return wake_from_poll();
+        }
+
+        if (polls[i].events & POLLOUT) {
+            if ((polls[i].fd == DEV_AUDIO_FD) && (!AUDIO->is_playing()))
                 return wake_from_poll();
         }
     }
@@ -298,7 +304,7 @@ int8_t TaskManager::send_signal(int pid, int sig)
     Task* receiver = task(pid);
     if (receiver == 0)
         return -1;
-    if (receiver->privilege <= tasks.at(current_task)->privilege)
+    if (receiver->privilege > tasks.at(current_task)->privilege)
         return -1;
     return receiver->notify(sig);
 }
@@ -383,6 +389,7 @@ void TaskManager::kill_zombie_tasks()
         pid_bitmap.bit_clear(tasks.at(i)->get_pid());
         delete tasks.at(i);
         tasks.remove_at(i);
+        i--;
     }
 
     check_kill = false;

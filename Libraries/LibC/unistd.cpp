@@ -82,11 +82,27 @@ int fchown(int fd, uint32_t owner, uint32_t group)
     return error;
 }
 
-void sleep(int sec)
+void usleep(int ticks)
 {
     asm volatile("int $0x80"
                  :
-                 : "a"(162), "b"(sec));
+                 : "a"(162), "b"(ticks));
+}
+
+void sleep(int sec)
+{
+    int start_time = time();
+    while ((time() - start_time) <= sec)
+        usleep(100);
+}
+
+int time()
+{
+    int timestamp;
+    asm volatile("int $0x80"
+                 : "=a"(timestamp)
+                 : "a"(13));
+    return timestamp;
 }
 
 int spawn(char* pathname, char** args)

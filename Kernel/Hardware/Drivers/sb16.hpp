@@ -56,6 +56,7 @@ public:
     uint32_t chunk_size() { return PAGE_SIZE; }
     void write(uint8_t* buffer, uint32_t length);
     void wait();
+    bool is_playing();
     void set_sample_rate(uint16_t hz);
 
     bool activated() { return is_activated; }

@@ -30,16 +30,14 @@ int main(int argc, char** argv)
 
     char stdout_buffer[BUFSIZ];
 
-    struct pollfd polls[3];
+    struct pollfd polls[2];
     polls[0].events = POLLIN;
-    polls[0].fd = 0;
+    polls[0].fd = 1;
     polls[1].events = POLLIN;
-    polls[1].fd = 1;
-    polls[2].events = POLLIN;
-    polls[2].fd = events_file;
+    polls[1].fd = events_file;
 
     while (1) {
-        poll(polls, 3);
+        poll(polls, 2);
 
         display_event_t event;
         if (receive_event(&event)) {

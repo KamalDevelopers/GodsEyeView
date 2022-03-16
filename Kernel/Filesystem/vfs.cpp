@@ -120,6 +120,8 @@ int VirtualFilesystem::open(char* file_name, int flags)
     return file.descriptor;
 }
 
+/* TODO: We are  not actually closing the fifo here,
+ *       we are removing it completely. */
 int VirtualFilesystem::close_fifo(int index)
 {
     Pipe::destroy(ft()->files[index].pipe);

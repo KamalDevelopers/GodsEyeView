@@ -4,10 +4,7 @@ rule cpp
 rule crt0
     command = i686-elf-g++ -fPIC -c $in -o $out -nostdlib -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -I./
 
-rule libc
-    command = ar ruv $out $in && ranlib $out
-
-rule libdisplay
+rule library
     command = ar ruv $out $in && ranlib $out
 
 build LibC/unistd.o: cpp ./LibC/unistd.cpp
@@ -17,8 +14,11 @@ build LibC/stdlib.o: cpp ./LibC/stdlib.cpp
 build LibC/path.o: cpp ./LibC/path.cpp
 build LibC/liballoc.o: cpp ./LibC/liballoc.cpp
 build LibC/crt0.o: crt0 ./LibC/crt0.cpp
-build libc.a: libc LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/liballoc.o LibC/crt0.o
+build libc.a: library LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/liballoc.o LibC/crt0.o
 
 build LibDisplay/canvas.o: cpp ./LibDisplay/canvas.cpp
 build LibDisplay/connection.o: cpp ./LibDisplay/connection.cpp
-build libdisplay.a: libdisplay LibDisplay/canvas.o LibDisplay/connection.o
+build libdisplay.a: library LibDisplay/canvas.o LibDisplay/connection.o
+
+build LibSound/connection.o: cpp ./LibSound/connection.cpp
+build libsound.a: library LibSound/connection.o

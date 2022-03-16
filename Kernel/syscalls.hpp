@@ -3,6 +3,7 @@
 
 #include "Exec/loader.hpp"
 #include "Filesystem/vfs.hpp"
+#include "Hardware/Drivers/cmos.hpp"
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/Drivers/vesa.hpp"
@@ -30,6 +31,7 @@ private:
     int sys_close(int fd);
     int sys_waitpid(int pid);
     int sys_chdir(char* dir);
+    int sys_time();
     int sys_stat(char* file, struct stat* buffer);
     int sys_fstat(int fd, struct stat* buffer);
     int sys_getpid();

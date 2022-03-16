@@ -6,10 +6,9 @@ static int display_file = -1;
 void wait_for_pipe(int pipe_file)
 {
     struct stat statbuffer;
-
     while (statbuffer.st_size > 0) {
         fstat(pipe_file, &statbuffer);
-        sleep(5);
+        usleep(5);
     }
 }
 
@@ -24,7 +23,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height)
     display_file = -1;
     while (display_file == -1) {
         display_file = open((char*)"/pipe/display", O_RDWR);
-        sleep(5);
+        usleep(5);
     }
 
     wait_for_pipe(display_file);
@@ -42,7 +41,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height)
     events_file = -1;
     while (events_file == -1) {
         events_file = open(events_file_name, O_RDWR);
-        sleep(5);
+        usleep(5);
     }
 
     int read_size = 0;
@@ -52,7 +51,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height)
             canvas = event.canvas;
             return events_file;
         }
-        sleep(5);
+        usleep(5);
     }
 
     return -1;

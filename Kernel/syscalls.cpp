@@ -43,6 +43,11 @@ int Syscalls::sys_read(int fd, void* data, int length)
         size = sizeof(uint32_t);
         break;
 
+    case DEV_AUDIO_FD:
+        ((uint32_t*)data)[0] = AUDIO->current_audio_position();
+        size = sizeof(uint32_t);
+        break;
+
     default:
         size = VFS->read(fd, (uint8_t*)data, length);
         break;

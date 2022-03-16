@@ -20,6 +20,17 @@ SoundBlaster16::~SoundBlaster16()
 {
 }
 
+void SoundBlaster16::wait()
+{
+    Mutex::lock(sb16);
+    Mutex::unlock(sb16);
+}
+
+bool SoundBlaster16::is_playing()
+{
+    return sb16.locked;
+}
+
 void SoundBlaster16::identify()
 {
     reset_port.write(1);
@@ -104,12 +115,6 @@ void SoundBlaster16::dma_start(void* buffer, uint32_t length)
     outb(0xD4, channel % 4);
 }
 
-void SoundBlaster16::wait()
-{
-    Mutex::lock(sb16);
-    Mutex::unlock(sb16);
-}
-
 void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
 {
     if (length > CHUNK_SIZE)
@@ -139,5 +144,6 @@ uint32_t SoundBlaster16::interrupt(uint32_t esp)
 
     stop();
     Mutex::unlock(sb16);
+    TM->test_poll();
     return esp;
 }

@@ -2,4 +2,9 @@ rule display
     command = cd ./Display && ninja && ninja move && cd ../
     description = building display server
 
+rule sound
+    command = cd ./Sound && ninja && ninja move && cd ../
+    description = building sound server
+
 build display: display
+build sound: sound
