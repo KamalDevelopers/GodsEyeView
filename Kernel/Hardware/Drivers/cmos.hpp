@@ -22,17 +22,17 @@ protected:
     int century_register = 0x00;
     int timezone_offset = 0;
 
-    unsigned char second;
-    unsigned char minute;
-    unsigned char hour;
-    unsigned char day;
-    unsigned char month;
-    unsigned int year;
+    uint8_t second;
+    uint8_t minute;
+    uint8_t hour;
+    uint8_t day;
+    uint8_t month;
+    uint32_t year;
 
     Port8Bit cmos_address;
     Port8Bit cmos_data;
 
-    unsigned char get_rtc_register(int reg);
+    uint8_t get_rtc_register(int reg);
     int get_update_in_progress_flag();
 
 public:
@@ -42,16 +42,7 @@ public:
     static CMOS* active;
     void read_rtc();
     void set_timezone_offset(int time_offset);
-
-    unsigned char get_second();
-    unsigned char get_minute();
-    unsigned char get_hour();
-
-    unsigned char get_day();
-    unsigned char get_month();
-    unsigned int get_year();
-    unsigned int get_time();
-    void get_full_time(char seperator, char* time);
+    uint32_t timestamp();
 };
 
 #endif

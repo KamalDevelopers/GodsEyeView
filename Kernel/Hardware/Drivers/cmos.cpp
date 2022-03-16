@@ -14,90 +14,15 @@ void CMOS::set_timezone_offset(int time_offset)
     timezone_offset = time_offset;
 }
 
-void CMOS::get_full_time(char seperator, char* time)
-{
-    char format[10];
-    char sec[3], min[3], hour[3], middle[3];
-
-    itoa(get_second(), sec);
-    itoa(get_minute(), min);
-    itoa(get_hour(), hour);
-
-    memset(format, '\0', 9);
-    format[2] = seperator;
-    format[5] = seperator;
-
-    if (strlen(hour) == 1) {
-        format[0] = '0';
-        format[1] = hour[0];
-    } else {
-        format[0] = hour[0];
-        format[1] = hour[1];
-    }
-    if (strlen(min) == 1) {
-        format[3] = '0';
-        format[4] = min[0];
-    } else {
-        format[3] = min[0];
-        format[4] = min[1];
-    }
-    if (strlen(sec) == 1) {
-        format[6] = '0';
-        format[7] = sec[0];
-    } else {
-        format[6] = sec[0];
-        format[7] = sec[1];
-    }
-
-    format[9] = '\0';
-    strcpy(time, format);
-}
-
-unsigned int CMOS::get_time()
-{
-    unsigned int yeardata = ((get_year() - 1970)) * SECONDS_YEAR;
-    unsigned int monthdata = get_month() * SECONDS_MONTH;
-    unsigned int daydata = get_day() * SECONDS_DAY;
-    unsigned int hourdata = get_hour() * SECONDS_HOUR;
-    unsigned int mindata = get_minute() * SECONDS_MIN;
-
-    return yeardata + monthdata + daydata + hourdata + mindata + get_second();
-}
-
-unsigned char CMOS::get_second()
+uint32_t CMOS::timestamp()
 {
     read_rtc();
-    return second;
-}
-
-unsigned char CMOS::get_minute()
-{
-    read_rtc();
-    return minute;
-}
-
-unsigned char CMOS::get_hour()
-{
-    read_rtc();
-    return hour;
-}
-
-unsigned char CMOS::get_day()
-{
-    read_rtc();
-    return day;
-}
-
-unsigned char CMOS::get_month()
-{
-    read_rtc();
-    return month;
-}
-
-unsigned int CMOS::get_year()
-{
-    read_rtc();
-    return year;
+    uint32_t yeardata = ((year - 1970)) * SECONDS_YEAR;
+    uint32_t monthdata = month * SECONDS_MONTH;
+    uint32_t daydata = day * SECONDS_DAY;
+    uint32_t hourdata = hour * SECONDS_HOUR;
+    uint32_t mindata = minute * SECONDS_MIN;
+    return yeardata + monthdata + daydata + hourdata + mindata + second;
 }
 
 int CMOS::get_update_in_progress_flag()
@@ -106,7 +31,7 @@ int CMOS::get_update_in_progress_flag()
     return (cmos_data.read() & 0x80);
 }
 
-unsigned char CMOS::get_rtc_register(int reg)
+uint8_t CMOS::get_rtc_register(int reg)
 {
     cmos_address.write(reg);
     return cmos_data.read();
@@ -114,15 +39,15 @@ unsigned char CMOS::get_rtc_register(int reg)
 
 void CMOS::read_rtc()
 {
-    unsigned char century;
-    unsigned char last_second;
-    unsigned char last_minute;
-    unsigned char last_hour;
-    unsigned char last_day;
-    unsigned char last_month;
-    unsigned char last_year;
-    unsigned char last_century;
-    unsigned char register_b;
+    uint8_t century;
+    uint8_t last_second;
+    uint8_t last_minute;
+    uint8_t last_hour;
+    uint8_t last_day;
+    uint8_t last_month;
+    uint8_t last_year;
+    uint8_t last_century;
+    uint8_t register_b;
 
     while (get_update_in_progress_flag())
         ;

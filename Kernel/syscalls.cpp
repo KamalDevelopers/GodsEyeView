@@ -100,6 +100,11 @@ int Syscalls::sys_chdir(char* dir)
     return TM->task()->chdir(dir);
 }
 
+int Syscalls::sys_time()
+{
+    return CMOS::active->timestamp();
+}
+
 int Syscalls::sys_stat(char* file, struct stat* buffer)
 {
     int fd = VFS->open(file);
@@ -251,6 +256,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 12:
         cpu->eax = sys_chdir((char*)cpu->ebx);
+        break;
+
+    case 13:
+        cpu->eax = sys_time();
         break;
 
     case 18:
