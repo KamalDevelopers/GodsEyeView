@@ -9,6 +9,7 @@
 #include <LibC/unistd.hpp>
 #include <LibSound/connection.hpp>
 #include <LibSound/stream.hpp>
+#include <LibSound/wave.hpp>
 
 #define MAX_AUDIO_STREAMS 20
 

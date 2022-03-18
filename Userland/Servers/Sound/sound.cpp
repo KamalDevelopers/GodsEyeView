@@ -168,20 +168,14 @@ void SoundServer::mix_streams()
 
 void SoundServer::play_file(char* file, int unique_id)
 {
-    int file_descriptor = open(file, O_RDONLY);
-    struct stat statbuffer;
-
-    fstat(file_descriptor, &statbuffer);
-    if (statbuffer.st_size == -1)
+    Wave* wave = new Wave(file);
+    if (!wave->is_valid()) {
+        delete wave;
         return;
+    }
 
-    uint32_t size = statbuffer.st_size;
-    uint8_t* data = (uint8_t*)malloc(size);
-    read(file_descriptor, data, size);
-    close(file_descriptor);
-
-    char events_file_name[50];
     char id[10];
+    char events_file_name[50];
     memset(id, 0, sizeof(id));
     memset(events_file_name, 0, sizeof(events_file_name));
     itoa(unique_id, id);
@@ -190,13 +184,14 @@ void SoundServer::play_file(char* file, int unique_id)
 
     update_positions();
     audio_stream_t audio_stream;
-    audio_stream.pcm.size = size;
-    audio_stream.pcm.data = data;
     audio_stream.position = 0;
     audio_stream.unique_id = unique_id;
+    audio_stream.pcm.size = wave->size();
+    audio_stream.pcm.data = wave->take_samples();
     audio_stream.events_file = mkfifo(events_file_name, O_RDWR);
     streams.append(audio_stream);
     mix_streams();
+    delete wave;
 }
 
 int SoundServer::find_stream_with_id(int unique_id)

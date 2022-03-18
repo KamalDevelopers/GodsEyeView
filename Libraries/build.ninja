@@ -21,4 +21,5 @@ build LibDisplay/connection.o: cpp ./LibDisplay/connection.cpp
 build libdisplay.a: library LibDisplay/canvas.o LibDisplay/connection.o
 
 build LibSound/connection.o: cpp ./LibSound/connection.cpp
-build libsound.a: library LibSound/connection.o
+build LibSound/wave.o: cpp ./LibSound/wave.cpp
+build libsound.a: library LibSound/connection.o LibSound/wave.o
