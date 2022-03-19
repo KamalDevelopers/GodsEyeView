@@ -27,6 +27,7 @@ private:
     int audio_slave_pid = -1;
     int sound_slave_file = 0;
     int audio_device_file = 0;
+    uint8_t master_channel_volume = 100;
     Vector<audio_stream, MAX_AUDIO_STREAMS> streams;
     pcm_stream_t main_audio_stream;
 
@@ -39,17 +40,19 @@ public:
     bool audio_slave_running();
 
     void play_file(char* file, int unique_id);
+    void change_master_volume(uint8_t volume);
     uint32_t audio_playback_position();
     void update_positions();
     int delete_stream(int stream_index);
     int find_stream_with_id(int unique_id);
 
+    int16_t sample_volume_s16(int16_t sample, uint8_t volume);
     void send_stream_events();
     int send_stream_event(int stream_index, stream_event_t* event);
 
+    int16_t mix_samples_s16(int16_t s1, int16_t s2);
+    int mix_stream_with_main_s16(int stream_index);
     void mix_streams();
-    int mix_stream_with_main(int stream_index);
-    int mix_samples_s16(int first_sample, int second_sample);
 };
 
 #endif

@@ -51,7 +51,7 @@ public:
 
     uint32_t size() { return data_header.size; }
     uint8_t* samples() { return sample_data; }
-    uint8_t* take_samples();
+    void disown_data();
     bool is_valid() { return valid; }
     bool validate();
 };

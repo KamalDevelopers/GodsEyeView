@@ -28,15 +28,17 @@ Wave::Wave(char* file)
     memcpy(&data_header, data, sizeof(data_header_t));
     data += sizeof(data_header_t);
 
+    if (!validate())
+        return;
+
     sample_data = (uint8_t*)malloc(data_header.size);
     memcpy(sample_data, data, data_header.size);
     free(orig_data);
-    validate();
 }
 
 Wave::~Wave()
 {
-    if (sample_data)
+    if (sample_data && free_samples)
         free(sample_data);
 }
 
@@ -51,9 +53,7 @@ bool Wave::validate()
     return valid;
 }
 
-uint8_t* Wave::take_samples()
+void Wave::disown_data()
 {
-    uint8_t* ptr = sample_data;
-    sample_data = 0;
-    return ptr;
+    free_samples = false;
 }
