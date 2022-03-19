@@ -172,8 +172,13 @@ int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
     if (ft()->files.at(index).flags == O_RDONLY)
         return -1;
 
-    if (ft()->files.at(index).type == FS_TYPE_FIFO)
+    if (ft()->files.at(index).type == FS_TYPE_FIFO) {
+        if (ft()->files.at(index).flags & O_APPEND)
+            return Pipe::append(ft()->files[index].pipe, data, size);
         return Pipe::write(ft()->files[index].pipe, data, size);
+    }
+
+    /* TODO: Support O_APPEND in normal files */
     return mounts[ft()->files[index].mountfs]->write_file(ft()->files[index].file_name, data, size);
 }
 

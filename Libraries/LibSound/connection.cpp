@@ -3,19 +3,10 @@
 static int sound_file = -1;
 static int process_streams = 0;
 
-void wait_for_pipe(int pipe_file)
-{
-    struct stat statbuffer;
-    while (statbuffer.st_size > 0) {
-        fstat(pipe_file, &statbuffer);
-        usleep(5);
-    }
-}
-
 int request_play_sound_file(stream_context_t* context, char* file)
 {
     while (sound_file == -1) {
-        sound_file = open((char*)"/pipe/sound", O_RDWR);
+        sound_file = open((char*)"/pipe/sound", O_RDWR | O_APPEND);
         usleep(100);
     }
 
@@ -34,7 +25,6 @@ int request_play_sound_file(stream_context_t* context, char* file)
     context->unique_id = request.unique_id;
 
     strcpy(request.sound_file, file);
-    wait_for_pipe(sound_file);
     write(sound_file, &request, sizeof(sound_request_t));
 
     while (context->events_file == -1) {
@@ -48,13 +38,12 @@ int request_play_sound_file(stream_context_t* context, char* file)
 int request_server_update()
 {
     while (sound_file == -1) {
-        sound_file = open((char*)"/pipe/sound", O_RDWR);
+        sound_file = open((char*)"/pipe/sound", O_RDWR | O_APPEND);
         usleep(100);
     }
 
     sound_request_t request;
     request.type = SOUND_REQUIRE_UPDATE;
-    wait_for_pipe(sound_file);
     write(sound_file, &request, sizeof(sound_request_t));
     return 0;
 }

@@ -45,13 +45,12 @@ void Window::create_process_connection()
     itoa(associated_pid, pid);
     strcat(events_file_name, (char*)"/pipe/display/events/");
     strcat(events_file_name, pid);
-    process_send_event_file = mkfifo(events_file_name, O_RDWR);
+    process_send_event_file = mkfifo(events_file_name, O_RDWR | O_APPEND);
 
     display_event_t event;
     event.type = DISPLAY_EVENT_RESPONSE;
     memcpy(&event.canvas, canvas, sizeof(canvas_t));
     write(process_send_event_file, &event, sizeof(display_event_t));
-    allow_send_events = true;
 }
 
 bool Window::is_point_in_window(uint32_t x, uint32_t y)
@@ -63,22 +62,8 @@ bool Window::is_point_in_window(uint32_t x, uint32_t y)
     return true;
 }
 
-bool Window::can_send_event()
-{
-    if (!allow_send_events)
-        return false;
-    struct stat statbuffer;
-    fstat(process_send_event_file, &statbuffer);
-    if (statbuffer.st_size > 0)
-        return false;
-    return true;
-}
-
 void Window::resize_event(canvas_t* canvas)
 {
-    if (!can_send_event())
-        return;
-
     display_event_t event;
     event.type = DISPLAY_EVENT_RESIZE;
     memcpy(&event.canvas, canvas, sizeof(canvas_t));
@@ -90,9 +75,6 @@ void Window::mouse_event(mouse_event_t* event)
     if (!is_point_in_window(event->x, event->y))
         return;
 
-    if (!can_send_event())
-        return;
-
     display_event_t send_event;
     send_event.type = DISPLAY_EVENT_MOUSE;
     memcpy(&send_event.mouse, event, sizeof(mouse_event_t));
@@ -101,9 +83,6 @@ void Window::mouse_event(mouse_event_t* event)
 
 void Window::keyboard_event(keyboard_event_t* event)
 {
-    if (!can_send_event())
-        return;
-
     display_event_t send_event;
     send_event.type = DISPLAY_EVENT_KEYBOARD;
     memcpy(&send_event.keyboard, event, sizeof(keyboard_event_t));

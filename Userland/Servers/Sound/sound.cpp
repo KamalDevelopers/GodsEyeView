@@ -56,10 +56,6 @@ uint32_t SoundServer::audio_playback_position()
 
 int SoundServer::send_stream_event(int stream_index, stream_event_t* event)
 {
-    struct stat statbuffer;
-    fstat(streams.at(stream_index).events_file, &statbuffer);
-    if (statbuffer.st_size > 0)
-        return -1;
     write(streams.at(stream_index).events_file, event, sizeof(stream_event_t));
     return 0;
 }
@@ -143,10 +139,10 @@ int SoundServer::mix_stream_with_main_s16(int stream_index)
 
     int16_t* samples = (int16_t*)streams.at(stream_index).pcm.data;
     int16_t* main_samples = (int16_t*)main_audio_stream.data;
-    uint32_t size = streams.at(stream_index).pcm.size;
+    uint32_t size = streams.at(stream_index).pcm.size / sizeof(int16_t);
     uint32_t position = streams.at(stream_index).position / sizeof(int16_t);
 
-    for (uint32_t i = 0; i < size / sizeof(int16_t) - position; i++) {
+    for (uint32_t i = 0; i < size - position; i++) {
         int16_t stream_sample = samples[i + position];
         int16_t main_sample = main_samples[i];
         main_samples[i] = mix_samples_s16(main_sample, stream_sample);
@@ -214,7 +210,7 @@ void SoundServer::play_file(char* file, int unique_id)
     audio_stream.unique_id = unique_id;
     audio_stream.pcm.size = wave->size();
     audio_stream.pcm.data = wave->samples();
-    audio_stream.events_file = mkfifo(events_file_name, O_RDWR);
+    audio_stream.events_file = mkfifo(events_file_name, O_RDWR | O_APPEND);
     streams.append(audio_stream);
     mix_streams();
     delete wave;

@@ -13,7 +13,6 @@ private:
     canvas_t* canvas = 0;
     int associated_pid = -1;
     int process_send_event_file = 0;
-    bool allow_send_events = false;
 
 public:
     Window(int pid = -1);
@@ -27,7 +26,6 @@ public:
 
     bool is_point_in_window(uint32_t x, uint32_t y);
     void create_process_connection();
-    bool can_send_event();
     void mouse_event(mouse_event_t* event);
     void keyboard_event(keyboard_event_t* event);
     void resize_event(canvas_t* canvas);
