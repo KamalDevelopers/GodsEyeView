@@ -69,7 +69,7 @@ void request_destroy_window()
     write(display_file, &request, sizeof(display_request_t));
 }
 
-bool receive_event(display_event_t* event)
+bool receive_window_event(display_event_t* event)
 {
     if (read(events_file, (void*)event, sizeof(display_event_t)))
         return true;

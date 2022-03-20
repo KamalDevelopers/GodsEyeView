@@ -35,6 +35,6 @@ typedef struct display_event {
 int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height);
 void request_update_window();
 void request_destroy_window();
-bool receive_event(display_event_t* event);
+bool receive_window_event(display_event_t* event);
 
 #endif

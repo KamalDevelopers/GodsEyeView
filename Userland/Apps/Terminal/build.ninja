@@ -11,6 +11,7 @@ rule link
 build main.o: cpp ./main.cpp
 build draw.o: cpp ./draw.cpp
 build font.o: cpp ./font.cpp
-build ./terminal: link ./main.o ./draw.o ./font.o
+build terminal.o: cpp ./terminal.cpp
+build ./terminal: link ./main.o ./draw.o ./font.o ./terminal.o
 build move: move
 default ./terminal
