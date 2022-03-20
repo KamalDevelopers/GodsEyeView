@@ -17,13 +17,13 @@ bool keyboard_events(keyboard_event_t* event)
 
 void send_events(WindowManager* wm)
 {
-    mouse_event_t mouse_event;
-    if (mouse_events(&mouse_event))
-        wm->mouse_event(&mouse_event);
-
     keyboard_event_t keyboard_event;
     if (keyboard_events(&keyboard_event))
         wm->keyboard_event(&keyboard_event);
+
+    mouse_event_t mouse_event;
+    if (mouse_events(&mouse_event))
+        wm->mouse_event(&mouse_event);
 }
 
 events_files_t init_events()
