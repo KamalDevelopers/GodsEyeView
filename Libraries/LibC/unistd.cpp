@@ -96,9 +96,9 @@ void sleep(int sec)
         usleep(100);
 }
 
-int time()
+uint32_t time()
 {
-    int timestamp;
+    uint32_t timestamp;
     asm volatile("int $0x80"
                  : "=a"(timestamp)
                  : "a"(13));
@@ -173,4 +173,13 @@ int setsid()
                  : "=a"(pid)
                  : "a"(66));
     return pid;
+}
+
+int sys_osinfo(struct osinfo* buffer)
+{
+    int result;
+    asm volatile("int $0x80"
+                 : "=a"(result)
+                 : "a"(403), "b"(buffer));
+    return result;
 }

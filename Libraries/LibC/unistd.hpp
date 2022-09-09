@@ -19,6 +19,13 @@ typedef struct fs_entry {
     int type = 0;
 } fs_entry_t;
 
+struct osinfo {
+    uint32_t used_pages = 0;
+    uint32_t free_pages = 0;
+    int procs = 0;
+    uint32_t uptime;
+};
+
 void _exit(int status);
 void _shutdown();
 void _reboot();
@@ -31,7 +38,7 @@ int mkfifo(char* pathname, int flags);
 int fchown(int fd, uint32_t owner, uint32_t group);
 void usleep(int ticks);
 void sleep(int sec);
-int time();
+uint32_t time();
 int spawn(char* pathname, char** args);
 int nice(int inc);
 int waitpid(int pid);
@@ -40,5 +47,6 @@ void getcwd(char* buffer);
 int listdir(char* dirname, fs_entry_t* entries, int count);
 int getpid();
 int setsid();
+int sys_osinfo(struct osinfo* buffer);
 
 #endif
