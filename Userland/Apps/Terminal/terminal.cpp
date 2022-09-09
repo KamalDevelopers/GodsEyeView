@@ -6,7 +6,7 @@ Terminal::Terminal()
     memset(stdout_buffer, 0, sizeof(stdout_buffer));
     window_events_file = request_display_window(window_canvas, 700, 500);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
-    load_font((char*)"bitmaps/lat9u-10.psf");
+    load_font((char*)"bitmaps/ter-u12b.psfu");
     spawn_shell();
     request_update_window();
 }

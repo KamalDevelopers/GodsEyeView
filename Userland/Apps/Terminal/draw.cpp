@@ -8,7 +8,7 @@ static const uint32_t text_mode_colors[] = {
 
 static uint32_t pos_x = TEXT_GAP_X;
 static uint32_t pos_y = TEXT_GAP_Y;
-static uint32_t color = 0xd4d4d4;
+static uint32_t color = 0xA8A7A7;
 static int escape_flag = 0;
 static uint8_t* font_buffer = 0;
 static char terminal_text_buffer[2048];
@@ -34,12 +34,11 @@ void unload_font()
 
 void cursor_set(canvas_t* canvas, bool show)
 {
-    for (uint32_t y = 0; y < 12; y++) {
-        if (show) {
+    for (uint32_t y = 0; y < 15; y++) {
+        if (show)
             canvas->framebuffer[(pos_y + y - 2) * canvas->width + (pos_x + 1)] = 0xD8D8D8;
-        } else {
+        else
             canvas->framebuffer[(pos_y + y - 2) * canvas->width + (pos_x + 1)] = BACKGROUND_COLOR;
-        }
     }
 }
 
@@ -87,7 +86,7 @@ void character_set(canvas_t* canvas, int index)
             escape_flag = 2;
             return;
         case 3:
-            color = 0xd4d4d4;
+            color = 0xA8A7A7;
             return;
         }
     }
