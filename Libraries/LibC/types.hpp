@@ -4,6 +4,7 @@
 #define UINT32_MAX 0xFFFFFFFF
 #define INT_MAX 2147483647
 #define INT_MIN -2147483648
+#define UINT_MAX (INT_MAX * 2U + 1U)
 
 typedef char int8_t;
 typedef unsigned char uint8_t;
