@@ -62,4 +62,11 @@ static double sin(double x)
     return result;
 }
 
+static int abs(int num)
+{
+    if (num < 0)
+        num = (-1) * num;
+    return num;
+}
+
 #endif
