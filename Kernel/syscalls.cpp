@@ -105,7 +105,7 @@ int Syscalls::sys_chdir(char* dir)
     return TM->task()->chdir(dir);
 }
 
-int Syscalls::sys_time()
+uint32_t Syscalls::sys_time()
 {
     return CMOS::active->timestamp();
 }
@@ -217,6 +217,14 @@ int Syscalls::sys_poll(pollfd* fds, uint32_t nfds)
 int Syscalls::sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count)
 {
     return VFS->listdir(dirname, entries, count);
+}
+
+int Syscalls::sys_osinfo(struct osinfo* buffer)
+{
+    PMM->stat(&buffer->free_pages, &buffer->used_pages);
+    buffer->procs = TM->task_count();
+    buffer->uptime = CMOS::active->timestamp() - CMOS::active->get_uptime();
+    return 0;
 }
 
 void Syscalls::sys_getcwd(char* buffer)
@@ -333,6 +341,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 402:
         cpu->eax = sys_listdir((char*)cpu->ebx, (fs_entry_t*)cpu->ecx, (uint32_t)cpu->edx);
+        break;
+
+    case 403:
+        cpu->eax = sys_osinfo((struct osinfo*)cpu->ebx);
         break;
     }
 
