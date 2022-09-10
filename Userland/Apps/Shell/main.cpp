@@ -103,7 +103,7 @@ int command(char* input)
 
 int main(int argc, char** argv)
 {
-    const char ps1[] = "\33\x2\x9%s\33\x3@\33\x2\xA%s\33\x3:\33\x2\xC/%s\33\x3# ";
+    const char ps1[] = "\33\x2\xC%s\33\x3@\33\x2\xF%s\33\x3:\33\x2\xC/%s\33\x3# ";
 
     utsname uname_struct;
     uname(&uname_struct);

@@ -2,6 +2,10 @@ rule tonysay
     command = cd ./Tonysay && ninja && ninja move && cd ../
     description = building tonysay application
 
+rule nenf
+    command = cd ./Nenf && ninja && ninja move && cd ../
+    description = building nenf application
+
 rule shell
     command = cd ./Shell && ninja && ninja move && cd ../
     description = building shell application
@@ -24,12 +28,18 @@ rule mixer
 
 rule terminal
     command = cd ./Terminal && ninja && ninja move && cd ../
-    description = building terminal GUI application
+    description = building terminal (core) GUI application
+
+rule launcher
+    command = cd ./Launcher && ninja && ninja move && cd ../
+    description = building launcher (core) GUI application
 
 build tonysay: tonysay
+build nenf: nenf
 build shell: shell
 build brainfuck: brainfuck
 build cat: cat
 build ls: ls
 build mixer: mixer
 build terminal: terminal
+build launcher: launcher
