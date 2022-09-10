@@ -17,9 +17,9 @@ int read_dir(char* name, bool root)
 
     for (uint32_t i = 0; i < count; i++) {
         if (entries[i].type == FS_ENTRY_DIR)
-            printf("\33\x2\xC%s\33\x3 ", entries[i].name);
+            printf("\33\x2\xC%s\33\x3  ", entries[i].name);
         else
-            printf("%s ", entries[i].name);
+            printf("%s  ", entries[i].name);
     }
 
     free(entries);
