@@ -7,10 +7,10 @@
 #include <LibC/stdlib.hpp>
 #include <LibC/string.hpp>
 
-#define CURRENT_YEAR 2020
+#define CURRENT_YEAR 2022
 #define UNIX_TIME 62168472000
-#define SECONDS_YEAR 31557600
-#define SECONDS_MONTH 2629800
+#define SECONDS_YEAR 31556926
+#define SECONDS_MONTH 2629743
 #define SECONDS_WEEK 604800
 #define SECONDS_DAY 86400
 #define SECONDS_HOUR 3600
@@ -28,6 +28,7 @@ protected:
     uint8_t day;
     uint8_t month;
     uint32_t year;
+    uint32_t uptime;
 
     Port8Bit cmos_address;
     Port8Bit cmos_data;
@@ -40,6 +41,7 @@ public:
     ~CMOS();
 
     static CMOS* active;
+    uint32_t get_uptime() { return uptime; }
     void read_rtc();
     void set_timezone_offset(int time_offset);
     uint32_t timestamp();

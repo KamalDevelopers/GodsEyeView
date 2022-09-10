@@ -7,6 +7,7 @@ CMOS::CMOS()
 {
     active = this;
     set_timezone_offset(2);
+    uptime = timestamp();
 }
 
 void CMOS::set_timezone_offset(int time_offset)
@@ -17,12 +18,22 @@ void CMOS::set_timezone_offset(int time_offset)
 uint32_t CMOS::timestamp()
 {
     read_rtc();
-    uint32_t yeardata = ((year - 1970)) * SECONDS_YEAR;
-    uint32_t monthdata = month * SECONDS_MONTH;
-    uint32_t daydata = day * SECONDS_DAY;
-    uint32_t hourdata = hour * SECONDS_HOUR;
-    uint32_t mindata = minute * SECONDS_MIN;
-    return yeardata + monthdata + daydata + hourdata + mindata + second;
+    uint32_t t;
+    uint32_t y = year;
+    uint32_t m = month;
+    uint32_t d = day;
+
+    if (m <= 2) {
+        m += 12;
+        y -= 1;
+    }
+
+    t = (365 * y) + (y / 4) - (y / 100) + (y / 400);
+    t += (30 * m) + (3 * (m + 1) / 5) + d;
+    t -= 719561;
+    t *= 86400;
+    t += (3600 * hour) + (60 * minute) + second;
+    return t;
 }
 
 int CMOS::get_update_in_progress_flag()
