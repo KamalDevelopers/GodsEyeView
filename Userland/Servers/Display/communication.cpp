@@ -16,7 +16,7 @@ bool receive_connections(WindowManager* wm)
         if (request.type == DISPLAY_DESTROY)
             wm->destroy_window_pid(request.pid);
         if (request.type == DISPLAY_CREATE)
-            wm->create_window(request.width, request.height, request.pid);
+            wm->create_window(request.width, request.height, request.pid, request.flags);
         return true;
     }
     return false;

@@ -13,8 +13,8 @@
 #define MAX_LAYERS 50
 #define MOUSE_WIDTH 12
 #define MOUSE_HEIGHT 18
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 800
 
 class Compositor {
 private:

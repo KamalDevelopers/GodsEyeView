@@ -6,13 +6,12 @@
 
 int main(int argc, char** argv)
 {
-    nice(-1);
+    nice(1);
     events_files_t event_files = init_events();
     int client_communication_file = init_communications();
 
     Compositor compositor;
     WindowManager wm(&compositor);
-    compositor.load_background_bitmap("bitmaps/wallpaper.raw");
     compositor.load_mouse_bitmap("bitmaps/mouse.raw");
     compositor.update_mouse_position(compositor.screen_width() / 2 + 10, compositor.screen_height() / 2 - 10);
     compositor.require_update();

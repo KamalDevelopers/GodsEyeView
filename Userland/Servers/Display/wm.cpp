@@ -32,7 +32,7 @@ void WindowManager::mouse_event(mouse_event_t* event)
 {
     if (event->modifier == 1) {
         for (uint32_t i = 0; i < windows.size(); i++)
-            if (windows[i]->is_point_in_window(event->x, event->y))
+            if (windows[i]->is_point_in_window(event->x, event->y) && windows[i]->get_controlled())
                 set_active_window(i);
     }
 
@@ -73,21 +73,33 @@ void WindowManager::update_window_positions()
     uint32_t position_x = WINDOW_GAP;
     uint32_t position_y = WINDOW_GAP;
     uint32_t windows_tile_vertical = 2;
-    uint32_t tile_vertical_max = CLAMP(windows.size(), 1, windows_tile_vertical);
-    uint32_t tile_horizontal_max = (windows.size() > windows_tile_vertical) ? windows.size() - 1 : 1;
+    uint32_t tile_vertical_max = CLAMP(tiled_windows, 1, windows_tile_vertical);
+    uint32_t tile_horizontal_max = (tiled_windows > windows_tile_vertical) ? tiled_windows - 1 : 1;
     uint32_t vertical_section = SCREEN_WIDTH / tile_vertical_max;
     uint32_t horizontal_section = SCREEN_HEIGHT / tile_horizontal_max;
 
+    uint32_t tiled_index = 0;
     for (uint32_t index = 0; index < windows.size(); index++) {
+        if (!windows[index]->get_controlled())
+            continue;
+
         uint32_t height = horizontal_section - WINDOW_GAP * 2;
         uint32_t width = vertical_section - WINDOW_GAP;
 
-        if (index >= tile_vertical_max - 1)
+        if (tiled_index >= tile_vertical_max - 1)
             width -= WINDOW_GAP;
-        if (index == 0)
+        if (tiled_index == 0)
             height = SCREEN_HEIGHT - WINDOW_GAP * 2;
-        if (index > windows_tile_vertical)
+        if (tiled_index > windows_tile_vertical)
             height += WINDOW_GAP;
+
+        if (tiled_index == 0) {
+            height -= WINDOW_TOP_GAP;
+            position_y += WINDOW_TOP_GAP;
+        }
+        if (tiled_index == 1) {
+            height -= WINDOW_TOP_GAP;
+        }
 
         windows[index]->resize(width, height);
         windows[index]->set_position(position_x, position_y);
@@ -98,6 +110,8 @@ void WindowManager::update_window_positions()
         } else {
             position_y += height + WINDOW_GAP;
         }
+
+        tiled_index++;
     }
 
     compositor->require_update();
@@ -109,19 +123,26 @@ Window* WindowManager::compose_window(int pid)
     return window;
 }
 
-void WindowManager::create_window(uint32_t width, uint32_t height, int pid)
+void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint8_t flags)
 {
     if (windows.size() >= MAX_WINDOWS)
         return;
 
     Window* window = compose_window(pid);
     windows.append(window);
+    if ((flags & DISPLAY_FLAG_DISOWNED) > 0) {
+        window->resize(width, height);
+        window->disown();
+    } else {
+        tiled_windows++;
+    }
     update_window_positions();
     nice(2);
 
     compositor->add_render_layer(window->get_canvas());
     window->create_process_connection();
-    set_active_window(windows.size() - 1);
+    if (window->get_controlled())
+        set_active_window(windows.size() - 1);
     nice(-2);
 }
 
@@ -133,6 +154,13 @@ void WindowManager::destroy_window(uint32_t index)
             active_window = index - 1;
     }
 
+    if (active_window >= 0 && active_window < windows.size()) {
+        if (!windows.at(active_window)->get_controlled())
+            active_window += 2;
+    }
+
+    if (windows[index]->get_controlled())
+        tiled_windows--;
     delete windows[index];
     windows.remove_at(index);
     if (!windows.size())

@@ -7,6 +7,7 @@ Compositor::Compositor()
     root_layer = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
     mouse_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
     mouse_ghost_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
+    canvas_set(root_layer->framebuffer, 0, root_layer->size);
 
     display_layer.width = SCREEN_WIDTH;
     display_layer.height = SCREEN_HEIGHT;

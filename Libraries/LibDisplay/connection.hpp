@@ -18,11 +18,14 @@
 #define DISPLAY_EVENT_MOUSE 3
 #define DISPLAY_EVENT_KEYBOARD 4
 
+#define DISPLAY_FLAG_DISOWNED (1 << 0)
+
 typedef struct display_request {
     int pid = -1;
     int type = 0;
     uint32_t width = 0;
     uint32_t height = 0;
+    uint8_t flags = 0;
 } display_request_t;
 
 typedef struct display_event {
@@ -32,7 +35,7 @@ typedef struct display_event {
     canvas_t canvas;
 } display_event_t;
 
-int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height);
+int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, uint8_t flags = 0);
 void request_update_window();
 void request_destroy_window();
 bool receive_window_event(display_event_t* event);

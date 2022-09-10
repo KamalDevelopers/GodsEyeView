@@ -32,6 +32,11 @@ void Window::resize(uint32_t width, uint32_t height)
     resize_event(canvas);
 }
 
+void Window::disown()
+{
+    controlled = false;
+}
+
 void Window::create_process_connection()
 {
     if (associated_pid == -1)
