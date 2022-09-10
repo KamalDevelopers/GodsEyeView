@@ -6,7 +6,7 @@
 #include <LibC/liballoc.hpp>
 #include <LibC/stdlib.hpp>
 
-#define MAX_PAGES 122070
+#define MAX_PAGES 488280 /* around 2 gigabytes */
 #define PHYSICAL_MEMORY_START PAGE_ALIGN(15 * MB)
 #define PMM PhysicalMemoryManager::active
 
