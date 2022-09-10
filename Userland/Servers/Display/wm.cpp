@@ -75,8 +75,8 @@ void WindowManager::update_window_positions()
     uint32_t windows_tile_vertical = 2;
     uint32_t tile_vertical_max = CLAMP(tiled_windows, 1, windows_tile_vertical);
     uint32_t tile_horizontal_max = (tiled_windows > windows_tile_vertical) ? tiled_windows - 1 : 1;
-    uint32_t vertical_section = SCREEN_WIDTH / tile_vertical_max;
-    uint32_t horizontal_section = SCREEN_HEIGHT / tile_horizontal_max;
+    uint32_t vertical_section = compositor->screen_width() / tile_vertical_max;
+    uint32_t horizontal_section = compositor->screen_height() / tile_horizontal_max;
 
     uint32_t tiled_index = 0;
     for (uint32_t index = 0; index < windows.size(); index++) {
@@ -89,7 +89,7 @@ void WindowManager::update_window_positions()
         if (tiled_index >= tile_vertical_max - 1)
             width -= WINDOW_GAP;
         if (tiled_index == 0)
-            height = SCREEN_HEIGHT - WINDOW_GAP * 2;
+            height = compositor->screen_height() - WINDOW_GAP * 2;
         if (tiled_index > windows_tile_vertical)
             height += WINDOW_GAP;
 

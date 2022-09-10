@@ -2,15 +2,15 @@
 
 Compositor::Compositor()
 {
-    display_framebuffer = request_framebuffer();
-    final_layer = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
-    root_layer = request_canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+    request_framebuffer(&display_framebuffer, &display_width, &display_height);
+    final_layer = request_canvas(display_width, display_height);
+    root_layer = request_canvas(display_width, display_height);
     mouse_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
     mouse_ghost_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
     canvas_set(root_layer->framebuffer, 0, root_layer->size);
 
-    display_layer.width = SCREEN_WIDTH;
-    display_layer.height = SCREEN_HEIGHT;
+    display_layer.width = display_width;
+    display_layer.height = display_height;
     display_layer.x = 0;
     display_layer.y = 0;
     display_layer.framebuffer = (uint32_t*)display_framebuffer;
@@ -100,10 +100,10 @@ void Compositor::update_mouse_position(uint32_t x, uint32_t y, bool is_updating_
 
     mouse_layer->x = x;
     mouse_layer->y = y;
-    if (x + mouse_layer->width > SCREEN_WIDTH)
-        mouse_layer->x = SCREEN_WIDTH - mouse_layer->width;
-    if (y + mouse_layer->height > SCREEN_HEIGHT)
-        mouse_layer->y = SCREEN_HEIGHT - mouse_layer->height;
+    if (x + mouse_layer->width > display_width)
+        mouse_layer->x = display_width - mouse_layer->width;
+    if (y + mouse_layer->height > display_height)
+        mouse_layer->y = display_height - mouse_layer->height;
 
     canvas_copy(mouse_layer, final_layer);
     mouse_ghost_layer->x = mouse_layer->x;

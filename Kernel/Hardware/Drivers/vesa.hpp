@@ -22,6 +22,8 @@ public:
     ~Vesa();
 
     static Vesa* active;
+    uint32_t get_screen_width() { return screen_width; }
+    uint32_t get_screen_height() { return screen_height; }
     uint32_t get_framebuffer() { return framebuffer; }
 };
 

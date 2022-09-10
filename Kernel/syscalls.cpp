@@ -40,7 +40,9 @@ int Syscalls::sys_read(int fd, void* data, int length)
 
     case DEV_DISPLAY_FD:
         ((uint32_t*)data)[0] = Vesa::active->get_framebuffer();
-        size = sizeof(uint32_t);
+        ((uint32_t*)data)[1] = Vesa::active->get_screen_width();
+        ((uint32_t*)data)[2] = Vesa::active->get_screen_height();
+        size = sizeof(uint32_t) * 3;
         break;
 
     case DEV_AUDIO_FD:

@@ -13,13 +13,13 @@
 #define MAX_LAYERS 50
 #define MOUSE_WIDTH 12
 #define MOUSE_HEIGHT 18
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 800
 
 class Compositor {
 private:
     uint32_t* mouse_bitmap = 0;
     uint32_t display_framebuffer = 0;
+    uint32_t display_width = 0;
+    uint32_t display_height = 0;
     bool needs_update = false;
 
     canvas_t display_layer;
@@ -33,8 +33,8 @@ public:
     Compositor();
     ~Compositor();
 
-    uint32_t screen_width() { return SCREEN_WIDTH; }
-    uint32_t screen_height() { return SCREEN_HEIGHT; }
+    uint32_t screen_width() { return display_width; }
+    uint32_t screen_height() { return display_height; }
     void require_update() { needs_update = true; }
 
     void load_background_bitmap(const char* file_name);

@@ -1,8 +1,6 @@
 #include "launcher.hpp"
 #include "font.hpp"
 
-#define SCREEN_WIDTH 1280
-
 uint8_t* load_font(char* name)
 {
     struct stat statbuffer;
@@ -23,8 +21,13 @@ void unload_font(uint8_t* font_buffer)
 
 Launcher::Launcher()
 {
+    uint32_t fb = 0;
+    /* Get the screen size */
+    request_framebuffer(&fb, &width, &height);
+    height = 17;
+
     uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
-    window_events_file = request_display_window(window_canvas, SCREEN_WIDTH, 17, flags);
+    window_events_file = request_display_window(window_canvas, width, height, flags);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
     font_buffer = load_font((char*)"bitmaps/ter-u12b.psfu");
     request_update_window();
@@ -102,7 +105,7 @@ void Launcher::display_time()
     char day[10];
     itoa(y, day);
 
-    int pos_x = SCREEN_WIDTH - 122;
+    int pos_x = width - 122;
     pos_x = display_string("[", pos_x, 2);
     pos_x = display_string(months[m - 1], pos_x, 2);
     pos_x = display_string(" ", pos_x, 2);

@@ -37,13 +37,17 @@ int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
     return 0;
 }
 
-uint32_t request_framebuffer()
+int request_framebuffer(uint32_t* framebuffer, uint32_t* width, uint32_t* height)
 {
     int fd = open("/dev/display", O_RDONLY);
-    uint32_t buffer[1];
-    if (read(fd, buffer, sizeof(uint32_t)))
-        return buffer[0];
-    return 0;
+    uint32_t buffer[3];
+    if (read(fd, buffer, sizeof(uint32_t))) {
+        *framebuffer = buffer[0];
+        *width = buffer[1];
+        *height = buffer[2];
+        return 0;
+    }
+    return 1;
 }
 
 void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size)
