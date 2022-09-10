@@ -23,6 +23,7 @@ public:
 
     static PhysicalMemoryManager* active;
 
+    void stat(uint32_t* free_pages, uint32_t* used_pages);
     uint32_t allocate_pages(size_t size);
     int free_pages(uint32_t address, size_t size);
     void info();

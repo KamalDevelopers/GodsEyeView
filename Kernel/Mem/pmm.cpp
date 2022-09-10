@@ -21,6 +21,12 @@ void PhysicalMemoryManager::info()
     klog("used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
 }
 
+void PhysicalMemoryManager::stat(uint32_t* free_p, uint32_t* used_p)
+{
+    *free_p = available_pages;
+    *used_p = used_pages;
+}
+
 uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
 {
     if (!IS_ALIGN(size))
