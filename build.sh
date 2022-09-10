@@ -10,9 +10,11 @@ ninja
 if [ "$1" != "nousr" ]
 then
     cd Userland/Apps
+    ninja -t clean
     ninja
     cd ../..
     cd Userland/Servers
+    ninja -t clean
     ninja
     cd ../..
     ninja disk

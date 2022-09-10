@@ -1,6 +1,9 @@
 #include "ata.hpp"
 
 MUTEX(ata);
+extern char _binary_hdd_tar_start;
+extern char _binary_hdd_tar_end;
+#define RAMDISK
 
 AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, uint16_t port_base)
     : data_port(port_base)
@@ -58,6 +61,12 @@ void AdvancedTechnologyAttachment::identify()
 
 uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data, int count)
 {
+#ifdef RAMDISK
+    uint8_t* disk = (uint8_t*)&_binary_hdd_tar_start;
+    memcpy(data, disk + sector_num * 512, count);
+    return data;
+#endif
+
     Mutex::lock(ata);
     static uint8_t buffer[BUFSIZ];
     uint16_t index = 0;
@@ -110,6 +119,9 @@ uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data
 
 void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, uint32_t count)
 {
+#ifdef RAMDISK
+    return;
+#endif
     if ((sector_num > 0x0FFFFFFF) || (count > BUFSIZ))
         return;
 
@@ -136,6 +148,9 @@ void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, u
 
 void AdvancedTechnologyAttachment::flush()
 {
+#ifdef RAMDISK
+    return;
+#endif
     device_port.write(master ? 0xE0 : 0xF0);
     command_port.write(0xE7);
 

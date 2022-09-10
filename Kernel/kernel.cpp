@@ -82,7 +82,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Syscalls syscalls(&interrupts, 0x80);
     SoundBlaster16 sb16(&interrupts);
 
-    klog("Starting filesystem");
+    klog("Mounting filesystem");
     AdvancedTechnologyAttachment ata1s(true, 0x1F0);
     ata1s.identify();
 
@@ -126,6 +126,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TM->spawn("servers/display", 0);
     TM->spawn("servers/sound", 0);
     TM->spawn("bin/terminal", 0);
+    TM->spawn("bin/launcher", 0);
 
     Mutex::enable();
     TM->activate();
