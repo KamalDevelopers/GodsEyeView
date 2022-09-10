@@ -148,6 +148,7 @@ public:
 
     bool is_active() { return is_running; }
     void yield() { asm volatile("int $0x20"); }
+    int task_count() { return tasks.size(); }
     Task* task() { return tasks.at(current_task); }
     TTY* tty() { return tasks.at(current_task)->tty; }
     file_table_t* file_table();
