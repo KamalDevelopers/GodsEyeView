@@ -162,8 +162,6 @@ void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
 
     /* Iterate through the sectors and store the contents in buffers */
     for (; size > 0; size -= 512) {
-        memset(buffer, 0, 512);
-
         ata->read28(sector_start + sector_offset, buffer, 512);
         int i = (sector_offset) ? 0 : (seek % 512);
 
@@ -172,7 +170,6 @@ void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
                 fdata[data_index] = buffer[i];
             data_index++;
         }
-        buffer[size > 512 ? 512 : size] = '\0';
         sector_offset++;
     }
 }
