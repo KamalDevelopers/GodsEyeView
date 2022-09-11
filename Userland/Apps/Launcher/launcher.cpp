@@ -37,7 +37,6 @@ Launcher::~Launcher()
 {
     unload_font(font_buffer);
     request_destroy_window();
-    kill(0, 2);
 }
 
 void Launcher::resize_window(display_event_t* display_event)

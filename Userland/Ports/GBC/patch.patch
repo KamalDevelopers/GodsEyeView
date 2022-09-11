@@ -1,0 +1,939 @@
+diff --git a/Makefile b/Makefile
+index e240050..1053966 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,22 +1,21 @@
+-PROGNAME = main
+-LIBRETRONAME = koengb_libretro.so
++PROGNAME = gbc
+ OBJS = emu.o state.o cpu.o mmu.o disassembler.o lcd.o audio.o fileio.o
+-OBJS_STANDALONE = main.o sdl.o debugger.o
++OBJS_STANDALONE = main.o display.o debugger.o
+ OBJS_LIBRETRO = libretro.o debugger-dummy.o
+ 
+ OBJS_STANDALONE := $(patsubst %.o,obj_standalone/%.o,$(OBJS) $(OBJS_STANDALONE))
+ OBJS_LIBRETRO := $(patsubst %.o,obj_libretro/%.o,$(OBJS) $(OBJS_LIBRETRO))
+ 
+-CC = clang
++CC = i686-elf-g++
+ RM = rm -fv
+ 
+-W_FLAGS = -Wall -Wextra -Werror-implicit-function-declaration -Wshadow
+-CFLAGS = -MD -std=c11 -g3 -O0 $(W_FLAGS)
++W_FLAGS = -Werror-implicit-function-declaration -Wshadow -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -fpermissive
++CFLAGS = -MD -std=c11 -O0 -I../../../../Libraries ../../../../Libraries/libc.a ../../../../Libraries/libdisplay.a $(W_FLAGS)
+ CFLAGS_STANDALONE =
+ CFLAGS_LIBRETRO = -fPIC
+ 
+-LDFLAGS = -g3
+-LDFLAGS_STANDALONE = -lSDL2 -lreadline
++LDFLAGS = -fPIC -T link.ld -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding ../../../../Libraries/libc.a ../../../../Libraries/libdisplay.a
++LDFLAGS_STANDALONE = 
+ LDFLAGS_LIBRETRO = -fPIC -shared
+ 
+ .SUFFIXES: # Disable builtin rules
+@@ -26,12 +25,9 @@ all: standalone libretro
+ standalone: $(PROGNAME)
+ libretro: $(LIBRETRONAME)
+ 
+-$(PROGNAME): $(OBJS_STANDALONE)
++$(PROGNAME): obj_standalone/main.o obj_standalone/display.o $(OBJS_LIBRETRO)
+ 	$(CC) -o $@ $^ $(LDFLAGS) $(LDFLAGS_STANDALONE)
+ 
+-$(LIBRETRONAME): $(OBJS_LIBRETRO)
+-	$(CC) -o $@ $^ $(LDFLAGS) $(LDFLAGS_LIBRETRO)
+-
+ obj_libretro:
+ 	mkdir -p $@
+ obj_libretro/%.o: %.c | obj_libretro
+diff --git a/audio.c b/audio.c
+index 7e4a3fa..47fe862 100644
+--- a/audio.c
++++ b/audio.c
+@@ -1,6 +1,6 @@
+-#include <stdlib.h>
+-#include <string.h>
+-#include <stdio.h>
++#include <LibC/stdlib.hpp>
++#include <LibC/string.hpp>
++#include <LibC/stdio.hpp>
+ 
+ #include "audio.h"
+ #include "hwdefs.h"
+diff --git a/cpu.c b/cpu.c
+index ebebcdc..da2d0ee 100644
+--- a/cpu.c
++++ b/cpu.c
+@@ -7,9 +7,9 @@
+  * https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/
+  */
+ 
+-#include <string.h>
+-#include <stdio.h>
+-#include <stdlib.h>
++#include <LibC/string.hpp>
++#include <LibC/stdio.hpp>
++#include <LibC/stdlib.hpp>
+ 
+ #include "cpu.h"
+ #include "mmu.h"
+diff --git a/debugger-dummy.c b/debugger-dummy.c
+index 267d368..e7576cd 100644
+--- a/debugger-dummy.c
++++ b/debugger-dummy.c
+@@ -1,7 +1,5 @@
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include <readline/readline.h>
+-#include <readline/history.h>
++#include <LibC/stdlib.hpp>
++#include <LibC/stdio.hpp>
+ 
+ #include "debugger.h"
+ #include "disassembler.h"
+diff --git a/debugger.c b/debugger.c
+index 0c33cab..597fd0a 100644
+--- a/debugger.c
++++ b/debugger.c
+@@ -1,7 +1,5 @@
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include <readline/readline.h>
+-#include <readline/history.h>
++#include <LibC/stdlib.hpp>
++#include <LibC/stdio.hpp>
+ 
+ #include "debugger.h"
+ #include "disassembler.h"
+@@ -15,87 +13,5 @@ void dbg_print_regs(struct gb_state *s) {
+ }
+ 
+ int dbg_run_debugger(struct gb_state *s) {
+-    static char last_exec_cmd = 0;
+-
+-    printf("Break, next instruction: ");
+-    disassemble(s);
+-
+-    while (1) {
+-        char *raw_input = readline("(GBd) ");
+-        if (!raw_input) /* EOF */
+-            return 1;
+-        add_history(raw_input);
+-
+-        /* Copy into buffer that is automatically free'd on function exit. */
+-        char input[32];
+-        strncpy(input, raw_input, 32);
+-        input[31] = '\0';
+-        free(raw_input);
+-
+-        if (strlen(input) == 0) {
+-            if (last_exec_cmd == 's')
+-                s->emu_state->dbg_break_next = 1;
+-            else if (last_exec_cmd == 'c')
+-                s->emu_state->dbg_break_next = 0;
+-            else
+-                continue;
+-            return 0;
+-        }
+-
+-
+-        switch (input[0]) {
+-        case 'r': /* Regs - Print all regs */
+-        case 'p':
+-            dbg_print_regs(s);
+-            break;
+-
+-        case 'x': /* eXamine - dump memory of given address */
+-        {
+-            u16 loc = strtol(&input[2], NULL, 16);
+-            printf("%.4x: %.2x\n", loc, mmu_read(s, loc));
+-            break;
+-        }
+-        case 'd': /* Disassemble - print instruction at given location */
+-        {
+-            u16 loc = strtol(&input[2], NULL, 16);
+-            disassemble_pc(s, loc);
+-            break;
+-        }
+-        case 's': /* Step - execute one instruction */
+-            s->emu_state->dbg_break_next = 1;
+-            last_exec_cmd = 's';
+-            return 0;
+-
+-        case 'c': /* Continue - continue execution until breakpoint */
+-            s->emu_state->dbg_break_next = 0;
+-            last_exec_cmd = 'c';
+-            return 0;
+-
+-        case 'b': /* Breakpoint - place new breakpoint */
+-        {
+-            u16 loc = strtol(&input[2], NULL, 16);
+-            s->emu_state->dbg_breakpoint = loc;
+-            break;
+-        }
+-        case 'q': /* Quit */
+-            s->emu_state->quit = 1;
+-            return 1;
+-
+-        case 'h': /* Help */
+-            printf("GBd debugger commands:\n");
+-            printf(" r     - [P]rint all [r]egisters (alias: p)\n");
+-            printf(" x loc - E[x]amine memory at `loc`\n");
+-            printf(" d loc - [D]isassemble memory at `loc`\n");
+-            printf(" b loc - Place a [b]reakpoint at PC `loc`\n");
+-            printf(" s     - [S]tep: execute single instruction\n");
+-            printf(" c     - [C]ontinue executiong until next breakpoint\n");
+-            printf(" q     - [Q]uit emulator\n");
+-            printf(" h     - Show [h]elp\n");
+-            break;
+-
+-        default:
+-            printf("Unknown command: '%s'\n", input);
+-            break;
+-        }
+-    }
++    return 0;
+ }
+diff --git a/disassembler.c b/disassembler.c
+index d97e504..ae886d9 100644
+--- a/disassembler.c
++++ b/disassembler.c
+@@ -1,6 +1,6 @@
+ #include "disassembler.h"
+ 
+-#include <stdio.h>
++#include <LibC/stdio.hpp>
+ 
+ #include "mmu.h"
+ 
+@@ -129,10 +129,12 @@ int disassemble_pc(struct gb_state* s, u16 pc) {
+     u8 temp1, temp2;
+     s8 stemp;
+ 
++    /*
+     if (oldpc >= 0x4000 && oldpc < 0x8000)
+-        printf("(%x:%.4x)  ", s->mem_bank_rom, oldpc); /* TODO: MBC1 upper bits */
++        printf("(%x:%.4x)  ", s->mem_bank_rom, oldpc); 
+     else
+         printf("(%.4x)  ", oldpc);
++        */
+ 
+     while (*mnem) {
+         if (*mnem == '%') {
+@@ -183,7 +185,7 @@ int disassemble_pc(struct gb_state* s, u16 pc) {
+                 printf("%%%c", *mnem);
+             }
+         } else {
+-            putc(*mnem, stdout);
++            putc(*mnem);
+         }
+         mnem++;
+     }
+@@ -192,7 +194,7 @@ int disassemble_pc(struct gb_state* s, u16 pc) {
+     for (int i = 0; i < pc - oldpc; i++)
+         printf(" %02x", mmu_read(s, oldpc + i));
+     */
+-    putc('\n', stdout);
++    putc('\n');
+     return pc - oldpc;
+ }
+ 
+@@ -207,5 +209,5 @@ void disassemble_bootblock(struct gb_state *state) {
+     while (pc < 0x104)
+         pc += disassemble_pc(state, pc);
+ 
+-    putc('\n', stdout);
++    putc('\n');
+ }
+diff --git a/display.c b/display.c
+new file mode 100644
+index 0000000..d1293a6
+--- /dev/null
++++ b/display.c
+@@ -0,0 +1,149 @@
++#include "gui.h"
++
++#include <LibC/stdlib.hpp>
++#include <LibC/unistd.hpp>
++#include <LibC/stdio.hpp>
++#include <LibDisplay/connection.hpp>
++
++static canvas_t window_canvas;
++static canvas_t* game_canvas;
++static int window_events_file = -1;
++static int lcd_width, lcd_height, lcd_zoom;
++static uint32_t last_tick = 0;
++
++void audio_callback(void *userdata, uint8_t *stream, int len) {
++    return;
++}
++
++int gui_audio_init(int sample_rate, int channels, size_t sndbuf_size, uint8_t *sndbuf) {
++    return 0;
++}
++
++int gui_lcd_init(int width, int height, int zoom, char *wintitle) {
++    window_events_file = request_display_window(window_canvas, width * zoom, height * zoom, 0x000000);
++    canvas_set(window_canvas.framebuffer, 0x000000, window_canvas.size);
++    lcd_width = width;
++    lcd_height = height;
++    lcd_zoom = zoom;
++    last_tick = 0;
++    game_canvas = request_canvas(width, height);
++    return 0;
++}
++
++
++void gui_lcd_render_frame(char use_colors, uint16_t *pixbuf) {
++    uint32_t *pixels = game_canvas->framebuffer;
++    int pitch;
++
++    if (use_colors) {
++        /* The colors stored in pixbuf are two byte each, 5 bits per rgb
++         * component: -bbbbbgg gggrrrrr. We need to extract these, scale these
++         * values from 0-1f to 0-ff and put them in RGBA format. For the scaling
++         * we'd have to multiply by 0xff/0x1f, which is 8.23, approx 8, which is
++         * a shift by 3. */
++        for (int y = 0; y < lcd_height; y++) {
++            for (int x = 0; x < lcd_width; x++) {
++                int idx = x + y * lcd_width;
++                uint16_t rawcol = pixbuf[idx];
++                uint32_t a = 0x0;
++                uint32_t r = ((rawcol >>  0) & 0x1f) << 3;
++                uint32_t g = ((rawcol >> 5) & 0x1f) << 3;
++                uint32_t b = ((rawcol >> 10) & 0x1f) << 3;
++                uint32_t col = (a << 24) | (r << 16) | (g << 8) | b;
++                pixels[idx] = col;
++            }
++        }
++
++    } else {
++        /* The colors stored in pixbuf already went through the palette
++         * translation, but are still 2 bit monochrome. */
++        uint32_t palette[] = { 0xffffffff, 0xaaaaaaaa, 0x66666666, 0x11111111 };
++        for (int y = 0; y < lcd_height; y++)
++            for (int x = 0; x < lcd_width; x++) {
++                int idx = x + y * lcd_width;
++                pixels[idx] = palette[pixbuf[idx]];
++            }
++    }
++
++    canvas_t* destination = &window_canvas;
++    canvas_t* source = game_canvas;
++
++    uint32_t top_offset = (window_canvas.height / 2) - (lcd_height * lcd_zoom / 2);
++    uint32_t left_offset = (window_canvas.width / 2) - (lcd_width * lcd_zoom / 2);
++    source->y = top_offset;
++    source->x = left_offset;
++
++    int destination_pitch = destination->width * sizeof(int32_t);
++    int source_pitch = source->width * sizeof(int32_t);
++    uint32_t destination_address = source->y * destination_pitch + source->x * sizeof(int32_t) + (uint32_t)destination->framebuffer;
++    uint32_t source_address = (uint32_t)(source->framebuffer);
++
++    for (uint32_t y = 0; y < source->height; y++) {
++        for (uint32_t ry = 0; ry < lcd_zoom; ry++) {
++            uint32_t dx = 0;
++            for (uint32_t x = 0; x < source->width; x++) {
++                for (uint32_t i = 0; i < lcd_zoom; i++) {
++                    *(((uint32_t*)destination_address) + dx) = *(((uint32_t*)source_address) + x);
++                    dx++;
++                }
++            }
++            destination_address += destination_pitch;
++        }
++
++        source_address += source_pitch;
++    }
++
++    request_update_window();
++
++    struct osinfo info;
++    sys_osinfo(&info);
++    uint32_t tick = info.uptime_ms;
++    int tick_diff = tick - last_tick;
++    if (last_tick == 0 || tick_diff < 0)
++        tick_diff = 0;
++
++    usleep(100 - tick_diff);
++    last_tick = tick;
++}
++
++int gui_input_poll(struct player_input *input) {
++    memset(input, 0, sizeof(struct player_input));
++    input->special_quit = 0;
++    input->special_savestate = 0;
++    input->special_dbgbreak = 0;
++
++    display_event_t display_event;
++    if (receive_window_event(&display_event)) {
++        if (display_event.type == DISPLAY_EVENT_KEYBOARD) {
++            keyboard_event_t keyboard_event;
++            memcpy(&keyboard_event, &display_event.keyboard, sizeof(keyboard_event_t));
++
++            if (keyboard_event.key == 'q') input->special_quit = 1;
++            if (keyboard_event.key == 27) input->special_quit = 1;
++            if (keyboard_event.key == 'x') input->button_b = 1;
++            else if (keyboard_event.key == 'z') input->button_a = 1;
++            else if (keyboard_event.key == '\b') input->button_select = 1;
++            else if (keyboard_event.key == 10) input->button_start = 1;
++
++            else if (keyboard_event.key == 'i') input->button_up = 1;
++            else if (keyboard_event.key == 'l') input->button_right = 1;
++            else if (keyboard_event.key == 'k') input->button_down = 1;
++            else if (keyboard_event.key == 'j') input->button_left = 1;
++        }
++
++        if (display_event.type == DISPLAY_EVENT_RESIZE) {
++            window_canvas = display_event.canvas;
++        }
++    }
++
++    /* FIXME: Crash on exit? */
++    if (input->special_quit) {
++        request_destroy_window();
++        _exit(0);
++
++        while (true)
++            usleep(10);
++    }
++
++    return 1;
++}
+diff --git a/emu.c b/emu.c
+index 02cd091..f15eb0c 100644
+--- a/emu.c
++++ b/emu.c
+@@ -1,6 +1,6 @@
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include <string.h>
++#include <LibC/stdlib.hpp>
++#include <LibC/stdio.hpp>
++#include <LibC/string.hpp>
+ 
+ #include "types.h"
+ #include "hwdefs.h"
+@@ -25,6 +25,7 @@ void emu_save(struct gb_state *s, char extram, char *out_filename) {
+     u8 *state_buf;
+     size_t state_buf_size;
+ 
++    return;
+     if (extram && !s->has_extram)
+         return;
+ 
+@@ -48,7 +49,8 @@ int emu_init(struct gb_state *s, struct emu_args *args) {
+             sizeof(s->emu_state->state_filename_out) - 6)
+         emu_error("ROM filename too long (%s)", args->rom_filename);
+ 
+-    if (args->state_filename) {
++    // FIXME:
++    if (1 == 0) {
+         printf("Loading savestate from \"%s\" ...\n", args->state_filename);
+         u8 *state_buf;
+         size_t state_buf_size;
+@@ -84,6 +86,7 @@ int emu_init(struct gb_state *s, struct emu_args *args) {
+             state_add_bios(s, bios, bios_size);
+         }
+ 
++        args->save_filename = 0;
+         if (args->save_filename) {
+             u8 *state_buf;
+             size_t state_buf_size;
+@@ -133,16 +136,10 @@ int emu_init(struct gb_state *s, struct emu_args *args) {
+ }
+ 
+ void emu_step(struct gb_state *s) {
+-    if (s->emu_state->dbg_print_disas)
++    // FIXME
++    if (1 == 2)
+         disassemble(s);
+ 
+-    if (s->emu_state->dbg_break_next ||
+-        s->pc == s->emu_state->dbg_breakpoint)
+-        if (dbg_run_debugger(s)) {
+-            s->emu_state->quit = 1;
+-            return;
+-        }
+-
+     cpu_step(s);
+     lcd_step(s);
+     mmu_step(s);
+diff --git a/fileio.c b/fileio.c
+index 9396559..e47f210 100644
+--- a/fileio.c
++++ b/fileio.c
+@@ -1,45 +1,32 @@
+-#include <stdio.h>
+-#include <stdlib.h>
++#include <LibC/stdio.hpp>
++#include <LibC/stdlib.hpp>
++#include <LibC/unistd.hpp>
++#include <LibC/stat.hpp>
+ #include "fileio.h"
+ 
+ int read_file(char *filename, uint8_t **buf, size_t *size) {
+-    FILE *fp;
+-
+-    fp = fopen(filename, "rb");
+-    if (!fp) {
+-        fprintf(stderr, "Failed to load file (\"%s\").\n", filename);
++    struct stat statbuffer;
++    stat(filename, &statbuffer);
++    if (statbuffer.st_size == -1)
+         return 1;
+-    }
+-
+-    /* Get the file size */
+-    fseek(fp, 0L, SEEK_END);
+-    size_t allocsize = ftell(fp) * sizeof(uint8_t);
+-    rewind(fp);
+-
+-    *buf = (uint8_t *)malloc(allocsize);
+-    if (*buf == NULL) {
+-        fprintf(stderr,
+-                "Error allocating mem for file (file=%s, size=%zu byte).",
+-                filename, allocsize);
+-        fclose(fp);
+-        return 1;
+-    }
+-    *size = fread(*buf, sizeof(uint8_t), allocsize, fp);
+-    fclose(fp);
++    int fd = open(filename, O_RDONLY);
++    *buf = (uint8_t*)malloc(statbuffer.st_size);
++    read(fd, *buf, statbuffer.st_size);
++    *size = statbuffer.st_size;
++    close(fd);
++    
+     return 0;
+ }
+ 
+ int save_file(char *filename, uint8_t *buf, size_t size) {
+-    FILE *fp;
+-
+-    fp = fopen(filename, "wb");
+-    if (!fp) {
+-        fprintf(stderr, "Failed to open file (\"%s\").\n", filename);
++    int fd = open(filename, O_RDWR);
++    if (fd < 0) {
++        printf("Failed to open file (\"%s\").\n", filename);
+         return 1;
+     }
+ 
+-    fwrite(buf, sizeof(uint8_t), size, fp);
+-    fclose(fp);
++    write(fd, buf, size);
++    close(fd);
+     return 0;
+ }
+ 
+diff --git a/fileio.h b/fileio.h
+index b0410fb..3504b9f 100644
+--- a/fileio.h
++++ b/fileio.h
+@@ -1,8 +1,7 @@
+ #ifndef FILEIO_H
+ #define FILEIO_H
+ 
+-#include <stddef.h>
+-#include <stdint.h>
++#include <LibC/types.hpp>
+ 
+ int read_file(char *filename, uint8_t **buf, size_t *size);
+ int save_file(char *filename, uint8_t *buf, size_t size);
+diff --git a/gui.h b/gui.h
+index 36ba5a7..534b79c 100644
+--- a/gui.h
++++ b/gui.h
+@@ -2,6 +2,7 @@
+ #define GUI_H
+ 
+ #include "player_input.h"
++#include <LibC/types.hpp>
+ 
+ int gui_audio_init(int sample_rate, int channels, size_t sndbuf_size,
+         uint8_t *sndbuf);
+diff --git a/lcd.c b/lcd.c
+index 345349a..bc664c7 100644
+--- a/lcd.c
++++ b/lcd.c
+@@ -1,5 +1,5 @@
+-#include <stdlib.h>
+-#include <string.h>
++#include <LibC/stdlib.hpp>
++#include <LibC/string.hpp>
+ 
+ #include "lcd.h"
+ #include "hwdefs.h"
+diff --git a/libretro.c b/libretro.c
+index 068a184..5e80903 100644
+--- a/libretro.c
++++ b/libretro.c
+@@ -7,9 +7,9 @@
+  * interface for video, audio, input and file loading on numerous platforms.
+  */
+ 
+-#include <stdlib.h>
+-#include <string.h>
+-#include <stdio.h>
++#include <LibC/stdlib.hpp>
++#include <LibC/string.hpp>
++#include <LibC/stdio.hpp>
+ 
+ #include "libretro.h"
+ 
+@@ -45,7 +45,7 @@ void retro_set_environment(retro_environment_t cb) {
+ 
+     enum retro_pixel_format pixfmt = RETRO_PIXEL_FORMAT_0RGB1555;
+     if (!env_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &pixfmt))
+-        fprintf(stderr, "Format RGB555 not supported!\n");
++        printf("Format RGB555 not supported!\n");
+ }
+ void retro_set_video_refresh(retro_video_refresh_t cb) {
+     video_cb = cb;
+@@ -202,11 +202,13 @@ bool retro_load_game(const struct retro_game_info *info) {
+     memset(&args, 0, sizeof(struct emu_args));
+     args.rom_filename = (char*)info->path;
+ 
++    printf("emu_init2\n");
+     if (emu_init(&gb_state, &args)) {
+-        fprintf(stderr, "Initialization failed\n");
++        printf("Initialization failed\n");
+         return false;
+     }
+ 
++    printf("retro load game\n");
+     return true;
+ }
+ 
+diff --git a/libretro.h b/libretro.h
+index 315123c..e60d277 100644
+--- a/libretro.h
++++ b/libretro.h
+@@ -23,9 +23,8 @@
+ #ifndef LIBRETRO_H__
+ #define LIBRETRO_H__
+ 
+-#include <stdint.h>
+-#include <stddef.h>
+-#include <limits.h>
++#include <LibC/types.hpp>
++#include <LibC/stdlib.hpp>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git a/link.ld b/link.ld
+new file mode 100644
+index 0000000..dffbea1
+--- /dev/null
++++ b/link.ld
+@@ -0,0 +1,23 @@
++ENTRY(_entry)
++SECTIONS
++{
++    . = 0x0;
++	.text BLOCK(4K) : ALIGN(4K)
++	{
++		*(.text)
++	}
++	.rodata BLOCK(4K) : ALIGN(4K)
++	{
++		*(.rodata)
++	}
++	.data BLOCK(4K) : ALIGN(4K)
++	{
++		*(.data)
++	}
++	.bss BLOCK(4K) : ALIGN(4K)
++	{
++		*(COMMON)
++		*(.bss)
++		*(.bootstrap_stack)
++	}
++}
+diff --git a/main.c b/main.c
+index 2a2279e..7f7347c 100644
+--- a/main.c
++++ b/main.c
+@@ -1,9 +1,7 @@
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include <assert.h>
+-#include <string.h>
+-#include <getopt.h>
+-#include <sys/time.h>
++#include <LibDisplay/connection.hpp>
++#include <LibC/stdlib.hpp>
++#include <LibC/stdio.hpp>
++#include <LibC/string.hpp>
+ 
+ #include "types.h"
+ #include "hwdefs.h"
+@@ -44,73 +42,8 @@ void print_usage(char *progname) {
+ }
+ 
+ int parse_args(int argc, char **argv, struct emu_args *emu_args) {
+-    memset(emu_args, 0, sizeof(struct emu_args));
+-
+-    if (argc == 1) {
+-        print_usage(argv[0]);
+-        return 1;
+-    }
+-
+-    while (1) {
+-        static struct option long_options[] = {
+-            {"break-start",  no_argument,        0,  'S'},
+-            {"audio",        no_argument,        0,  'a'},
+-            {"print-disas",  no_argument,        0,  'd'},
+-            {"print-mmu",    no_argument,        0,  'm'},
+-            {"bios",         required_argument,  0,  'b'},
+-            {"load-state",   required_argument,  0,  'l'},
+-            {"load-save",    required_argument,  0,  'e'},
+-            {0, 0, 0, 0}
+-        };
+-
+-        char c = getopt_long(argc, argv, "Sadmb:l:e:", long_options, NULL);
+-
+-        if (c == -1)
+-            break;
+-
+-        switch (c) {
+-            case 'S':
+-                emu_args->break_at_start = 1;
+-                break;
+-
+-            case 'a':
+-                emu_args->audio_enable = 1;
+-                break;
+-
+-            case 'd':
+-                emu_args->print_disas = 1;
+-                break;
+-
+-            case 'm':
+-                emu_args->print_mmu = 1;
+-                break;
+-
+-            case 'b':
+-                emu_args->bios_filename = optarg;
+-                break;
+-
+-            case 'l':
+-                emu_args->state_filename = optarg;
+-                break;
+-
+-            case 'e':
+-                emu_args->save_filename = optarg;
+-                break;
+-
+-            default:
+-                print_usage(argv[0]);
+-                return 1;
+-        }
+-    }
+-
+-    if (optind != argc - 1) {
+-        /* The remainder are non-option arguments (ROM) */
+-        print_usage(argv[0]);
+-        return 1;
+-    }
+-
+-    emu_args->rom_filename = argv[optind];
+-
++    memset((void*)emu_args, 0, sizeof(struct emu_args));
++    emu_args->rom_filename = argv[0];
+     return 0;
+ }
+ 
+@@ -124,30 +57,29 @@ int main(int argc, char *argv[]) {
+         return 1;
+ 
+     if (emu_init(&gb_state, &emu_args)) {
+-        fprintf(stderr, "Initialization failed\n");
++        printf("Initialization failed\n");
+         return 1;
+     }
+ 
+     /* Initialize frontend-specific GUI */
+     if (gui_lcd_init(GB_LCD_WIDTH, GB_LCD_HEIGHT, GUI_ZOOM, GUI_WINDOW_TITLE)) {
+-        fprintf(stderr, "Couldn't initialize GUI LCD\n");
++        printf("Couldn't initialize GUI LCD\n");
+         return 1;
+     }
++    /*
+     if (emu_args.audio_enable) {
+         if (gui_audio_init(AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, AUDIO_SNDBUF_SIZE,
+                     gb_state.emu_state->audio_sndbuf)) {
+-            fprintf(stderr, "Couldn't initialize GUI audio\n");
++            printf("Couldn't initialize GUI audio\n");
+             return 1;
+         }
+     }
++    */
+ 
+     printf("==========================\n");
+     printf("=== Starting execution ===\n");
+     printf("==========================\n\n");
+ 
+-    struct timeval starttime, endtime;
+-    gettimeofday(&starttime, NULL);
+-
+     struct player_input input_state;
+     memset(&input_state, 0, sizeof(struct player_input));
+ 
+@@ -164,24 +96,14 @@ int main(int argc, char *argv[]) {
+             audio_update(&gb_state);
+     }
+ 
++    /*
+     if (gb_state.emu_state->extram_dirty)
+         emu_save(&gb_state, 1, gb_state.emu_state->save_filename_out);
+ 
+-    gettimeofday(&endtime, NULL);
+-
+     printf("\nEmulation ended at instr: ");
+     disassemble(&gb_state);
+     dbg_print_regs(&gb_state);
+-
+-    int t_usec = endtime.tv_usec - starttime.tv_usec;
+-    int t_sec = endtime.tv_sec - starttime.tv_sec;
+-    double exectime = t_sec + (t_usec / 1000000.);
+-
+-    double emulated_secs = gb_state.emu_state->time_seconds +
+-        gb_state.emu_state->time_cycles / 4194304.;
+-
+-    printf("\nEmulated %f sec in %f sec WCT, %.0f%%.\n", emulated_secs, exectime,
+-            emulated_secs / exectime * 100);
++    */
+ 
+     return 0;
+ }
+diff --git a/mmu.c b/mmu.c
+index 7295123..607aa42 100644
+--- a/mmu.c
++++ b/mmu.c
+@@ -1,4 +1,4 @@
+-#include <stdio.h>
++#include <LibC/stdio.hpp>
+ 
+ #include "mmu.h"
+ #include "hwdefs.h"
+@@ -8,13 +8,13 @@
+ #define MMU_DEBUG_W(fmt, ...) \
+     do { \
+         if (s->emu_state->dbg_print_mmu) \
+-            printf(" [MMU] [W] " fmt " @%x: %x\n", ##__VA_ARGS__, location, value); \
++            ;  \
+     } while(0)
+ 
+ #define MMU_DEBUG_R(fmt, ...) \
+     do { \
+         if (s->emu_state->dbg_print_mmu) \
+-            printf(" [MMU] [R] " fmt "\n", ##__VA_ARGS__); \
++            printf(" [MMU] [R] " fmt "\n", ##__VA_ARGS__);  \
+     } while(0)
+ #else
+ #define MMU_DEBUG_W(...)
+@@ -66,8 +66,8 @@ static void mmu_hdma_start(struct gb_state *s, u8 lenmode) {
+     u16 dst = ((s->io_hdma_dst_high << 8) | s->io_hdma_dst_low) & ~0xf;
+     dst = (dst & 0x1fff) | 0x8000; /* Ignore upper 3 bits (always in VRAM) */
+ 
+-    printf("HDMA @%.2x:%.4x %.4x -> %.4x, blocks=%.2x mode_hblank=%d\n",
+-            s->mem_bank_rom, s->pc,  src, dst, blocks, mode_hblank);
++    /*printf("HDMA @%.2x:%.4x %.4x -> %.4x, blocks=%.2x mode_hblank=%d\n",
++            s->mem_bank_rom, s->pc,  src, dst, blocks, mode_hblank);*/
+ 
+     if (s->io_hdma_running && !mode_hblank) {
+         /* Cancel ongoing H-Blank HDMA transfer */
+@@ -238,12 +238,12 @@ void mmu_write(struct gb_state *s, u16 location, u8 value) {
+         s->mem_WRAM[s->mem_bank_wram * WRAM_BANKSIZE + location - 0xd000] = value;
+         break;
+     case 0xe000: /* E000 - FDFF */
+-        mmu_error("Writing to ECHO area (0xc00-0xfdff) @%x, val=%x", location, value);
++        // mmu_error("(2) Writing to ECHO area (0xc00-0xfdff) @%x, val=%x", location, value);
+         break;
+     case 0xf000:
+         if (location < 0xfe00) {
+-            MMU_DEBUG_W("ECHO (0xc000 - 0xfdff)");
+-            mmu_error("Writing to ECHO area (0xc00-0xfdff) @%x, val=%x", location, value);
++            // MMU_DEBUG_W("ECHO (0xc000 - 0xfdff)");
++            // mmu_error("Writing to ECHO area (0xc00-0xfdff) @%x, val=%x", location, value);
+             break;
+         }
+         if (location < 0xfea0) { /* FE00 - FE9F */
+@@ -585,7 +585,7 @@ u8 mmu_read(struct gb_state *s, u16 location) {
+     }
+     case 0x8000: /* 8000 - 9FFF */
+     case 0x9000:
+-        MMU_DEBUG_R("VRAM");
++        // MMU_DEBUG_R("VRAM");
+         return s->mem_VRAM[s->mem_bank_vram * VRAM_BANKSIZE + location - 0x8000];
+     case 0xa000: /* A000 - BFFF */
+     case 0xb000:
+@@ -644,10 +644,11 @@ u8 mmu_read(struct gb_state *s, u16 location) {
+ 
+         if (location < 0xff80) { /* FF00 - FF7F */
+             /*MMU_DEBUG_R("I/O ports "); */
++            u8 rv;
+             switch (location) {
+             case 0xff00:
++                rv = 0;
+                 MMU_DEBUG_R("Joypad");
+-                u8 rv = 0;
+                 if ((s->io_buttons & (1 << 4)) == 0)
+                     rv = (s->io_buttons & 0xf0) | (s->io_buttons_dirs & 0x0f);
+                 else if ((s->io_buttons & (1 << 5)) == 0)
+diff --git a/state.c b/state.c
+index d8ccaa3..b17e014 100644
+--- a/state.c
++++ b/state.c
+@@ -1,17 +1,21 @@
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <assert.h>
++#include <LibC/stdio.hpp>
++#include <LibC/stdlib.hpp>
++#include <LibC/string.hpp>
+ 
+ #include "state.h"
+ #include "hwdefs.h"
+ 
+ #define err(fmt, ...) \
+     do { \
+-        fprintf(stderr, "[State] " fmt "\n", ##__VA_ARGS__); \
++        printf("[State] " fmt "\n", ##__VA_ARGS__); \
+         return 1; \
+     } while (0)
+ 
++int assert(int statement) {
++    if (!statement)
++        printf("assert failed\n");
++}
++
+ void print_rom_header_info(u8* rom) {
+     printf("Title: %s\n", &rom[ROMHDR_TITLE]);
+ 
+@@ -290,7 +294,7 @@ int state_save(struct gb_state *s, u8 **ret_state_buf, size_t *ret_state_size) {
+     size_t vram_size = VRAM_BANKSIZE * s->mem_num_banks_vram;
+ 
+     if (s->in_bios) {
+-        fprintf(stderr, "Cannot dump state while in bios\n");
++        printf("Cannot dump state while in bios\n");
+         return 1;
+     }
+ 
+diff --git a/types.h b/types.h
+index 9361094..41c21e9 100644
+--- a/types.h
++++ b/types.h
+@@ -1,8 +1,7 @@
+ #ifndef TYPES_H
+ #define TYPES_H
+ 
+-#include <stdint.h>
+-#include <stdbool.h>
++#include <LibC/types.hpp>
+ 
+ typedef uint8_t  u8;
+ typedef uint16_t u16;
