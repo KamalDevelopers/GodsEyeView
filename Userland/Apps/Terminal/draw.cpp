@@ -88,12 +88,31 @@ void character_set(canvas_t* canvas, int index)
         case 3:
             color = 0xA8A7A7;
             return;
+        case 5:
+            color = 0x0;
+            escape_flag = 10;
+            return;
         }
     }
 
     if (escape_flag == 2) {
         escape_flag = 0;
         color = text_mode_colors[index];
+        return;
+    }
+
+    if (escape_flag >= 10 && escape_flag <= 12) {
+        if (escape_flag == 10)
+            color = (color & 0xFFFFFF00) | index;
+        if (escape_flag == 11)
+            color = (color & 0xFFFF00FF) | (uint32_t)index << 8;
+        if (escape_flag == 12)
+            color = (color & 0xFF00FFFF) | (uint32_t)index << 16;
+        color = (color & 0x00FFFFFF) | 0x0 << 24;
+
+        escape_flag++;
+        if (escape_flag == 13)
+            escape_flag = 0;
         return;
     }
 
