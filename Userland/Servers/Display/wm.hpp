@@ -35,7 +35,7 @@ public:
 
     int find_window_with_pid(int pid);
     void update_window_positions();
-    void create_window(uint32_t width, uint32_t height, int pid, uint8_t flags);
+    void create_window(uint32_t width, uint32_t height, int pid, uint32_t bg, uint8_t flags);
     void destroy_window(uint32_t index);
     void update_window_border(uint32_t index);
     void destroy_window_pid(int pid);

@@ -4,7 +4,7 @@ Terminal::Terminal()
 {
     tty_master();
     memset(stdout_buffer, 0, sizeof(stdout_buffer));
-    window_events_file = request_display_window(window_canvas, 700, 500);
+    window_events_file = request_display_window(window_canvas, 700, 500, 0x080808);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
     load_font((char*)"bitmaps/ter-u12b.psfu");
     spawn_shell();

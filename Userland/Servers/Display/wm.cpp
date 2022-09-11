@@ -123,7 +123,7 @@ Window* WindowManager::compose_window(int pid)
     return window;
 }
 
-void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint8_t flags)
+void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint32_t bg, uint8_t flags)
 {
     if (windows.size() >= MAX_WINDOWS)
         return;
@@ -139,6 +139,7 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint
     update_window_positions();
     nice(2);
 
+    canvas_set(window->get_canvas()->framebuffer, bg, window->get_canvas()->size);
     compositor->add_render_layer(window->get_canvas());
     window->create_process_connection();
     if (window->get_controlled())

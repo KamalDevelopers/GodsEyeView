@@ -27,7 +27,7 @@ Launcher::Launcher()
     height = 17;
 
     uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
-    window_events_file = request_display_window(window_canvas, width, height, flags);
+    window_events_file = request_display_window(window_canvas, width, height, 0x080808, flags);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
     font_buffer = load_font((char*)"bitmaps/ter-u12b.psfu");
     request_update_window();

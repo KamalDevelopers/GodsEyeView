@@ -3,7 +3,7 @@
 static int events_file = -1;
 static int display_file = -1;
 
-int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, uint8_t flags)
+int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, uint32_t bg, uint8_t flags)
 {
     display_request_t request;
     request.pid = getpid();
@@ -11,6 +11,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, ui
     request.width = width;
     request.height = height;
     request.flags = flags;
+    request.bg = bg;
 
     display_file = -1;
     while (display_file == -1) {
