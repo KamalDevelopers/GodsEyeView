@@ -20,7 +20,7 @@ int request_play_sound_file(stream_context_t* context, char* file)
     memset(id, 0, sizeof(id));
     memset(events_file_name, 0, sizeof(events_file_name));
     itoa(request.unique_id, id);
-    strcat(events_file_name, (char*)"/pipe/sound/events/");
+    strcat(events_file_name, (char*)"/pipe/sound-events-");
     strcat(events_file_name, id);
     context->unique_id = request.unique_id;
 

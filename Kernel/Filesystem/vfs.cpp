@@ -51,6 +51,9 @@ int VirtualFilesystem::open_fifo(char* file_name, int flags)
     if ((flags & O_CREAT) == 0)
         return -1;
 
+    if (strncmp(file_name, "/pipe/", 6) != 0)
+        return -1;
+
     file_entry file;
     pipe_t* pipe = Pipe::create();
     strcpy(file.file_name, file_name);
@@ -232,5 +235,27 @@ int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t coun
 {
     path_resolver(dirname);
     int fscount = mounts[0]->read_dir(dirname, entries, count);
+
+    if (strcmp(dirname, "pipe/") == 0) {
+        for (uint32_t i = 0; i < kernel_file_table.files.size(); i++) {
+            if (kernel_file_table.files.at(i).type == FS_TYPE_FIFO) {
+                if (strlen(kernel_file_table.files.at(i).file_name) < 8)
+                    continue;
+                if (strncmp(kernel_file_table.files.at(i).file_name, "/pipe/", 6) != 0)
+                    continue;
+
+                strcpy(entries[fscount].name, kernel_file_table.files.at(i).file_name + 6);
+                entries[fscount].type = FS_ENTRY_FIFO;
+                fscount++;
+            }
+        }
+    }
+
+    if (strlen(dirname) == 0) {
+        strncpy(entries[fscount].name, "pipe/", 5);
+        entries[fscount].type = FS_ENTRY_VIRTDIR;
+        fscount++;
+    }
+
     return fscount;
 }

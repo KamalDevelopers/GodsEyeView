@@ -200,7 +200,7 @@ void SoundServer::play_file(char* file, int unique_id)
     memset(id, 0, sizeof(id));
     memset(events_file_name, 0, sizeof(events_file_name));
     itoa(unique_id, id);
-    strcat(events_file_name, (char*)"/pipe/sound/events/");
+    strcat(events_file_name, (char*)"/pipe/sound-events-");
     strcat(events_file_name, id);
 
     update_positions();
