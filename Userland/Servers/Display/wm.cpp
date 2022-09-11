@@ -164,7 +164,7 @@ void WindowManager::destroy_window(uint32_t index)
         tiled_windows--;
     delete windows[index];
     windows.remove_at(index);
-    if (!windows.size())
+    if (!tiled_windows)
         active_window = -1;
 }
 
