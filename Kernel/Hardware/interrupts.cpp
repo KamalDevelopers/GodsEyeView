@@ -152,7 +152,12 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
         esp = handlers[interrupt]->interrupt(esp);
     } else if (interrupt != hardware_interrupt_offset) {
         if (interrupt == 0x0D) {
-            PANIC("General protection fault");
+            if (TM->is_active()) {
+                klog("General protection fault [0x%x]", ((cpu_state*)esp)->eip);
+                TM->kill();
+            } else {
+                PANIC("General protection fault");
+            }
         }
 
         if (interrupt == 0x0E) {
@@ -160,7 +165,12 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
             asm volatile("mov %%cr2, %0"
                          : "=r"(faulting_addr));
             klog("\n{Faulty address 0x%x}\n", faulting_addr);
-            PANIC("Page fault");
+            klog("Page fault");
+            if (TM->is_active()) {
+                TM->kill();
+            } else {
+                PANIC("Page fault");
+            }
         }
     }
 
