@@ -146,6 +146,7 @@ public:
     void deactivate() { is_running = 0; }
     void task_has_died() { check_kill = true; }
 
+    uint32_t ticks() { return current_ticks; }
     bool is_active() { return is_running; }
     void yield() { asm volatile("int $0x20"); }
     int task_count() { return tasks.size(); }

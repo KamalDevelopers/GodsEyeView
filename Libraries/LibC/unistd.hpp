@@ -23,7 +23,8 @@ struct osinfo {
     uint32_t used_pages = 0;
     uint32_t free_pages = 0;
     int procs = 0;
-    uint32_t uptime;
+    uint32_t uptime = 0;
+    uint32_t uptime_ms = 0;
 };
 
 void _exit(int status);
