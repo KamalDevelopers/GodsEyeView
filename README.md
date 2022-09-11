@@ -1,4 +1,4 @@
-<h2 align="center">GevOS</h2>
+<br><h1 align="center">GevOS</h1>
 GevOS is a 32 bit operating system which implements VESA graphics, a TAR filesystem, an IPV4 networking stack, a LibC standard library, multiple audio and networking drivers, as well as full userland support. It can also run on real hardware without issues.<br><br>
 
 ![gevosnew.png](https://i.postimg.cc/Z5mL69dx/gevos.png)
@@ -9,6 +9,7 @@ GevOS is a 32 bit operating system which implements VESA graphics, a TAR filesys
   * A WIP networking stack, with a selection of multiple different underlying network card drivers
   * Read and write [TAR](Kernel/Filesystem/) filesystem as well as a VFS
   * [Terminal](Userland/Apps/Terminal) application, [Shell](Userland/Apps/Shell) program, [Brainfuck](Userland/Apps/Brainfuck) interpreter, and many [more](Userland/Apps/) 
+  * Different ports, including Koenk's GameBoy Color emulator [GBC](Userland/Ports/GBC)
   * A tiling and minimalistic [WM](Userland/Servers/Display) inspired by [dwm](https://dwm.suckless.org/)
 
 ### Building GevOS
