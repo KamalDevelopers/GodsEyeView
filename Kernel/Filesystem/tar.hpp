@@ -37,7 +37,7 @@ struct posix_header {   /* byte offset */
 class Tar : public Filesystem {
 
 private:
-    AdvancedTechnologyAttachment* hd;
+    ATA* ata;
     uint32_t tar_end;
     int dir_index;
     int file_index;
@@ -51,7 +51,7 @@ private:
     int get_mode(int file_id, int utype);
 
 public:
-    Tar(AdvancedTechnologyAttachment* ata);
+    Tar(ATA* ata);
     ~Tar();
 
     int mount();

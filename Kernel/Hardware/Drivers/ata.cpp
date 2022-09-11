@@ -1,12 +1,14 @@
 #include "ata.hpp"
 
 MUTEX(ata);
+#ifdef RAMDISK
 extern char _binary_hdd_tar_start;
 extern char _binary_hdd_tar_end;
-#define RAMDISK
+#endif
 
-AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, uint16_t port_base)
-    : data_port(port_base)
+ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32_t port_base, bool master)
+    : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt + 14)
+    , data_port(port_base)
     , error_port(port_base + 0x1)
     , sector_count_port(port_base + 0x2)
     , lba_low_port(port_base + 0x3)
@@ -16,14 +18,33 @@ AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, uint16_t
     , command_port(port_base + 0x7)
     , control_port(port_base + 0x206)
 {
+    PCI::active->enable_busmaster(device);
+    dma = false;
+
+    memset(&prdt, 0, sizeof(prdt_t));
+    memset(memory, 0, 4096);
+    prdt.buffer_phys = (uint32_t)&memory;
+    prdt.transfer_size = 512;
+    prdt.mark_end = 0x8000;
+
+    bar4 = PCI::active->read(device.bus, device.device, device.function, 0x20);
+    if (bar4 & 0x1)
+        bar4 = bar4 & 0xfffffffc;
+
+    this->device = device;
     this->master = master;
 }
 
-AdvancedTechnologyAttachment::~AdvancedTechnologyAttachment()
+ATA::~ATA()
 {
 }
 
-void AdvancedTechnologyAttachment::identify()
+void ATA::set_dma(bool dma)
+{
+    this->dma = dma;
+}
+
+void ATA::identify()
 {
     device_port.write(master ? 0xA0 : 0xB0);
     control_port.write(0);
@@ -57,9 +78,51 @@ void AdvancedTechnologyAttachment::identify()
         text[0] = (data >> 8) & 0xFF;
         text[1] = data & 0xFF;
     }
+
+    uint32_t pci_command_reg = PCI::active->read(device.bus, device.device, device.function, 0x04);
+    if (!(pci_command_reg & (1 << 2))) {
+        pci_command_reg |= (1 << 2);
+        PCI::active->write(device.bus, device.device, device.function, 0x04, pci_command_reg);
+    }
 }
 
-uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data, int count)
+uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count)
+{
+#ifdef RAMDISK
+    uint8_t* disk = (uint8_t*)&_binary_hdd_tar_start;
+    memcpy(data, disk + sector_num * 512, count);
+    return data;
+#endif
+
+    Mutex::lock(ata);
+    prdt.transfer_size = count;
+
+    outb(bar4, 0);
+    outbl(bar4 + 4, (uint32_t)&prdt);
+    device_port.write(0xE0 | (!master) << 4 | (sector_num & 0x0f000000) >> 24);
+    sector_count_port.write(1);
+    lba_low_port.write(sector_num & 0x000000ff);
+    lba_mid_port.write((sector_num & 0x0000ff00) >> 8);
+    lba_hi_port.write((sector_num & 0x00ff0000) >> 16);
+    command_port.write(0xC8);
+    outb(bar4 + 0x02, inb(bar4 + 0x02) | 0x04 | 0x02);
+    outb(bar4, 0x8 | 0x1);
+
+    while (1) {
+        int status = inb(bar4 + 2);
+        int dstatus = command_port.read();
+        if (!(status & 0x04))
+            continue;
+        if (!(dstatus & 0x80))
+            break;
+    }
+
+    memcpy(data, &memory, count);
+    Mutex::unlock(ata);
+    return memory;
+}
+
+uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
 {
 #ifdef RAMDISK
     uint8_t* disk = (uint8_t*)&_binary_hdd_tar_start;
@@ -117,7 +180,7 @@ uint8_t* AdvancedTechnologyAttachment::read28(uint32_t sector_num, uint8_t* data
     return buffer;
 }
 
-void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, uint32_t count)
+void ATA::write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count)
 {
 #ifdef RAMDISK
     return;
@@ -146,7 +209,33 @@ void AdvancedTechnologyAttachment::write28(uint32_t sector_num, uint8_t* data, u
     Mutex::unlock(ata);
 }
 
-void AdvancedTechnologyAttachment::flush()
+void ATA::write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count)
+{
+    Mutex::lock(ata);
+    memcpy(&memory, data, count);
+    outb(bar4, 0);
+    outbl(bar4 + 4, (uint32_t)&prdt);
+
+    device_port.write(0xE0 | (!master) << 4 | (sector_num & 0x0f000000) >> 24);
+    sector_count_port.write(1);
+    lba_low_port.write(sector_num & 0x000000ff);
+    lba_mid_port.write((sector_num & 0x0000ff00) >> 8);
+    lba_hi_port.write((sector_num & 0x00ff0000) >> 16);
+    command_port.write(0xCA);
+    outb(bar4, 0x1);
+
+    while (1) {
+        int status = inb(bar4 + 2);
+        int dstatus = command_port.read();
+        if (!(status & 0x04))
+            continue;
+        if (!(dstatus & 0x80))
+            break;
+    }
+    Mutex::unlock(ata);
+}
+
+void ATA::flush_pio()
 {
 #ifdef RAMDISK
     return;
@@ -166,4 +255,33 @@ void AdvancedTechnologyAttachment::flush()
 
     if (status & 0x01)
         return;
+}
+
+uint8_t* ATA::read28(uint32_t sector_num, uint8_t* data, int count)
+{
+    if (dma)
+        return read28_dma(sector_num, data, count);
+    return read28_pio(sector_num, data, count);
+}
+
+void ATA::write28(uint32_t sector_num, uint8_t* data, uint32_t count)
+{
+    if (dma)
+        return write28_dma(sector_num, data, count);
+    write28_pio(sector_num, data, count);
+}
+
+void ATA::flush()
+{
+    if (dma)
+        return;
+    flush_pio();
+}
+
+uint32_t ATA::interrupt(uint32_t esp)
+{
+    control_port.read();
+    inb(bar4 + 2);
+    outb(bar4, 0x0);
+    return esp;
 }

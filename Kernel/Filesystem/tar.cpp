@@ -1,8 +1,8 @@
 #include "tar.hpp"
 
-Tar::Tar(AdvancedTechnologyAttachment* ata)
+Tar::Tar(ATA* ata)
 {
-    hd = ata;
+    this->ata = ata;
 }
 
 int Tar::oct_bin(char* str, int size)
@@ -66,8 +66,8 @@ int Tar::rename_file(char* file_name, char* new_file_name)
     memcpy((void*)&meta_head, (void*)file_calculate_checksum(&meta_head), sizeof(posix_header));
     files[file_id] = meta_head;
 
-    hd->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
-    hd->flush();
+    ata->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
+    ata->flush();
     return 0;
 }
 
@@ -93,8 +93,8 @@ int Tar::chmod(char* file_name, char* permissions)
     memcpy((void*)&meta_head, (void*)file_calculate_checksum(&meta_head), sizeof(posix_header));
     files[file_id] = meta_head;
 
-    hd->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
-    hd->flush();
+    ata->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
+    ata->flush();
     return 0;
 }
 
@@ -164,7 +164,7 @@ void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
     for (; size > 0; size -= 512) {
         memset(buffer, 0, 512);
 
-        hd->read28(sector_start + sector_offset, buffer, 512);
+        ata->read28(sector_start + sector_offset, buffer, 512);
         int i = (sector_offset) ? 0 : (seek % 512);
 
         for (; i < 512; i++) {
@@ -194,16 +194,16 @@ void Tar::write_data(uint32_t sector_start, uint8_t* fdata, int count)
     for (; size > 0; size -= 512) {
         for (int i = 0; i <= 512; i++)
             buffer[i] = '\0';
-        hd->write28(sector_start + sector_offset, buffer, 512);
+        ata->write28(sector_start + sector_offset, buffer, 512);
 
         for (int i = sector_offset * 512; i < count; i++)
             buffer[i] = databuffer[i];
 
         buffer[size > 512 ? 512 : size] = '\0';
-        hd->write28(sector_start + sector_offset, buffer, 512);
+        ata->write28(sector_start + sector_offset, buffer, 512);
         sector_offset++;
     }
-    hd->flush();
+    ata->flush();
     kfree(databuffer);
 }
 
@@ -377,10 +377,10 @@ int Tar::write_file(char* file_name, uint8_t* data, int size)
 
     /* Clean the sectors */
     for (int i = 0; i < 513; i++)
-        hd->write28(data_offset + data_size + 2 + i, (uint8_t*)"\0", 1);
+        ata->write28(data_offset + data_size + 2 + i, (uint8_t*)"\0", 1);
     for (int i = 0; i < 513; i++)
-        hd->write28(data_offset + data_size + 1 + i, (uint8_t*)"\0", 1);
-    hd->write28(data_offset + data_size + 1, (uint8_t*)&meta_head, sizeof(posix_header));
+        ata->write28(data_offset + data_size + 1 + i, (uint8_t*)"\0", 1);
+    ata->write28(data_offset + data_size + 1, (uint8_t*)&meta_head, sizeof(posix_header));
     write_data(data_offset + data_size + 2, data, size);
     kfree(p_meta_head);
     return 0;
@@ -389,9 +389,9 @@ int Tar::write_file(char* file_name, uint8_t* data, int size)
 void Tar::sector_swap(int sector_src, int sector_dest)
 {
     uint8_t buffer[513];
-    hd->read28(sector_src, buffer, 512);
-    hd->write28(sector_dest, buffer, 512);
-    hd->flush();
+    ata->read28(sector_src, buffer, 512);
+    ata->write28(sector_dest, buffer, 512);
+    ata->flush();
 }
 
 /* Remove entry from archive
@@ -418,8 +418,8 @@ void Tar::update(int uentry, int uentry_size)
 
     int sectors_overflow = uentry_size - (moveto - uentry);
     while (moveto < lastloc) {
-        hd->write28(moveto, (uint8_t*)&buffer, 512);
-        hd->flush();
+        ata->write28(moveto, (uint8_t*)&buffer, 512);
+        ata->flush();
         moveto++;
     }
 }
@@ -432,7 +432,7 @@ int Tar::mount()
 
     while (1) {
         posix_header meta_head;
-        hd->read28(sector_offset, (uint8_t*)&meta_head, sizeof(posix_header));
+        ata->read28(sector_offset, (uint8_t*)&meta_head, sizeof(posix_header));
 
         /* Check for valid header else break mount */
         memcpy(magic, meta_head.magic, 4);

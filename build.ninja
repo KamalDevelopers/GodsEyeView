@@ -4,7 +4,7 @@ rule format
 
 rule run
     pool = console
-    command = qemu-system-i386 -m 200M -cdrom ./.out/kernel.iso -boot d -device es1370 -netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -d cpu_reset -display sdl,gl=on -enable-kvm -full-screen
+    command = qemu-system-i386 -m 200M -drive file=hdd.tar,format=raw -cdrom ./.out/kernel.iso -boot d -device es1370 -netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -d cpu_reset -display sdl,gl=on -cpu host -enable-kvm -full-screen
 
 rule disk
     pool = console
@@ -57,7 +57,7 @@ build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/pipe.o Kernel/Hardware/port.o Kernel/Hardware/audio.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/vesa.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/Drivers/qemu.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o hdd.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/pipe.o Kernel/Hardware/port.o Kernel/Hardware/audio.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/vesa.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/Drivers/qemu.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build disk: disk
 build format: format
 build run: run

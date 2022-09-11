@@ -83,8 +83,11 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     SoundBlaster16 sb16(&interrupts);
 
     klog("Mounting filesystem");
-    AdvancedTechnologyAttachment ata1s(true, 0x1F0);
+    if (!pci.find_driver(ATA::identifier()))
+        klog("Could not find ATA device");
+    ATA ata1s(&interrupts, pci.get_descriptor(), 0x1F0, true);
     ata1s.identify();
+    ata1s.set_dma(false);
 
     Tar fs_tar(&ata1s);
     if (fs_tar.mount() != 0)
@@ -128,6 +131,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TM->spawn("bin/terminal", 0);
     TM->spawn("bin/launcher", 0);
 
+    ata1s.set_dma(true);
     Mutex::enable();
     TM->activate();
     IRQ::activate();
