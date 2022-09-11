@@ -12,7 +12,6 @@ int main(int argc, char** argv)
 
     Compositor compositor;
     WindowManager wm(&compositor);
-    compositor.load_background_bitmap("bitmaps/wallpaper.raw");
     compositor.load_mouse_bitmap("bitmaps/mouse.raw");
     compositor.update_mouse_position(compositor.screen_width() / 2 + 10, compositor.screen_height() / 2 - 10);
     compositor.require_update();

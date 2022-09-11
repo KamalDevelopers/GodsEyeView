@@ -1,5 +1,6 @@
 out
 .out
+hdd.qcow2
 hdd.o
 hdd.tar
 compile_flags.txt
