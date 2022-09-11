@@ -164,6 +164,35 @@ void printf(const char* format, ...)
     va_end(arg);
 }
 
+static char* snprintf_string = 0;
+static size_t snprintf_size = 0;
+static size_t snprintf_current_size = 0;
+
+static void snprintf_hook(char* s)
+{
+    size_t size = strlen(s);
+    if (snprintf_current_size + size >= snprintf_size)
+        return;
+    strcat(snprintf_string + snprintf_current_size, s);
+    snprintf_current_size += size;
+    snprintf_string[snprintf_current_size] = 0;
+}
+
+void snprintf(char* s, size_t n, const char* format, ...)
+{
+    snprintf_string = s;
+    snprintf_size = n;
+    snprintf_current_size = 0;
+    puts_hook(snprintf_hook);
+
+    va_list arg;
+    va_start(arg, format);
+    vprintf(format, arg);
+    va_end(arg);
+
+    puts_hook(0);
+}
+
 void clear()
 {
     puts("\33\x1");

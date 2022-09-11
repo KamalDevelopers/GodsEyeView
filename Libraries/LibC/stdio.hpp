@@ -17,6 +17,7 @@ void putc(int c);
 void putx(int c);
 void vprintf(const char* format, va_list v);
 void printf(const char* format, ...);
+void snprintf(char* s, size_t n, const char* format, ...);
 void clear();
 void beep(uint32_t ms_time, uint32_t frequency);
 
