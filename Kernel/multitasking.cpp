@@ -291,6 +291,22 @@ file_table_t* TaskManager::file_table()
     return tasks.at(testing_poll_task)->get_file_table();
 }
 
+void TaskManager::task_count_info(int* sleeping, int* zombie, int* polling)
+{
+    *sleeping = 0;
+    *zombie = 0;
+    *polling = 0;
+
+    for (uint32_t i = 0; i < tasks.size(); i++) {
+        if (tasks.at(i)->state != ALIVE)
+            (*zombie)++;
+        else if (tasks.at(i)->sleeping < 0)
+            (*polling)++;
+        else if (tasks.at(i)->sleeping > 0)
+            (*sleeping)++;
+    }
+}
+
 int8_t TaskManager::send_signal(int pid, int sig)
 {
     /* TODO: Implement process groups */

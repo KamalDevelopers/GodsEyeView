@@ -23,6 +23,9 @@ struct osinfo {
     uint32_t used_pages = 0;
     uint32_t free_pages = 0;
     int procs = 0;
+    int procs_sleeping = 0;
+    int procs_zombie = 0;
+    int procs_polling = 0;
     uint32_t uptime = 0;
     uint32_t uptime_ms = 0;
 };

@@ -225,6 +225,7 @@ int Syscalls::sys_osinfo(struct osinfo* buffer)
 {
     PMM->stat(&buffer->free_pages, &buffer->used_pages);
     buffer->procs = TM->task_count();
+    TM->task_count_info(&buffer->procs_sleeping, &buffer->procs_zombie, &buffer->procs_polling);
     buffer->uptime = CMOS::active->timestamp() - CMOS::active->get_uptime();
     buffer->uptime_ms = TM->ticks();
     return 0;

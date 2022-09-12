@@ -27,6 +27,7 @@ int main(int argc, char** argv)
     const char cinfo[2][10] = { "\33\x2\x6%s\33\x3", "\33\x2\xF%s\33\x3" };
     const char* user = "terry";
     const char uinfo[] = "------- \33\x2\xF%s\33\x2\x7@\33\x2\xF%s\33\x3 ------- ";
+
     struct osinfo info;
     utsname uname_struct;
     uname(&uname_struct);
@@ -37,6 +38,11 @@ int main(int argc, char** argv)
     unsigned uptime_sec = uptime % 60;
     uptime /= 60;
     unsigned uptime_min = uptime % 60;
+
+    int tasks_sleeping = info.procs_sleeping;
+    int tasks_polling = info.procs_polling;
+    int tasks_zombie = info.procs_zombie;
+    int tasks_running = info.procs - tasks_sleeping - tasks_polling - tasks_zombie;
 
     printf("\n");
     for (uint32_t line = 0; line < 13; line++) {
@@ -50,7 +56,7 @@ int main(int argc, char** argv)
         if (line == 4)
             printf("\33\x2\xC   . free memory \33\x2\xF %d MB", (info.free_pages * PAGE_SIZE) / MB);
         if (line == 5)
-            printf("\33\x2\xC   . procs \33\x2\xF %d", info.procs);
+            printf("\33\x2\xC   . procs \33\x2\xF %dr %ds %dp %dz", tasks_running, tasks_sleeping, tasks_polling, tasks_zombie);
         if (line == 7)
             printf("\33\x2\xCkamaldevelopers \33\x2\xF  2020-2022");
         printf("\n");
