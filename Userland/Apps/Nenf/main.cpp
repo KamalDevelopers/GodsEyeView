@@ -34,6 +34,15 @@ int main(int argc, char** argv)
     sys_osinfo(&info);
     lowercase(uname_struct.sysname);
 
+    uint32_t screen_width = 0;
+    uint32_t screen_height = 0;
+    int fd = open((char*)"/dev/display", O_RDONLY);
+    uint32_t buffer[3];
+    if (read(fd, buffer, sizeof(uint32_t))) {
+        screen_width = buffer[1];
+        screen_height = buffer[2];
+    }
+
     uint32_t uptime = info.uptime;
     unsigned uptime_sec = uptime % 60;
     uptime /= 60;
@@ -52,12 +61,14 @@ int main(int argc, char** argv)
         if (line == 2)
             printf("\33\x2\xC   . uptime \33\x2\xF %d min %d sec", uptime_min, uptime_sec);
         if (line == 3)
-            printf("\33\x2\xC   . used memory \33\x2\xF %d MB", (info.used_pages * PAGE_SIZE) / MB);
-        if (line == 4)
             printf("\33\x2\xC   . free memory \33\x2\xF %d MB", (info.free_pages * PAGE_SIZE) / MB);
+        if (line == 4)
+            printf("\33\x2\xC   . used memory \33\x2\xF %d MB", (info.used_pages * PAGE_SIZE) / MB);
         if (line == 5)
             printf("\33\x2\xC   . procs \33\x2\xF %dr %ds %dp %dz", tasks_running, tasks_sleeping, tasks_polling, tasks_zombie);
-        if (line == 7)
+        if (line == 6)
+            printf("\33\x2\xC   . video \33\x2\xF %d x %d %s", screen_width, screen_height);
+        if (line == 8)
             printf("\33\x2\xCkamaldevelopers \33\x2\xF  2020-2022");
         printf("\n");
     }
