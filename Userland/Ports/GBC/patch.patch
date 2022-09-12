@@ -247,10 +247,10 @@ index d97e504..ae886d9 100644
  }
 diff --git a/display.c b/display.c
 new file mode 100644
-index 0000000..d1293a6
+index 0000000..4f8be6b
 --- /dev/null
 +++ b/display.c
-@@ -0,0 +1,149 @@
+@@ -0,0 +1,161 @@
 +#include "gui.h"
 +
 +#include <LibC/stdlib.hpp>
@@ -263,6 +263,7 @@ index 0000000..d1293a6
 +static int window_events_file = -1;
 +static int lcd_width, lcd_height, lcd_zoom;
 +static uint32_t last_tick = 0;
++static bool can_render = 1;
 +
 +void audio_callback(void *userdata, uint8_t *stream, int len) {
 +    return;
@@ -274,9 +275,14 @@ index 0000000..d1293a6
 +
 +int gui_lcd_init(int width, int height, int zoom, char *wintitle) {
 +    window_events_file = request_display_window(window_canvas, width * zoom, height * zoom, 0x000000);
-+    canvas_set(window_canvas.framebuffer, 0x000000, window_canvas.size);
++    if (width * zoom > window_canvas.width || height * zoom > window_canvas.height)
++        zoom = 1;
++    can_render = 1;
++    if (width > window_canvas.width || height > window_canvas.height)
++        can_render = 0;
 +    lcd_width = width;
 +    lcd_height = height;
++    canvas_set(window_canvas.framebuffer, 0x000000, window_canvas.size);
 +    lcd_zoom = zoom;
 +    last_tick = 0;
 +    game_canvas = request_canvas(width, height);
@@ -285,6 +291,11 @@ index 0000000..d1293a6
 +
 +
 +void gui_lcd_render_frame(char use_colors, uint16_t *pixbuf) {
++    if (!can_render) {
++        usleep(100);
++        return;
++    }
++
 +    uint32_t *pixels = game_canvas->framebuffer;
 +    int pitch;
 +
@@ -386,16 +397,17 @@ index 0000000..d1293a6
 +
 +        if (display_event.type == DISPLAY_EVENT_RESIZE) {
 +            window_canvas = display_event.canvas;
++            canvas_set(window_canvas.framebuffer, 0x000000, window_canvas.size);
++            can_render = 1;
++            if (lcd_width * 4 <= window_canvas.width && lcd_height * 4 <= window_canvas.height) {
++                lcd_zoom = 4;
++                return 1;
++            }
++            if (lcd_width * lcd_zoom > window_canvas.width || lcd_height * lcd_zoom > window_canvas.height)
++                lcd_zoom = 1;
++            if (lcd_width > window_canvas.width || lcd_height > window_canvas.height)
++                can_render = 0;
 +        }
-+    }
-+
-+    /* FIXME: Crash on exit? */
-+    if (input->special_quit) {
-+        request_destroy_window();
-+        _exit(0);
-+
-+        while (true)
-+            usleep(10);
 +    }
 +
 +    return 1;
@@ -652,7 +664,7 @@ index 0000000..dffbea1
 +	}
 +}
 diff --git a/main.c b/main.c
-index 2a2279e..7f7347c 100644
+index 2a2279e..d99c098 100644
 --- a/main.c
 +++ b/main.c
 @@ -1,9 +1,7 @@
@@ -781,7 +793,7 @@ index 2a2279e..7f7347c 100644
      struct player_input input_state;
      memset(&input_state, 0, sizeof(struct player_input));
  
-@@ -164,24 +96,14 @@ int main(int argc, char *argv[]) {
+@@ -164,24 +96,16 @@ int main(int argc, char *argv[]) {
              audio_update(&gb_state);
      }
  
@@ -794,7 +806,8 @@ index 2a2279e..7f7347c 100644
      printf("\nEmulation ended at instr: ");
      disassemble(&gb_state);
      dbg_print_regs(&gb_state);
--
++    */
+ 
 -    int t_usec = endtime.tv_usec - starttime.tv_usec;
 -    int t_sec = endtime.tv_sec - starttime.tv_sec;
 -    double exectime = t_sec + (t_usec / 1000000.);
@@ -804,10 +817,11 @@ index 2a2279e..7f7347c 100644
 -
 -    printf("\nEmulated %f sec in %f sec WCT, %.0f%%.\n", emulated_secs, exectime,
 -            emulated_secs / exectime * 100);
-+    */
- 
+-
++    request_destroy_window();
      return 0;
  }
++
 diff --git a/mmu.c b/mmu.c
 index 7295123..607aa42 100644
 --- a/mmu.c
