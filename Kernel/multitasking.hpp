@@ -117,6 +117,7 @@ public:
     file_table_t* get_file_table() { return &process_file_table; }
     int get_pid() { return pid; }
     char* get_name() { return name; }
+    executable_t* get_exec() { return &loaded_executable; }
 
     Task(char* task_name, uint32_t eip = 0, int privilege_level = 0, int parent = -1);
     ~Task();
