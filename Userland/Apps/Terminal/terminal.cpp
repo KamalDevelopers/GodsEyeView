@@ -62,6 +62,10 @@ void Terminal::receive_keyboard_event(display_event_t* display_event)
     }
 
     if ((keyboard_event.key == 'c') && (keyboard_event.modifier == 2)) {
+        keyboard_event.key = '\b';
+        for (uint32_t i = 0; i < keys_pressed + 1; i++)
+            write(0, &keyboard_event.key, 1);
+        keys_pressed = 0;
         kill_shell();
         spawn_shell();
         return;
