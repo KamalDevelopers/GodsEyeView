@@ -153,9 +153,11 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
     } else if (interrupt != hardware_interrupt_offset) {
         if (interrupt == 0x0D) {
             if (TM->is_active()) {
-                klog("General protection fault [0x%x]", ((cpu_state*)esp)->eip);
+                uint32_t base = TM->task()->get_exec()->memory.physical_address;
+                klog("[%s] General protection fault [0x%x]", TM->task()->get_name(), ((cpu_state*)esp)->eip - base);
                 TM->kill();
             } else {
+                klog("[Kernel] General protection fault [0x%x]", ((cpu_state*)esp)->eip);
                 PANIC("General protection fault");
             }
         }
@@ -164,11 +166,12 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
             uint32_t faulting_addr;
             asm volatile("mov %%cr2, %0"
                          : "=r"(faulting_addr));
-            klog("\n{Faulty address 0x%x}\n", faulting_addr);
-            klog("Page fault");
             if (TM->is_active()) {
+                uint32_t base = TM->task()->get_exec()->memory.physical_address;
+                klog("[%s] Page fault {0x%x} {0x%x}", TM->task()->get_name(), (((cpu_state*)esp)->eip) - base, faulting_addr);
                 TM->kill();
             } else {
+                klog("[Kernel] Page fault {0x%x} {0x%x}", ((cpu_state*)esp)->eip, faulting_addr);
                 PANIC("Page fault");
             }
         }
