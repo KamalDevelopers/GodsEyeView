@@ -71,6 +71,9 @@ void Terminal::receive_keyboard_event(display_event_t* display_event)
         return;
     }
 
+    if (keys_pressed == -1)
+        keys_pressed = 0;
+
     keys_pressed++;
     write(0, &keyboard_event.key, 1);
 }
