@@ -1,5 +1,5 @@
 #include "font.hpp"
-#include <LibC/stdio.hpp>
+#include <LibC/stdio.h>
 
 void display_character(canvas_t* canvas, psf_font_t* font, uint16_t c, int start_x, int start_y, uint32_t fg, uint32_t bg)
 {

@@ -4,8 +4,8 @@
 #include "../tty.hpp"
 #include "mm.hpp"
 #include "pmm.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdio.h>
+#include <LibC/types.h>
 
 namespace Paging {
 #define PAGE_SIZE 4096

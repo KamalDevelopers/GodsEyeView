@@ -1,4 +1,4 @@
-#include "string.hpp"
+#include "string.h"
 
 size_t strlen(const char* str)
 {
@@ -26,17 +26,6 @@ int len(const char* arr)
         l++;
     }
     return l;
-}
-
-void* memchr(const void* str, int c, size_t n)
-{
-    unsigned char* p = (unsigned char*)str;
-    while (n--)
-        if (*p != (unsigned char)c)
-            p++;
-        else
-            return p;
-    return 0;
 }
 
 char* strcpy(char* arr, char* str)
@@ -133,19 +122,6 @@ char* strcat(char* dest, char* src)
         dest[i + j] = src[j];
     dest[i + j] = '\0';
     return dest;
-}
-
-void memcpy(char* dest, char* src, int count)
-{
-    char* cdest = (char*)dest;
-    char* csrc = (char*)src;
-
-    int x = 0;
-    while (x <= count) {
-        cdest[x] = csrc[x];
-        x++;
-    }
-    return;
 }
 
 char* strtok(char* str, char* delimiter)

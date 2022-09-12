@@ -4,7 +4,7 @@
 #include "../tty.hpp"
 #include "ethernet.hpp"
 #include "ipv4.hpp"
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 typedef struct icmp_packet {
     uint8_t type;

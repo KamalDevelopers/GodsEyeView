@@ -1,11 +1,15 @@
-#ifndef STAT_HPP
-#define STAT_HPP
+#ifndef STAT_H
+#define STAT_H
 
 struct stat {
     int st_uid;
     int st_gid;
     int st_size;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 inline int fstat(int fd, struct stat* __restrict statbuffer)
 {
@@ -24,5 +28,9 @@ inline int stat(char* filename, struct stat* __restrict statbuffer)
                  : "a"(18), "b"(filename), "c"(statbuffer));
     return result;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -4,9 +4,9 @@
 #include "../../mutex.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/string.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdio.h>
+#include <LibC/string.h>
+#include <LibC/types.h>
 
 typedef struct prdt {
     uint32_t buffer_phys;

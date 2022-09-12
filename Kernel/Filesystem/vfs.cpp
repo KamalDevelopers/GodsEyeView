@@ -233,7 +233,7 @@ int VirtualFilesystem::gid(int descriptor)
 
 int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t count)
 {
-    path_resolver(dirname);
+    path_resolver(dirname, true);
     int fscount = mounts[0]->read_dir(dirname, entries, count);
 
     if (strcmp(dirname, "pipe/") == 0) {

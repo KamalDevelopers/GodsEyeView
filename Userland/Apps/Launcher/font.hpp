@@ -1,7 +1,7 @@
 #ifndef FONT_HPP
 #define FONT_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 #include <LibDisplay/canvas.hpp>
 
 typedef struct psf_font {

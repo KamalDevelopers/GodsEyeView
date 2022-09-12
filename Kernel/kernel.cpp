@@ -29,10 +29,10 @@
 #include "panic.hpp"
 #include "syscalls.hpp"
 
-#include <LibC/cmath.hpp>
-#include <LibC/ctype.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
+#include <LibC/cmath.h>
+#include <LibC/ctype.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
 
 typedef void (*constructor)();
 extern "C" uint8_t kernel_end;

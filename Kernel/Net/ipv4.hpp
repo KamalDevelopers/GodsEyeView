@@ -2,7 +2,7 @@
 #define IPV4_HPP
 
 #include "../Mem/mm.hpp"
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 typedef struct ipv4_packet {
     uint8_t header_length : 4;

@@ -1,7 +1,7 @@
-#ifndef POLL_HPP
-#define POLL_HPP
+#ifndef POLL_H
+#define POLL_H
 
-#include "types.hpp"
+#include "types.h"
 
 #define POLLIN 0x0001
 #define POLLPRI 0x0002
@@ -18,6 +18,10 @@ struct pollfd {
     int16_t revents;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 inline int poll(pollfd* fds, uint32_t nfds)
 {
     int status;
@@ -26,5 +30,9 @@ inline int poll(pollfd* fds, uint32_t nfds)
                  : "a"(168), "b"(fds), "c"(nfds));
     return status;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

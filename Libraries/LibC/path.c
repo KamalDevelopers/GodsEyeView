@@ -1,7 +1,7 @@
-#include "path.hpp"
-#include "stdlib.hpp"
-#include "string.hpp"
-#include "unistd.hpp"
+#include "path.h"
+#include "stdlib.h"
+#include "string.h"
+#include "unistd.h"
 
 int path_resolver(char* input, bool is_dir)
 {

@@ -2,7 +2,9 @@
 #include "compositor.hpp"
 #include "event.hpp"
 #include "wm.hpp"
-#include <LibC/poll.hpp>
+
+#include <LibC/poll.h>
+#include <LibC/unistd.h>
 
 int main(int argc, char** argv)
 {

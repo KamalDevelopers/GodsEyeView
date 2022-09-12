@@ -5,8 +5,8 @@
 #include "../multitasking.hpp"
 #include "../tty.hpp"
 #include "port.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdio.h>
+#include <LibC/types.h>
 
 class InterruptManager;
 

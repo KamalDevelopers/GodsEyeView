@@ -1,4 +1,5 @@
 #include "communication.hpp"
+#include <LibC/unistd.h>
 
 static int client_communication_file = 0;
 int init_communications()

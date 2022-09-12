@@ -1,7 +1,7 @@
-#ifndef UNISTD_HPP
-#define UNISTD_HPP
+#ifndef UNISTD_H
+#define UNISTD_H
 
-#include <LibC/types.hpp>
+#include "types.h"
 
 #define O_RDONLY 0
 #define O_WRONLY 1
@@ -16,19 +16,23 @@
 
 typedef struct fs_entry {
     char name[100];
-    int type = 0;
+    int type;
 } fs_entry_t;
 
 struct osinfo {
-    uint32_t used_pages = 0;
-    uint32_t free_pages = 0;
-    int procs = 0;
-    int procs_sleeping = 0;
-    int procs_zombie = 0;
-    int procs_polling = 0;
-    uint32_t uptime = 0;
-    uint32_t uptime_ms = 0;
+    uint32_t used_pages;
+    uint32_t free_pages;
+    int procs;
+    int procs_sleeping;
+    int procs_zombie;
+    int procs_polling;
+    uint32_t uptime;
+    uint32_t uptime_ms;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void _exit(int status);
 void _shutdown();
@@ -52,5 +56,9 @@ int listdir(char* dirname, fs_entry_t* entries, int count);
 int getpid();
 int setsid();
 int sys_osinfo(struct osinfo* buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

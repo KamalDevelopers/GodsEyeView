@@ -2,11 +2,6 @@
 #define SOUND_HPP
 
 #include <LibC++/vector.hpp>
-#include <LibC/liballoc.hpp>
-#include <LibC/poll.hpp>
-#include <LibC/stat.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/unistd.hpp>
 #include <LibSound/connection.hpp>
 #include <LibSound/stream.hpp>
 #include <LibSound/wave.hpp>

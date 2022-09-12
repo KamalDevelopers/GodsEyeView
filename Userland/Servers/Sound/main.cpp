@@ -1,7 +1,8 @@
 #include "communication.hpp"
 #include "sound.hpp"
-#include <LibC/poll.hpp>
-#include <LibC/string.hpp>
+#include <LibC/poll.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 
 int slave_audio_device_write(int slave_file)
 {

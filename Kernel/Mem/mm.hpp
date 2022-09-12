@@ -2,7 +2,7 @@
 #define MM_HPP
 
 #include "pmm.hpp"
-#include <LibC/liballoc.hpp>
+#include <LibC/mem.h>
 
 void* kmalloc(size_t size);
 void* krealloc(void* address, size_t new_size);

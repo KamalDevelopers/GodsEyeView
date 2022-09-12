@@ -3,8 +3,8 @@
 
 #include "../../Mem/mm.hpp"
 #include "../interrupts.hpp"
-#include <LibC/stdlib.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdlib.h>
+#include <LibC/types.h>
 
 #define VESA Vesa::active
 

@@ -2,9 +2,6 @@
 #define EVENT_HPP
 
 #include "wm.hpp"
-#include <LibC/unistd.hpp>
-#include <LibDisplay/canvas.hpp>
-#include <LibDisplay/events.hpp>
 
 typedef struct events_files {
     int mouse = 0;

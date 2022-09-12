@@ -3,9 +3,9 @@
 
 #include "Hardware/Drivers/qemu.hpp"
 #include "pipe.hpp"
-#include <LibC/poll.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/types.hpp>
+#include <LibC/poll.h>
+#include <LibC/stdlib.h>
+#include <LibC/types.h>
 
 #define klog QemuSerial::active->qemu_debug
 

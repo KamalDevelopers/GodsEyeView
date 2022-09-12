@@ -1,7 +1,7 @@
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
 
 bool print_file(char* file_name)
 {

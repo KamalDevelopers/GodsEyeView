@@ -1,5 +1,5 @@
-#ifndef CMATH_HPP
-#define CMATH_HPP
+#ifndef CMATH_H
+#define CMATH_H
 
 #define M_E 2.71828182845904523536
 #define M_LOG2E 1.44269504088896340736
@@ -14,6 +14,10 @@
 #define M_2_SQRTPI 1.12837916709551257390
 #define M_SQRT2 1.41421356237309504880
 #define M_SQRT1_2 0.707106781186547524401
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static double pow(double x, double y)
 {
@@ -34,12 +38,12 @@ static double sqrt(double x)
 
 static double floor(double x)
 {
-    return double(int(x) <= x ? int(x) : int(x) - 1);
+    return (double)(x <= x ? x : x - 1);
 }
 
 static double ceil(double x)
 {
-    return double(int(x) < x ? int(x) + 1 : int(x));
+    return (double)(x < x ? x + 1 : x);
 }
 
 static double fabs(double x)
@@ -68,5 +72,9 @@ static int abs(int num)
         num = (-1) * num;
     return num;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

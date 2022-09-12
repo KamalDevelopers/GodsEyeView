@@ -2,10 +2,10 @@
 #define DRAW_HPP
 
 #include "font.hpp"
-#include <LibC/stat.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/stat.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 #include <LibDisplay/canvas.hpp>
 
 #define BACKGROUND_COLOR 0x080808

@@ -9,10 +9,10 @@
 
 #include <LibC++/bitarray.hpp>
 #include <LibC++/vector.hpp>
-#include <LibC/path.hpp>
-#include <LibC/poll.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/types.hpp>
+#include <LibC/path.h>
+#include <LibC/poll.h>
+#include <LibC/stdio.h>
+#include <LibC/types.h>
 #include <stdarg.h>
 
 #define SIGHUP 1

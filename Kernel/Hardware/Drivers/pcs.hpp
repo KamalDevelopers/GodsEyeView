@@ -2,7 +2,7 @@
 #define PCS_HPP
 
 #include "../port.hpp"
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 #define BASE_FREQUENCY 1193180
 #define LSB(x) ((x)&0xFF)

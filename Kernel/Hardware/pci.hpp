@@ -4,8 +4,8 @@
 #include "../Mem/mm.hpp"
 #include "interrupts.hpp"
 #include "port.hpp"
-#include <LibC/stdlib.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdlib.h>
+#include <LibC/types.h>
 
 typedef struct base_address_register {
     bool prefetchable;

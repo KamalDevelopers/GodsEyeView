@@ -5,8 +5,8 @@
 #include "../interrupts.hpp"
 #include "../port.hpp"
 #include "vga.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdio.h>
+#include <LibC/types.h>
 #include <LibDisplay/events.hpp>
 
 #define MOUSE_MODIFIER_L 1

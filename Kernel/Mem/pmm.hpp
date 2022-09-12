@@ -3,8 +3,8 @@
 
 #include "paging.hpp"
 #include <LibC++/bitarray.hpp>
-#include <LibC/liballoc.hpp>
-#include <LibC/stdlib.hpp>
+#include <LibC/mem.h>
+#include <LibC/stdlib.h>
 
 #define MAX_PAGES 488280 /* around 2 gigabytes */
 #define PHYSICAL_MEMORY_START PAGE_ALIGN(15 * MB)

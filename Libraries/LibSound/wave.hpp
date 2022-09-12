@@ -1,11 +1,11 @@
 #ifndef WAVE_HPP
 #define WAVE_HPP
 
-#include <LibC/liballoc.hpp>
-#include <LibC/stat.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/mem.h>
+#include <LibC/stat.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 
 typedef struct riff_header {
     char magic[4];

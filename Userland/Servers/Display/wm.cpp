@@ -1,4 +1,7 @@
 #include "wm.hpp"
+#include <LibC/mem.h>
+#include <LibC/stdlib.h>
+#include <LibC/unistd.h>
 
 WindowManager::WindowManager(Compositor* compositor)
 {

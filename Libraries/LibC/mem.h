@@ -1,9 +1,7 @@
-#ifndef LIBALLOC_HPP
-#define LIBALLOC_HPP
+#ifndef LIBALLOC_H
+#define LIBALLOC_H
 
-#include "types.hpp"
-
-extern void memory_hooks(uint32_t (*pmalloc)(size_t), int (*pfree)(uint32_t, size_t));
+#include "types.h"
 
 /** \defgroup ALLOCHOOKS liballoc hooks
  *
@@ -28,6 +26,13 @@ extern void*(malloc)(size_t);         ///< The standard function.
 extern void*(realloc)(void*, size_t); ///< The standard function.
 extern void*(calloc)(size_t, size_t); ///< The standard function.
 extern void(free)(void*);             ///< The standard function.
+
+extern void memory_hooks(uint32_t (*pmalloc)(size_t), int (*pfree)(uint32_t, size_t));
+
+void* memchr(const void* str, int c, size_t n);
+void* memcpy32(void* dst, const void* src, size_t cnt);
+void* memcpy(void* dst, const void* src, unsigned int cnt);
+void* memset(void* s, int c, size_t n);
 
 #ifdef __cplusplus
 }

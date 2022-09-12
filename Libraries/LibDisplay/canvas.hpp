@@ -1,8 +1,8 @@
 #ifndef CANVAS_HPP
 #define CANVAS_HPP
 
-#include <LibC/stdlib.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/stdlib.h>
+#include <LibC/unistd.h>
 
 typedef struct canvas {
     uint32_t* framebuffer = 0;

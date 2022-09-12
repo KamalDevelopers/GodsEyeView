@@ -1,4 +1,7 @@
 #include "event.hpp"
+#include <LibC/unistd.h>
+#include <LibDisplay/canvas.hpp>
+#include <LibDisplay/events.hpp>
 
 static events_files_t events_files;
 bool mouse_events(mouse_event_t* event)

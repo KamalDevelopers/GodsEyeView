@@ -47,21 +47,21 @@ index e240050..1053966 100644
  	mkdir -p $@
  obj_libretro/%.o: %.c | obj_libretro
 diff --git a/audio.c b/audio.c
-index 7e4a3fa..47fe862 100644
+index 7e4a3fa..ad46bfb 100644
 --- a/audio.c
 +++ b/audio.c
 @@ -1,6 +1,6 @@
 -#include <stdlib.h>
 -#include <string.h>
 -#include <stdio.h>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/string.hpp>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/string.h>
++#include <LibC/stdio.h>
  
  #include "audio.h"
  #include "hwdefs.h"
 diff --git a/cpu.c b/cpu.c
-index ebebcdc..da2d0ee 100644
+index ebebcdc..c260bcb 100644
 --- a/cpu.c
 +++ b/cpu.c
 @@ -7,9 +7,9 @@
@@ -71,14 +71,14 @@ index ebebcdc..da2d0ee 100644
 -#include <string.h>
 -#include <stdio.h>
 -#include <stdlib.h>
-+#include <LibC/string.hpp>
-+#include <LibC/stdio.hpp>
-+#include <LibC/stdlib.hpp>
++#include <LibC/string.h>
++#include <LibC/stdio.h>
++#include <LibC/stdlib.h>
  
  #include "cpu.h"
  #include "mmu.h"
 diff --git a/debugger-dummy.c b/debugger-dummy.c
-index 267d368..e7576cd 100644
+index 267d368..c0270d6 100644
 --- a/debugger-dummy.c
 +++ b/debugger-dummy.c
 @@ -1,7 +1,5 @@
@@ -86,13 +86,13 @@ index 267d368..e7576cd 100644
 -#include <stdio.h>
 -#include <readline/readline.h>
 -#include <readline/history.h>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/stdio.h>
  
  #include "debugger.h"
  #include "disassembler.h"
 diff --git a/debugger.c b/debugger.c
-index 0c33cab..597fd0a 100644
+index 0c33cab..205e2b3 100644
 --- a/debugger.c
 +++ b/debugger.c
 @@ -1,7 +1,5 @@
@@ -100,8 +100,8 @@ index 0c33cab..597fd0a 100644
 -#include <stdio.h>
 -#include <readline/readline.h>
 -#include <readline/history.h>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/stdio.h>
  
  #include "debugger.h"
  #include "disassembler.h"
@@ -195,14 +195,14 @@ index 0c33cab..597fd0a 100644
 +    return 0;
  }
 diff --git a/disassembler.c b/disassembler.c
-index d97e504..ae886d9 100644
+index d97e504..509a4b7 100644
 --- a/disassembler.c
 +++ b/disassembler.c
 @@ -1,6 +1,6 @@
  #include "disassembler.h"
  
 -#include <stdio.h>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdio.h>
  
  #include "mmu.h"
  
@@ -247,15 +247,15 @@ index d97e504..ae886d9 100644
  }
 diff --git a/display.c b/display.c
 new file mode 100644
-index 0000000..4f8be6b
+index 0000000..ef424a3
 --- /dev/null
 +++ b/display.c
 @@ -0,0 +1,161 @@
 +#include "gui.h"
 +
-+#include <LibC/stdlib.hpp>
-+#include <LibC/unistd.hpp>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/unistd.h>
++#include <LibC/stdio.h>
 +#include <LibDisplay/connection.hpp>
 +
 +static canvas_t window_canvas;
@@ -413,16 +413,16 @@ index 0000000..4f8be6b
 +    return 1;
 +}
 diff --git a/emu.c b/emu.c
-index 02cd091..f15eb0c 100644
+index 02cd091..e423235 100644
 --- a/emu.c
 +++ b/emu.c
 @@ -1,6 +1,6 @@
 -#include <stdlib.h>
 -#include <stdio.h>
 -#include <string.h>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/stdio.hpp>
-+#include <LibC/string.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/stdio.h>
++#include <LibC/string.h>
  
  #include "types.h"
  #include "hwdefs.h"
@@ -472,16 +472,16 @@ index 02cd091..f15eb0c 100644
      lcd_step(s);
      mmu_step(s);
 diff --git a/fileio.c b/fileio.c
-index 9396559..e47f210 100644
+index 9396559..e2fd2ed 100644
 --- a/fileio.c
 +++ b/fileio.c
 @@ -1,45 +1,32 @@
 -#include <stdio.h>
 -#include <stdlib.h>
-+#include <LibC/stdio.hpp>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/unistd.hpp>
-+#include <LibC/stat.hpp>
++#include <LibC/stdio.h>
++#include <LibC/stdlib.h>
++#include <LibC/unistd.h>
++#include <LibC/stat.h>
  #include "fileio.h"
  
  int read_file(char *filename, uint8_t **buf, size_t *size) {
@@ -540,7 +540,7 @@ index 9396559..e47f210 100644
  }
  
 diff --git a/fileio.h b/fileio.h
-index b0410fb..3504b9f 100644
+index b0410fb..313dac8 100644
 --- a/fileio.h
 +++ b/fileio.h
 @@ -1,8 +1,7 @@
@@ -549,36 +549,36 @@ index b0410fb..3504b9f 100644
  
 -#include <stddef.h>
 -#include <stdint.h>
-+#include <LibC/types.hpp>
++#include <LibC/types.h>
  
  int read_file(char *filename, uint8_t **buf, size_t *size);
  int save_file(char *filename, uint8_t *buf, size_t size);
 diff --git a/gui.h b/gui.h
-index 36ba5a7..534b79c 100644
+index 36ba5a7..f0b17ea 100644
 --- a/gui.h
 +++ b/gui.h
 @@ -2,6 +2,7 @@
  #define GUI_H
  
  #include "player_input.h"
-+#include <LibC/types.hpp>
++#include <LibC/types.h>
  
  int gui_audio_init(int sample_rate, int channels, size_t sndbuf_size,
          uint8_t *sndbuf);
 diff --git a/lcd.c b/lcd.c
-index 345349a..bc664c7 100644
+index 345349a..65dfd87 100644
 --- a/lcd.c
 +++ b/lcd.c
 @@ -1,5 +1,5 @@
 -#include <stdlib.h>
 -#include <string.h>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/string.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/string.h>
  
  #include "lcd.h"
  #include "hwdefs.h"
 diff --git a/libretro.c b/libretro.c
-index 068a184..5e80903 100644
+index 068a184..3de5091 100644
 --- a/libretro.c
 +++ b/libretro.c
 @@ -7,9 +7,9 @@
@@ -588,9 +588,9 @@ index 068a184..5e80903 100644
 -#include <stdlib.h>
 -#include <string.h>
 -#include <stdio.h>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/string.hpp>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/string.h>
++#include <LibC/stdio.h>
  
  #include "libretro.h"
  
@@ -619,7 +619,7 @@ index 068a184..5e80903 100644
  }
  
 diff --git a/libretro.h b/libretro.h
-index 315123c..e60d277 100644
+index 315123c..0891932 100644
 --- a/libretro.h
 +++ b/libretro.h
 @@ -23,9 +23,8 @@
@@ -629,8 +629,8 @@ index 315123c..e60d277 100644
 -#include <stdint.h>
 -#include <stddef.h>
 -#include <limits.h>
-+#include <LibC/types.hpp>
-+#include <LibC/stdlib.hpp>
++#include <LibC/types.h>
++#include <LibC/stdlib.h>
  
  #ifdef __cplusplus
  extern "C" {
@@ -664,7 +664,7 @@ index 0000000..dffbea1
 +	}
 +}
 diff --git a/main.c b/main.c
-index 2a2279e..d99c098 100644
+index 2a2279e..5581eae 100644
 --- a/main.c
 +++ b/main.c
 @@ -1,9 +1,7 @@
@@ -675,9 +675,9 @@ index 2a2279e..d99c098 100644
 -#include <getopt.h>
 -#include <sys/time.h>
 +#include <LibDisplay/connection.hpp>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/stdio.hpp>
-+#include <LibC/string.hpp>
++#include <LibC/stdlib.h>
++#include <LibC/stdio.h>
++#include <LibC/string.h>
  
  #include "types.h"
  #include "hwdefs.h"
@@ -823,12 +823,12 @@ index 2a2279e..d99c098 100644
  }
 +
 diff --git a/mmu.c b/mmu.c
-index 7295123..607aa42 100644
+index 7295123..5cbcc62 100644
 --- a/mmu.c
 +++ b/mmu.c
 @@ -1,4 +1,4 @@
 -#include <stdio.h>
-+#include <LibC/stdio.hpp>
++#include <LibC/stdio.h>
  
  #include "mmu.h"
  #include "hwdefs.h"
@@ -898,7 +898,7 @@ index 7295123..607aa42 100644
                      rv = (s->io_buttons & 0xf0) | (s->io_buttons_dirs & 0x0f);
                  else if ((s->io_buttons & (1 << 5)) == 0)
 diff --git a/state.c b/state.c
-index d8ccaa3..b17e014 100644
+index d8ccaa3..09f1a83 100644
 --- a/state.c
 +++ b/state.c
 @@ -1,17 +1,21 @@
@@ -906,9 +906,9 @@ index d8ccaa3..b17e014 100644
 -#include <stdlib.h>
 -#include <string.h>
 -#include <assert.h>
-+#include <LibC/stdio.hpp>
-+#include <LibC/stdlib.hpp>
-+#include <LibC/string.hpp>
++#include <LibC/stdio.h>
++#include <LibC/stdlib.h>
++#include <LibC/string.h>
  
  #include "state.h"
  #include "hwdefs.h"
@@ -938,16 +938,18 @@ index d8ccaa3..b17e014 100644
      }
  
 diff --git a/types.h b/types.h
-index 9361094..41c21e9 100644
+index 9361094..ac6d7db 100644
 --- a/types.h
 +++ b/types.h
 @@ -1,8 +1,7 @@
- #ifndef TYPES_H
- #define TYPES_H
+-#ifndef TYPES_H
+-#define TYPES_H
++#ifndef TYPES_H_
++#define TYPES_H_
  
 -#include <stdint.h>
 -#include <stdbool.h>
-+#include <LibC/types.hpp>
++#include <LibC/types.h>
  
  typedef uint8_t  u8;
  typedef uint16_t u16;

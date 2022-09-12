@@ -1,8 +1,8 @@
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 #include <LibSound/connection.hpp>
 #include <LibSound/stream.hpp>
 

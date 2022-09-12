@@ -2,7 +2,7 @@
 #define MUTEX_HPP
 
 #include "multitasking.hpp"
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 #define MUTEX(name) static Mutex::mutex_lock_t name;
 

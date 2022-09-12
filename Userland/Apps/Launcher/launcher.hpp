@@ -1,11 +1,11 @@
 #ifndef TERMINAL_HPP
 #define TERMINAL_HPP
 
-#include <LibC/poll.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/poll.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 #include <LibDisplay/connection.hpp>
 
 class Launcher {

@@ -1,7 +1,7 @@
 #ifndef GDT_HPP
 #define GDT_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 class SegmentDescriptor {
 private:

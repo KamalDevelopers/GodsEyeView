@@ -3,9 +3,7 @@
 
 #include "window.hpp"
 #include <LibC++/vector.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/types.h>
 #include <LibDisplay/canvas.hpp>
 #include <LibDisplay/connection.hpp>
 #include <LibDisplay/events.hpp>

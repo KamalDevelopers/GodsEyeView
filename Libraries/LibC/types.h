@@ -1,5 +1,6 @@
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#ifndef TYPES_H
+#define TYPES_H
+
 #define NULL 0
 #define UINT32_MAX 0xFFFFFFFF
 #define INT_MAX 2147483647
@@ -17,5 +18,9 @@ typedef unsigned long long int uint64_t;
 typedef unsigned int uintptr_t;
 
 typedef long unsigned int size_t;
+
+#ifndef __cplusplus
+typedef char bool;
+#endif
 
 #endif

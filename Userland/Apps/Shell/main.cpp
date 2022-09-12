@@ -1,9 +1,9 @@
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
-#include <LibC/utsname.hpp>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
+#include <LibC/utsname.h>
 
 static char current_path[100];
 

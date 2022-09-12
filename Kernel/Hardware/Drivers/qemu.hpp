@@ -2,8 +2,8 @@
 #define QEMU_HPP
 
 #include "../port.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
 #include <stdarg.h>
 
 class QemuSerial {

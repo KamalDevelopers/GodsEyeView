@@ -1,4 +1,9 @@
 #include "sound.hpp"
+#include <LibC/mem.h>
+#include <LibC/poll.h>
+#include <LibC/stat.h>
+#include <LibC/stdlib.h>
+#include <LibC/unistd.h>
 
 SoundServer::SoundServer()
 {

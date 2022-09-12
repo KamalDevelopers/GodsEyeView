@@ -1,7 +1,7 @@
 #ifndef PIPE_HPP
 #define PIPE_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 #define PIPE_SIZE 1024
 

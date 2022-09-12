@@ -1,7 +1,7 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 template<typename T, size_t storage_capacity>
 class Vector {

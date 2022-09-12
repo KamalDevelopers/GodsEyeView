@@ -1,7 +1,7 @@
 #ifndef EVENTS_HPP
 #define EVENTS_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 typedef struct mouse_event {
     uint32_t x = 0;

@@ -2,12 +2,12 @@
 #define CONNECTION_HPP
 
 #include "stream.hpp"
-#include <LibC/path.hpp>
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/string.hpp>
-#include <LibC/types.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/path.h>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/string.h>
+#include <LibC/types.h>
+#include <LibC/unistd.h>
 
 #define SOUND_PLAY_FILE 1
 #define SOUND_REQUIRE_UPDATE 2

@@ -1,7 +1,7 @@
 #ifndef STREAM_HPP
 #define STREAM_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 typedef struct pcm_stream {
     uint8_t* data = 0;

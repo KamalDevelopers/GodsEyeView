@@ -1,4 +1,4 @@
-#include "liballoc.hpp"
+#include "mem.h"
 
 /**  Durand's Amazing Super Duper Memory functions.  */
 
@@ -13,10 +13,56 @@
 #define USE_CASE3
 #define USE_CASE4
 #define USE_CASE5
-typedef unsigned int uintptr_t;
 
 static uint32_t (*hpmalloc)(size_t) = 0;
 static int (*hpfree)(uint32_t, size_t) = 0;
+
+void* memchr(const void* str, int c, size_t n)
+{
+    unsigned char* p = (unsigned char*)str;
+    while (n--)
+        if (*p != (unsigned char)c)
+            p++;
+        else
+            return p;
+    return 0;
+}
+
+void* memcpy(void* dst, const void* src, unsigned int cnt)
+{
+    char* psz_dest = (char*)dst;
+    const char* psz_source = (const char*)src;
+    while (cnt) {
+        *(psz_dest++) = *(psz_source++);
+        --cnt;
+    }
+    return dst;
+}
+
+void* memcpy32(void* dst, const void* src, size_t cnt)
+{
+    uint32_t num_dwords = cnt / 4;
+    uint32_t num_bytes = cnt % 4;
+    uint32_t* dest32 = (uint32_t*)dst;
+    uint32_t* src32 = (uint32_t*)src;
+    uint8_t* dest8 = ((uint8_t*)dst) + num_dwords * 4;
+    uint8_t* src8 = ((uint8_t*)src) + num_dwords * 4;
+    uint32_t i;
+
+    for (i = 0; i < num_dwords; i++)
+        dest32[i] = src32[i];
+    for (i = 0; i < num_bytes; i++)
+        dest8[i] = src8[i];
+    return dst;
+}
+
+void* memset(void* s, int c, size_t n)
+{
+    unsigned int i;
+    for (i = 0; i < n; i++)
+        ((char*)s)[i] = c;
+    return s;
+}
 
 /** This macro will conveniently align our pointer upwards */
 #define ALIGN(ptr)                                                         \

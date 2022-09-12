@@ -1,5 +1,9 @@
-#ifndef CTYPE_HPP
-#define CTYPE_HPP
+#ifndef CTYPE_H
+#define CTYPE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static int isdigit(int c)
 {
@@ -7,6 +11,7 @@ static int isdigit(int c)
         return c;
     return 0;
 }
+
 static int isblank(int c)
 {
     if (c == '\t' || c == ' ')
@@ -42,5 +47,9 @@ static int toupper(int c)
         return ('A' + c - 'a');
     return c;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

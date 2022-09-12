@@ -1,8 +1,8 @@
 #ifndef LOADER_HPP
 #define LOADER_HPP
 
-#include <LibC/stdio.hpp>
-#include <LibC/string.hpp>
+#include <LibC/stdio.h>
+#include <LibC/string.h>
 
 #define MAX_LOADERS 5
 #define BINARY_MAX_SECTIONS 10

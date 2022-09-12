@@ -3,9 +3,9 @@
 
 #include "../../Mem/mm.hpp"
 #include "../port.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
 
 #define CURRENT_YEAR 2022
 #define UNIX_TIME 62168472000

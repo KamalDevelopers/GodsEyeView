@@ -1,5 +1,5 @@
-#include "stdio.hpp"
-#include "string.hpp"
+#include "stdio.h"
+#include "string.h"
 
 static char write_buffer[BUFSIZ];
 static int write_index = 0;
@@ -29,7 +29,7 @@ void puts(char* str)
     }
 
     uint32_t len = strlen(str);
-    bool do_flush = false;
+    bool do_flush = 0;
 
     if (len >= BUFSIZ) {
         write(1, str, len);
@@ -44,7 +44,7 @@ void puts(char* str)
         write_index++;
 
         if (str[i] == 10)
-            do_flush = true;
+            do_flush = 1;
     }
 
     if (do_flush)
@@ -145,7 +145,7 @@ void vprintf(const char* format, va_list v)
 
         if (format[i] == '\n') {
             flag = 1;
-            newline();
+            putc(10);
             i++;
         }
         if (format[i] == '\b') {

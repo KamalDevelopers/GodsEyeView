@@ -1,4 +1,7 @@
 #include "compositor.hpp"
+#include <LibC/stdio.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 
 Compositor::Compositor()
 {

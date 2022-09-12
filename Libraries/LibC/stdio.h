@@ -1,13 +1,18 @@
-#ifndef STDIO_HPP
-#define STDIO_HPP
+#ifndef STDIO_H
+#define STDIO_H
 
 #define MAX_ROWS 25
 #define MAX_COLS 80
 #define BUFSIZ 512
 
-#include "stdlib.hpp"
-#include "unistd.hpp"
+#include "types.h"
+#include "stdlib.h"
+#include "unistd.h"
 #include <stdarg.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void puts_hook(void (*t)(char*));
 void flush();
@@ -21,9 +26,8 @@ void snprintf(char* s, size_t n, const char* format, ...);
 void clear();
 void beep(uint32_t ms_time, uint32_t frequency);
 
-inline void newline()
-{
-    putc(10);
+#ifdef __cplusplus
 }
+#endif
 
 #endif

@@ -1,4 +1,4 @@
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 struct multiboot_aout_symbol_table {
     uint32_t tabsize;

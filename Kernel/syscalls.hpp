@@ -13,12 +13,12 @@
 #include "multitasking.hpp"
 #include "tty.hpp"
 
-#include <LibC/path.hpp>
-#include <LibC/poll.hpp>
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/types.hpp>
-#include <LibC/utsname.hpp>
+#include <LibC/path.h>
+#include <LibC/poll.h>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/types.h>
+#include <LibC/utsname.h>
 
 extern "C" int shutdown();
 

@@ -1,9 +1,9 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include <LibC/stdio.hpp>
-#include <LibC/string.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/stdio.h>
+#include <LibC/string.h>
+#include <LibC/unistd.h>
 #include <LibDisplay/canvas.hpp>
 #include <LibDisplay/connection.hpp>
 #include <LibDisplay/events.hpp>

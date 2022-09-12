@@ -3,12 +3,12 @@
 
 #include "../pipe.hpp"
 #include <LibC++/vector.hpp>
-#include <LibC/path.hpp>
-#include <LibC/poll.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/types.hpp>
+#include <LibC/path.h>
+#include <LibC/poll.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/types.h>
 
 #define MAX_OPENFILES 512
 #define MAX_FILE_NAME 100

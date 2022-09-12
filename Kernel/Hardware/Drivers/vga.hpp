@@ -5,10 +5,10 @@
 #include "../../tty.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/types.hpp>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/types.h>
 
 namespace VGA16 {
 static uint8_t black = 0x0;

@@ -1,8 +1,8 @@
-#include <LibC/path.hpp>
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
+#include <LibC/path.h>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
 
 int read_dir(char* name, bool root)
 {

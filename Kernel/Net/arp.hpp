@@ -1,7 +1,7 @@
 #ifndef ARP_HPP
 #define ARP_HPP
 
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 typedef struct arp_packet {
     uint16_t hardware_type;

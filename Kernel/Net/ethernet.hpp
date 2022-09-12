@@ -2,7 +2,7 @@
 #define ETHERNET_HPP
 
 #include "../Mem/mm.hpp"
-#include <LibC/types.hpp>
+#include <LibC/types.h>
 
 #define FLIP(x) (((x & 0x00FF) << 8) | ((x & 0xFF00) >> 8))
 #define IP ((14 << 24) | (2 << 16) | (0 << 8) | 10)

@@ -3,8 +3,6 @@
 
 #include "compositor.hpp"
 #include "window.hpp"
-#include <LibC/stdlib.hpp>
-#include <LibC/unistd.hpp>
 
 // clang-format off
 #define MAX_WINDOWS 50 

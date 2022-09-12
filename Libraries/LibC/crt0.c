@@ -1,7 +1,7 @@
-#include "liballoc.hpp"
-#include "stdio.hpp"
-#include "string.hpp"
-#include "unistd.hpp"
+#include "mem.h"
+#include "stdio.h"
+#include "string.h"
+#include "unistd.h"
 
 #ifdef __cplusplus
 void* operator new(long unsigned int size)
@@ -25,11 +25,13 @@ void operator delete[](void* ptr)
 }
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 int main(int argc, char** argv);
 
-[[noreturn]] void _entry()
+void _entry()
 {
     uint32_t argument_pointer;
     char** arguments;
@@ -69,4 +71,7 @@ int main(int argc, char** argv);
     while (1)
         ;
 }
+
+#ifdef __cplusplus
 }
+#endif

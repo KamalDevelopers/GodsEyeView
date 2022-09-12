@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include "compositor.hpp"
+#include <LibC/unistd.h>
 
 Window::Window(int pid)
 {

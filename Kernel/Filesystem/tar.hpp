@@ -5,9 +5,9 @@
 #include "../Mem/mm.hpp"
 #include "../tty.hpp"
 #include "vfs.hpp"
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
 
 #define SB_OFFSET 1024
 #define MAX_FILES 200

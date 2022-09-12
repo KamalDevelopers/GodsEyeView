@@ -1,11 +1,11 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
-#include <LibC/stat.hpp>
-#include <LibC/stdio.hpp>
-#include <LibC/string.hpp>
-#include <LibC/types.hpp>
-#include <LibC/unistd.hpp>
+#include <LibC/stat.h>
+#include <LibC/stdio.h>
+#include <LibC/string.h>
+#include <LibC/types.h>
+#include <LibC/unistd.h>
 #include <LibDisplay/canvas.hpp>
 #include <LibDisplay/events.hpp>
 

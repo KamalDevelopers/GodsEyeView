@@ -1,5 +1,5 @@
-#include "stdlib.hpp"
-#include "unistd.hpp"
+#include "stdlib.h"
+#include "unistd.h"
 
 void exit(int status)
 {
@@ -15,42 +15,6 @@ unsigned rand(unsigned int seed, unsigned int max)
 unsigned int random(unsigned int seed, unsigned int max)
 {
     return rand(seed, max);
-}
-
-void* memcpy(void* dst, const void* src, unsigned int cnt)
-{
-    char* psz_dest = (char*)dst;
-    const char* psz_source = (const char*)src;
-    while (cnt) {
-        *(psz_dest++) = *(psz_source++);
-        --cnt;
-    }
-    return dst;
-}
-
-void* memcpy32(void* dst, const void* src, size_t cnt)
-{
-    uint32_t num_dwords = cnt / 4;
-    uint32_t num_bytes = cnt % 4;
-    uint32_t* dest32 = (uint32_t*)dst;
-    uint32_t* src32 = (uint32_t*)src;
-    uint8_t* dest8 = ((uint8_t*)dst) + num_dwords * 4;
-    uint8_t* src8 = ((uint8_t*)src) + num_dwords * 4;
-    uint32_t i;
-
-    for (i = 0; i < num_dwords; i++)
-        dest32[i] = src32[i];
-    for (i = 0; i < num_bytes; i++)
-        dest8[i] = src8[i];
-    return dst;
-}
-
-void* memset(void* s, int c, size_t n)
-{
-    unsigned int i;
-    for (i = 0; i < n; i++)
-        ((char*)s)[i] = c;
-    return s;
 }
 
 void reverse(char* str, int len)

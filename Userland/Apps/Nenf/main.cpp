@@ -1,7 +1,7 @@
-#include <LibC/stdio.hpp>
-#include <LibC/stdlib.hpp>
-#include <LibC/string.hpp>
-#include <LibC/utsname.hpp>
+#include <LibC/stdio.h>
+#include <LibC/stdlib.h>
+#include <LibC/string.h>
+#include <LibC/utsname.h>
 
 #define MB 1000000
 #define PAGE_SIZE 4096
