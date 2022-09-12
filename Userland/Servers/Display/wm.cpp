@@ -31,9 +31,10 @@ void WindowManager::set_active_window(uint32_t index)
 void WindowManager::mouse_event(mouse_event_t* event)
 {
     if (event->modifier == 1) {
-        for (uint32_t i = 0; i < windows.size(); i++)
+        for (uint32_t i = 0; i < windows.size(); i++) {
             if (windows[i]->is_point_in_window(event->x, event->y) && windows[i]->get_controlled())
                 set_active_window(i);
+        }
     }
 
     if (active_window != -1)
@@ -150,22 +151,30 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint
 void WindowManager::destroy_window(uint32_t index)
 {
     compositor->remove_render_layer(windows[index]->get_canvas());
-    if (index == active_window) {
-        if (index == windows.size() - 1)
-            active_window = index - 1;
-    }
-
-    if (active_window >= 0 && active_window < windows.size()) {
-        if (!windows.at(active_window)->get_controlled())
-            active_window += 2;
-    }
-
     if (windows[index]->get_controlled())
         tiled_windows--;
     delete windows[index];
     windows.remove_at(index);
-    if (!tiled_windows)
+
+    if (!tiled_windows) {
         active_window = -1;
+        return;
+    }
+
+    if (active_window > 0)
+        active_window--;
+
+    uint32_t next = CLAMP(active_window, 0, tiled_windows - 1);
+    uint32_t current = 0;
+    for (uint32_t i = 0; i < windows.size(); i++) {
+        if (!windows.at(i)->get_controlled())
+            continue;
+        if (current >= next) {
+            active_window = i;
+            break;
+        }
+        current++;
+    }
 }
 
 void WindowManager::destroy_window_pid(int pid)
