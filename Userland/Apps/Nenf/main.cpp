@@ -67,7 +67,7 @@ int main(int argc, char** argv)
         if (line == 5)
             printf("\33\x2\xC   . procs \33\x2\xF %dr %ds %dp %dz", tasks_running, tasks_sleeping, tasks_polling, tasks_zombie);
         if (line == 6)
-            printf("\33\x2\xC   . video \33\x2\xF %d x %d %s", screen_width, screen_height);
+            printf("\33\x2\xC   . video \33\x2\xF %d x %d", screen_width, screen_height);
         if (line == 8)
             printf("\33\x2\xCkamaldevelopers \33\x2\xF  2020-2022");
         printf("\n");

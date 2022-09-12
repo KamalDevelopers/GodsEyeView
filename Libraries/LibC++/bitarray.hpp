@@ -20,14 +20,14 @@ public:
         return T;
     }
 
-    bool boundary(uint32_t index)
+    bool boundary(int index)
     {
         if (index >= size())
             return false;
         return true;
     }
 
-    bool bit_set(uint32_t index)
+    bool bit_set(int index)
     {
         if (!boundary(index))
             return false;
@@ -35,7 +35,7 @@ public:
         return true;
     }
 
-    bool bit_clear(uint32_t index)
+    bool bit_clear(int index)
     {
         if (!boundary(index))
             return false;
@@ -43,7 +43,7 @@ public:
         return true;
     }
 
-    bool bit_get(uint32_t index)
+    bool bit_get(int index)
     {
         if (!boundary(index))
             return false;
