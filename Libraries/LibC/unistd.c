@@ -55,7 +55,7 @@ int write(int fd, void* buffer, int length)
     return 0;
 }
 
-int open(char* pathname, int flags)
+int open(const char* pathname, int flags)
 {
     int fd;
     asm volatile("int $0x80"
@@ -64,7 +64,7 @@ int open(char* pathname, int flags)
     return fd;
 }
 
-int mkfifo(char* pathname, int flags)
+int mkfifo(const char* pathname, int flags)
 {
     int fd;
     asm volatile("int $0x80"
@@ -105,7 +105,7 @@ uint32_t time()
     return timestamp;
 }
 
-int spawn(char* pathname, char** args)
+int spawn(const char* pathname, char** args)
 {
     int pid;
     asm volatile("int $0x80"
@@ -123,7 +123,7 @@ int waitpid(int pid)
     return error;
 }
 
-int chdir(char* dir)
+int chdir(const char* dir)
 {
     int exists;
     asm volatile("int $0x80"
@@ -148,7 +148,7 @@ int nice(int inc)
     return error;
 }
 
-int listdir(char* dirname, fs_entry_t* entries, int count)
+int listdir(const char* dirname, fs_entry_t* entries, int count)
 {
     int result;
     asm volatile("int $0x80"

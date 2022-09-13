@@ -28,11 +28,10 @@ int len(const char* arr)
     return l;
 }
 
-char* strcpy(char* arr, char* str)
+char* strcpy(char* arr, const char* str)
 {
-    while (*str) {
+    while (*str)
         *arr++ = *str++;
-    }
     *arr = 0;
     return arr;
 }
@@ -114,7 +113,7 @@ char* findchar(const char* str, int c)
     return (char*)position;
 }
 
-char* strcat(char* dest, char* src)
+char* strcat(char* dest, const char* src)
 {
     size_t i, j;
     i = strlen(dest);
@@ -124,7 +123,7 @@ char* strcat(char* dest, char* src)
     return dest;
 }
 
-char* strtok(char* str, char* delimiter)
+char* strtok(char* str, const char* delimiter)
 {
     static int pos;
     static char* s;
@@ -162,7 +161,7 @@ char* strtok(char* str, char* delimiter)
         return &s[start];
 }
 
-char strpbrk(char* str, char* cmp)
+char strpbrk(char* str, const char* cmp)
 {
     int l = strlen(str);
     int x = 0;

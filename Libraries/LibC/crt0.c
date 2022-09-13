@@ -50,13 +50,13 @@ void _entry()
     for (uint32_t i = 0; i < 10; i++)
         memset(arguments[i], 0, 50);
 
-    char* arg = strtok((char*)argument_pointer, (char*)" ");
+    char* arg = strtok((char*)argument_pointer, " ");
     while (arg) {
         if (arg) {
             strcpy(arguments[argc], arg);
             argc++;
         }
-        arg = strtok(NULL, (char*)" ");
+        arg = strtok(NULL, " ");
     }
 
     int status = main(argc, (char**)arguments);

@@ -49,7 +49,7 @@ void Window::create_process_connection()
     memset(events_file_name, 0, sizeof(events_file_name));
     memset(pid, 0, sizeof(pid));
     itoa(associated_pid, pid);
-    strcat(events_file_name, (char*)"/pipe/display-events-");
+    strcat(events_file_name, "/pipe/display-events-");
     strcat(events_file_name, pid);
     process_send_event_file = mkfifo(events_file_name, O_RDWR | O_APPEND);
 

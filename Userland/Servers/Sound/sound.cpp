@@ -7,8 +7,8 @@
 
 SoundServer::SoundServer()
 {
-    audio_device_file = open((char*)"/dev/audio", O_RDWR);
-    sound_slave_file = mkfifo((char*)"/pipe/sound-slave", O_RDWR);
+    audio_device_file = open("/dev/audio", O_RDWR);
+    sound_slave_file = mkfifo("/pipe/sound-slave", O_RDWR);
     main_audio_stream.data = (uint8_t*)malloc(1024);
 }
 
@@ -20,7 +20,7 @@ SoundServer::~SoundServer()
 void SoundServer::spawn_audio_slave()
 {
     write(sound_slave_file, &main_audio_stream, sizeof(pcm_stream_t));
-    audio_slave_pid = spawn((char*)"servers/sound", 0);
+    audio_slave_pid = spawn("servers/sound", 0);
 }
 
 void SoundServer::kill_audio_slave()
@@ -205,7 +205,7 @@ void SoundServer::play_file(char* file, int unique_id)
     memset(id, 0, sizeof(id));
     memset(events_file_name, 0, sizeof(events_file_name));
     itoa(unique_id, id);
-    strcat(events_file_name, (char*)"/pipe/sound-events-");
+    strcat(events_file_name, "/pipe/sound-events-");
     strcat(events_file_name, id);
 
     update_positions();

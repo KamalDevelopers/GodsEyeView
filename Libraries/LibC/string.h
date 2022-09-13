@@ -12,14 +12,14 @@ extern "C" {
 extern int len(const char* arr);
 extern size_t strlen(const char* str);
 
-extern size_t strspn(char* str1, char* str2);
-extern char* strcpy(char* arr, char* str);
+extern size_t strspn(const char* str1, const char* str2);
+extern char* strcpy(char* arr, const char* str);
 extern char* strncpy(char* arr, const char* str, int l);
 extern int strcmp(const char* s1, const char* s2);
 extern int strncmp(const char* s1, const char* s2, int count);
-extern char* strcat(char* dest, char* src);
-extern char* strtok(char* str, char* delimiter);
-extern char strpbrk(char* str, char* cmp);
+extern char* strcat(char* dest, const char* src);
+extern char* strtok(char* str, const char* delimiter);
+extern char strpbrk(char* str, const char* cmp);
 extern float stof(const char* str);
 extern void uppercase(char* str);
 extern void lowercase(char* str);

@@ -6,7 +6,7 @@ Terminal::Terminal()
     memset(stdout_buffer, 0, sizeof(stdout_buffer));
     window_events_file = request_display_window(window_canvas, 700, 500, 0x080808);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
-    load_font((char*)"bitmaps/ter-u12b.psfu");
+    load_font("bitmaps/ter-u12b.psfu");
     spawn_shell();
     request_update_window();
 }
@@ -26,13 +26,13 @@ void Terminal::tty_master()
 
 void Terminal::spawn_shell()
 {
-    shell_pid = spawn((char*)"bin/shell", 0);
+    shell_pid = spawn("bin/shell", 0);
 }
 
 void Terminal::kill_shell()
 {
     kill(0, 2);
-    draw_text(&window_canvas, (char*)"\n");
+    draw_text(&window_canvas, "\n");
 }
 
 void Terminal::resize_window(display_event_t* display_event)

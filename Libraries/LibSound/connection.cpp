@@ -6,7 +6,7 @@ static int process_streams = 0;
 int request_play_sound_file(stream_context_t* context, char* file)
 {
     while (sound_file == -1) {
-        sound_file = open((char*)"/pipe/sound", O_RDWR | O_APPEND);
+        sound_file = open("/pipe/sound", O_RDWR | O_APPEND);
         usleep(100);
     }
 
@@ -20,7 +20,7 @@ int request_play_sound_file(stream_context_t* context, char* file)
     memset(id, 0, sizeof(id));
     memset(events_file_name, 0, sizeof(events_file_name));
     itoa(request.unique_id, id);
-    strcat(events_file_name, (char*)"/pipe/sound-events-");
+    strcat(events_file_name, "/pipe/sound-events-");
     strcat(events_file_name, id);
     context->unique_id = request.unique_id;
 
@@ -38,7 +38,7 @@ int request_play_sound_file(stream_context_t* context, char* file)
 int request_server_update()
 {
     while (sound_file == -1) {
-        sound_file = open((char*)"/pipe/sound", O_RDWR | O_APPEND);
+        sound_file = open("/pipe/sound", O_RDWR | O_APPEND);
         usleep(100);
     }
 

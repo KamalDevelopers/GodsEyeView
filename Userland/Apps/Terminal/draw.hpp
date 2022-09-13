@@ -12,11 +12,11 @@
 #define TEXT_GAP_X 12
 #define TEXT_GAP_Y 15
 
-void load_font(char* name);
+void load_font(const char* name);
 void unload_font();
 void resize_text(canvas_t* canvas);
 void clear_text(canvas_t* canvas);
-void draw_text(canvas_t* canvas, char* str);
+void draw_text(canvas_t* canvas, const char* str);
 void character_set(canvas_t* canvas, int index);
 
 #endif

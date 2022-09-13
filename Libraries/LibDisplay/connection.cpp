@@ -15,7 +15,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, ui
 
     display_file = -1;
     while (display_file == -1) {
-        display_file = open((char*)"/pipe/display", O_RDWR | O_APPEND);
+        display_file = open("/pipe/display", O_RDWR | O_APPEND);
         usleep(5);
     }
 
@@ -27,7 +27,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, ui
     memset(pid, 0, sizeof(pid));
     memset(events_file_name, 0, sizeof(events_file_name));
     itoa(request.pid, pid);
-    strcat(events_file_name, (char*)"/pipe/display-events-");
+    strcat(events_file_name, "/pipe/display-events-");
     strcat(events_file_name, pid);
 
     events_file = -1;

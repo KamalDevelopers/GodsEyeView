@@ -1,7 +1,7 @@
 #include "launcher.hpp"
 #include "font.hpp"
 
-uint8_t* load_font(char* name)
+uint8_t* load_font(const char* name)
 {
     struct stat statbuffer;
     int file_descriptor = open(name, O_RDONLY);
@@ -29,7 +29,7 @@ Launcher::Launcher()
     uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
     window_events_file = request_display_window(window_canvas, width, height, 0x080808, flags);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
-    font_buffer = load_font((char*)"bitmaps/ter-u12b.psfu");
+    font_buffer = load_font("bitmaps/ter-u12b.psfu");
     request_update_window();
 }
 

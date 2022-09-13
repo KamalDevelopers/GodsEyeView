@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
     uint32_t screen_width = 0;
     uint32_t screen_height = 0;
-    int fd = open((char*)"/dev/display", O_RDONLY);
+    int fd = open("/dev/display", O_RDONLY);
     uint32_t buffer[3];
     if (read(fd, buffer, sizeof(uint32_t))) {
         screen_width = buffer[1];

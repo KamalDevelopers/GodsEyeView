@@ -13,7 +13,7 @@ static int escape_flag = 0;
 static uint8_t* font_buffer = 0;
 static char terminal_text_buffer[2048];
 
-void load_font(char* name)
+void load_font(const char* name)
 {
     struct stat statbuffer;
     int file_descriptor = open(name, O_RDONLY);
@@ -140,7 +140,7 @@ void character_set(canvas_t* canvas, int index)
         next_line(canvas);
 }
 
-void draw_text(canvas_t* canvas, char* str)
+void draw_text(canvas_t* canvas, const char* str)
 {
     if (strlen(terminal_text_buffer) + strlen(str) >= 2048)
         memset(terminal_text_buffer, 0, 2048);

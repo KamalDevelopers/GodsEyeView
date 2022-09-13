@@ -31,7 +31,7 @@ void send_events(WindowManager* wm)
 
 events_files_t init_events()
 {
-    events_files.mouse = open((char*)"/dev/mouse", O_RDONLY);
-    events_files.keyboard = open((char*)"/dev/keyboard", O_RDONLY);
+    events_files.mouse = open("/dev/mouse", O_RDONLY);
+    events_files.keyboard = open("/dev/keyboard", O_RDONLY);
     return events_files;
 }

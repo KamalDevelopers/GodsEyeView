@@ -49,7 +49,7 @@ void WindowManager::mouse_event(mouse_event_t* event)
 void WindowManager::keyboard_event(keyboard_event_t* event)
 {
     if ((event->key == 't') && (event->modifier == 2)) {
-        spawn((char*)"bin/terminal", 0);
+        spawn("bin/terminal", 0);
         return;
     }
 

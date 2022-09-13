@@ -9,7 +9,7 @@ static char current_path[100];
 
 int command(char* input)
 {
-    char* program = strtok(input, (char*)" ");
+    char* program = strtok(input, " ");
 
     if (strcmp(program, "uname") == 0) {
         utsname uname_struct;
@@ -19,7 +19,7 @@ int command(char* input)
     }
 
     if (strcmp(program, "cd") == 0) {
-        char* dir = strtok(NULL, (char*)" ");
+        char* dir = strtok(NULL, " ");
         if (!dir) {
             printf("Missing directory argument");
             return 1;
@@ -33,7 +33,7 @@ int command(char* input)
     }
 
     if (strcmp(program, "stat") == 0) {
-        char* file = strtok(NULL, (char*)" ");
+        char* file = strtok(NULL, " ");
         if (!file) {
             printf("Missing file argument");
             return 1;
@@ -61,7 +61,7 @@ int command(char* input)
     if (strcmp(program, "reboot") == 0)
         _reboot();
 
-    char* arg = strtok(NULL, (char*)" ");
+    char* arg = strtok(NULL, " ");
 
     char** arguments = (char**)malloc(sizeof(char*) * 10);
     for (uint32_t i = 0; i < 10; ++i) {
@@ -75,7 +75,7 @@ int command(char* input)
             strcpy(arguments[argc], arg);
             argc++;
         }
-        arg = strtok(NULL, (char*)" ");
+        arg = strtok(NULL, " ");
     }
 
     char program_path[100];
@@ -83,7 +83,7 @@ int command(char* input)
 
     int fd = open(program, O_RDONLY);
     if (fd == -1)
-        strcat(program_path, (char*)"/bin/");
+        strcat(program_path, "/bin/");
     close(fd);
     strcat(program_path, program);
 

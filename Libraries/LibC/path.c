@@ -15,7 +15,7 @@ int path_resolver(char* input, bool is_dir)
     memset(input, 0, strlen(input));
 
     if ((is_dir) && (path_buffer[strlen(path_buffer)] != '/'))
-        strcat(path_buffer, (char*)"/");
+        strcat(path_buffer, "/");
 
     char* token = strtok(path_buffer, "/");
     int last_token_size = 0;
@@ -34,7 +34,7 @@ int path_resolver(char* input, bool is_dir)
         else {
             strcat(input, token);
             if ((next_token != NULL) || is_dir)
-                strcat(input, (char*)"/");
+                strcat(input, "/");
         }
 
         last_token_size = strlen(token);

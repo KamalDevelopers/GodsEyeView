@@ -8,7 +8,7 @@ int slave_audio_device_write(int slave_file)
 {
     usleep(1000);
     pcm_stream_t pcm;
-    int audio_device = open((char*)"/dev/audio", O_RDWR);
+    int audio_device = open("/dev/audio", O_RDWR);
     read(slave_file, (void*)&pcm, sizeof(pcm_stream_t));
     write(audio_device, (void*)&pcm, sizeof(pcm_stream_t));
     close(audio_device);
@@ -18,7 +18,7 @@ int slave_audio_device_write(int slave_file)
 int main(int argc, char** argv)
 {
     nice(-1);
-    int slave_file = open((char*)"/pipe/sound-slave", O_RDWR);
+    int slave_file = open("/pipe/sound-slave", O_RDWR);
     if (slave_file != -1)
         return slave_audio_device_write(slave_file);
 

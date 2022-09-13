@@ -20,7 +20,7 @@ Wave::Wave(char* file)
     memcpy(&fmt_header, data, sizeof(fmt_header_t));
     data += fmt_header.chunk_size + 8;
 
-    if (strncmp((char*)data, "LIST", 4) == 0) {
+    if (strncmp((const char*)data, "LIST", 4) == 0) {
         memcpy(&list_header, data, sizeof(list_header_t));
         data += list_header.chunk_size + 8;
     }
