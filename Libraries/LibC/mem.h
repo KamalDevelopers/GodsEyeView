@@ -29,6 +29,7 @@ extern void(free)(void*);             ///< The standard function.
 
 extern void memory_hooks(uint32_t (*pmalloc)(size_t), int (*pfree)(uint32_t, size_t));
 
+int memcmp(const void* buf1, const void* buf2, size_t count);
 void* memchr(const void* str, int c, size_t n);
 void* memcpy32(void* dst, const void* src, size_t cnt);
 void* memcpy(void* dst, const void* src, unsigned int cnt);
