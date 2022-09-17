@@ -5,8 +5,8 @@
 #define GET_GREEN(color) ((color >> 8) & 0x000000FF)
 #define GET_BLUE(color) ((color >> 0) & 0X000000FF)
 
-font_header_t* font_header = 0;
-uint8_t* font_buffer = 0;
+static font_header_t* font_header = 0;
+static uint8_t* font_buffer = 0;
 
 static uint32_t pixel_alpha_blend(uint32_t fg, uint32_t bg, uint32_t alpha1)
 {

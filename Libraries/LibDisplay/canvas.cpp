@@ -23,6 +23,7 @@ int request_canvas_destroy(canvas_t* canvas)
 
 int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
 {
+    uint32_t* fb = canvas->framebuffer;
     uint32_t previous_size = canvas->size;
     canvas->size = height * width;
     canvas->width = width;
@@ -31,9 +32,12 @@ int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height)
     if (canvas->size <= previous_size)
         return 0;
 
-    if (canvas->framebuffer != 0)
-        free(canvas->framebuffer);
     canvas->framebuffer = (uint32_t*)malloc(canvas->size * sizeof(int32_t));
+    canvas_copy(canvas->framebuffer, fb, previous_size);
+    canvas_set(canvas->framebuffer + previous_size, 0, canvas->size - previous_size);
+
+    if (fb != 0)
+        free(fb);
     return 0;
 }
 
