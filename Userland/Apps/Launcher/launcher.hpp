@@ -13,7 +13,6 @@ private:
     int window_events_file = -1;
     int shell_pid = -1;
     bool is_running = false;
-    uint8_t* font_buffer = 0;
     uint32_t width = 0;
     uint32_t height = 0;
     canvas_t window_canvas;

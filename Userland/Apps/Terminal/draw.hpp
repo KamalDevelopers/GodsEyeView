@@ -10,13 +10,14 @@
 
 #define BACKGROUND_COLOR 0x080808
 #define TEXT_GAP_X 12
-#define TEXT_GAP_Y 15
+#define TEXT_GAP_Y 14
 
-void load_font(const char* name);
-void unload_font();
+void init(const char* font);
+void uninit();
+
 void resize_text(canvas_t* canvas);
 void clear_text(canvas_t* canvas);
 void draw_text(canvas_t* canvas, const char* str);
-void character_set(canvas_t* canvas, int index);
+void character_set(canvas_t* canvas, int index, bool bg_blend = false);
 
 #endif

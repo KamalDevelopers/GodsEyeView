@@ -1,5 +1,5 @@
 #include "draw.hpp"
-#include "font.hpp"
+#include <LibFont/font.hpp>
 
 static const uint32_t text_mode_colors[] = {
     0x0, 0xAB3030, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0xc0c0c0,
@@ -10,35 +10,27 @@ static uint32_t pos_x = TEXT_GAP_X;
 static uint32_t pos_y = TEXT_GAP_Y;
 static uint32_t color = 0xA8A7A7;
 static int escape_flag = 0;
-static uint8_t* font_buffer = 0;
 static char terminal_text_buffer[2048];
 
-void load_font(const char* name)
+void init(const char* font)
 {
-    struct stat statbuffer;
-    int file_descriptor = open(name, O_RDONLY);
-    fstat(file_descriptor, &statbuffer);
-    font_buffer = (uint8_t*)malloc(sizeof(char) * statbuffer.st_size);
-
-    read(file_descriptor, font_buffer, statbuffer.st_size);
-    close(file_descriptor);
-
+    font_load(font);
     memset(terminal_text_buffer, 0, 2048);
 }
 
-void unload_font()
+void uninit()
 {
-    if (font_buffer)
-        free(font_buffer);
+    font_unload();
 }
 
 void cursor_set(canvas_t* canvas, bool show)
 {
-    for (uint32_t y = 0; y < 15; y++) {
+    int py = pos_y;
+    for (uint32_t y = 0; y < 13; y++) {
         if (show)
-            canvas->framebuffer[(pos_y + y - 2) * canvas->width + (pos_x + 1)] = 0xD8D8D8;
+            canvas->framebuffer[(py + y - 5) * canvas->width + (pos_x + 1)] = 0xD8D8D8;
         else
-            canvas->framebuffer[(pos_y + y - 2) * canvas->width + (pos_x + 1)] = BACKGROUND_COLOR;
+            canvas->framebuffer[(py + y - 5) * canvas->width + (pos_x + 1)] = BACKGROUND_COLOR;
     }
 }
 
@@ -52,7 +44,7 @@ void clear_text(canvas_t* canvas)
 void scroll_text(canvas_t* canvas)
 {
     pos_x = TEXT_GAP_X;
-    for (uint32_t y = TEXT_GAP_Y; y < canvas->height - TEXT_GAP_Y - 1; y++)
+    for (uint32_t y = TEXT_GAP_Y - 2; y < canvas->height - TEXT_GAP_Y + 2; y++)
         for (uint32_t x = 0; x < canvas->width; x++)
             canvas->framebuffer[y * canvas->width + x] = canvas->framebuffer[(y + TEXT_GAP_Y) * canvas->width + x];
     /* Clear last line */
@@ -69,7 +61,7 @@ void next_line(canvas_t* canvas)
     pos_y += TEXT_GAP_Y;
 }
 
-void character_set(canvas_t* canvas, int index)
+void character_set(canvas_t* canvas, int index, bool bg_blend)
 {
     if ((index == '\33') && !escape_flag) {
         escape_flag = 1;
@@ -119,9 +111,13 @@ void character_set(canvas_t* canvas, int index)
     if (index == 8) {
         if (pos_x >= 18) {
             cursor_set(canvas, false);
-            pos_x -= ((psf_font_t*)font_buffer)->width + 1;
-            character_set(canvas, 32);
-            pos_x -= ((psf_font_t*)font_buffer)->width + 1;
+            pos_x -= current_font_header()->width + 1;
+            pos_y -= 2;
+            character_set(canvas, 32, true);
+            pos_y += 2;
+            pos_x -= current_font_header()->width + 1;
+            character_set(canvas, 32, true);
+            pos_x -= current_font_header()->width + 1;
         }
         return;
     }
@@ -133,9 +129,12 @@ void character_set(canvas_t* canvas, int index)
     }
 
     cursor_set(canvas, false);
-    display_character(canvas, (psf_font_t*)font_buffer, index, pos_x, pos_y, color, BACKGROUND_COLOR);
+    if (!bg_blend)
+        font_display_character(canvas, index, pos_x, pos_y, color);
+    else
+        font_display_character(canvas, index, pos_x, pos_y, color, BACKGROUND_COLOR, true);
 
-    pos_x += ((psf_font_t*)font_buffer)->width + 1;
+    pos_x += current_font_header()->width + 1;
     if (pos_x >= canvas->width - TEXT_GAP_X)
         next_line(canvas);
 }

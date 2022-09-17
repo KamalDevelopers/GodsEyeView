@@ -26,3 +26,6 @@ build libdisplay.a: library LibDisplay/canvas.o LibDisplay/connection.o
 build LibSound/connection.o: cpp ./LibSound/connection.cpp
 build LibSound/wave.o: cpp ./LibSound/wave.cpp
 build libsound.a: library LibSound/connection.o LibSound/wave.o
+
+build LibFont/font.o: cpp ./LibFont/font.cpp
+build libfont.a: library LibFont/font.o

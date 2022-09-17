@@ -3,14 +3,13 @@ rule move
     command = mv ./launcher ../../../Base/root/bin/ && ninja -t clean
 
 rule cpp
-    command = i686-elf-g++ -fPIC -c $in -o $out -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -O2 -I../../../Libraries -lgcc
+    command = i686-elf-g++ -fPIC -c $in -o $out -Wno-register -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -O2 -I../../../Libraries -lgcc
 
 rule link
-    command = ld -melf_i386 -T link.ld -o $out $in ../../../Libraries/libc.a ../../../Libraries/libdisplay.a
+    command = ld -melf_i386 -T link.ld -o $out $in ../../../Libraries/libc.a ../../../Libraries/libdisplay.a ../../../Libraries/libfont.a
 
 build main.o: cpp ./main.cpp
-build font.o: cpp ./font.cpp
 build launcher.o: cpp ./launcher.cpp
-build ./launcher: link ./main.o ./font.o ./launcher.o
+build ./launcher: link ./main.o ./launcher.o
 build move: move
 default ./launcher

@@ -1,23 +1,5 @@
 #include "launcher.hpp"
-#include "font.hpp"
-
-uint8_t* load_font(const char* name)
-{
-    struct stat statbuffer;
-    int file_descriptor = open(name, O_RDONLY);
-    fstat(file_descriptor, &statbuffer);
-    uint8_t* font_buffer = (uint8_t*)malloc(sizeof(char) * statbuffer.st_size);
-
-    read(file_descriptor, font_buffer, statbuffer.st_size);
-    close(file_descriptor);
-    return font_buffer;
-}
-
-void unload_font(uint8_t* font_buffer)
-{
-    if (font_buffer)
-        free(font_buffer);
-}
+#include <LibFont/font.hpp>
 
 Launcher::Launcher()
 {
@@ -29,14 +11,16 @@ Launcher::Launcher()
     uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
     window_events_file = request_display_window(window_canvas, width, height, 0x080808, flags);
     canvas_set(window_canvas.framebuffer, 0x080808, window_canvas.size);
-    font_buffer = load_font("bitmaps/ter-u12b.psfu");
+
+    font_load("bitmaps/font.tftf");
+
     request_update_window();
 }
 
 Launcher::~Launcher()
 {
-    unload_font(font_buffer);
     request_destroy_window();
+    font_unload();
 }
 
 void Launcher::resize_window(display_event_t* display_event)
@@ -64,10 +48,9 @@ void Launcher::receive_events()
 
 uint32_t Launcher::display_string(const char* text, int pos_x, int pos_y)
 {
-    for (uint32_t i = 0; i < strlen(text); i++) {
-        display_character(&window_canvas, (psf_font_t*)font_buffer, text[i], pos_x, 2, 0x686868, 0x080808);
-        pos_x += ((psf_font_t*)font_buffer)->width + 1;
-    }
+    size_t size = strlen(text);
+    for (uint32_t i = 0; i < size; i++)
+        pos_x = font_display_character(&window_canvas, text[i], pos_x, pos_y, 0x777777, 0x080808, true);
     return pos_x;
 }
 
@@ -98,26 +81,30 @@ void Launcher::display_time()
     y += (m <= 2);
 
     char minutes[10];
+    memset(&minutes, 0, 10);
     itoa(min, minutes);
     char hours[10];
+    memset(&hours, 0, 10);
     itoa(hour, hours);
     char day[10];
+    memset(&day, 0, 10);
     itoa(y, day);
 
-    int pos_x = width - 122;
-    pos_x = display_string("[", pos_x, 2);
-    pos_x = display_string(months[m - 1], pos_x, 2);
-    pos_x = display_string(" ", pos_x, 2);
-    pos_x = display_string(day, pos_x, 2);
-    pos_x = display_string(" ", pos_x, 2);
+    int pos_x = width - 154;
+    int pos_y = 6;
+    pos_x = display_string("-", pos_x, pos_y);
+    pos_x = display_string(" ", pos_x, pos_y);
+    pos_x = display_string(months[m - 1], pos_x, pos_y);
+    pos_x = display_string(" ", pos_x, pos_y);
+    pos_x = display_string(day, pos_x, pos_y);
+    pos_x = display_string(" ", pos_x, pos_y);
     if (hour < 10)
-        pos_x = display_string("0", pos_x, 2);
-    pos_x = display_string(hours, pos_x, 2);
-    pos_x = display_string(":", pos_x, 2);
+        pos_x = display_string("0", pos_x, pos_y);
+    pos_x = display_string(hours, pos_x, pos_y);
+    pos_x = display_string(":", pos_x, pos_y);
     if (min < 10)
-        pos_x = display_string("0", pos_x, 2);
-    pos_x = display_string(minutes, pos_x, 2);
-    pos_x = display_string("]", pos_x, 2);
+        pos_x = display_string("0", pos_x, pos_y);
+    pos_x = display_string(minutes, pos_x, pos_y);
 }
 
 void Launcher::run()
