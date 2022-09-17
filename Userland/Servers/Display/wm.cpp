@@ -118,7 +118,7 @@ void WindowManager::update_window_positions()
         tiled_index++;
     }
 
-    compositor->require_update();
+    /* compositor->require_update(); */
 }
 
 Window* WindowManager::compose_window(int pid)
