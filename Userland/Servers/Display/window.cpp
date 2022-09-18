@@ -81,10 +81,11 @@ void Window::mouse_event(mouse_event_t* event)
     if (!is_point_in_window(event->x, event->y))
         return;
 
-    display_event_t send_event;
-    send_event.type = DISPLAY_EVENT_MOUSE;
-    memcpy(&send_event.mouse, event, sizeof(mouse_event_t));
-    write(process_send_event_file, &send_event, sizeof(display_event_t));
+    /* Send mouse events to window */
+    /* display_event_t send_event; */
+    /* send_event.type = DISPLAY_EVENT_MOUSE; */
+    /* memcpy(&send_event.mouse, event, sizeof(mouse_event_t)); */
+    /* write(process_send_event_file, &send_event, sizeof(display_event_t)); */
 }
 
 void Window::keyboard_event(keyboard_event_t* event)
