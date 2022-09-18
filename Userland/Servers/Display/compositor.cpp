@@ -1,4 +1,5 @@
 #include "compositor.hpp"
+#include <LibC/stat.h>
 #include <LibC/stdio.h>
 #include <LibC/string.h>
 #include <LibC/unistd.h>
@@ -35,7 +36,11 @@ void Compositor::render_canvas(canvas_t* canvas)
     uint32_t canvas_address = (uint32_t)(canvas->framebuffer);
 
     for (uint32_t y = 0; y < canvas->height; y++) {
-        canvas_copy((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width);
+        if (canvas->alpha_lookup)
+            canvas_copy_alpha((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width, canvas->alpha_lookup);
+        else
+            canvas_copy((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width);
+
         canvas_address += canvas->width * sizeof(int32_t);
         final_layer_address += final_layer->width * sizeof(int32_t);
     }
@@ -75,7 +80,7 @@ void Compositor::render_stack()
 
 int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)
 {
-    int file_descriptor = open((char*)file_name, O_RDONLY);
+    int file_descriptor = open(file_name, O_RDONLY);
     if (file_descriptor < 0)
         return 0;
 
@@ -84,8 +89,46 @@ int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)
     return size;
 }
 
-void Compositor::load_background_bitmap(const char* file_name)
+int Compositor::read_compressed_bitmap(const char* file_name, canvas_t* canvas)
 {
+    int file_descriptor = open(file_name, O_RDONLY);
+    if (file_descriptor < 0)
+        return 0;
+
+    struct stat statbuffer;
+    fstat(file_descriptor, &statbuffer);
+    uint32_t* buffer = (uint32_t*)malloc(statbuffer.st_size);
+    read(file_descriptor, buffer, statbuffer.st_size);
+    close(file_descriptor);
+
+    size_t pixel_count = statbuffer.st_size / sizeof(uint32_t);
+    uint32_t* frame = canvas->framebuffer;
+    uint32_t last_pixel = 0;
+
+    for (uint32_t i = 0; i < pixel_count; i++) {
+        uint32_t pixel = buffer[i];
+        uint32_t repeat = (pixel >> 24) & 0x000000FF;
+        for (uint32_t r = 0; r < repeat; r++) {
+            *frame = last_pixel;
+            frame++;
+        }
+
+        *frame = pixel;
+        frame++;
+        last_pixel = pixel;
+    }
+
+    free(buffer);
+    return statbuffer.st_size;
+}
+
+void Compositor::load_background_bitmap(const char* file_name, bool is_compressed)
+{
+    if (is_compressed) {
+        printf("%d\n", read_compressed_bitmap(file_name, root_layer));
+        return;
+    }
+
     read_bitmap(file_name, root_layer);
 }
 

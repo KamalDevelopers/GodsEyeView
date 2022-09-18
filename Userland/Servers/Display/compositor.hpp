@@ -35,9 +35,10 @@ public:
     uint32_t screen_height() { return display_height; }
     void require_update() { needs_update = true; }
 
-    void load_background_bitmap(const char* file_name);
+    void load_background_bitmap(const char* file_name, bool is_compressed = false);
     void load_mouse_bitmap(const char* file_name);
     int read_bitmap(const char* file_name, canvas_t* canvas);
+    int read_compressed_bitmap(const char* file_name, canvas_t* canvas);
     void update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack = false);
 
     void render_borders(canvas_t* canvas);

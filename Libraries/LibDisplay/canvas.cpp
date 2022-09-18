@@ -1,5 +1,10 @@
 #include "canvas.hpp"
 
+#define GET_ALPHA(color) ((color >> 24) & 0x000000FF)
+#define GET_RED(color) ((color >> 16) & 0x000000FF)
+#define GET_GREEN(color) ((color >> 8) & 0x000000FF)
+#define GET_BLUE(color) ((color >> 0) & 0X000000FF)
+
 canvas_t* request_canvas(uint32_t width, uint32_t height)
 {
     canvas_t* canvas = (canvas_t*)malloc(sizeof(canvas_t));
@@ -9,6 +14,7 @@ canvas_t* request_canvas(uint32_t width, uint32_t height)
     canvas->y = 0;
     canvas->width = width;
     canvas->height = height;
+    canvas->alpha_lookup = 0;
     return canvas;
 }
 
@@ -16,6 +22,13 @@ int request_canvas_destroy(canvas_t* canvas)
 {
     if ((canvas->framebuffer == 0) || (canvas == 0))
         return -1;
+
+    if (canvas->alpha_lookup) {
+        for (uint32_t i = 0; i < 256; i++)
+            free(canvas->alpha_lookup[i]);
+        free(canvas->alpha_lookup);
+    }
+
     free(canvas->framebuffer);
     free(canvas);
     return 0;
@@ -54,14 +67,20 @@ int request_framebuffer(uint32_t* framebuffer, uint32_t* width, uint32_t* height
     return 1;
 }
 
-void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size)
+void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, uint8_t** lookup)
 {
     for (uint32_t i = 0; i < size; i++) {
-        if (source[i] >= 0xFF000000)
+        uint16_t alpha = GET_ALPHA(source[i]);
+
+        if (alpha == 0) {
+            destination[i] = source[i];
             continue;
-        if (destination[i] >= 0xFF000000)
+        }
+
+        if (alpha == 255)
             continue;
-        destination[i] = source[i];
+
+        destination[i] = pixel_alpha_blend(source[i], destination[i], 255 - alpha, lookup);
     }
 }
 
@@ -100,4 +119,52 @@ void canvas_blit(canvas_t* destination, canvas_t* source)
         source_address += source_pitch;
         destination_address += destination_pitch;
     }
+}
+
+void canvas_create_alpha(canvas_t* canvas, uint32_t color)
+{
+    if (canvas->alpha_lookup) {
+        for (uint32_t i = 0; i < 256; i++)
+            free(canvas->alpha_lookup[i]);
+        free(canvas->alpha_lookup);
+    }
+
+    canvas->alpha_lookup = (uint8_t**)malloc(256 * sizeof(uint8_t*));
+    for (uint32_t i = 0; i < 256; i++)
+        canvas->alpha_lookup[i] = (uint8_t*)malloc(256 * sizeof(uint8_t));
+
+    uint32_t alpha = GET_ALPHA(color);
+    for (uint16_t y = 0; y < 256; y++) {
+        for (uint16_t x = 0; x < 256; x++) {
+            canvas->alpha_lookup[y][x] = y + (alpha * 1.0 / 255) * x;
+        }
+    }
+}
+
+uint32_t pixel_alpha_blend(uint32_t fg, uint32_t bg, uint32_t alpha1, uint8_t** lookup)
+{
+    uint32_t red1 = GET_RED(fg);
+    uint32_t green1 = GET_GREEN(fg);
+    uint32_t blue1 = GET_BLUE(fg);
+
+    uint32_t alpha2 = 255 - GET_ALPHA(bg);
+    uint32_t red2 = GET_RED(bg);
+    uint32_t green2 = GET_GREEN(bg);
+    uint32_t blue2 = GET_BLUE(bg);
+
+    if (lookup) {
+        return (lookup[red1][red2] << 16) | (lookup[green1][green2] << 8) | lookup[blue1][blue2];
+    }
+
+    uint32_t r = (uint32_t)((alpha1 * 1.0 / 255) * red1);
+    uint32_t g = (uint32_t)((alpha1 * 1.0 / 255) * green1);
+    uint32_t b = (uint32_t)((alpha1 * 1.0 / 255) * blue1);
+
+    r = r + (((255 - alpha1) * 1.0 / 255) * (alpha2 * 1.0 / 255)) * red2;
+    g = g + (((255 - alpha1) * 1.0 / 255) * (alpha2 * 1.0 / 255)) * green2;
+    b = b + (((255 - alpha1) * 1.0 / 255) * (alpha2 * 1.0 / 255)) * blue2;
+
+    uint32_t new_alpha = (uint32_t)(alpha1 + ((255 - alpha1) * 1.0 / 255) * alpha2);
+    uint32_t color1_over_color2 = ((255 - new_alpha) << 24) | (r << 16) | (g << 8) | (b << 0);
+    return color1_over_color2;
 }

@@ -12,16 +12,19 @@ typedef struct canvas {
     uint32_t x = 0;
     uint32_t y = 0;
     uint32_t border_decoration = 0;
+    uint8_t** alpha_lookup = 0;
 } canvas_t;
 
 canvas_t* request_canvas(uint32_t width, uint32_t height);
 int request_canvas_resize(canvas_t* canvas, uint32_t width, uint32_t height);
 int request_canvas_destroy(canvas_t* canvas);
 int request_framebuffer(uint32_t* framebuffer, uint32_t* width, uint32_t* height);
-void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size);
+void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, uint8_t** lookup = 0);
 void canvas_copy(uint32_t* destination, uint32_t* source, int size);
 void canvas_copy(canvas_t* destination, canvas_t* source);
 void canvas_blit(canvas_t* destination, canvas_t* source);
 void canvas_set(uint32_t* destination, uint32_t rgb, int size);
+void canvas_create_alpha(canvas_t* canvas, uint32_t color);
+uint32_t pixel_alpha_blend(uint32_t fg, uint32_t bg, uint32_t alpha1, uint8_t** lookup = 0);
 
 #endif

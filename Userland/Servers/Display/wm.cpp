@@ -118,6 +118,8 @@ void WindowManager::update_window_positions()
         tiled_index++;
     }
 
+    if (!tiled_windows)
+        compositor->require_update();
     /* compositor->require_update(); */
 }
 
@@ -144,6 +146,9 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint
     nice(2);
 
     canvas_set(window->get_canvas()->framebuffer, bg, window->get_canvas()->size);
+    if (((bg >> 24) & 0x000000FF) > 0)
+        canvas_create_alpha(window->get_canvas(), bg);
+
     compositor->add_render_layer(window->get_canvas());
     window->create_process_connection();
     if (window->get_controlled())
