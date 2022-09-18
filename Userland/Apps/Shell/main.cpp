@@ -70,7 +70,7 @@ int command(char* input)
     }
 
     uint32_t argc = 0;
-    while (arg) {
+    while (arg && argc < 10) {
         if (arg) {
             strcpy(arguments[argc], arg);
             argc++;
@@ -110,7 +110,9 @@ int main(int argc, char** argv)
 
     const char* user = "terry";
     lowercase(uname_struct.sysname);
+    char last_input[100];
     char input[100];
+    memset(last_input, 0, 100);
 
     while (1) {
         getcwd(current_path);
@@ -124,7 +126,13 @@ int main(int argc, char** argv)
         if (!strlen(input))
             continue;
 
+        if (strlen(input) == 2 && (strcmp(input, "!!") == 0))
+            memcpy(input, last_input, 100);
+        else
+            memcpy(last_input, input, 100);
+
         int result = command(input);
+
         if (result == 0)
             printf("Unknown command '%s'", input);
         if (result != 2)
