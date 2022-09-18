@@ -20,7 +20,7 @@ inline int fstat(int fd, struct stat* __restrict statbuffer)
     return result;
 }
 
-inline int stat(char* filename, struct stat* __restrict statbuffer)
+inline int stat(const char* filename, struct stat* __restrict statbuffer)
 {
     int result;
     asm volatile("int $0x80"

@@ -114,9 +114,8 @@ uint32_t Syscalls::sys_time()
 
 int Syscalls::sys_stat(char* file, struct stat* buffer)
 {
-    int fd = VFS->open(file);
+    int fd = VFS->open(file, O_RDONLY);
     int status = sys_fstat(fd, buffer);
-    VFS->close(fd);
     return status;
 }
 
