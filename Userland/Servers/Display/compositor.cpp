@@ -60,10 +60,37 @@ void Compositor::render_borders(canvas_t* canvas)
     }
 }
 
+void Compositor::render_single_layer(canvas_t* canvas)
+{
+    uint32_t final_layer_address = (uint32_t)(final_layer->framebuffer) + canvas->x * sizeof(int32_t);
+    final_layer_address += canvas->y * (final_layer->width * sizeof(int32_t));
+    uint32_t canvas_address = (uint32_t)(root_layer->framebuffer) + canvas->x * sizeof(int32_t);
+    canvas_address += canvas->y * (root_layer->width * sizeof(int32_t));
+
+    for (uint32_t y = 0; y < canvas->height; y++) {
+        canvas_copy((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width);
+        canvas_address += root_layer->width * sizeof(int32_t);
+        final_layer_address += final_layer->width * sizeof(int32_t);
+    }
+
+    render_borders(canvas);
+    render_canvas(canvas);
+
+    update_mouse_position(mouse_layer->x, mouse_layer->y, true);
+    canvas_copy((uint32_t*)display_framebuffer, final_layer->framebuffer, final_layer->size);
+    canvas_blit(final_layer, mouse_ghost_layer);
+}
+
 void Compositor::render_stack()
 {
-    if (!needs_update)
+    if (!needs_update && !update_canvas)
         return;
+
+    if (!needs_update && update_canvas) {
+        render_single_layer(update_canvas);
+        update_canvas = 0;
+        return;
+    }
 
     /* TODO: Make this faster by reducing draw areas! */
     render_canvas(root_layer);
@@ -76,6 +103,26 @@ void Compositor::render_stack()
     canvas_copy((uint32_t*)display_framebuffer, final_layer->framebuffer, final_layer->size);
     canvas_blit(final_layer, mouse_ghost_layer);
     needs_update = false;
+}
+
+void Compositor::require_update()
+{
+    needs_update = true;
+}
+
+void Compositor::require_update_next()
+{
+    next_needs_update = true;
+}
+
+void Compositor::require_update_canvas(canvas_t* canvas)
+{
+    if (next_needs_update) {
+        needs_update = true;
+        next_needs_update = false;
+        return;
+    }
+    update_canvas = canvas;
 }
 
 int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)

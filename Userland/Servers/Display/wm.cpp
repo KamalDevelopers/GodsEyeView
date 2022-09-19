@@ -64,7 +64,7 @@ void WindowManager::require_update(int pid)
         return;
 
     update_window_border(index);
-    compositor->require_update();
+    compositor->require_update_canvas(windows.at(index)->get_canvas());
 }
 
 void WindowManager::update_window_border(uint32_t index)
@@ -120,6 +120,7 @@ void WindowManager::update_window_positions()
 
     if (!tiled_windows)
         compositor->require_update();
+    compositor->require_update_next();
     /* compositor->require_update(); */
 }
 

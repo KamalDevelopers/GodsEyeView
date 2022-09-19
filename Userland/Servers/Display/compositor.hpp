@@ -19,7 +19,9 @@ private:
     uint32_t display_width = 0;
     uint32_t display_height = 0;
     bool needs_update = false;
+    bool next_needs_update = false;
 
+    canvas_t* update_canvas = 0;
     canvas_t display_layer;
     canvas_t* final_layer = 0;
     canvas_t* root_layer = 0;
@@ -33,14 +35,17 @@ public:
 
     uint32_t screen_width() { return display_width; }
     uint32_t screen_height() { return display_height; }
-    void require_update() { needs_update = true; }
 
+    void require_update();
+    void require_update_next();
+    void require_update_canvas(canvas_t* canvas);
     void load_background_bitmap(const char* file_name, bool is_compressed = false);
     void load_mouse_bitmap(const char* file_name);
     int read_bitmap(const char* file_name, canvas_t* canvas);
     int read_compressed_bitmap(const char* file_name, canvas_t* canvas);
     void update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack = false);
 
+    void render_single_layer(canvas_t* canvas);
     void render_borders(canvas_t* canvas);
     void render_canvas(canvas_t* canvas);
     void render_stack();
