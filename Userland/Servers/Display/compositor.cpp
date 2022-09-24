@@ -172,7 +172,7 @@ int Compositor::read_compressed_bitmap(const char* file_name, canvas_t* canvas)
 void Compositor::load_background_bitmap(const char* file_name, bool is_compressed)
 {
     if (is_compressed) {
-        printf("%d\n", read_compressed_bitmap(file_name, root_layer));
+        read_compressed_bitmap(file_name, root_layer);
         return;
     }
 

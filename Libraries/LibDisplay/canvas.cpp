@@ -23,11 +23,8 @@ int request_canvas_destroy(canvas_t* canvas)
     if ((canvas->framebuffer == 0) || (canvas == 0))
         return -1;
 
-    if (canvas->alpha_lookup) {
-        for (uint32_t i = 0; i < 256; i++)
-            free(canvas->alpha_lookup[i]);
+    if (canvas->alpha_lookup != 0)
         free(canvas->alpha_lookup);
-    }
 
     free(canvas->framebuffer);
     free(canvas);
@@ -67,7 +64,7 @@ int request_framebuffer(uint32_t* framebuffer, uint32_t* width, uint32_t* height
     return 1;
 }
 
-void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, uint8_t** lookup)
+void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, alpha_lookup_t* lookup)
 {
     for (uint32_t i = 0; i < size; i++) {
         uint16_t alpha = GET_ALPHA(source[i]);
@@ -123,25 +120,19 @@ void canvas_blit(canvas_t* destination, canvas_t* source)
 
 void canvas_create_alpha(canvas_t* canvas, uint32_t color)
 {
-    if (canvas->alpha_lookup) {
-        for (uint32_t i = 0; i < 256; i++)
-            free(canvas->alpha_lookup[i]);
+    if (canvas->alpha_lookup)
         free(canvas->alpha_lookup);
-    }
 
-    canvas->alpha_lookup = (uint8_t**)malloc(256 * sizeof(uint8_t*));
-    for (uint32_t i = 0; i < 256; i++)
-        canvas->alpha_lookup[i] = (uint8_t*)malloc(256 * sizeof(uint8_t));
-
+    canvas->alpha_lookup = (alpha_lookup_t*)malloc(sizeof(alpha_lookup_t));
     uint32_t alpha = GET_ALPHA(color);
     for (uint16_t y = 0; y < 256; y++) {
         for (uint16_t x = 0; x < 256; x++) {
-            canvas->alpha_lookup[y][x] = y + (alpha * 1.0 / 255) * x;
+            canvas->alpha_lookup->table[y][x] = y + (alpha * 1.0 / 255) * x;
         }
     }
 }
 
-uint32_t pixel_alpha_blend(uint32_t fg, uint32_t bg, uint32_t alpha1, uint8_t** lookup)
+uint32_t pixel_alpha_blend(uint32_t fg, uint32_t bg, uint32_t alpha1, alpha_lookup_t* lookup)
 {
     uint32_t red1 = GET_RED(fg);
     uint32_t green1 = GET_GREEN(fg);
@@ -153,7 +144,7 @@ uint32_t pixel_alpha_blend(uint32_t fg, uint32_t bg, uint32_t alpha1, uint8_t** 
     uint32_t blue2 = GET_BLUE(bg);
 
     if (lookup) {
-        return (lookup[red1][red2] << 16) | (lookup[green1][green2] << 8) | lookup[blue1][blue2];
+        return (lookup->table[red1][red2] << 16) | (lookup->table[green1][green2] << 8) | lookup->table[blue1][blue2];
     }
 
     uint32_t r = (uint32_t)((alpha1 * 1.0 / 255) * red1);
