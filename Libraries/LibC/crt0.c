@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "unistd.h"
+#include "exit.h"
 
 #ifdef __cplusplus
 void* operator new(long unsigned int size)
@@ -61,11 +62,19 @@ void _entry()
 
     int status = main(argc, (char**)arguments);
 
+    uint32_t exits = atexit_count();
+    void (*exit_func)(void);
+
+    for (uint32_t i = 0; i < exits; i++) {
+        exit_func = (void(*)(void))(atexit_func(i));
+        exit_func();
+    }
+
     for (uint32_t i = 0; i < 10; i++)
         free(arguments[i]);
     free(arguments);
-
     flush();
+
     _exit(status);
 
     while (1)

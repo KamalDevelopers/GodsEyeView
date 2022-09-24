@@ -1,7 +1,13 @@
 #include "connection.hpp"
+#include <LibC/exit.h>
 
 static int events_file = -1;
 static int display_file = -1;
+
+static void display_exit()
+{
+    request_destroy_window();
+}
 
 int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, uint32_t bg, uint8_t flags)
 {
@@ -41,6 +47,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, ui
         read_size = read(events_file, (void*)&event, sizeof(display_event_t));
         if (event.type == DISPLAY_EVENT_RESPONSE) {
             canvas = event.canvas;
+            atexit(&display_exit);
             return events_file;
         }
         usleep(5);

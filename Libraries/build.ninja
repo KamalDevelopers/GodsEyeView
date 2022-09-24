@@ -16,8 +16,9 @@ build LibC/stdio.o: c ./LibC/stdio.c
 build LibC/stdlib.o: c ./LibC/stdlib.c
 build LibC/path.o: c ./LibC/path.c
 build LibC/mem.o: c ./LibC/mem.c
+build LibC/exit.o: c ./LibC/exit.c
 build LibC/crt0.o: crt0 ./LibC/crt0.c
-build libc.a: library LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/mem.o LibC/crt0.o
+build libc.a: library LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/mem.o LibC/crt0.o LibC/exit.o
 
 build LibDisplay/canvas.o: cpp ./LibDisplay/canvas.cpp
 build LibDisplay/connection.o: cpp ./LibDisplay/connection.cpp
