@@ -1,6 +1,9 @@
 #include "rtl8139.hpp"
 #include "../../Mem/paging.hpp"
 
+uint8_t TSAD_ports[4] = { 0x20, 0x24, 0x28, 0x2C };
+uint8_t TSD_ports[4] = { 0x10, 0x14, 0x18, 0x1C };
+
 RTL8139::RTL8139(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
     , mac0_address_port(device.port_base)
@@ -37,9 +40,9 @@ void RTL8139::activate()
     memset(receive_buffer, 0x0, 8192 + 16 + 1500);
     rbstart_port.write((uint32_t)&receive_buffer);
 
-    interrupt_mask_port.write(0xF);
+    interrupt_mask_port.write(0x0005);
     command_port.write(0x0C);
-    rx_config_port.write(0xF);
+    rx_config_port.write(0xF | (1 << 7));
 
     uint64_t mac0 = mac0_address_port.read() % 256;
     uint64_t mac1 = mac0_address_port.read() / 256;
@@ -88,14 +91,15 @@ uint32_t RTL8139::interrupt(uint32_t esp)
 
     if (status & ROK)
         receive();
+
+#if RTL_DEBUG
     if (status & TER)
-        klog("packet sent error");
+        klog("[RTL8139] packet sent error");
     if (status & RER)
-        klog("packet received error");
-    /*
+        klog("[RTL8139] packet received error");
     if (status & TOK)
-        klog("packet sent");
-    */
+        klog("[RTL8139] packet sent");
+#endif
 
     interrupt_status_port.write(0xF);
     return esp;

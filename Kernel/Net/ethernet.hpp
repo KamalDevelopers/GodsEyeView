@@ -32,7 +32,7 @@ public:
 
 class Ethernet {
 private:
-    NetworkDriver* network_driver;
+    NetworkDriver* network_driver = 0;
     bool has_driver = false;
 
 public:
@@ -44,6 +44,7 @@ public:
     bool handle_packet(uint8_t* buffer, uint32_t size);
     bool send_packet(uint64_t mac, uint8_t* buffer, uint32_t size, uint16_t type);
     uint64_t get_mac_address();
+    NetworkDriver* get_available_driver() { return network_driver; }
 };
 
 #endif

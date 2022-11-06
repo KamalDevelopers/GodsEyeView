@@ -9,6 +9,7 @@
 #include "Net/ethernet.hpp"
 #include "Net/icmp.hpp"
 #include "Net/ipv4.hpp"
+#include "Net/udp.hpp"
 
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
@@ -99,6 +100,15 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         multiboot_info_ptr->framebuffer_height);
     KeyboardDriver keyboard(&interrupts);
 
+    if (sb16.activated()) {
+        AUDIO->set_audio_driver(&sb16);
+    }
+
+    if (pci.find_driver(ES1370::identifier())) {
+        ES1370* es1370 = new ES1370(&interrupts, pci.get_descriptor());
+        AUDIO->set_audio_driver(es1370);
+    }
+
     Ethernet ethernet;
     if (pci.find_driver(AM79C973::identifier())) {
         AM79C973* am79c973 = new AM79C973(&interrupts, pci.get_descriptor());
@@ -108,15 +118,6 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     if (pci.find_driver(RTL8139::identifier())) {
         RTL8139* rtl8139 = new RTL8139(&interrupts, pci.get_descriptor());
         ethernet.set_network_driver(rtl8139);
-    }
-
-    if (sb16.activated()) {
-        AUDIO->set_audio_driver(&sb16);
-    }
-
-    if (pci.find_driver(ES1370::identifier())) {
-        ES1370* es1370 = new ES1370(&interrupts, pci.get_descriptor());
-        AUDIO->set_audio_driver(es1370);
     }
 
     klog("Setting up loaders and tasks");
@@ -131,11 +132,16 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TM->spawn("bin/terminal", 0);
     TM->spawn("bin/launcher", 0);
 
-    ata1s.set_dma(true);
     Mutex::enable();
-    TM->activate();
+    ata1s.set_dma(true);
     IRQ::activate();
 
+    if (ethernet.get_available_driver() != 0) {
+        klog("Network initialization");
+        ARP::broadcast_mac_address(GATEWAY);
+    }
+
+    TM->activate();
     while (1)
         ;
 }

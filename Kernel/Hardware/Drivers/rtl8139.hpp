@@ -4,6 +4,7 @@
 #include "../../Net/ethernet.hpp"
 #include "../pci.hpp"
 
+#define RTL_DEBUG 0
 #define RX_BUF_SIZE 8192
 #define TX_BUF_SIZE 1518
 
@@ -13,9 +14,6 @@
 #define TOK (1 << 2)
 #define TER (1 << 3)
 #define TX_TOK (1 << 15)
-
-constexpr uint8_t TSAD_ports[4] = { 0x20, 0x24, 0x28, 0x2C };
-constexpr uint8_t TSD_ports[4] = { 0x10, 0x14, 0x18, 0x1C };
 
 typedef struct description {
     uint32_t physical_address;
