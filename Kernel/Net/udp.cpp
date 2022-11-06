@@ -2,8 +2,10 @@
 #include "../Mem/mm.hpp"
 #include "ethernet.hpp"
 #include "ipv4.hpp"
+#include <LibC++/vector.hpp>
 
-static uint32_t udp_port = 1024;
+uint32_t udp_port = 1024;
+Vector<udp_socket_t*, MAX_UDP_SOCKETS> sockets;
 
 void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
 {
@@ -13,6 +15,29 @@ void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
     socket->remote_port = ((port & 0xFF00) >> 8) | ((port & 0x00FF) << 8);
     socket->local_port = ((udp_port & 0xFF00) >> 8) | ((udp_port & 0x00FF) << 8);
     udp_port++;
+
+    if (sockets.is_full()) {
+        klog("Could not create UDP connection");
+        return;
+    }
+
+    sockets.append(socket);
+}
+
+void UDP::close(udp_socket_t* socket)
+{
+    int socket_index = -1;
+    for (uint32_t i = 0; i < sockets.size(); i++) {
+        if (sockets[i] == socket)
+            socket_index = i;
+    }
+
+    if (socket_index == -1) {
+        klog("Could not close UDP connection");
+        return;
+    }
+
+    sockets.remove_at(socket_index);
 }
 
 void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
@@ -34,13 +59,23 @@ void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
     kfree(buffer);
 }
 
-void UDP::receive(void* packet)
+void UDP::receive(void* packet, uint32_t from_ip)
 {
     udp_header_t* header = (udp_header_t*)packet;
-    uint16_t dst_port = ntohs(header->destination_port);
-    uint16_t src_port = ntohs(header->source_port);
+
+    int socket_index = -1;
+    for (uint32_t i = 0; i < sockets.size(); i++) {
+        if ((sockets.at(i)->remote_port == header->source_port)
+            && (sockets.at(i)->local_port == header->destination_port)
+            && (sockets.at(i)->remote_ip == from_ip)) {
+            socket_index = i;
+        }
+    }
+
+    if (socket_index == -1)
+        return;
+
     uint16_t length = ntohs(header->length) - sizeof(udp_header_t);
     uint8_t* data = (uint8_t*)((uint32_t)packet + sizeof(udp_header_t));
-
     klog("udp: %s", (char*)data);
 }

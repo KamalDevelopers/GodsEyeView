@@ -4,6 +4,7 @@
 #include <LibC/types.h>
 
 #define IPV4_PROTOCOL_UDP 17
+#define MAX_UDP_SOCKETS 200
 
 typedef struct udp_header {
     uint16_t source_port;
@@ -21,8 +22,9 @@ typedef struct udp_socket {
 
 namespace UDP {
 void connect(udp_socket_t* socket, uint32_t ip, uint16_t port);
+void close(udp_socket_t* socket);
 void send(udp_socket_t* socket, uint8_t* data, uint16_t size);
-void receive(void* packet);
+void receive(void* packet, uint32_t from_ip);
 }
 
 #endif
