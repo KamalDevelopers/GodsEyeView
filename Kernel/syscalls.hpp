@@ -13,6 +13,7 @@
 #include "multitasking.hpp"
 #include "tty.hpp"
 
+#include <LibC/network.h>
 #include <LibC/path.h>
 #include <LibC/poll.h>
 #include <LibC/stat.h>
@@ -34,6 +35,7 @@ private:
     uint32_t sys_time();
     int sys_stat(char* file, struct stat* buffer);
     int sys_fstat(int fd, struct stat* buffer);
+    int sys_socketcall(int call, uint32_t* args);
     int sys_getpid();
     int sys_setsid();
     void sys_reboot(int cmd);

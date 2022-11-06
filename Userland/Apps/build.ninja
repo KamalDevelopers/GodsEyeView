@@ -26,6 +26,10 @@ rule mixer
     command = cd ./Mixer && ninja && ninja move && cd ../
     description = building mixer application
 
+rule netweasel
+    command = cd ./Netweasel && ninja && ninja move && cd ../
+    description = building netweasel application
+
 rule terminal
     command = cd ./Terminal && ninja && ninja move && cd ../
     description = building terminal (core) GUI application
@@ -41,5 +45,6 @@ build brainfuck: brainfuck
 build cat: cat
 build ls: ls
 build mixer: mixer
+build netweasel: netweasel
 build terminal: terminal
 build launcher: launcher

@@ -5,6 +5,7 @@
 #include "Filesystem/vfs.hpp"
 #include "GDT/gdt.hpp"
 #include "Mem/mm.hpp"
+#include "Net/ipv4.hpp"
 #include "tty.hpp"
 
 #include <LibC++/bitarray.hpp>
@@ -73,6 +74,7 @@ private:
     executable_t loaded_executable;
     file_table_t process_file_table;
     Vector<memory_region_t, MAX_MEMORY_REGIONS> allocated_memory;
+    Vector<ipv4_socket_t*, 25> sockets;
     pollfd polls[10];
 
     uint32_t num_poll = 0;
@@ -104,6 +106,9 @@ public:
     int chdir(char* dir);
     void cwd(char* buffer);
     int poll(pollfd* pollfds, uint32_t npolls);
+    bool socket_has_data(ipv4_socket_t* socket);
+    int destroy_socket(int sockfd);
+    int socket(uint8_t type);
     int nice(int inc);
 
     int become_tty_master();
@@ -155,6 +160,7 @@ public:
     Task* task() { return tasks.at(current_task); }
     TTY* tty() { return tasks.at(current_task)->tty; }
     file_table_t* file_table();
+    ipv4_socket_t** sockets();
     Task* task(int pid);
 
     void sleep(uint32_t ticks);

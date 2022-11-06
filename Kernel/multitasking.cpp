@@ -2,6 +2,7 @@
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/audio.hpp"
+#include <LibC/network.h>
 
 BitArray<MAX_PIDS> pid_bitmap;
 
@@ -52,6 +53,9 @@ Task::~Task()
         PMM->free_pages(loaded_executable.memory.physical_address, loaded_executable.memory.size);
         kfree(loaded_executable.program_data);
     }
+
+    for (uint32_t i = 0; i < sockets.size(); i++)
+        destroy_socket(i + 1);
 
     for (uint32_t i = 0; i < allocated_memory.size(); i++)
         PMM->free_pages(allocated_memory.at(i).physical_address, allocated_memory.at(i).size);
@@ -179,9 +183,36 @@ void Task::wake_from_poll()
     sleeping = 0;
 }
 
+int Task::destroy_socket(int sockfd)
+{
+    int index = sockfd - 1;
+    if (sockets.at(index) == 0)
+        return -1;
+    ipv4_socket_t* socket = sockets.at(index);
+    if (socket->type == NET_PROTOCOL_UDP && socket->connected)
+        UDP::close(&socket->udp_socket);
+    kfree(sockets.at(index));
+    sockets[index] = 0;
+    return 0;
+}
+
+bool Task::socket_has_data(ipv4_socket_t* socket)
+{
+    if (socket->type == NET_PROTOCOL_UDP) {
+        if (socket->udp_socket.receive_pipe->size)
+            return true;
+    }
+    return false;
+}
+
 void Task::test_poll()
 {
     for (uint32_t i = 0; i < num_poll; i++) {
+        if (polls[i].events & POLLINS) {
+            if (socket_has_data(sockets[polls[i].fd - 1]))
+                return wake_from_poll();
+        }
+
         if (polls[i].events & POLLIN) {
             if ((polls[i].fd == DEV_KEYBOARD_FD) && (KeyboardDriver::active->has_unread_event()))
                 return wake_from_poll();
@@ -217,6 +248,21 @@ void Task::process_munmap(memory_region_t region)
             break;
         }
     }
+}
+
+int Task::socket(uint8_t type)
+{
+    ipv4_socket_t* socket = (ipv4_socket_t*)kmalloc(sizeof(ipv4_socket_t));
+    memset(socket, 0, sizeof(ipv4_socket_t));
+    socket->type = type;
+
+    if (sockets.is_full()) {
+        klog("Max sockets reached for process %d", pid);
+        return -1;
+    }
+
+    sockets.append(socket);
+    return sockets.size();
 }
 
 void Task::sleep(int sleeping_modifier)
@@ -289,6 +335,11 @@ file_table_t* TaskManager::file_table()
     if (testing_poll_task == -1)
         return tasks.at(current_task)->get_file_table();
     return tasks.at(testing_poll_task)->get_file_table();
+}
+
+ipv4_socket_t** TaskManager::sockets()
+{
+    return tasks.at(current_task)->sockets.elements();
 }
 
 void TaskManager::task_count_info(int* sleeping, int* zombie, int* polling)

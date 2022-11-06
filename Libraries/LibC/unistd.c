@@ -82,6 +82,15 @@ int fchown(int fd, uint32_t owner, uint32_t group)
     return error;
 }
 
+int socketcall(int call, uint32_t* args)
+{
+    int ret;
+    asm volatile("int $0x80"
+                 : "=a"(ret)
+                 : "a"(102), "b"(call), "c"(args));
+    return ret;
+}
+
 void usleep(int ticks)
 {
     asm volatile("int $0x80"

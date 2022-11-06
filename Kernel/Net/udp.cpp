@@ -1,14 +1,17 @@
 #include "udp.hpp"
 #include "../Mem/mm.hpp"
+#include "../multitasking.hpp"
 #include "ethernet.hpp"
 #include "ipv4.hpp"
 #include <LibC++/vector.hpp>
+#include <LibC/network.h>
 
 uint32_t udp_port = 1024;
 Vector<udp_socket_t*, MAX_UDP_SOCKETS> sockets;
 
 void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
 {
+    socket->receive_pipe = Pipe::create();
     socket->remote_ip = ip;
     socket->remote_port = port;
     socket->local_ip = IP;
@@ -26,6 +29,8 @@ void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
 
 void UDP::close(udp_socket_t* socket)
 {
+    Pipe::destroy(socket->receive_pipe);
+
     int socket_index = -1;
     for (uint32_t i = 0; i < sockets.size(); i++) {
         if (sockets[i] == socket)
@@ -77,5 +82,6 @@ void UDP::receive(void* packet, uint32_t from_ip)
 
     uint16_t length = ntohs(header->length) - sizeof(udp_header_t);
     uint8_t* data = (uint8_t*)((uint32_t)packet + sizeof(udp_header_t));
-    klog("udp: %s", (char*)data);
+    Pipe::append(sockets.at(socket_index)->receive_pipe, data, length);
+    TM->test_poll();
 }

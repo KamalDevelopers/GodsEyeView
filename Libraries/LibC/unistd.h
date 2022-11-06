@@ -44,6 +44,7 @@ int write(int fd, void* buffer, int length);
 int open(const char* pathname, int flags);
 int mkfifo(const char* pathname, int flags);
 int fchown(int fd, uint32_t owner, uint32_t group);
+int socketcall(int call, uint32_t* args);
 void usleep(int ticks);
 void sleep(int sec);
 uint32_t time();

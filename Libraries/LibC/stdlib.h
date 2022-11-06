@@ -25,14 +25,6 @@ char* ftoa(float n, char* res, int afterpoint);
 div_t div(int numerator, int denominator);
 int bsearch(int elem, int arr[], int count, int start);
 
-/* TODO: Move network functions */
-uint8_t htonb(uint8_t byte, int num_bits);
-uint8_t ntohb(uint8_t byte, int num_bits);
-uint16_t htons(uint16_t hostshort);
-uint32_t htonl(uint32_t hostlong);
-uint16_t ntohs(uint16_t netshort);
-uint32_t ntohl(uint32_t netlong);
-
 #ifdef __cplusplus
 }
 #endif

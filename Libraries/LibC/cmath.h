@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-static double pow(double x, double y)
+inline double pow(double x, double y)
 {
     int temp = x;
     for (int i = 0; i < y - 1; i++)
@@ -27,7 +27,7 @@ static double pow(double x, double y)
     return temp;
 }
 
-static double sqrt(double x)
+inline double sqrt(double x)
 {
     double result;
     asm("fsqrt"
@@ -36,28 +36,28 @@ static double sqrt(double x)
     return result;
 }
 
-static double floor(double x)
+inline double floor(double x)
 {
     return (double)(x <= x ? x : x - 1);
 }
 
-static double ceil(double x)
+inline double ceil(double x)
 {
     return (double)(x < x ? x + 1 : x);
 }
 
-static double fabs(double x)
+inline double fabs(double x)
 {
     return x >= 0 ? x : -1 * x;
 }
 
-static double modf(double x, int* integer)
+inline double modf(double x, int* integer)
 {
     *integer = x;
     return x - *integer;
 }
 
-static double sin(double x)
+inline double sin(double x)
 {
     double result;
     asm("fsin"
@@ -66,7 +66,7 @@ static double sin(double x)
     return result;
 }
 
-static int abs(int num)
+inline int abs(int num)
 {
     if (num < 0)
         num = (-1) * num;

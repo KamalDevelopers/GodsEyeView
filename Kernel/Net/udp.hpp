@@ -1,6 +1,7 @@
 #ifndef UDP_HPP
 #define UDP_HPP
 
+#include "../pipe.hpp"
 #include <LibC/types.h>
 
 #define IPV4_PROTOCOL_UDP 17
@@ -18,6 +19,7 @@ typedef struct udp_socket {
     uint32_t remote_ip;
     uint16_t local_port;
     uint32_t local_ip;
+    pipe_t* receive_pipe;
 } udp_socket_t;
 
 namespace UDP {
