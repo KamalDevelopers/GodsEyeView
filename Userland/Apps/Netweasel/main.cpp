@@ -50,9 +50,6 @@ int main(int argc, char** argv)
     uint16_t port = atoi(argv[2]);
     memset(recvbuffer, 0, BUFSIZ);
 
-    if (ip != ((2 << 24) | (2 << 16) | (0 << 8) | 10))
-        return 0;
-
     if (strcmp(argv[0], "udp") == 0)
         protocol_udp(ip, port);
     return 0;

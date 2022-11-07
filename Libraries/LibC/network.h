@@ -4,6 +4,7 @@
 #include "unistd.h"
 #include "string.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 #define NET_PROTOCOL_ICMP 1
 #define NET_PROTOCOL_UDP 5
@@ -15,7 +16,7 @@ extern "C" {
 inline int aton(char* s)
 {
     uint8_t i = 0;
-	uint8_t d[4] = { 0, 0, 0, 0 };
+    uint8_t d[4] = { 0, 0, 0, 0 };
     char* tok = strtok(s, ".");
 
     while (tok && i < 4) {
@@ -25,6 +26,15 @@ inline int aton(char* s)
     }
 
     return ((d[3] << 24) | (d[2] << 16) | (d[1] << 8) | d[0]);
+}
+
+inline char* ntoa(uint32_t ip)
+{
+	static char buf[16];
+    memset(buf, 0, sizeof(buf));
+	snprintf(buf, sizeof(buf), "%d.%d.%d.%d", ip & 0xFF, (ip >> 8) & 0xFF, 
+        (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
+	return buf;
 }
 
 inline uint16_t flip_short(uint16_t short_int)
