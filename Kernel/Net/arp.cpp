@@ -1,4 +1,5 @@
 #include "arp.hpp"
+#include "dhcp.hpp"
 #include "ethernet.hpp"
 
 uint32_t cache_entry_index = 0;
@@ -12,14 +13,14 @@ bool ARP::handle_packet(arp_packet_t* arp, uint32_t size)
     if ((arp->hardware_type != 0x0100) || (arp->protocol != 0x0008))
         return false;
 
-    if ((arp->hardware_address_size != 6) || (arp->protocol_address_size != 4) || (arp->destination_ip != IP))
+    if ((arp->hardware_address_size != 6) || (arp->protocol_address_size != 4) || (arp->destination_ip != DHCP::ip()))
         return false;
 
     if (arp->command == 0x0100) {
         arp->command = 0x0200;
         arp->destination_ip = arp->source_ip;
         arp->destination_mac = arp->source_mac;
-        arp->source_ip = IP;
+        arp->source_ip = DHCP::ip();
         arp->source_mac = ETH->get_mac_address();
         return true;
     }
@@ -43,7 +44,7 @@ void ARP::broadcast_mac_address(uint32_t ip)
     arp.command = 0x0200;
 
     arp.source_mac = ETH->get_mac_address();
-    arp.source_ip = IP;
+    arp.source_ip = DHCP::ip();
     arp.destination_mac = resolve(ip);
     arp.destination_ip = ip;
 
@@ -60,7 +61,7 @@ void ARP::request_mac_address(uint32_t ip)
     arp.command = 0x0100;
 
     arp.source_mac = ETH->get_mac_address();
-    arp.source_ip = IP;
+    arp.source_ip = DHCP::ip();
     arp.destination_mac = BROADCAST_MAC;
     arp.destination_ip = ip;
 

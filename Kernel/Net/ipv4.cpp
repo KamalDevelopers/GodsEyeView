@@ -1,5 +1,6 @@
 #include "ipv4.hpp"
 #include "arp.hpp"
+#include "dhcp.hpp"
 #include "ethernet.hpp"
 #include "icmp.hpp"
 #include "udp.hpp"
@@ -25,7 +26,7 @@ bool IPV4::handle_packet(ipv4_packet_t* ipv4, uint32_t size)
     if (size < sizeof(ipv4_packet_t))
         return false;
 
-    if (ipv4->destination_ip == IP) {
+    if (ipv4->destination_ip == DHCP::ip() || ipv4->destination_ip == 0xffffffff) {
         int length = ipv4->length;
 
         if (length > size)
@@ -60,7 +61,7 @@ void IPV4::send_packet(uint32_t destination_ip, uint8_t protocol, uint8_t* buffe
     header->protocol = protocol;
 
     header->destination_ip = destination_ip;
-    header->source_ip = IP;
+    header->source_ip = DHCP::ip();
 
     header->checksum = 0;
     header->checksum = calculate_checksum((uint16_t*)header);
@@ -69,8 +70,8 @@ void IPV4::send_packet(uint32_t destination_ip, uint8_t protocol, uint8_t* buffe
     memcpy(data, buffer, size);
 
     uint32_t route = destination_ip;
-    if ((destination_ip & SUBNET) != (header->source_ip & SUBNET))
-        route = GATEWAY;
+    if ((destination_ip & DHCP::subnet()) != (header->source_ip & DHCP::subnet()))
+        route = DHCP::gateway();
 
     ETH->send_packet(ARP::resolve(route), packet, sizeof(ipv4_packet_t) + size, ETHERNET_TYPE_IP);
     kfree(buffer);

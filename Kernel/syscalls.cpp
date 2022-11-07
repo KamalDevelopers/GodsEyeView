@@ -189,6 +189,12 @@ int sys_shutdown(int fd)
     return 0;
 }
 
+int sys_dhcp_info(dhcp_info_t* info)
+{
+    memcpy(info, DHCP::info(), sizeof(dhcp_info_t));
+    return 0;
+}
+
 int Syscalls::sys_socketcall(int call, uint32_t* args)
 {
     switch (call) {
@@ -206,6 +212,8 @@ int Syscalls::sys_socketcall(int call, uint32_t* args)
         return sys_recv(args[0], (void*)args[1], args[2]);
     case 13:
         return sys_shutdown(args[0]);
+    case 52:
+        return sys_dhcp_info((dhcp_info_t*)args[0]);
     }
 
     return -1;

@@ -6,6 +6,7 @@
 #include "Mem/paging.hpp"
 #include "Mem/pmm.hpp"
 #include "Net/arp.hpp"
+#include "Net/dhcp.hpp"
 #include "Net/ethernet.hpp"
 #include "Net/icmp.hpp"
 #include "Net/ipv4.hpp"
@@ -138,7 +139,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     if (ethernet.get_available_driver() != 0) {
         klog("Network initialization");
-        ARP::broadcast_mac_address(GATEWAY);
+        DHCP::discover();
+        ARP::broadcast_mac_address(DHCP::gateway());
     }
 
     TM->activate();

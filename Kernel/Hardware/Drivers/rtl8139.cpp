@@ -89,8 +89,12 @@ uint32_t RTL8139::interrupt(uint32_t esp)
 {
     uint16_t status = interrupt_status_port.read();
 
-    if (status & ROK)
+    if (status & ROK) {
+#if RTL_DEBUG
+        klog("[RTL8139] packet receive");
+#endif
         receive();
+    }
 
 #if RTL_DEBUG
     if (status & TER)
@@ -101,6 +105,6 @@ uint32_t RTL8139::interrupt(uint32_t esp)
         klog("[RTL8139] packet sent");
 #endif
 
-    interrupt_status_port.write(0xF);
+    interrupt_status_port.write(0x5);
     return esp;
 }

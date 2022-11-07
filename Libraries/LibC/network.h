@@ -13,6 +13,14 @@
 extern "C" {
 #endif
 
+typedef struct dhcp_info {
+    uint32_t subnet_mask;
+    uint32_t router_address;
+    uint32_t dns_address;
+    uint32_t my_address;
+} dhcp_info_t;
+
+
 inline int aton(char* s)
 {
     uint8_t i = 0;
@@ -30,11 +38,11 @@ inline int aton(char* s)
 
 inline char* ntoa(uint32_t ip)
 {
-	static char buf[16];
+    static char buf[16];
     memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "%d.%d.%d.%d", ip & 0xFF, (ip >> 8) & 0xFF, 
+    snprintf(buf, sizeof(buf), "%d.%d.%d.%d", ip & 0xFF, (ip >> 8) & 0xFF, 
         (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);
-	return buf;
+    return buf;
 }
 
 inline uint16_t flip_short(uint16_t short_int)

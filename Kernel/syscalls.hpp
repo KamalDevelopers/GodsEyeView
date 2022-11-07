@@ -10,6 +10,7 @@
 #include "Hardware/audio.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Mem/mm.hpp"
+#include "Net/dhcp.hpp"
 #include "multitasking.hpp"
 #include "tty.hpp"
 

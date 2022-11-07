@@ -1,6 +1,7 @@
 #include "udp.hpp"
 #include "../Mem/mm.hpp"
 #include "../multitasking.hpp"
+#include "dhcp.hpp"
 #include "ethernet.hpp"
 #include "ipv4.hpp"
 #include <LibC++/vector.hpp>
@@ -14,7 +15,7 @@ void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
     socket->receive_pipe = Pipe::create();
     socket->remote_ip = ip;
     socket->remote_port = port;
-    socket->local_ip = IP;
+    socket->local_ip = DHCP::ip();
     socket->remote_port = ((port & 0xFF00) >> 8) | ((port & 0x00FF) << 8);
     socket->local_port = ((udp_port & 0xFF00) >> 8) | ((udp_port & 0x00FF) << 8);
     udp_port++;
@@ -52,7 +53,6 @@ void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
     memset(buffer, 0, length);
 
     udp_header_t* head = (udp_header_t*)buffer;
-
     head->source_port = socket->local_port;
     head->destination_port = socket->remote_port;
     head->length = ((length & 0x00FF) << 8) | ((length & 0xFF00) >> 8);
@@ -67,6 +67,11 @@ void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
 void UDP::receive(void* packet, uint32_t from_ip)
 {
     udp_header_t* header = (udp_header_t*)packet;
+
+    if (ntohs(header->destination_port) == 68) {
+        DHCP::handle_packet((dhcp_packet_t*)((uint8_t*)packet + sizeof(udp_header_t)));
+        return;
+    }
 
     int socket_index = -1;
     for (uint32_t i = 0; i < sockets.size(); i++) {

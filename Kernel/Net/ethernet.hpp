@@ -5,11 +5,7 @@
 #include <LibC/types.h>
 
 #define FLIP(x) (((x & 0x00FF) << 8) | ((x & 0xFF00) >> 8))
-#define IP ((14 << 24) | (2 << 16) | (0 << 8) | 10)
-#define SUBNET ((0 << 24) | (255 << 16) | (255 << 8) | 255)
-#define GATEWAY ((2 << 24) | (2 << 16) | (0 << 8) | 10)
 #define BROADCAST_MAC 0xFFFFFFFFFFFF
-
 #define ETHERNET_TYPE_ARP 0x0806
 #define ETHERNET_TYPE_IP 0x0800
 #define ETH Ethernet::active

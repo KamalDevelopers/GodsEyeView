@@ -41,8 +41,21 @@ void protocol_udp(uint32_t ip, uint16_t port)
 
 int main(int argc, char** argv)
 {
-    if (argc < 3) {
-        printf("Usage: netweasel <protocol> <ip> <port>");
+    if (argc < 1) {
+        printf("Usage: netweasel <protocol> [ip] [port]");
+        return 0;
+    }
+
+    if (strcmp(argv[0], "dhcp") == 0) {
+        dhcp_info_t dhcp_info;
+        uint32_t args[5];
+        args[0] = (uint32_t)&dhcp_info;
+        int fd = socketcall(52, args);
+
+        printf("local ip   %s\n", ntoa(dhcp_info.my_address));
+        printf("gateway    %s\n", ntoa(dhcp_info.router_address));
+        printf("subnet     %s\n", ntoa(dhcp_info.subnet_mask));
+        printf("dns        %s", ntoa(dhcp_info.dns_address));
         return 0;
     }
 
@@ -50,7 +63,12 @@ int main(int argc, char** argv)
     uint16_t port = atoi(argv[2]);
     memset(recvbuffer, 0, BUFSIZ);
 
-    if (strcmp(argv[0], "udp") == 0)
+    if (strcmp(argv[0], "udp") == 0) {
+        if (argc < 3) {
+            printf("Error: udp connection requires ip and port");
+            return 0;
+        }
         protocol_udp(ip, port);
+    }
     return 0;
 }

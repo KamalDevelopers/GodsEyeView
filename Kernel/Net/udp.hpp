@@ -5,7 +5,7 @@
 #include <LibC/types.h>
 
 #define IPV4_PROTOCOL_UDP 17
-#define MAX_UDP_SOCKETS 200
+#define MAX_UDP_SOCKETS 512
 
 typedef struct udp_header {
     uint16_t source_port;
