@@ -2,6 +2,7 @@
 #include "Hardware/Drivers/keyboard.hpp"
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/audio.hpp"
+#include "Net/icmp.hpp"
 #include <LibC/network.h>
 
 BitArray<MAX_PIDS> pid_bitmap;
@@ -202,6 +203,12 @@ bool Task::socket_has_data(ipv4_socket_t* socket)
         if (socket->udp_socket.receive_pipe->size)
             return true;
     }
+
+    if (socket->type == NET_PROTOCOL_ICMP) {
+        if (ICMP::has_pong(socket->remote_ip))
+            return true;
+    }
+
     return false;
 }
 

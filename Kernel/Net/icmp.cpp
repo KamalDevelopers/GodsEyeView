@@ -1,9 +1,30 @@
 #include "icmp.hpp"
+#include "../multitasking.hpp"
+#include <LibC++/vector.hpp>
+
+Vector<uint32_t, 25> received_pongs;
+
+bool ICMP::has_pong(uint32_t destination_ip)
+{
+    for (uint32_t i = 0; i < received_pongs.size(); i++) {
+        if (received_pongs.at(i) == destination_ip) {
+            received_pongs.remove_at(i);
+            return true;
+        }
+    }
+    return false;
+}
 
 void ICMP::receive_ping(icmp_packet_t* packet, uint32_t from_ip)
 {
     if (packet->type == 0) {
-        /* TODO: Do something with the ping response */
+        if (received_pongs.is_full()) {
+            for (uint16_t i = 0; i < received_pongs.size() - 1; i++)
+                received_pongs.remove_at(received_pongs.size() - i - 1);
+        }
+
+        received_pongs.append(from_ip);
+        TM->test_poll();
     }
 
     if (packet->type == 8) {

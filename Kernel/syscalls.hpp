@@ -11,6 +11,7 @@
 #include "Hardware/interrupts.hpp"
 #include "Mem/mm.hpp"
 #include "Net/dhcp.hpp"
+#include "Net/icmp.hpp"
 #include "multitasking.hpp"
 #include "tty.hpp"
 

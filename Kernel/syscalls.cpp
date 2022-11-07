@@ -154,6 +154,11 @@ int sys_send(int fd, void* buffer, uint32_t length)
     if (socket->type == 0 || !socket->connected)
         return -1;
 
+    if (socket->type == NET_PROTOCOL_ICMP) {
+        ICMP::send_ping(socket->remote_ip);
+        return length;
+    }
+
     if (socket->type == NET_PROTOCOL_UDP) {
         UDP::send(&socket->udp_socket, (uint8_t*)buffer, length);
         return length;
@@ -167,6 +172,14 @@ int sys_recv(int fd, void* buffer, uint32_t size)
     ipv4_socket_t* socket = TM->sockets()[fd - 1];
     if (socket->type == 0 || !socket->connected)
         return -1;
+
+    if (socket->type == NET_PROTOCOL_ICMP) {
+        struct pollfd polls[1];
+        polls[0].events = POLLINS;
+        polls[0].fd = fd;
+        poll(polls, 1);
+        return 1;
+    }
 
     if (socket->type == NET_PROTOCOL_UDP) {
         if (socket->udp_socket.receive_pipe->size) {

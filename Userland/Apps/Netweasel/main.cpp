@@ -6,6 +6,44 @@
 
 char recvbuffer[BUFSIZ];
 
+void protocol_icmp(uint32_t ip)
+{
+    int err = 0;
+    uint32_t args[5];
+    args[0] = NET_PROTOCOL_ICMP;
+    int fd = socketcall(1, args);
+
+    args[0] = fd;
+    args[1] = ip;
+    args[2] = 0;
+    err = socketcall(3, args);
+
+    uint8_t i = 0;
+    while (i < 3) {
+        args[0] = fd;
+        args[1] = (uint32_t)recvbuffer;
+        args[2] = 1;
+        err = socketcall(9, args);
+        if (i != 0)
+            printf("\n");
+        printf("[%s] <- ping!\n", ntoa(ip));
+
+        args[0] = fd;
+        args[1] = (uint32_t)recvbuffer;
+        args[2] = 1;
+        int size = socketcall(10, args);
+        if (!size)
+            break;
+
+        printf("[%s] -> pong!", ntoa(ip));
+        i++;
+    }
+
+    flush();
+    args[0] = fd;
+    err = socketcall(13, args);
+}
+
 void protocol_udp(uint32_t ip, uint16_t port)
 {
     int err = 0;
@@ -59,7 +97,18 @@ int main(int argc, char** argv)
         return 0;
     }
 
+    if (argc < 2) {
+        printf("Error: no destination address specified");
+        return 0;
+    }
+
     uint32_t ip = aton(argv[1]);
+
+    if (strcmp(argv[0], "icmp") == 0) {
+        protocol_icmp(ip);
+        return 0;
+    }
+
     uint16_t port = atoi(argv[2]);
     memset(recvbuffer, 0, BUFSIZ);
 

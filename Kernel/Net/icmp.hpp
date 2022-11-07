@@ -16,6 +16,7 @@ typedef struct icmp_packet {
 namespace ICMP {
 void receive_ping(icmp_packet_t* packet, uint32_t from_ip);
 void send_ping(uint32_t destination_ip);
+bool has_pong(uint32_t destination_ip);
 }
 
 #endif
