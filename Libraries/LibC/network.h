@@ -20,8 +20,45 @@ typedef struct dhcp_info {
     uint32_t my_address;
 } dhcp_info_t;
 
+static uint32_t network_args[5];
 
-inline int aton(char* s)
+inline int socket(int type)
+{
+    network_args[0] = type;
+    return socketcall(1, network_args);
+}
+
+inline int connect(int fd, uint32_t remote_ip, uint16_t remote_port)
+{
+    network_args[0] = fd;
+    network_args[1] = remote_ip;
+    network_args[2] = remote_port;
+    return socketcall(3, network_args);
+}
+
+inline int send(int fd, void* buffer, uint32_t len)
+{
+    network_args[0] = fd;
+    network_args[1] = (uint32_t)buffer;
+    network_args[2] = len;
+    return socketcall(9, network_args);
+}
+
+inline int recv(int fd, void* buffer, uint32_t len)
+{
+    network_args[0] = fd;
+    network_args[1] = (uint32_t)buffer;
+    network_args[2] = len;
+    return socketcall(10, network_args);
+}
+
+inline int close(int fd)
+{
+    network_args[0] = fd;
+    return socketcall(13, network_args);
+}
+
+static int aton(char* s)
 {
     uint8_t i = 0;
     uint8_t d[4] = { 0, 0, 0, 0 };
@@ -36,7 +73,7 @@ inline int aton(char* s)
     return ((d[3] << 24) | (d[2] << 16) | (d[1] << 8) | d[0]);
 }
 
-inline char* ntoa(uint32_t ip)
+static char* ntoa(uint32_t ip)
 {
     static char buf[16];
     memset(buf, 0, sizeof(buf));
@@ -45,14 +82,14 @@ inline char* ntoa(uint32_t ip)
     return buf;
 }
 
-inline uint16_t flip_short(uint16_t short_int)
+static uint16_t flip_short(uint16_t short_int)
 {
     uint32_t first_byte = *((uint8_t*)(&short_int));
     uint32_t second_byte = *((uint8_t*)(&short_int) + 1);
     return (first_byte << 8) | (second_byte);
 }
 
-inline uint32_t flip_long(uint32_t long_int)
+static uint32_t flip_long(uint32_t long_int)
 {
     uint32_t first_byte = *((uint8_t*)(&long_int));
     uint32_t second_byte = *((uint8_t*)(&long_int) + 1);

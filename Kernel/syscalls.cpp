@@ -148,7 +148,7 @@ int sys_connect(int fd, uint32_t remote_ip, uint16_t remote_port)
     return 0;
 }
 
-int sys_send(int fd, void* buffer, uint32_t length)
+int sys_send(int fd, void* buffer, uint32_t len)
 {
     ipv4_socket_t* socket = TM->sockets()[fd - 1];
     if (socket->type == 0 || !socket->connected)
@@ -156,18 +156,18 @@ int sys_send(int fd, void* buffer, uint32_t length)
 
     if (socket->type == NET_PROTOCOL_ICMP) {
         ICMP::send_ping(socket->remote_ip);
-        return length;
+        return len;
     }
 
     if (socket->type == NET_PROTOCOL_UDP) {
-        UDP::send(&socket->udp_socket, (uint8_t*)buffer, length);
-        return length;
+        UDP::send(&socket->udp_socket, (uint8_t*)buffer, len);
+        return len;
     }
 
     return 0;
 }
 
-int sys_recv(int fd, void* buffer, uint32_t size)
+int sys_recv(int fd, void* buffer, uint32_t len)
 {
     ipv4_socket_t* socket = TM->sockets()[fd - 1];
     if (socket->type == 0 || !socket->connected)
@@ -183,14 +183,14 @@ int sys_recv(int fd, void* buffer, uint32_t size)
 
     if (socket->type == NET_PROTOCOL_UDP) {
         if (socket->udp_socket.receive_pipe->size) {
-            return Pipe::read(socket->udp_socket.receive_pipe, (uint8_t*)buffer, size);
+            return Pipe::read(socket->udp_socket.receive_pipe, (uint8_t*)buffer, len);
         }
 
         struct pollfd polls[1];
         polls[0].events = POLLINS;
         polls[0].fd = fd;
         poll(polls, 1);
-        return Pipe::read(socket->udp_socket.receive_pipe, (uint8_t*)buffer, size);
+        return Pipe::read(socket->udp_socket.receive_pipe, (uint8_t*)buffer, len);
     }
 
     return 0;

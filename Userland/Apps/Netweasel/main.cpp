@@ -9,63 +9,36 @@ char recvbuffer[BUFSIZ];
 void protocol_icmp(uint32_t ip)
 {
     int err = 0;
-    uint32_t args[5];
-    args[0] = NET_PROTOCOL_ICMP;
-    int fd = socketcall(1, args);
-
-    args[0] = fd;
-    args[1] = ip;
-    args[2] = 0;
-    err = socketcall(3, args);
+    int fd = socket(NET_PROTOCOL_ICMP);
+    err = connect(fd, ip, 0);
 
     uint8_t i = 0;
     while (i < 3) {
-        args[0] = fd;
-        args[1] = (uint32_t)recvbuffer;
-        args[2] = 1;
-        err = socketcall(9, args);
+        err = send(fd, recvbuffer, 1);
         if (i != 0)
             printf("\n");
-        printf("[%s] <- ping!\n", ntoa(ip));
 
-        args[0] = fd;
-        args[1] = (uint32_t)recvbuffer;
-        args[2] = 1;
-        int size = socketcall(10, args);
+        printf("[%s] <- ping!\n", ntoa(ip));
+        int size = recv(fd, recvbuffer, 1);
         if (!size)
             break;
-
         printf("[%s] -> pong!", ntoa(ip));
         i++;
     }
 
     flush();
-    args[0] = fd;
-    err = socketcall(13, args);
+    err = close(fd);
 }
 
 void protocol_udp(uint32_t ip, uint16_t port)
 {
     int err = 0;
-    uint32_t args[5];
-    args[0] = NET_PROTOCOL_UDP;
-    int fd = socketcall(1, args);
-
-    args[0] = fd;
-    args[1] = ip;
-    args[2] = port;
-    err = socketcall(3, args);
-
-    args[0] = fd;
-    args[1] = (uint32_t)recvbuffer;
-    args[2] = 1;
-    err = socketcall(9, args);
+    int fd = socket(NET_PROTOCOL_UDP);
+    err = connect(fd, ip, port);
+    err = send(fd, recvbuffer, 1);
 
     while (true) {
-        args[0] = fd;
-        args[1] = (uint32_t)recvbuffer;
-        args[2] = BUFSIZ;
-        int size = socketcall(10, args);
+        int size = recv(fd, recvbuffer, BUFSIZ);
         if (size == 1 && recvbuffer[0] == 10)
             break;
 
@@ -73,8 +46,7 @@ void protocol_udp(uint32_t ip, uint16_t port)
         flush();
     }
 
-    args[0] = fd;
-    err = socketcall(13, args);
+    err = close(fd);
 }
 
 int main(int argc, char** argv)
@@ -119,5 +91,6 @@ int main(int argc, char** argv)
         }
         protocol_udp(ip, port);
     }
+
     return 0;
 }
