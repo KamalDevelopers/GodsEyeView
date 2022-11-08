@@ -2,6 +2,7 @@
 #include "../Mem/mm.hpp"
 #include "../multitasking.hpp"
 #include "dhcp.hpp"
+#include "dns.hpp"
 #include "ethernet.hpp"
 #include "ipv4.hpp"
 #include <LibC++/vector.hpp>
@@ -67,9 +68,15 @@ void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
 void UDP::receive(void* packet, uint32_t from_ip)
 {
     udp_header_t* header = (udp_header_t*)packet;
+    uint32_t port = ntohs(header->destination_port);
 
-    if (ntohs(header->destination_port) == 68) {
+    if (port == 68) {
         DHCP::handle_packet((dhcp_packet_t*)((uint8_t*)packet + sizeof(udp_header_t)));
+        return;
+    }
+
+    if (port == 53) {
+        DNS::handle_packet((uint8_t*)packet + sizeof(udp_header_t), ntohs(header->length) - sizeof(udp_header_t));
         return;
     }
 
