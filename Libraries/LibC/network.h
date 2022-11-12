@@ -60,6 +60,13 @@ inline int disconnect(int fd)
     return socketcall(13, network_args);
 }
 
+inline int gethostbyname(const char* name, uint32_t len)
+{
+    network_args[0] = (uint32_t)name;
+    network_args[1] = len;
+    return socketcall(53, network_args);
+}
+
 static int aton(char* s)
 {
     uint8_t i = 0;

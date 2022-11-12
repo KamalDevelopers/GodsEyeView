@@ -222,6 +222,22 @@ int sys_dhcp_info(dhcp_info_t* info)
     return 0;
 }
 
+int sys_dns_lookup(char* host, uint16_t length)
+{
+    uint32_t remote_ip = DNS::get_host_ip(host);
+    if (remote_ip)
+        return remote_ip;
+
+    DNS::query_host(host, length);
+
+    while (remote_ip == 0) {
+        TM->yield();
+        remote_ip = DNS::get_host_ip(host);
+    }
+
+    return remote_ip;
+}
+
 int Syscalls::sys_socketcall(int call, uint32_t* args)
 {
     switch (call) {
@@ -241,6 +257,8 @@ int Syscalls::sys_socketcall(int call, uint32_t* args)
         return sys_disconnect(args[0]);
     case 52:
         return sys_dhcp_info((dhcp_info_t*)args[0]);
+    case 53:
+        return sys_dns_lookup((char*)args[0], args[1]);
     }
 
     return -1;

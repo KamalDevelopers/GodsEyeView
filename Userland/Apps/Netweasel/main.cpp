@@ -49,6 +49,24 @@ void protocol_udp(uint32_t ip, uint16_t port)
     err = disconnect(fd);
 }
 
+void protocol_http(char* host, uint16_t port)
+{
+    char request[256];
+    snprintf(request, sizeof(request), "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", host);
+    uint32_t remote_ip = gethostbyname(host, strlen(host));
+
+    int fd = socket(NET_PROTOCOL_TCP);
+    connect(fd, remote_ip, port);
+    send(fd, (void*)request, strlen(request), 0x018);
+    int size = recv(fd, recvbuffer, sizeof(recvbuffer));
+
+    for (uint32_t i = 0; i < size; i++)
+        printf("%c", recvbuffer[i]);
+    flush();
+
+    disconnect(fd);
+}
+
 int main(int argc, char** argv)
 {
     if (argc < 1) {
@@ -71,6 +89,11 @@ int main(int argc, char** argv)
 
     if (argc < 2) {
         printf("Error: no destination address specified");
+        return 0;
+    }
+
+    if (strcmp(argv[0], "http") == 0) {
+        protocol_http((char*)argv[1], 80);
         return 0;
     }
 

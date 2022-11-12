@@ -5,6 +5,9 @@
 #include <LibC/network.h>
 #include <LibC/string.h>
 
+dns_entry_t dns_entries[50];
+uint32_t dns_entry_count = 0;
+
 void DNS::handle_packet(void* packet, uint32_t length)
 {
     dns_header_t* header = (dns_header_t*)packet;
@@ -58,13 +61,25 @@ void DNS::handle_packet(void* packet, uint32_t length)
     if (ntohs(alen) == 4)
         memcpy(&address, data, 4);
 
-    /* TODO: Handle response */
-    klog("host: %s address: %s", host, ntoa(address));
+    if (dns_entry_count + 1 == 50)
+        dns_entry_count = 0;
+
+    memcpy(dns_entries[dns_entry_count].host, host, strlen(host) - 1);
+    dns_entries[dns_entry_count].remote_ip = address;
+    dns_entry_count++;
 }
 
-void DNS::query_host(const char* host)
+uint32_t DNS::get_host_ip(const char* host)
 {
-    uint32_t host_len = strlen(host);
+    for (uint32_t i = 0; i < dns_entry_count; i++) {
+        if (strcmp(host, dns_entries[i].host) == 0)
+            return dns_entries[i].remote_ip;
+    }
+    return 0;
+}
+
+void DNS::query_host(const char* host, uint32_t host_len)
+{
     uint32_t packet_len = sizeof(dns_header_t) + host_len + 6;
     uint8_t* packet = (uint8_t*)kmalloc(packet_len);
     memset(packet, 0, packet_len);
@@ -81,6 +96,7 @@ void DNS::query_host(const char* host)
     uint8_t* head = question;
 
     char c = 1;
+    question++;
     const char* temp_host = host;
 
     while (c) {

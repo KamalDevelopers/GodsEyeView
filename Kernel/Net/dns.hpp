@@ -3,6 +3,11 @@
 
 #include <LibC/types.h>
 
+typedef struct dns_entry {
+    char host[256];
+    uint32_t remote_ip;
+} dns_entry_t;
+
 typedef struct dns_header {
     uint16_t id;
     uint16_t flags;
@@ -13,7 +18,8 @@ typedef struct dns_header {
 } __attribute__((packed)) dns_header_t;
 
 namespace DNS {
-void query_host(const char* host);
+uint32_t get_host_ip(const char* host);
+void query_host(const char* host, uint32_t host_len);
 void handle_packet(void* packet, uint32_t length);
 }
 
