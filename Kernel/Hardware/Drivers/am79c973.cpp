@@ -1,9 +1,3 @@
-/*
- * This driver does not seem to work in Qemu.
- * This might be an issue in the driver implementation,
- * or it could be an issue with the Qemu virtualized hardware.
- */
-
 #include "am79c973.hpp"
 
 AM79C973::AM79C973(InterruptManager* interrupt_manager, device_descriptor_t device)
@@ -16,6 +10,7 @@ AM79C973::AM79C973(InterruptManager* interrupt_manager, device_descriptor_t devi
     , reset_port(device.port_base + 0x14)
     , bus_control_register_data_port(device.port_base + 0x16)
 {
+    PCI::active->enable_busmaster(device);
     activate();
 }
 
