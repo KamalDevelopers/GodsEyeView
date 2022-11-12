@@ -11,6 +11,7 @@
 #include "Net/ethernet.hpp"
 #include "Net/icmp.hpp"
 #include "Net/ipv4.hpp"
+#include "Net/tcp.hpp"
 #include "Net/udp.hpp"
 
 #include "Filesystem/tar.hpp"

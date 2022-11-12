@@ -2,6 +2,7 @@
 #define IPV4_HPP
 
 #include "../Mem/mm.hpp"
+#include "tcp.hpp"
 #include "udp.hpp"
 #include <LibC/types.h>
 
@@ -30,7 +31,8 @@ typedef struct ipv4_socket {
     uint16_t remote_port;
     uint32_t remote_ip;
 
-    udp_socket_t udp_socket;
+    udp_socket_t* udp_socket;
+    tcp_socket_t* tcp_socket;
 } ipv4_socket_t;
 
 namespace IPV4 {

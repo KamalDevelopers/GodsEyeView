@@ -4,7 +4,7 @@
 #include <LibC/stdlib.h>
 #include <LibC/string.h>
 
-char recvbuffer[BUFSIZ];
+char recvbuffer[4096];
 
 void protocol_icmp(uint32_t ip)
 {
@@ -14,7 +14,7 @@ void protocol_icmp(uint32_t ip)
 
     uint8_t i = 0;
     while (i < 3) {
-        err = send(fd, recvbuffer, 1);
+        err = send(fd, recvbuffer, 1, 0);
         if (i != 0)
             printf("\n");
 
@@ -27,7 +27,7 @@ void protocol_icmp(uint32_t ip)
     }
 
     flush();
-    err = close(fd);
+    err = disconnect(fd);
 }
 
 void protocol_udp(uint32_t ip, uint16_t port)
@@ -35,10 +35,10 @@ void protocol_udp(uint32_t ip, uint16_t port)
     int err = 0;
     int fd = socket(NET_PROTOCOL_UDP);
     err = connect(fd, ip, port);
-    err = send(fd, recvbuffer, 1);
+    err = send(fd, recvbuffer, 1, 0);
 
     while (true) {
-        int size = recv(fd, recvbuffer, BUFSIZ);
+        int size = recv(fd, recvbuffer, sizeof(recvbuffer));
         if (size == 1 && recvbuffer[0] == 10)
             break;
 
@@ -46,7 +46,7 @@ void protocol_udp(uint32_t ip, uint16_t port)
         flush();
     }
 
-    err = close(fd);
+    err = disconnect(fd);
 }
 
 int main(int argc, char** argv)

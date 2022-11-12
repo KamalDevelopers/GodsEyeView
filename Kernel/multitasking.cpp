@@ -190,8 +190,14 @@ int Task::destroy_socket(int sockfd)
     if (sockets.at(index) == 0)
         return -1;
     ipv4_socket_t* socket = sockets.at(index);
-    if (socket->type == NET_PROTOCOL_UDP && socket->connected)
-        UDP::close(&socket->udp_socket);
+    if (socket->type == NET_PROTOCOL_UDP) {
+        UDP::close(socket->udp_socket);
+        kfree(socket->udp_socket);
+    }
+    if (socket->type == NET_PROTOCOL_TCP) {
+        TCP::close(socket->tcp_socket);
+        kfree(socket->tcp_socket);
+    }
     kfree(sockets.at(index));
     sockets[index] = 0;
     return 0;
@@ -200,7 +206,12 @@ int Task::destroy_socket(int sockfd)
 bool Task::socket_has_data(ipv4_socket_t* socket)
 {
     if (socket->type == NET_PROTOCOL_UDP) {
-        if (socket->udp_socket.receive_pipe->size)
+        if (socket->udp_socket->receive_pipe->size)
+            return true;
+    }
+
+    if (socket->type == NET_PROTOCOL_TCP) {
+        if (socket->tcp_socket->receive_pipe->size)
             return true;
     }
 
@@ -262,6 +273,16 @@ int Task::socket(uint8_t type)
     ipv4_socket_t* socket = (ipv4_socket_t*)kmalloc(sizeof(ipv4_socket_t));
     memset(socket, 0, sizeof(ipv4_socket_t));
     socket->type = type;
+
+    if (socket->type == NET_PROTOCOL_TCP) {
+        socket->tcp_socket = (tcp_socket_t*)kmalloc(sizeof(tcp_socket_t));
+        memset(socket->tcp_socket, 0, sizeof(tcp_socket_t));
+    }
+
+    if (socket->type == NET_PROTOCOL_UDP) {
+        socket->udp_socket = (udp_socket_t*)kmalloc(sizeof(udp_socket_t));
+        memset(socket->udp_socket, 0, sizeof(udp_socket_t));
+    }
 
     if (sockets.is_full()) {
         klog("Max sockets reached for process %d", pid);

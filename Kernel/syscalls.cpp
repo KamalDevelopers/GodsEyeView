@@ -143,12 +143,18 @@ int sys_connect(int fd, uint32_t remote_ip, uint16_t remote_port)
     socket->remote_port = remote_port;
 
     if (socket->type == NET_PROTOCOL_UDP)
-        UDP::connect(&socket->udp_socket, remote_ip, remote_port);
+        UDP::connect(socket->udp_socket, remote_ip, remote_port);
+
+    if (socket->type == NET_PROTOCOL_TCP) {
+        TCP::connect(socket->tcp_socket, remote_ip, remote_port);
+        while (socket->tcp_socket->state != ESTABLISHED)
+            TM->yield();
+    }
 
     return 0;
 }
 
-int sys_send(int fd, void* buffer, uint32_t len)
+int sys_send(int fd, void* buffer, uint32_t len, int flags)
 {
     ipv4_socket_t* socket = TM->sockets()[fd - 1];
     if (socket->type == 0 || !socket->connected)
@@ -160,7 +166,12 @@ int sys_send(int fd, void* buffer, uint32_t len)
     }
 
     if (socket->type == NET_PROTOCOL_UDP) {
-        UDP::send(&socket->udp_socket, (uint8_t*)buffer, len);
+        UDP::send(socket->udp_socket, (uint8_t*)buffer, len);
+        return len;
+    }
+
+    if (socket->type == NET_PROTOCOL_TCP) {
+        TCP::send(socket->tcp_socket, (uint8_t*)buffer, len, flags);
         return len;
     }
 
@@ -181,22 +192,25 @@ int sys_recv(int fd, void* buffer, uint32_t len)
         return 1;
     }
 
-    if (socket->type == NET_PROTOCOL_UDP) {
-        if (socket->udp_socket.receive_pipe->size) {
-            return Pipe::read(socket->udp_socket.receive_pipe, (uint8_t*)buffer, len);
-        }
+    if (socket->type == NET_PROTOCOL_UDP || socket->type == NET_PROTOCOL_TCP) {
+        pipe_t* pipe = socket->udp_socket->receive_pipe;
+        if (socket->type == NET_PROTOCOL_TCP)
+            pipe = socket->tcp_socket->receive_pipe;
+
+        if (pipe->size)
+            return Pipe::read(pipe, (uint8_t*)buffer, len);
 
         struct pollfd polls[1];
         polls[0].events = POLLINS;
         polls[0].fd = fd;
         poll(polls, 1);
-        return Pipe::read(socket->udp_socket.receive_pipe, (uint8_t*)buffer, len);
+        return Pipe::read(pipe, (uint8_t*)buffer, len);
     }
 
     return 0;
 }
 
-int sys_shutdown(int fd)
+int sys_disconnect(int fd)
 {
     TM->task()->destroy_socket(fd);
     return 0;
@@ -220,11 +234,11 @@ int Syscalls::sys_socketcall(int call, uint32_t* args)
     case 5:
         break; /* SYS_ACCEPT */
     case 9:
-        return sys_send(args[0], (void*)args[1], args[2]);
+        return sys_send(args[0], (void*)args[1], args[2], args[3]);
     case 10:
         return sys_recv(args[0], (void*)args[1], args[2]);
     case 13:
-        return sys_shutdown(args[0]);
+        return sys_disconnect(args[0]);
     case 52:
         return sys_dhcp_info((dhcp_info_t*)args[0]);
     }

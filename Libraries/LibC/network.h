@@ -7,6 +7,7 @@
 #include "stdio.h"
 
 #define NET_PROTOCOL_ICMP 1
+#define NET_PROTOCOL_TCP 17
 #define NET_PROTOCOL_UDP 5
 
 #ifdef __cplusplus
@@ -36,11 +37,12 @@ inline int connect(int fd, uint32_t remote_ip, uint16_t remote_port)
     return socketcall(3, network_args);
 }
 
-inline int send(int fd, void* buffer, uint32_t len)
+inline int send(int fd, void* buffer, uint32_t len, int flags)
 {
     network_args[0] = fd;
     network_args[1] = (uint32_t)buffer;
     network_args[2] = len;
+    network_args[3] = flags;
     return socketcall(9, network_args);
 }
 
@@ -52,7 +54,7 @@ inline int recv(int fd, void* buffer, uint32_t len)
     return socketcall(10, network_args);
 }
 
-inline int close(int fd)
+inline int disconnect(int fd)
 {
     network_args[0] = fd;
     return socketcall(13, network_args);
@@ -75,7 +77,7 @@ static int aton(char* s)
 
 static char* ntoa(uint32_t ip)
 {
-    static char buf[16];
+    static char buf[25];
     memset(buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "%d.%d.%d.%d", ip & 0xFF, (ip >> 8) & 0xFF, 
         (ip >> 16) & 0xFF, (ip >> 24) & 0xFF);

@@ -9,7 +9,7 @@
 #include <LibC/network.h>
 
 uint32_t udp_port = 1024;
-Vector<udp_socket_t*, MAX_UDP_SOCKETS> sockets;
+Vector<udp_socket_t*, MAX_UDP_SOCKETS> udp_sockets;
 
 void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
 {
@@ -21,21 +21,19 @@ void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
     socket->local_port = ((udp_port & 0xFF00) >> 8) | ((udp_port & 0x00FF) << 8);
     udp_port++;
 
-    if (sockets.is_full()) {
+    if (udp_sockets.is_full()) {
         klog("Could not create UDP connection");
         return;
     }
 
-    sockets.append(socket);
+    udp_sockets.append(socket);
 }
 
 void UDP::close(udp_socket_t* socket)
 {
-    Pipe::destroy(socket->receive_pipe);
-
     int socket_index = -1;
-    for (uint32_t i = 0; i < sockets.size(); i++) {
-        if (sockets[i] == socket)
+    for (uint32_t i = 0; i < udp_sockets.size(); i++) {
+        if (udp_sockets[i] == socket)
             socket_index = i;
     }
 
@@ -44,7 +42,9 @@ void UDP::close(udp_socket_t* socket)
         return;
     }
 
-    sockets.remove_at(socket_index);
+    if (socket->receive_pipe)
+        Pipe::destroy(socket->receive_pipe);
+    udp_sockets.remove_at(socket_index);
 }
 
 void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
@@ -81,10 +81,10 @@ void UDP::receive(void* packet, uint32_t from_ip)
     }
 
     int socket_index = -1;
-    for (uint32_t i = 0; i < sockets.size(); i++) {
-        if ((sockets.at(i)->remote_port == header->source_port)
-            && (sockets.at(i)->local_port == header->destination_port)
-            && (sockets.at(i)->remote_ip == from_ip)) {
+    for (uint32_t i = 0; i < udp_sockets.size(); i++) {
+        if ((udp_sockets.at(i)->remote_port == header->source_port)
+            && (udp_sockets.at(i)->local_port == header->destination_port)
+            && (udp_sockets.at(i)->remote_ip == from_ip)) {
             socket_index = i;
         }
     }
@@ -94,6 +94,6 @@ void UDP::receive(void* packet, uint32_t from_ip)
 
     uint16_t length = ntohs(header->length) - sizeof(udp_header_t);
     uint8_t* data = (uint8_t*)((uint32_t)packet + sizeof(udp_header_t));
-    Pipe::append(sockets.at(socket_index)->receive_pipe, data, length);
+    Pipe::append(udp_sockets.at(socket_index)->receive_pipe, data, length);
     TM->test_poll();
 }

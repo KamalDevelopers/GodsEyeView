@@ -3,6 +3,7 @@
 #include "dhcp.hpp"
 #include "ethernet.hpp"
 #include "icmp.hpp"
+#include "tcp.hpp"
 #include "udp.hpp"
 
 uint16_t IPV4::calculate_checksum(uint16_t* data, uint32_t size)
@@ -34,6 +35,8 @@ bool IPV4::handle_packet(ipv4_packet_t* ipv4, uint32_t size)
 
         uint8_t* data = (uint8_t*)ipv4;
         if (ipv4->protocol) {
+            if (ipv4->protocol == 0x6)
+                TCP::receive(data + 4 * ipv4->header_length, htons(ipv4->length) - 4 * ipv4->header_length, ipv4->source_ip);
             if (ipv4->protocol == 0x1)
                 ICMP::receive_ping((icmp_packet_t*)(data + 4 * ipv4->header_length), ipv4->source_ip);
             if (ipv4->protocol == 0x11)
