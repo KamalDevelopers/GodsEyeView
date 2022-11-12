@@ -183,6 +183,9 @@ void TCP::connect(tcp_socket_t* socket, uint32_t ip, uint16_t port)
 
 void TCP::close(tcp_socket_t* socket)
 {
+    if (socket->state == ESTABLISHED)
+        send(socket, 0, 0, FIN_WAIT1);
+
     int socket_index = -1;
     for (uint32_t i = 0; i < tcp_sockets.size(); i++) {
         if (tcp_sockets[i] == socket)
