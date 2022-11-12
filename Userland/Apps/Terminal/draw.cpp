@@ -131,6 +131,9 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
         return;
     }
 
+    if (index <= 31)
+        return;
+
     cursor_set(canvas, false);
     if (!bg_blend)
         font_display_character(canvas, index, pos_x, pos_y, color);

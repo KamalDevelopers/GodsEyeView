@@ -12,13 +12,27 @@ uint32_t font_display_character(canvas_t* canvas, char c, uint32_t pos_x,
     uint32_t* ptr = canvas->framebuffer + pos_y * canvas->width + pos_x;
     uint8_t* font = font_buffer + offset;
 
+    uint32_t cache_alpha = 0;
+    uint32_t cache_pixel = 0;
+    uint32_t cache_color = 0;
+    uint32_t cache_pixel_value = 0;
+
     for (uint32_t y = 0; y < font_header->height; y++) {
         uint32_t* dptr = ptr;
         for (uint32_t x = 0; x < font_header->width; x++) {
             uint8_t alpha = *font;
             uint32_t orig = (use_bg) ? bg : *dptr;
-            uint32_t pixel = pixel_alpha_blend(color, orig, alpha);
-            *dptr = pixel;
+
+            if (cache_color == color && cache_pixel == orig && cache_alpha == alpha) {
+                *dptr = cache_pixel_value;
+            } else {
+                *dptr = pixel_alpha_blend(color, orig, alpha);
+                cache_color = color;
+                cache_pixel = orig;
+                cache_alpha = alpha;
+                cache_pixel_value = *dptr;
+            }
+
             dptr++;
             font++;
         }
