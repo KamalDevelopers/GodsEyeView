@@ -49,6 +49,24 @@ void protocol_udp(uint32_t ip, uint16_t port)
     err = disconnect(fd);
 }
 
+void protocol_tcp(uint32_t ip, uint16_t port)
+{
+    int err = 0;
+    int fd = socket(NET_PROTOCOL_TCP);
+    err = connect(fd, ip, port);
+
+    while (true) {
+        int size = recv(fd, recvbuffer, sizeof(recvbuffer));
+        if (size == 1 && recvbuffer[0] == 10)
+            break;
+
+        printf("%s", recvbuffer);
+        flush();
+    }
+
+    err = disconnect(fd);
+}
+
 void protocol_http(char* host, uint16_t port)
 {
     char request[256];
@@ -107,12 +125,22 @@ int main(int argc, char** argv)
     uint16_t port = atoi(argv[2]);
     memset(recvbuffer, 0, BUFSIZ);
 
+    if (strcmp(argv[0], "tcp") == 0) {
+        if (argc < 3) {
+            printf("Error: tcp connection requires ip and port");
+            return 0;
+        }
+        protocol_tcp(ip, port);
+        return 0;
+    }
+
     if (strcmp(argv[0], "udp") == 0) {
         if (argc < 3) {
             printf("Error: udp connection requires ip and port");
             return 0;
         }
         protocol_udp(ip, port);
+        return 0;
     }
 
     return 0;

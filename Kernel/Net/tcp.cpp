@@ -25,14 +25,10 @@ int socket_ack_received(tcp_socket_t* socket, void* packet, uint16_t size, uint3
         return 0;
     }
 
-    if (header->flags == ACK_SENT) {
-        if (size) {
-            Pipe::append(socket->receive_pipe, ((uint8_t*)packet) + header->header_size * 4, size);
-            TM->test_poll();
-        }
-        return 0;
+    if (size) {
+        Pipe::append(socket->receive_pipe, ((uint8_t*)packet) + header->header_size * 4, size);
+        TM->test_poll();
     }
-
     return 1;
 }
 
@@ -83,7 +79,7 @@ int socket_syn_ack_received(tcp_socket_t* socket, void* packet, uint32_t from_ip
 
     tcp_header_t* header = (tcp_header_t*)packet;
     socket->state = ESTABLISHED;
-    socket->acknowledgement_number = htonl(header->sequence_number) + 1;
+    socket->acknowledgement_number = ntohl(header->sequence_number) + 1;
     socket->sequence_number++;
     TCP::send(socket, 0, 0, ACK_FLAG);
     return 0;
@@ -132,6 +128,7 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
         reset = socket_fin_received(socket, packet, from_ip);
         break;
 
+    case PSH_SENT | ACK_SENT:
     case ACK_SENT:
         cont = socket_ack_received(socket, packet, size, from_ip);
         break;
@@ -144,11 +141,15 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
     if (cont == -1)
         return;
 
-    if (cont == 1 && htonl(header->sequence_number) == socket->acknowledgement_number) {
-        /* TODO */
+    if (cont == 1) {
+        if (socket->await_ack) {
+            socket->await_ack = 0;
+            return;
+        }
+
         reset = 0;
-    } else if (cont == 1) {
-        reset = 0;
+        socket->acknowledgement_number += size;
+        send(socket, 0, 0, ACK_FLAG);
     }
 
     if (reset)
@@ -214,11 +215,13 @@ void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flag
     header->sequence_number = htonl(socket->sequence_number);
     header->reserved = 0;
     header->flags = flags;
-    header->window_size = htons(64240);
+    header->window_size = htons(65535);
     header->urgent_ptr = 0;
 
-    header->options = 0xb4050402;
+    header->options = ((flags & SYN_FLAG) != 0) ? 0xb4050402 : 0;
 
+    if (flags == ACK_FLAG && size)
+        socket->await_ack = 1;
     socket->sequence_number += size;
 
     memcpy(buffer + sizeof(tcp_header_t) + sizeof(tcp_pseudo_header_t), data, size);

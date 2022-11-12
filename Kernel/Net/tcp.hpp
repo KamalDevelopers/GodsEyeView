@@ -57,6 +57,7 @@ typedef struct tcp_socket {
     uint16_t state;
     uint32_t sequence_number;
     uint32_t acknowledgement_number;
+    uint8_t await_ack;
     pipe_t* receive_pipe;
 } tcp_socket_t;
 
