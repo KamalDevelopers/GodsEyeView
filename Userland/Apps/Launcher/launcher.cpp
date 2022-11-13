@@ -90,7 +90,7 @@ void Launcher::display_time()
     memset(&day, 0, 10);
     itoa(y, day);
 
-    int pos_x = width - 154;
+    int pos_x = width - 150;
     int pos_y = 6;
     pos_x = display_string(" ", pos_x, pos_y);
     pos_x = display_string(months[m - 1], pos_x, pos_y);
