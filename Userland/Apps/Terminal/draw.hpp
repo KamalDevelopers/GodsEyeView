@@ -10,7 +10,7 @@
 
 #define BACKGROUND_COLOR 0x1E080808
 #define TEXT_GAP_X 12
-#define TEXT_GAP_Y 14
+#define TEXT_GAP_Y 16
 
 void init(const char* font);
 void uninit();
