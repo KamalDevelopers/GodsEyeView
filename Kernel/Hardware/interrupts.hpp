@@ -13,6 +13,7 @@ class InterruptManager;
 class InterruptHandler {
 protected:
     uint8_t interrupt_number;
+    uint8_t line;
     InterruptManager* interrupt_manager;
     InterruptHandler(InterruptManager* interrupt_manager, uint8_t interrupt_number);
     ~InterruptHandler();
@@ -25,7 +26,7 @@ class InterruptManager {
     friend class InterruptHandler;
 
 protected:
-    InterruptHandler* handlers[256];
+    InterruptHandler* handlers[5][256];
     TaskManager* task_manager;
 
     struct gate_descriptor {

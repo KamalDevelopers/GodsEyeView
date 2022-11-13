@@ -5,13 +5,22 @@ InterruptHandler::InterruptHandler(InterruptManager* interrupt_manager, uint8_t 
 {
     this->interrupt_number = interrupt_number;
     this->interrupt_manager = interrupt_manager;
-    interrupt_manager->handlers[interrupt_number] = this;
+    line = 0;
+
+    for (; line < 5; line++) {
+        if (interrupt_manager->handlers[line][interrupt_number] == 0) {
+            interrupt_manager->handlers[line][interrupt_number] = this;
+            return;
+        }
+    }
+
+    line = 0;
 }
 
 InterruptHandler::~InterruptHandler()
 {
-    if (interrupt_manager->handlers[interrupt_number] == this)
-        interrupt_manager->handlers[interrupt_number] = 0;
+    if (interrupt_manager->handlers[line][interrupt_number] == this)
+        interrupt_manager->handlers[line][interrupt_number] = 0;
 }
 
 uint32_t InterruptHandler::interrupt(uint32_t esp)
@@ -49,10 +58,16 @@ InterruptManager::InterruptManager(uint16_t hardware_interrupt_offset, GDT* glob
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
     for (uint8_t i = 255; i > 0; --i) {
         set_interrupt_descriptor_table_entry(i, code_segment, &interrupt_ignore, 0, IDT_INTERRUPT_GATE);
-        handlers[i] = 0;
+        handlers[0][i] = 0;
+        handlers[1][i] = 0;
+        handlers[2][i] = 0;
+        handlers[3][i] = 0;
     }
     set_interrupt_descriptor_table_entry(0, code_segment, &interrupt_ignore, 0, IDT_INTERRUPT_GATE);
-    handlers[0] = 0;
+    handlers[0][0] = 0;
+    handlers[1][0] = 0;
+    handlers[2][0] = 0;
+    handlers[3][0] = 0;
 
     set_interrupt_descriptor_table_entry(0x00, code_segment, &exception0x00, 0, IDT_INTERRUPT_GATE);
     set_interrupt_descriptor_table_entry(0x01, code_segment, &exception0x01, 0, IDT_INTERRUPT_GATE);
@@ -148,8 +163,15 @@ uint32_t InterruptManager::interrupt(uint8_t interrupt, uint32_t esp)
 
 uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
 {
-    if (handlers[interrupt] != 0) {
-        esp = handlers[interrupt]->interrupt(esp);
+    if (handlers[0][interrupt] != 0) {
+        if (handlers[1][interrupt]) {
+            handlers[1][interrupt]->interrupt(esp);
+            if (handlers[2][interrupt])
+                handlers[2][interrupt]->interrupt(esp);
+            if (handlers[3][interrupt])
+                handlers[3][interrupt]->interrupt(esp);
+        }
+        esp = handlers[0][interrupt]->interrupt(esp);
     } else if (interrupt != hardware_interrupt_offset) {
         if (interrupt == 0x0D) {
             if (TM->is_active()) {
