@@ -147,6 +147,7 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint
     nice(2);
 
     canvas_set(window->get_canvas()->framebuffer, bg, window->get_canvas()->size);
+    window->get_canvas()->border_decoration = 0;
     if (((bg >> 24) & 0x000000FF) > 0)
         canvas_create_alpha(window->get_canvas(), bg);
 
