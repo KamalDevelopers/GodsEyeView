@@ -70,7 +70,7 @@ void protocol_tcp(uint32_t ip, uint16_t port)
 void protocol_http(char* host, uint16_t port)
 {
     char request[256];
-    snprintf(request, sizeof(request), "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", host);
+    snprintf(request, sizeof(request), "GET / HTTP/1.1\r\nHost: %s\r\nUser-Agent: wget\r\nConnection: close\r\n\r\n", host);
     uint32_t remote_ip = gethostbyname(host, strlen(host));
 
     int fd = socket(NET_PROTOCOL_TCP);
