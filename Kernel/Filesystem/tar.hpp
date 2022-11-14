@@ -9,6 +9,14 @@
 #include <LibC/stdlib.h>
 #include <LibC/string.h>
 
+#define MAX_TRANSFER_SIZE 59392
+#define MED_TRANSFER_SIZE 4096
+#define MIN_TRANSFER_SIZE 512
+
+#define MAX_TRANSFER_SECT 116
+#define MED_TRANSFER_SECT 8
+#define MIN_TRANSFER_SECT 1
+
 #define SB_OFFSET 1024
 #define MAX_FILES 200
 #define MAX_DIRS 200
@@ -41,6 +49,7 @@ private:
     uint32_t tar_end;
     int dir_index;
     int file_index;
+    uint8_t* transfer_buffer;
     posix_header dirs[MAX_DIRS];           // Maximum amount of directories in RAM
     posix_header files[MAX_FILES];         // Maximum amount of files in RAM
     uint32_t sector_links_dir[MAX_DIRS];   // Sector index of directories

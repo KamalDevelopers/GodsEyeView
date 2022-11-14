@@ -2,7 +2,13 @@
 
 Tar::Tar(ATA* ata)
 {
+    transfer_buffer = (uint8_t*)kmalloc(MAX_TRANSFER_SIZE);
     this->ata = ata;
+}
+
+Tar::~Tar()
+{
+    kfree(transfer_buffer);
 }
 
 int Tar::oct_bin(char* str, int size)
@@ -152,25 +158,40 @@ int Tar::read_dir(char* dirname, fs_entry_t* entries, uint32_t count)
 
 void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
 {
-    uint8_t buffer[512];
     int size = count;
     int sector_offset = 0;
     int data_index = 0;
+    uint32_t tsize = MED_TRANSFER_SIZE;
+    uint32_t ssize = MED_TRANSFER_SECT;
 
-    if (seek > 512)
-        sector_start += (seek - sector_offset) / 512;
+    if (count >= MAX_TRANSFER_SIZE) {
+        tsize = MAX_TRANSFER_SIZE;
+        ssize = MAX_TRANSFER_SECT;
+    }
 
-    /* Iterate through the sectors and store the contents in buffers */
-    for (; size > 0; size -= 512) {
-        ata->read28(sector_start + sector_offset, buffer, 512);
-        int i = (sector_offset) ? 0 : (seek % 512);
+    if (!ata->is_dma() || count <= MIN_TRANSFER_SIZE) {
+        tsize = MIN_TRANSFER_SIZE;
+        ssize = MIN_TRANSFER_SECT;
+    }
 
-        for (; i < 512; i++) {
+    if (seek > tsize)
+        sector_start += (seek - sector_offset) / tsize;
+
+    for (; size > 0; size -= tsize) {
+        if (size < tsize) {
+            tsize = MIN_TRANSFER_SIZE;
+            ssize = MIN_TRANSFER_SECT;
+        }
+
+        ata->read28(sector_start + sector_offset, transfer_buffer, tsize, ssize);
+        int i = (sector_offset) ? 0 : (seek % tsize);
+
+        for (; i < tsize; i++) {
             if (data_index <= count)
-                fdata[data_index] = buffer[i];
+                fdata[data_index] = transfer_buffer[i];
             data_index++;
         }
-        sector_offset++;
+        sector_offset += ssize;
     }
 }
 

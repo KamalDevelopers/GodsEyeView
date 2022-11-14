@@ -39,11 +39,12 @@ public:
 
     static driver_identifier_t identifier() { return { 0x8086, 0x7010 }; }
 
+    bool is_dma() { return dma; }
     void set_dma(bool dma);
     void identify();
-    uint8_t* read28(uint32_t sector_num, uint8_t* data, int count = 512);
+    uint8_t* read28(uint32_t sector_num, uint8_t* data, int count = 512, int scount = 1);
     void write28(uint32_t sector_num, uint8_t* data, uint32_t count);
-    uint8_t* read28_dma(uint32_t sector_num, uint8_t* data, int count = 512);
+    uint8_t* read28_dma(uint32_t sector_num, uint8_t* data, int count = 512, int scount = 1);
     uint8_t* read28_pio(uint32_t sector_num, uint8_t* data, int count = 512);
     void write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count);
     void write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count);
