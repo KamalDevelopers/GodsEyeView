@@ -26,6 +26,7 @@
 #include "Hardware/Drivers/rtl8139.hpp"
 #include "Hardware/Drivers/sb16.hpp"
 #include "Hardware/Drivers/vga.hpp"
+#include "Hardware/cpuid.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"
 
@@ -57,6 +58,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 {
     QemuSerial qemu_serial;
     klog("Kernel initialization started");
+    cpuid_detect();
 
     GDT gdt;
     PCI pci;
@@ -99,6 +101,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     vfs.mount(&fs_tar);
 
     klog("Starting PCI drivers and networking");
+
     MouseDriver mouse(&interrupts, multiboot_info_ptr->framebuffer_width,
         multiboot_info_ptr->framebuffer_height);
     KeyboardDriver keyboard(&interrupts);

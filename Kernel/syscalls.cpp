@@ -364,6 +364,8 @@ int Syscalls::sys_osinfo(struct osinfo* buffer)
     TM->task_count_info(&buffer->procs_sleeping, &buffer->procs_zombie, &buffer->procs_polling);
     buffer->uptime = CMOS::active->timestamp() - CMOS::active->get_uptime();
     buffer->uptime_ms = TM->ticks();
+    strcpy(buffer->cpu_string, get_cpu()->name);
+    buffer->cpu_is64 = get_cpu()->is64;
     return 0;
 }
 

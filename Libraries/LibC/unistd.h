@@ -28,6 +28,8 @@ struct osinfo {
     int procs_polling;
     uint32_t uptime;
     uint32_t uptime_ms;
+    char cpu_string[50];
+    bool cpu_is64;
 };
 
 #ifdef __cplusplus

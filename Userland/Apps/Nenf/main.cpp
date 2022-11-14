@@ -55,12 +55,14 @@ int main(int argc, char** argv)
     for (uint32_t line = 0; line < 12; line++) {
         printf(img[line]);
         printf("   ");
-        if (line == 1)
+        if (line == 0)
             printf(uinfo, user, uname_struct.sysname);
-        if (line == 3)
+        if (line == 2)
             printf("\33\x2\xC       . uptime \33\x2\xF %d min %d sec", uptime_min, uptime_sec);
+        if (line == 3)
+            printf("\33\x2\xC       . cpu \33\x2\xF %s [%s]", info.cpu_string, info.cpu_is64 ? "64 bit" : "32 bit");
         if (line == 4)
-            printf("\33\x2\xC       . kernel \33\x2\xF gevos");
+            printf("\33\x2\xC       . kernel \33\x2\xF gevos [dev]");
         if (line == 5)
             printf("\33\x2\xC       . free memory \33\x2\xF %d MB", (info.free_pages * PAGE_SIZE) / MB);
         if (line == 6)

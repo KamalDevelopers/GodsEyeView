@@ -8,6 +8,7 @@
 #include "Hardware/Drivers/mouse.hpp"
 #include "Hardware/Drivers/vesa.hpp"
 #include "Hardware/audio.hpp"
+#include "Hardware/cpuid.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Mem/mm.hpp"
 #include "Net/dhcp.hpp"
