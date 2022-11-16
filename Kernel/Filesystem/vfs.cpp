@@ -102,8 +102,13 @@ int VirtualFilesystem::open(char* file_name, int flags)
         if (mounts[i]->find_file(file_path) != -1)
             mount = i;
 
-    if (mount == -1)
-        return -1;
+    if (mount == -1) {
+        if (flags & O_CREAT) {
+            mount = 0;
+        } else {
+            return -1;
+        }
+    }
 
     file_entry file;
     strcpy(file.file_name, file_path);

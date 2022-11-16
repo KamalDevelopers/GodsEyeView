@@ -69,7 +69,7 @@ int Tar::rename_file(char* file_name, char* new_file_name)
 
     strcpy(meta_head.name, new_file_name);
 
-    memcpy((void*)&meta_head, (void*)file_calculate_checksum(&meta_head), sizeof(posix_header));
+    file_calculate_checksum(&meta_head);
     files[file_id] = meta_head;
 
     ata->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
@@ -96,7 +96,7 @@ int Tar::chmod(char* file_name, char* permissions)
 
     strcpy(meta_head.mode, mode);
 
-    memcpy((void*)&meta_head, (void*)file_calculate_checksum(&meta_head), sizeof(posix_header));
+    file_calculate_checksum(&meta_head);
     files[file_id] = meta_head;
 
     ata->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
@@ -197,32 +197,18 @@ void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
 
 void Tar::write_data(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t* databuffer = new uint8_t[count];
-
-    if (databuffer == 0)
-        klog("Not enough heap memory!");
-
-    memcpy((char*)databuffer, (char*)fdata, count);
-    databuffer[count] = '\0';
-
     uint8_t buffer[513];
     int size = count;
     int sector_offset = 0;
 
     for (; size > 0; size -= 512) {
-        for (int i = 0; i <= 512; i++)
-            buffer[i] = '\0';
-        ata->write28(sector_start + sector_offset, buffer, 512);
-
-        for (int i = sector_offset * 512; i < count; i++)
-            buffer[i] = databuffer[i];
-
-        buffer[size > 512 ? 512 : size] = '\0';
+        int tsize = (size < 512) ? size : 512;
+        memset(buffer, 0, 512);
+        memcpy(buffer, fdata + count - size, tsize);
         ata->write28(sector_start + sector_offset, buffer, 512);
         sector_offset++;
     }
     ata->flush();
-    kfree(databuffer);
 }
 
 int Tar::get_mode(int file_id, int utype)
@@ -315,13 +301,15 @@ int Tar::get_gid(char* file_name)
 /* Checksum write in octal */
 posix_header* Tar::file_calculate_checksum(posix_header* header_data)
 {
-    char* checksumdata;
+    char checksumdata[25];
+    char checksum[25];
+
+    memset(checksumdata, 0, 25);
+    memset(checksum, 0, 25);
     int check = calculate_checksum(header_data);
 
     itoa(check, checksumdata);
     int octal_offset_check = 6 - strlen(checksumdata);
-
-    char* checksum = new char[octal_offset_check];
 
     for (int i = 0; i < octal_offset_check; i++)
         checksum[i] = '0';
@@ -331,27 +319,25 @@ posix_header* Tar::file_calculate_checksum(posix_header* header_data)
     header_data->chksum[6] = '\0';
     header_data->chksum[7] = ' ';
 
-    kfree(checksum);
     return header_data;
 }
 
 int Tar::calculate_checksum(posix_header* header_data)
 {
-    posix_header* meta_head;
-    *meta_head = *header_data;
     unsigned int chck = 0;
-    memset(meta_head->chksum, ' ', 8);
+    memset(header_data->chksum, ' ', 8);
 
-    for (int i = 0; i < 400; i++)
-        chck += ((uint8_t*)meta_head)[i];
-    chck = bin_oct(chck + 32);
+    for (int i = 0; i < sizeof(posix_header); i++)
+        chck += ((uint8_t*)header_data)[i];
+    chck = bin_oct(chck);
     return chck;
 }
 
 int Tar::write_file(char* file_name, uint8_t* data, int size)
 {
     /* Calculate where the file should be located */
-    int file_id = file_index + 1;
+    file_index++;
+    int file_id = file_index;
     int data_size = oct_bin(files[file_id - 2].size, 11); // Size of last file
     if (data_size % 512 == 0)
         data_size = data_size / 512;
@@ -359,17 +345,17 @@ int Tar::write_file(char* file_name, uint8_t* data, int size)
         data_size = (data_size / 512) + 1;
     int data_offset = sector_links_file[file_id - 2];
     int newfile_offset = data_offset + data_size + 1;
+    sector_links_file[file_index - 1] = newfile_offset;
+
+    posix_header* meta_head = &files[file_id - 1];
 
     /* Create the header data */
-    posix_header* p_meta_head = new posix_header;
-    posix_header meta_head = *p_meta_head;
-    for (int i = 0; i < 99; i++)
-        meta_head.name[i] = '\0';
-    strcpy(meta_head.name, file_name);
+    memset(meta_head, 0, sizeof(posix_header));
+    strcpy(meta_head->name, file_name);
 
     /* Convert size data to octal */
-    char sizedata[12];
-    char tsize[12];
+    char sizedata[25];
+    char tsize[25];
     itoa(bin_oct(size), sizedata);
     int octal_offset = 11 - strlen(sizedata);
 
@@ -377,30 +363,25 @@ int Tar::write_file(char* file_name, uint8_t* data, int size)
     for (int i = 0; i < octal_offset; i++)
         tsize[i] = '0';
     strcat(tsize, sizedata);
-    strcpy(meta_head.size, tsize);
+    strcpy(meta_head->size, tsize);
 
-    strcpy(meta_head.magic, "ustar");         // Header magic
-    strcpy(meta_head.version, "\0\0");        // USTAR version
-    strcpy(meta_head.mode, "0000766\0");      // UNIX Permissions
-    strcpy(meta_head.uname, "terry\0");       // Owner name
-    strcpy(meta_head.gname, "\0");            // Group name
-    strcpy(meta_head.uid, "0001750\0");       // User id
-    strcpy(meta_head.gid, "0001750\0");       // Group id
-    strcpy(meta_head.mtime, "13715523517\0"); // Creation date. Temporary const, should be calculated
-    strcpy(meta_head.chksum, "       \0");    // Temporary checksum data
-    meta_head.typeflag = '0';                 // Indicate standard file type
+    strcpy(meta_head->magic, "ustar ");      // Header magic
+    strcpy(meta_head->version, " \0");       // USTAR version
+    strcpy(meta_head->mode, "0000755");      // UNIX Permissions
+    strcpy(meta_head->uname, "terry");       // Owner name
+    strcpy(meta_head->gname, "\0");          // Group name
+    strcpy(meta_head->uid, "0001750");       // User id
+    strcpy(meta_head->gid, "0001750");       // Group id
+    strcpy(meta_head->mtime, "13715523517"); // Creation date. Temporary const, should be calculated
+    strcpy(meta_head->chksum, "       ");    // Temporary checksum data
+    meta_head->typeflag = '0';               // Indicate standard file type
+    file_calculate_checksum(meta_head);
 
-    memcpy((void*)&meta_head, (void*)file_calculate_checksum(&meta_head), sizeof(posix_header));
-    files[file_id - 1] = meta_head;
-
-    /* Clean the sectors */
-    for (int i = 0; i < 513; i++)
-        ata->write28(data_offset + data_size + 2 + i, (uint8_t*)"\0", 1);
-    for (int i = 0; i < 513; i++)
-        ata->write28(data_offset + data_size + 1 + i, (uint8_t*)"\0", 1);
-    ata->write28(data_offset + data_size + 1, (uint8_t*)&meta_head, sizeof(posix_header));
+    uint8_t buffer[512];
+    memset(buffer, 0, 512);
+    memcpy(buffer, meta_head, sizeof(posix_header));
+    ata->write28(data_offset + data_size + 1, buffer, 512);
     write_data(data_offset + data_size + 2, data, size);
-    kfree(p_meta_head);
     return 0;
 }
 

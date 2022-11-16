@@ -29,7 +29,6 @@ protected:
     prdt_t prdt;
     device_descriptor_t device;
     bool master;
-    uint8_t memory[4096];
     uint32_t bar4;
     bool dma;
 
