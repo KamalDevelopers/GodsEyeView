@@ -25,6 +25,8 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     cpustate->esi = 0;
     cpustate->edi = 0;
     cpustate->ebp = 0;
+    cpustate->esp = 0;
+    cpustate->ss = 0;
     cpustate->eip = eip;
     cpustate->cs = GDT::active->get_code_segment_selector();
     cpustate->eflags = 0x202;

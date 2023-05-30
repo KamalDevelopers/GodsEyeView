@@ -264,3 +264,11 @@ int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t coun
 
     return fscount;
 }
+
+int VirtualFilesystem::unlink(int descriptor)
+{
+    int index = search(descriptor);
+    if (index == -1)
+        return -1;
+    return mounts[ft()->files[index].mountfs]->unlink(ft()->files[index].file_name);
+}

@@ -43,16 +43,17 @@ int Tar::unlink(char* file_name, bool should_update)
     if ((file_id > file_index) || (file_id == -1))
         return -1;
 
-    for (int i = 0; i < file_index; i++) {
-        if (i <= file_id)
-            continue;
-        files[i - 1] = files[i];
-    }
+    files[file_id].typeflag = 100;
 
     /* Removes file from drive */
     if (should_update == 1)
-        update(sector_links_file[file_id], file_size);
+        update_disk(sector_links_file[file_id] - 1, file_size + 1);
     return 0;
+}
+
+int Tar::unlink(char* file_name)
+{
+    return unlink(file_name, true);
 }
 
 int Tar::rename_file(char* file_name, char* new_file_name)
@@ -108,7 +109,8 @@ int Tar::find_file(char* file_name)
 {
     for (int i = 0; i < file_index; i++) {
         if (strncmp(file_name, files[i].name, strlen(file_name)) == 0)
-            return i;
+            if (files[i].typeflag != 100)
+                return i;
     }
     return -1;
 }
@@ -117,11 +119,13 @@ int Tar::exists(char* name)
 {
     for (int i = 0; i < dir_index; i++)
         if (strcmp(dirs[i].name, name) == 0)
-            return 0;
+            if (dirs[i].typeflag != 100)
+                return 0;
 
     for (int i = 0; i < file_index; i++)
         if (strcmp(files[i].name, name) == 0)
-            return 0;
+            if (files[i].typeflag != 100)
+                return 0;
     return 1;
 }
 
@@ -136,6 +140,8 @@ int Tar::read_dir(char* dirname, fs_entry_t* entries, uint32_t count)
         for (int i = 0; i < size; i++) {
             skip = false;
             entry = (entry_type == 0) ? files[i] : dirs[i];
+            if (entry.typeflag == 100)
+                skip = true;
             if (strncmp(entry.name, dirname, strlen(dirname)) == 0) {
                 for (int x = strlen(dirname); x < strlen(entry.name) - 1; x++)
                     if (entry.name[x] == '/')
@@ -393,16 +399,14 @@ void Tar::sector_swap(int sector_src, int sector_dest)
     ata->flush();
 }
 
-/* Remove entry from archive
- * FIXME: Should update all entry changes */
-void Tar::update(int uentry, int uentry_size)
+void Tar::update_disk(int uentry, int uentry_size)
 {
     int lastloc = uentry + uentry_size;
     int moveto = uentry;
     int sector_offset = 0;
 
     while (1) {
-        if (sector_offset == tar_end)
+        if (sector_offset == tar_end + 1)
             break;
         if (sector_offset > lastloc) {
             sector_swap(sector_offset, moveto);
@@ -412,15 +416,16 @@ void Tar::update(int uentry, int uentry_size)
     }
 
     uint8_t buffer[513];
-    for (int i = 0; i <= 512; i++)
-        buffer[i] = '\0';
+    memset(buffer, 0, 513);
 
-    int sectors_overflow = uentry_size - (moveto - uentry);
-    while (moveto < lastloc) {
-        ata->write28(moveto, (uint8_t*)&buffer, 512);
-        ata->flush();
-        moveto++;
-    }
+    for (uint32_t i = tar_end - uentry_size; i < tar_end; i++)
+        ata->write28(i, (uint8_t*)&buffer, 512);
+
+    for (uint32_t i = 0; i < file_index; i++)
+        if (sector_links_file[i] > uentry)
+            sector_links_file[i] -= uentry_size + 1;
+
+    ata->flush();
 }
 
 /* Stores all files and directories in RAM */
@@ -447,7 +452,6 @@ int Tar::mount()
 
         if (oct_bin((char*)&meta_head.typeflag, 1) == 5) {
             dirs[dir_index] = meta_head;
-            sector_links_dir[dir_index] = sector_offset;
             dir_index++;
         }
 

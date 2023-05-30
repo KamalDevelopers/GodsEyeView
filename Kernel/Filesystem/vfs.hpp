@@ -28,6 +28,7 @@ public:
     Filesystem() { }
     ~Filesystem() { }
 
+    virtual int unlink(char* file_name) { return 0; }
     virtual int get_gid(char* file_name) { return 0; }
     virtual int get_uid(char* file_name) { return 0; }
     virtual int get_size(char* file_name) { return 0; }
@@ -78,6 +79,7 @@ public:
     int close_fifo(int index);
     int close(int descriptor);
     int write(int descriptor, uint8_t* data, int size);
+    int unlink(int descriptor);
     int read(int descriptor, uint8_t* data, int size);
     int size(int descriptor);
     int uid(int descriptor);

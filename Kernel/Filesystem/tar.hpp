@@ -52,7 +52,6 @@ private:
     uint8_t* transfer_buffer;
     posix_header dirs[MAX_DIRS];           // Maximum amount of directories in RAM
     posix_header files[MAX_FILES];         // Maximum amount of files in RAM
-    uint32_t sector_links_dir[MAX_DIRS];   // Sector index of directories
     uint32_t sector_links_file[MAX_FILES]; // Sector index of files
 
     int oct_bin(char* str, int size);
@@ -64,8 +63,7 @@ public:
     ~Tar();
 
     int mount();
-    void update(int uentry, int uentry_size);
-
+    void update_disk(int uentry, int uentry_size);
     int write_file(char* file_name, uint8_t* data, int size);
     int read_file(int file_id, uint8_t* data, int size, int seek = 0);
     int read_file(char* file_name, uint8_t* data, int size, int seek = 0);
@@ -75,7 +73,8 @@ public:
     int get_gid(char* file_name);
 
     int rename_file(char* file_name, char* new_file_name);
-    int unlink(char* path, bool should_update = 1);
+    int unlink(char* file_name, bool should_update);
+    int unlink(char* file_name);
     int read_dir(char* dirname, fs_entry_t* entries, uint32_t count);
     int exists(char* name);
     int chmod(char* file_name, char* permissions);
