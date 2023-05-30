@@ -21,7 +21,7 @@ public:
     {
         if (index >= storage_size)
             return -1;
-        for (uint32_t i = index; i < storage_size - 1; i++)
+        for (int i = index; i < storage_size - 1; i++)
             storage[i] = storage[i + 1];
         storage_size--;
         return 0;
