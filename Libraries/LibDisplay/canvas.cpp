@@ -15,6 +15,7 @@ canvas_t* request_canvas(uint32_t width, uint32_t height)
     canvas->width = width;
     canvas->height = height;
     canvas->alpha_lookup = 0;
+    canvas->hidden = 0;
     return canvas;
 }
 

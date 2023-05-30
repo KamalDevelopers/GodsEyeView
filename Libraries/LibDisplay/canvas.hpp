@@ -16,6 +16,7 @@ typedef struct canvas {
     uint32_t x = 0;
     uint32_t y = 0;
     uint32_t border_decoration = 0;
+    uint8_t hidden = 0;
     alpha_lookup_t* alpha_lookup = 0;
 } canvas_t;
 

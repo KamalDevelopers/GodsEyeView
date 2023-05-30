@@ -5,7 +5,7 @@
 #include "window.hpp"
 
 // clang-format off
-#define MAX_WINDOWS 50 
+#define WORKSPACES 1
 #define WINDOW_TOP_GAP 20
 #define WINDOW_GAP 25
 #define WINDOW_BORDER_COLOR 0x1E1E1E
@@ -13,13 +13,21 @@
 #define CLAMP(a, b, c) (a < b ? b : a > c ? c : a)
 // clang-format on
 
+typedef struct window_group {
+    Window** windows = 0;
+    uint32_t window_count = 0;
+    int stored_active_window = -1;
+    uint32_t stored_active_tiled = 0;
+} window_group_t;
+
 class WindowManager {
 private:
-    Vector<Window*, MAX_WINDOWS> windows;
+    window_group_t* workspaces;
     Compositor* compositor;
     Window* compose_window(int pid);
 
-    uint32_t active_window = -1;
+    int active_windows = 0;
+    int active_window = -1;
     uint32_t tiled_windows = 0;
 
 public:
@@ -37,6 +45,12 @@ public:
     void destroy_window(uint32_t index);
     void update_window_border(uint32_t index);
     void destroy_window_pid(int pid);
+
+    Window** windows();
+    uint32_t windows_size();
+    void windows_append(Window* window);
+    void windows_remove(uint32_t index);
+    void set_workspace(uint16_t workspace);
 };
 
 #endif

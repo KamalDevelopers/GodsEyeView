@@ -96,6 +96,10 @@ void Compositor::render_stack()
     /* TODO: Make this faster by reducing draw areas! */
     render_canvas(root_layer);
     for (uint32_t i = 0; i < layers.size(); i++) {
+        if (layers[i]->hidden)
+            continue;
+        if (layers[i]->x + layers[i]->width > root_layer->width || layers[i]->y + layers[i]->height > root_layer->height)
+            continue;
         render_borders(layers[i]);
         render_canvas(layers[i]);
     }

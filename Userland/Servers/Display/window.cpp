@@ -33,9 +33,15 @@ void Window::resize(uint32_t width, uint32_t height)
     resize_event(canvas);
 }
 
+void Window::set_workspace(int workspace)
+{
+    associated_workspace = workspace;
+}
+
 void Window::disown()
 {
     controlled = false;
+    associated_workspace = -1;
 }
 
 void Window::create_process_connection()
