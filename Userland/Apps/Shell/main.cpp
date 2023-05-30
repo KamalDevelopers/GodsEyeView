@@ -134,7 +134,7 @@ int main(int argc, char** argv)
         int result = command(input);
 
         if (result == 0)
-            printf("Unknown command '%s'", input);
+            printf("Unknown command %s", input);
         if (result != 2)
             printf("\n");
     }

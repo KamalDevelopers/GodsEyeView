@@ -35,6 +35,7 @@ private:
     int sys_open(char* file, int flags);
     int sys_close(int fd);
     int sys_waitpid(int pid);
+    int sys_unlink(char* pathname);
     int sys_chdir(char* dir);
     uint32_t sys_time();
     int sys_stat(char* file, struct stat* buffer);

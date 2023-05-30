@@ -53,6 +53,7 @@ uint32_t time();
 int spawn(const char* pathname, char** args);
 int nice(int inc);
 int waitpid(int pid);
+int unlink(const char* pathname);
 int chdir(const char* dir);
 void getcwd(char* buffer);
 int listdir(const char* dirname, fs_entry_t* entries, int count);

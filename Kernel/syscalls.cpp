@@ -102,6 +102,17 @@ int Syscalls::sys_waitpid(int pid)
     return TM->waitpid(pid);
 }
 
+int Syscalls::sys_unlink(char* pathname)
+{
+    int err = 0;
+    int fd = VFS->open(pathname);
+    if (fd < 0)
+        return -1;
+    err = VFS->unlink(fd);
+    close(fd);
+    return err;
+}
+
 int Syscalls::sys_chdir(char* dir)
 {
     return TM->task()->chdir(dir);
@@ -407,6 +418,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 7:
         cpu->eax = sys_waitpid((int)cpu->ebx);
+        break;
+
+    case 10:
+        cpu->eax = sys_unlink((char*)cpu->ebx);
         break;
 
     case 12:

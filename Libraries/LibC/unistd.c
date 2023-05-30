@@ -132,6 +132,15 @@ int waitpid(int pid)
     return error;
 }
 
+int unlink(const char* pathname)
+{
+    int error;
+    asm volatile("int $0x80"
+                 : "=a"(error)
+                 : "a"(10), "b"(pathname));
+    return error;
+}
+
 int chdir(const char* dir)
 {
     int exists;
