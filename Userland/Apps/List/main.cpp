@@ -10,7 +10,7 @@ int read_dir(char* name, bool root)
     int count = listdir(name, entries, 100);
 
     if (count == 0) {
-        printf("Folder does not exist");
+        printf("Folder '%s' does not exist", name);
         free(entries);
         return -1;
     }

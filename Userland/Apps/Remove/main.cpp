@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 
         if (i != 0)
             printf("\n");
-        printf("File %s does not exist", argv[i]);
+        printf("File '%s' does not exist", argv[i]);
     }
 
     return 0;
