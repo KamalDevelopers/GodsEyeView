@@ -141,6 +141,14 @@ void InterruptManager::activate()
     if (active_handler != 0)
         active_handler->deactivate();
 
+    /* set PIT frequency  */
+    outb(0x43, 0x36);
+    uint32_t divisor = 1193180 / PIT_HZ;
+    uint8_t l = (uint8_t)(divisor & 0xFF);
+    uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
+    outb(0x40, l);
+    outb(0x40, h);
+
     active_handler = this;
     TM->yield();
     asm("sti");
