@@ -150,6 +150,7 @@ void vprintf(const char* format, va_list v)
         }
         if (format[i] == '\b') {
             flag = 1;
+            putc(8);
             i++;
         }
     }
