@@ -152,6 +152,9 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
     if (key == 1)
         return 27;
 
+    if (key == TAB_PRESSED)
+        return 9;
+
     return 0;
 }
 
