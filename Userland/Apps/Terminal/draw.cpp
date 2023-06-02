@@ -11,6 +11,8 @@ static uint32_t pos_y = TEXT_GAP_Y;
 static uint32_t color = 0xA8A7A7;
 static int escape_flag = 0;
 static char terminal_text_buffer[2048];
+static uint8_t cursor_show = 0;
+static uint32_t char_need_clear = 0;
 
 void init(const char* font)
 {
@@ -25,6 +27,7 @@ void uninit()
 
 void cursor_set(canvas_t* canvas, bool show)
 {
+    cursor_show = show;
     int py = pos_y;
     for (uint32_t y = 0; y < 13; y++) {
         if (show)
@@ -87,7 +90,24 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
             color = 0x0;
             escape_flag = 10;
             return;
+        case 6:
+            escape_flag = 20;
+            return;
         }
+    }
+
+    if (escape_flag == 20) {
+        escape_flag = 0;
+        if (index == 1) {
+            if (pos_x >= 18) {
+                if (cursor_show)
+                    cursor_set(canvas, false);
+                pos_x -= current_font_header()->width + 1;
+                char_need_clear++;
+            }
+            return;
+        }
+        return;
     }
 
     if (escape_flag == 2) {
@@ -133,6 +153,12 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
 
     if (index <= 31)
         return;
+
+    if (char_need_clear && index != 32 && index != 8) {
+        pos_x += current_font_header()->width + 1;
+        character_set(canvas, 8, true);
+        char_need_clear--;
+    }
 
     cursor_set(canvas, false);
     if (!bg_blend)
