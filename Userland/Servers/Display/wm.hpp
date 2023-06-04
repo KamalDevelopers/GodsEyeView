@@ -46,6 +46,7 @@ public:
     void destroy_window(uint32_t index);
     void update_window_border(uint32_t index);
     void destroy_window_pid(int pid);
+    void sanitizer();
 
     Window** windows();
     uint32_t windows_size();

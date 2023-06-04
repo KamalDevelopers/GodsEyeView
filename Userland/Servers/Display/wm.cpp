@@ -89,8 +89,28 @@ void WindowManager::update_window_border(uint32_t index)
     windows()[index]->get_canvas()->border_decoration = (index == active_window) ? WINDOW_ACTIVE_BORDER_COLOR : WINDOW_BORDER_COLOR;
 }
 
+void WindowManager::sanitizer()
+{
+    uint32_t index = 0;
+    while (index < windows_size()) {
+        if (!windows()[index]->get_controlled()) {
+            index++;
+            continue;
+        }
+
+        int pid = windows()[index]->get_pid();
+        if (kill(pid, 0) < 0) {
+            destroy_window(index);
+            continue;
+        }
+
+        index++;
+    }
+}
+
 void WindowManager::update_window_positions()
 {
+    sanitizer();
     uint32_t position_x = WINDOW_GAP;
     uint32_t position_y = WINDOW_GAP;
     uint32_t windows_tile_vertical = 2;
