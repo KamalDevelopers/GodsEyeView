@@ -104,6 +104,12 @@ uint8_t KeyboardDriver::key_a(uint8_t key)
         return '+';
     }
 
+    if (key == CARET_PRESSED) {
+        if (modifier == KEYBOARD_MODIFIER_SHIFT)
+            return '*';
+        return '\'';
+    }
+
     if (key == PIPE_PRESSED) {
         if (modifier == KEYBOARD_MODIFIER_SHIFT)
             return '>';
