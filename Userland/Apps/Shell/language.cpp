@@ -202,7 +202,7 @@ int Language::execute(const char* script, size_t size)
         script_index++;
 
         if (error < 0) {
-            printf("shell error: not found %s\n", program);
+            printf("shell error: not found '%s'\n", program);
             return_value = -1;
         }
     }

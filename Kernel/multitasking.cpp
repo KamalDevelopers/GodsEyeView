@@ -308,6 +308,7 @@ TaskManager::TaskManager(GDT* gdt)
     pid_bitmap.bit_set(0);
     active = this;
     current_task = -1;
+    cpu_usage = 0;
 }
 
 TaskManager* TM = 0;
@@ -346,6 +347,13 @@ bool TaskManager::append_tasks(int count, ...)
         add_task(va_arg(list, Task*));
     va_end(list);
     return true;
+}
+
+uint32_t TaskManager::last_cpu_usage()
+{
+    uint32_t last = cpu_usage;
+    cpu_usage = 0;
+    return last;
 }
 
 void TaskManager::kill()
@@ -524,6 +532,12 @@ void TaskManager::pick_next_task()
 cpu_state* TaskManager::schedule(cpu_state* cpustate)
 {
     current_ticks++;
+    if ((current_ticks % 200000) == 0) {
+        if (cpu_usage_tick > cpu_usage)
+            cpu_usage = cpu_usage_tick;
+        cpu_usage_tick = 0;
+    }
+
     if (current_task >= 0)
         tasks.at(current_task)->cpustate = cpustate;
 
@@ -531,6 +545,9 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
         return cpustate;
 
     if (tasks.at(current_task)->quantum > 0) {
+        if (current_task)
+            cpu_usage_tick++;
+
         tasks.at(current_task)->quantum--;
         return tasks.at(current_task)->cpustate;
     }
@@ -550,6 +567,9 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
         if (current_task != 0)
             break;
     }
+
+    if (tasks.at(current_task)->priority != MAX_PRIORITIES + 1)
+        cpu_usage_tick++;
 
     return tasks.at(current_task)->cpustate;
 }

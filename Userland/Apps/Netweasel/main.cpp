@@ -15,14 +15,12 @@ void protocol_icmp(uint32_t ip)
     uint8_t i = 0;
     while (i < 3) {
         err = send(fd, recvbuffer, 1, 0);
-        if (i != 0)
-            printf("\n");
 
         printf("[%s] <- ping!\n", ntoa(ip));
         int size = recv(fd, recvbuffer, 1);
         if (!size)
             break;
-        printf("[%s] -> pong!", ntoa(ip));
+        printf("[%s] -> pong!\n", ntoa(ip));
         i++;
     }
 
@@ -42,8 +40,7 @@ void protocol_udp(uint32_t ip, uint16_t port)
         if (size == 1 && recvbuffer[0] == 10)
             break;
 
-        printf("%s", recvbuffer);
-        flush();
+        printf("%s\n", recvbuffer);
     }
 
     err = disconnect(fd);
@@ -70,7 +67,7 @@ void protocol_tcp(uint32_t ip, uint16_t port)
 void protocol_http(char* host, uint16_t port)
 {
     char request[256];
-    snprintf(request, sizeof(request), "GET / HTTP/1.1\r\nHost: %s\r\nUser-Agent: wget\r\nConnection: close\r\n\r\n", host);
+    snprintf(request, sizeof(request), "GET /?T HTTP/1.1\r\nHost: %s\r\nUser-Agent: wget\r\nConnection: close\r\n\r\n", host);
     uint32_t remote_ip = gethostbyname(host, strlen(host));
 
     int fd = socket(NET_PROTOCOL_TCP);
@@ -106,7 +103,7 @@ int main(int argc, char** argv)
     }
 
     if (argc < 2) {
-        printf("Error: no destination address specified");
+        printf("Error: no destination address specified\n");
         return 0;
     }
 
@@ -127,7 +124,7 @@ int main(int argc, char** argv)
 
     if (strcmp(argv[0], "tcp") == 0) {
         if (argc < 3) {
-            printf("Error: tcp connection requires ip and port");
+            printf("Error: tcp connection requires ip and port\n");
             return 0;
         }
         protocol_tcp(ip, port);
@@ -136,7 +133,7 @@ int main(int argc, char** argv)
 
     if (strcmp(argv[0], "udp") == 0) {
         if (argc < 3) {
-            printf("Error: udp connection requires ip and port");
+            printf("Error: udp connection requires ip and port\n");
             return 0;
         }
         protocol_udp(ip, port);

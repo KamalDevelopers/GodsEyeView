@@ -23,6 +23,7 @@ public:
 
     void clear();
     void display_time();
+    void display_cpu_usage();
     uint32_t display_string(const char* text, int pos_x, int pos_y);
     void resize_window(display_event_t* display_event);
     void receive_keyboard_event(display_event_t* display_event);

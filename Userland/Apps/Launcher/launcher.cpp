@@ -50,7 +50,7 @@ uint32_t Launcher::display_string(const char* text, int pos_x, int pos_y)
 {
     size_t size = strlen(text);
     for (uint32_t i = 0; i < size; i++)
-        pos_x = font_display_character(&window_canvas, text[i], pos_x, pos_y, 0x777777, 0x3C080808, true);
+        pos_x = font_display_character(&window_canvas, text[i], pos_x, pos_y, 0x979797, 0x3C080808, false);
     return pos_x;
 }
 
@@ -106,6 +106,36 @@ void Launcher::display_time()
     pos_x = display_string(minutes, pos_x, pos_y);
 }
 
+void Launcher::display_cpu_usage()
+{
+    struct osinfo info;
+    sys_osinfo(&info);
+    double cpu_ticks = info.cpu_usage_ticks;
+    double cpu_max_ticks = 10000;
+    double usage = cpu_ticks / cpu_max_ticks * 100;
+    uint32_t number = ((uint32_t)usage > 100) ? 100 : (uint32_t)usage;
+
+    char usage_string[3];
+    memset(&usage_string, 0, 10);
+    itoa(number, usage_string);
+
+    int pos_x = 18;
+    int pos_y = 6;
+
+    pos_x = display_string("cpu:", pos_x, pos_y);
+
+    if (number < 100) {
+        display_string(" ", pos_x, pos_y - 5);
+        pos_x = display_string(" ", pos_x, pos_y);
+    }
+    if (number < 10) {
+        display_string(" ", pos_x, pos_y - 5);
+        pos_x = display_string(" ", pos_x, pos_y);
+    }
+    pos_x = display_string(usage_string, pos_x, pos_y);
+    pos_x = display_string("%", pos_x, pos_y);
+}
+
 void Launcher::run()
 {
     is_running = true;
@@ -114,10 +144,12 @@ void Launcher::run()
     polls[0].fd = window_events_file;
 
     while (1) {
+        canvas_set(window_canvas.framebuffer, 0x3C080808, window_canvas.size);
         display_time();
+        display_cpu_usage();
         request_update_window();
         // poll(polls, 1);
-        sleep(5);
+        sleep(3);
         receive_events();
         request_update_window();
 

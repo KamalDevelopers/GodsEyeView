@@ -137,6 +137,8 @@ private:
     uint32_t current_ticks = 0;
     bool is_running = false;
     bool check_kill = false;
+    uint32_t cpu_usage = 0;
+    int cpu_usage_tick = 0;
     Vector<Task*, MAX_TASKS> tasks;
 
 public:
@@ -163,6 +165,7 @@ public:
     ipv4_socket_t** sockets();
     Task* task(int pid);
 
+    uint32_t last_cpu_usage();
     void sleep(uint32_t ticks);
     int waitpid(int pid);
     void test_poll();

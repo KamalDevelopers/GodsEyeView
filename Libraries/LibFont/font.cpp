@@ -1,7 +1,7 @@
 #include "font.hpp"
 
-static font_header_t* font_header = 0;
-static uint8_t* font_buffer = 0;
+static font_header_t* font_header;
+static uint8_t* font_buffer;
 
 uint32_t font_display_character(canvas_t* canvas, char c, uint32_t pos_x,
     uint32_t pos_y, uint32_t color, uint32_t bg, bool use_bg)

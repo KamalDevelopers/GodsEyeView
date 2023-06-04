@@ -377,6 +377,7 @@ int Syscalls::sys_osinfo(struct osinfo* buffer)
     buffer->uptime_ms = TM->ticks();
     strcpy(buffer->cpu_string, get_cpu()->name);
     buffer->cpu_is64 = get_cpu()->is64;
+    buffer->cpu_usage_ticks = TM->last_cpu_usage();
     return 0;
 }
 
