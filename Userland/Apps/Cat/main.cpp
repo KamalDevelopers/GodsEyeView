@@ -11,11 +11,19 @@ bool print_file(char* file_name)
 
     char buffer[BUFSIZ];
     int size = 1;
+    bool is_first = true;
     memset(buffer, 0, sizeof(buffer));
 
     while (size > 0) {
         size = read(file_descriptor, buffer, sizeof(buffer));
         write(1, buffer, size);
+
+        if (size && !is_first) {
+            flush();
+            usleep(400);
+        }
+
+        is_first = false;
     }
 
     close(file_descriptor);
