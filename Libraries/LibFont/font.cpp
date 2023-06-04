@@ -6,6 +6,8 @@ static uint8_t* font_buffer;
 uint32_t font_display_character(canvas_t* canvas, char c, uint32_t pos_x,
     uint32_t pos_y, uint32_t color, uint32_t bg, bool use_bg)
 {
+    if (c >= 127)
+        return pos_x;
     uint32_t offset = font_header->chars[c].ptr;
     pos_y += font_header->chars[c].y_offset;
     pos_x += font_header->chars[c].x_offset;
