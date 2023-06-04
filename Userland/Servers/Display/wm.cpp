@@ -6,8 +6,8 @@
 WindowManager::WindowManager(Compositor* compositor)
 {
     this->compositor = compositor;
-    workspaces = (window_group_t*)malloc(sizeof(window_group_t) * 3);
-    memset(workspaces, 0, sizeof(window_group_t) * 3);
+    workspaces = (window_group_t*)malloc(sizeof(window_group_t) * (WORKSPACES + 1));
+    memset(workspaces, 0, sizeof(window_group_t) * (WORKSPACES + 1));
 
     for (uint16_t i = 0; i < WORKSPACES; i++) {
         workspaces[i].windows = (Window**)malloc(sizeof(Window*));
@@ -236,7 +236,6 @@ void WindowManager::windows_append(Window* window)
 void WindowManager::windows_remove(uint32_t index)
 {
     window_group_t* group = &workspaces[active_windows];
-
     group->windows = (Window**)realloc(group->windows, (group->window_count - 1) * sizeof(Window*));
 
     if (index >= group->window_count)
@@ -258,7 +257,7 @@ void WindowManager::set_workspace(uint16_t set_workspace)
         windows()[i]->get_canvas()->hidden = 1;
     }
 
-    active_windows = CLAMP(set_workspace, 0, 2);
+    active_windows = CLAMP(set_workspace, 0, WORKSPACES - 1);
 
     for (uint32_t i = 0; i < windows_size(); i++) {
         if (!windows()[i]->get_controlled())

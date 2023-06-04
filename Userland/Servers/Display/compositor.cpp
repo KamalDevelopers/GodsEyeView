@@ -3,7 +3,6 @@
 #include <LibC/stdio.h>
 #include <LibC/string.h>
 #include <LibC/unistd.h>
-#include <LibCompress/lzw.hpp>
 
 Compositor::Compositor()
 {
@@ -141,33 +140,8 @@ int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)
     return size;
 }
 
-int Compositor::read_compressed_bitmap(const char* file_name, canvas_t* canvas)
+void Compositor::load_background_bitmap(const char* file_name)
 {
-    int file_descriptor = open(file_name, O_RDONLY);
-    if (file_descriptor < 0)
-        return 0;
-
-    struct stat statbuffer;
-    fstat(file_descriptor, &statbuffer);
-    uint32_t* buffer = (uint32_t*)malloc(statbuffer.st_size);
-    read(file_descriptor, (uint8_t*)buffer, statbuffer.st_size);
-    close(file_descriptor);
-
-    lzw_set_read_buffer((uint8_t*)buffer, statbuffer.st_size);
-    lzw_set_write_buffer((uint8_t*)canvas->framebuffer, canvas->size * sizeof(int32_t));
-    lzw_decompress();
-
-    free(buffer);
-    return statbuffer.st_size;
-}
-
-void Compositor::load_background_bitmap(const char* file_name, bool is_compressed)
-{
-    if (is_compressed) {
-        read_compressed_bitmap(file_name, root_layer);
-        return;
-    }
-
     read_bitmap(file_name, root_layer);
 }
 

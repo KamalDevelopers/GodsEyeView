@@ -24,6 +24,7 @@ class WindowManager {
 private:
     window_group_t* workspaces;
     Compositor* compositor;
+
     Window* compose_window(int pid);
 
     int active_windows = 0;
