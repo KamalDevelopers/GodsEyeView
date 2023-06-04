@@ -96,7 +96,7 @@ void Terminal::receive_events()
 
 void Terminal::receive_stdout()
 {
-    if (read(1, stdout_buffer, sizeof(stdout_buffer))) {
+    if (read(1, stdout_buffer, sizeof(stdout_buffer) - 1)) {
         draw_text(&window_canvas, stdout_buffer);
         memset(stdout_buffer, 0, sizeof(stdout_buffer));
     }
