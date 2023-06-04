@@ -48,6 +48,24 @@ static int toupper(int c)
     return c;
 }
 
+static int isspace(int c)
+{
+	return (c == '\t' || c == '\n' ||
+	    c == '\v' || c == '\f' || c == '\r' || c == ' ' ? 1 : 0);
+}
+
+static int ispunct(int c)
+{
+    if (isalpha(c))
+        return 0;
+    if (isdigit(c))
+        return 0;
+    if (isspace(c))
+        return 0;
+    return 1;
+}
+
+
 #ifdef __cplusplus
 }
 #endif

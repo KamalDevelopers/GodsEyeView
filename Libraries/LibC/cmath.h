@@ -73,6 +73,16 @@ inline int abs(int num)
     return num;
 }
 
+inline double truncate(double x)
+{
+    return x < 0 ? -floor(-x) : floor(x);
+}
+
+inline double fmod(double x, double y)
+{
+    return x - truncate(x / y) * y;
+}
+
 #ifdef __cplusplus
 }
 #endif

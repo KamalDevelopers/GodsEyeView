@@ -390,6 +390,11 @@ int Syscalls::sys_mkfifo(char* pathname, int mode)
     return VFS->open_fifo(pathname, mode | O_CREAT);
 }
 
+int Syscalls::sys_getchar(int* character)
+{
+    return TM->tty()->task_getchar(character);
+}
+
 uint32_t Syscalls::interrupt(uint32_t esp)
 {
     cpu_state* cpu = (cpu_state*)esp;
@@ -506,6 +511,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 403:
         cpu->eax = sys_osinfo((struct osinfo*)cpu->ebx);
+        break;
+
+    case 404:
+        cpu->eax = sys_getchar((int*)cpu->ebx);
         break;
     }
 

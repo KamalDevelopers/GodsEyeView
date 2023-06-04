@@ -25,7 +25,7 @@ bool print_file(char* file_name)
 int main(int argc, char** argv)
 {
     if (!argc) {
-        printf("No input file");
+        printf("No input file\n");
         return 0;
     }
 
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
         if (i != 0)
             printf("\n");
-        printf("File '%s' does not exist", argv[i]);
+        printf("File '%s' does not exist\n", argv[i]);
     }
 
     return 0;

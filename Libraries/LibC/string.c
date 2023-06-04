@@ -28,12 +28,11 @@ int len(const char* arr)
     return l;
 }
 
-char* strcpy(char* arr, const char* str)
+char* strcpy(char* s1, const char* s2)
 {
-    while (*str)
-        *arr++ = *str++;
-    *arr = 0;
-    return arr;
+    char* save = s1;
+	for (; (*s1 = *s2); ++s2, ++s1);
+	return save;
 }
 
 char* strncpy(char* arr, const char* str, int l)
@@ -115,12 +114,37 @@ char* findchar(const char* str, int c)
 
 char* strcat(char* dest, const char* src)
 {
-    size_t i, j;
-    i = strlen(dest);
-    for (j = 0; src[j] != '\0'; j++)
-        dest[i + j] = src[j];
-    dest[i + j] = '\0';
+    char* ptr = dest + strlen(dest);
+    while (*src != '\0')
+        *ptr++ = *src++;
+    *ptr = '\0';
     return dest;
+}
+
+char* strchr(const char *s, int c)
+{
+    if (s == NULL)
+        return NULL;
+
+    while (*s != 0)
+    {
+        if (*s == (char)c)
+            return (char*)s;
+        s++;
+    }
+    return NULL;
+}
+
+const char* strstr(const char* str1, const char* str2)
+{
+    size_t n = strlen(str2);
+    while (*str1)
+    {
+        if (!memcmp(str1, str2, n))
+            return str1;
+        str1++;
+    }
+    return 0;
 }
 
 char* strtok(char* str, const char* delimiter)

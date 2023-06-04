@@ -174,7 +174,7 @@ static void snprintf_hook(char* s)
     size_t size = strlen(s);
     if (snprintf_current_size + size >= snprintf_size)
         return;
-    strcat(snprintf_string + snprintf_current_size, s);
+    memcpy(snprintf_string + snprintf_current_size, s, size);
     snprintf_current_size += size;
     snprintf_string[snprintf_current_size] = 0;
 }

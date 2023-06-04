@@ -81,7 +81,7 @@ int run(char* input, int* tape)
 int main(int argc, char** argv)
 {
     if (!argc) {
-        printf("No input file");
+        printf("No input file\n");
         return 0;
     }
 
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     fstat(file_descriptor, &statbuffer);
 
     if (statbuffer.st_size == -1) {
-        printf("File '%s' does not exist", argv[0]);
+        printf("File '%s' does not exist\n", argv[0]);
         return 0;
     }
 

@@ -15,6 +15,7 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     memset(arguments, 0, 500);
     memset(working_directory, 0, MAX_PATH_SIZE);
     memcpy(name, task_name, strlen(task_name));
+    memset(stack, 0, sizeof(stack));
     name[strlen(task_name)] = '\0';
 
     cpustate = (cpu_state*)(stack + sizeof(stack) - sizeof(cpu_state));

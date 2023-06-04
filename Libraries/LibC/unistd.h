@@ -60,6 +60,7 @@ int listdir(const char* dirname, fs_entry_t* entries, int count);
 int getpid();
 int setsid();
 int sys_osinfo(struct osinfo* buffer);
+int getchar(int* character);
 
 #ifdef __cplusplus
 }

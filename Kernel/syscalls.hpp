@@ -57,6 +57,7 @@ private:
     int sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count);
     void sys_getcwd(char* buffer);
     int sys_osinfo(struct osinfo* buffer);
+    int sys_getchar(int* character);
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);

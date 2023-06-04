@@ -44,6 +44,27 @@ int digit_count(int num)
     return count;
 }
 
+double atof(const char* str)
+{
+    char c;
+    int i = 0;
+    int j = 0;
+    int val = 0;
+    int flag = 0;
+
+    while ((c = *(str + i)) != '\0'){
+        if (c != '.'){
+            val = (val*10) + (c-'0');
+            if (flag == 1)
+                --j;
+        }
+        if (c=='.') { if (flag == 1) return 0; flag = 1; }
+        ++i;
+    }
+    val = val * pow(10, j);
+    return val;
+}
+
 void itoa(unsigned int num, char* number)
 {
     if (num > 1000000000) {
@@ -68,10 +89,10 @@ void itoa(unsigned int num, char* number)
     }
 }
 
-int atoi(char* str)
+int atoi(const char* str)
 {
     int res = 0;
-    for (int i = 0; str[i] != '\0'; ++i)
+    for (int i = 0; str[i] != '\0' && str[i] != '.'; ++i)
         res = res * 10 + str[i] - '0';
     return res;
 }

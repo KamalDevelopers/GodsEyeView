@@ -201,3 +201,12 @@ int sys_osinfo(struct osinfo* buffer)
                  : "a"(403), "b"(buffer));
     return result;
 }
+
+int getchar(int* character)
+{
+    int size;
+    asm volatile("int $0x80"
+                 : "=a"(size)
+                 : "a"(404), "b"(character));
+    return size;
+}

@@ -41,6 +41,6 @@ int main(int argc, char** argv)
         strcat(cwd, argv[0]);
         read_dir(argv[0], false);
     }
-
+    printf("\n");
     return 0;
 }

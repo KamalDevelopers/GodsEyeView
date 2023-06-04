@@ -29,12 +29,12 @@ bool play(char* file_name)
 int main(int argc, char** argv)
 {
     if (!argc) {
-        printf("Usage: mixer <file>");
+        printf("Usage: mixer <file>\n");
         return 0;
     }
 
     if (!play(argv[0]))
-        printf("File '%s' does not exist", argv[0]);
+        printf("File '%s' does not exist\n", argv[0]);
 
     return 0;
 }
