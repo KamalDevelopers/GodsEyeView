@@ -12,6 +12,19 @@ Shell::Shell()
     strncpy(user, "terry", 5);
     uname(&uname_struct);
     lowercase(uname_struct.sysname);
+}
+
+Shell::~Shell()
+{
+    for (uint32_t i = 0; i < autocomplete_table_size; i++)
+        free(autocomplete_table[i]);
+}
+
+void Shell::autocomplete_table_builder()
+{
+    for (uint32_t i = 0; i < autocomplete_table_size; i++)
+        free(autocomplete_table[i]);
+    autocomplete_table_size = 0;
 
     /* default autocomplete words */
     append_autocomplete_word("pwd");
@@ -21,13 +34,18 @@ Shell::Shell()
     append_autocomplete_word("reboot");
     append_autocomplete_word("ls");
     append_autocomplete_word("clear");
-    append_autocomplete_word("nenf");
-}
 
-Shell::~Shell()
-{
-    for (uint32_t i = 0; i < autocomplete_table_size; i++)
-        free(autocomplete_table[i]);
+    getcwd(cwd);
+    fs_entry_t* entries = (fs_entry_t*)malloc(sizeof(fs_entry_t) * 100);
+    int count = listdir(cwd, entries, 100);
+
+    if (count == 0)
+        return;
+
+    for (uint32_t i = 0; i < count; i++)
+        append_autocomplete_word(entries[i].name);
+
+    free(entries);
 }
 
 int Shell::match_autocomplete(const char* word, size_t word_size)
@@ -90,6 +108,7 @@ uint8_t Shell::handle_input_line_key()
     if (input_line_buffer[input_line_index - 1] == ' ') {
         flush_autocomplete(input_line_index - 1);
         autocomplete_word_size = 0;
+        autocomplete_input_skip = input_line_index;
     }
 
     if (input_line_buffer[input_line_index - 1] == KEY_ENTER) {
@@ -103,16 +122,22 @@ uint8_t Shell::handle_input_line_key()
         if (autocomplete_word == -1)
             return 1;
 
-        flush_chars(input_line_index);
-        memset(input_line_buffer, 0, sizeof(input_line_buffer));
+        flush_chars(input_line_index - autocomplete_input_skip);
+        memset(input_line_buffer + autocomplete_input_skip, 0, sizeof(input_line_buffer) - autocomplete_input_skip);
         input_line_index = strlen(autocomplete_table[autocomplete_word]);
-        strncpy(input_line_buffer, autocomplete_table[autocomplete_word], input_line_index);
-        input_line_buffer[input_line_index] = ' ';
-        input_line_buffer[input_line_index + 1] = 0;
-        input_line_index++;
-        printf("%s", input_line_buffer);
+        strcat(input_line_buffer + autocomplete_input_skip, autocomplete_table[autocomplete_word]);
+        input_line_buffer[input_line_index + autocomplete_input_skip] = 0;
+        if (!autocomplete_input_skip) {
+            input_line_buffer[input_line_index + autocomplete_input_skip] = ' ';
+            input_line_buffer[input_line_index + 1 + autocomplete_input_skip] = 0;
+            input_line_index++;
+        }
+        printf("%s", input_line_buffer + autocomplete_input_skip);
         autocomplete_word = -1;
         autocomplete_word_size = 0;
+        autocomplete_word_size = 0;
+        input_line_index += autocomplete_input_skip;
+        autocomplete_input_skip = input_line_index;
         return 1;
     }
 
@@ -122,21 +147,24 @@ uint8_t Shell::handle_input_line_key()
             input_line_buffer[input_line_index] = 0;
             input_line_buffer[input_line_index + 1] = 0;
             printf("\b");
-            flush_autocomplete(input_line_index);
+            flush_autocomplete(input_line_index + autocomplete_input_skip);
             autocomplete_word_size = 0;
+            autocomplete_word = -1;
+            if (input_line_index <= autocomplete_input_skip)
+                autocomplete_input_skip = 0;
         } else {
             input_line_buffer[input_line_index - 1] = 0;
             input_line_index--;
         }
-        return 1;
+    } else {
+        printf("%c", input_line_buffer[input_line_index - 1]);
     }
 
-    printf("%c", input_line_buffer[input_line_index - 1]);
-    autocomplete_word = match_autocomplete(input_line_buffer, input_line_index);
+    autocomplete_word = match_autocomplete(input_line_buffer + autocomplete_input_skip, input_line_index - autocomplete_input_skip);
 
     /* no autocomplete word */
-    if (autocomplete_word == -1) {
-        flush_autocomplete(input_line_index);
+    if (autocomplete_word == -1 || ((input_line_index - autocomplete_input_skip) <= 0)) {
+        flush_autocomplete(input_line_index - autocomplete_input_skip);
         autocomplete_word_size = 0;
         return 1;
     }
@@ -144,16 +172,16 @@ uint8_t Shell::handle_input_line_key()
     /* print autocomplete word */
     int new_word_size = strlen(autocomplete_table[autocomplete_word]);
     if (new_word_size < autocomplete_word_size)
-        flush_autocomplete(input_line_index);
+        flush_autocomplete(input_line_index - autocomplete_input_skip);
     if (new_word_size == autocomplete_word_size)
         return 0;
     autocomplete_word_size = new_word_size;
 
     printf("\33\x2\x8");
-    for (uint32_t z = input_line_index; z < autocomplete_word_size; z++)
+    for (uint32_t z = input_line_index - autocomplete_input_skip; z < autocomplete_word_size; z++)
         printf("%c", autocomplete_table[autocomplete_word][z]);
     printf("\33\x3");
-    for (uint32_t z = input_line_index; z < autocomplete_word_size; z++)
+    for (uint32_t z = input_line_index - autocomplete_input_skip; z < autocomplete_word_size; z++)
         printf("\33\x6\x1");
 
     return 0;
@@ -161,8 +189,10 @@ uint8_t Shell::handle_input_line_key()
 
 size_t Shell::read_input_line()
 {
+    autocomplete_table_builder();
     memset(input_line_buffer, 0, sizeof(input_line_buffer));
     input_line_index = 0;
+    autocomplete_input_skip = 0;
 
     while (input_line_index <= sizeof(input_line_buffer) - 1) {
         flush();

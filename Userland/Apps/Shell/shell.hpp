@@ -18,6 +18,7 @@ private:
     uint32_t autocomplete_word_size = 0;
     uint32_t autocomplete_table_size = 0;
     int autocomplete_word = -1;
+    int autocomplete_input_skip = 0;
     char input_line_buffer[100];
     char cwd[100];
     char user[25];
@@ -26,6 +27,7 @@ private:
     void flush_chars(int size);
     void flush_autocomplete(int start);
     uint8_t handle_input_line_key();
+    void autocomplete_table_builder();
 
 public:
     Shell();
