@@ -106,7 +106,7 @@ void Shell::flush_autocomplete(int start)
 uint8_t Shell::handle_input_line_key()
 {
     if (input_line_buffer[input_line_index - 1] == ' ') {
-        flush_autocomplete(input_line_index - 1);
+        flush_autocomplete(input_line_index - 1 - autocomplete_input_skip);
         autocomplete_word_size = 0;
         autocomplete_input_skip = input_line_index;
     }
@@ -119,10 +119,13 @@ uint8_t Shell::handle_input_line_key()
     if (input_line_buffer[input_line_index - 1] == KEY_TAB) {
         input_line_index--;
         input_line_buffer[input_line_index] = 0;
-        if (autocomplete_word == -1)
+        if (autocomplete_word == -1 || !autocomplete_word_size)
+            return 1;
+        if (input_line_index >= 1 && input_line_buffer[input_line_index - 1] == ' ')
             return 1;
 
         flush_chars(input_line_index - autocomplete_input_skip);
+        flush_autocomplete(0);
         memset(input_line_buffer + autocomplete_input_skip, 0, sizeof(input_line_buffer) - autocomplete_input_skip);
         input_line_index = strlen(autocomplete_table[autocomplete_word]);
         strcat(input_line_buffer + autocomplete_input_skip, autocomplete_table[autocomplete_word]);
@@ -148,10 +151,12 @@ uint8_t Shell::handle_input_line_key()
             input_line_buffer[input_line_index + 1] = 0;
             printf("\b");
             flush_autocomplete(input_line_index + autocomplete_input_skip);
+            if (input_line_index <= autocomplete_input_skip) {
+                flush_autocomplete(0);
+                autocomplete_input_skip = 0;
+            }
             autocomplete_word_size = 0;
             autocomplete_word = -1;
-            if (input_line_index <= autocomplete_input_skip)
-                autocomplete_input_skip = 0;
         } else {
             input_line_buffer[input_line_index - 1] = 0;
             input_line_index--;
@@ -193,6 +198,8 @@ size_t Shell::read_input_line()
     memset(input_line_buffer, 0, sizeof(input_line_buffer));
     input_line_index = 0;
     autocomplete_input_skip = 0;
+    autocomplete_word = -1;
+    autocomplete_word_size = 0;
 
     while (input_line_index <= sizeof(input_line_buffer) - 1) {
         flush();
