@@ -85,7 +85,7 @@ void protocol_http(char* host, uint16_t port)
 int main(int argc, char** argv)
 {
     if (argc < 1) {
-        printf("Usage: netweasel <protocol> [ip] [port]");
+        printf("Usage: netweasel <protocol> [ip] [port]\n");
         return 0;
     }
 

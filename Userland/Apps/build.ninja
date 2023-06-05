@@ -42,6 +42,10 @@ rule launcher
     command = cd ./Launcher && ninja && ninja move && cd ../
     description = building launcher (core) GUI application
 
+rule image
+    command = cd ./Image && ninja && ninja move && cd ../
+    description = building image GUI application
+
 build tonysay: tonysay
 build nenf: nenf
 build shell: shell
@@ -53,3 +57,4 @@ build mixer: mixer
 build netweasel: netweasel
 build terminal: terminal
 build launcher: launcher
+build image: image
