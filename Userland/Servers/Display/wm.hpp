@@ -27,6 +27,7 @@ private:
 
     Window* compose_window(int pid);
 
+    int active_fullscreen_window = -1;
     int active_windows = 0;
     int active_window = -1;
     uint32_t tiled_windows = 0;
@@ -53,6 +54,8 @@ public:
     void windows_append(Window* window);
     void windows_remove(uint32_t index);
     void set_workspace(uint16_t workspace);
+    void show_all_windows();
+    void set_fullscreen_window(uint32_t index);
 };
 
 #endif

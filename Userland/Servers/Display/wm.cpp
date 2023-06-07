@@ -5,6 +5,7 @@
 
 WindowManager::WindowManager(Compositor* compositor)
 {
+    active_fullscreen_window = -1;
     this->compositor = compositor;
     workspaces = (window_group_t*)malloc(sizeof(window_group_t) * (WORKSPACES + 1));
     memset(workspaces, 0, sizeof(window_group_t) * (WORKSPACES + 1));
@@ -65,6 +66,20 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
         return;
     }
 
+    if ((event->key == 10) && (event->modifier == 2)) {
+        if (active_fullscreen_window < 0) {
+            active_fullscreen_window = active_window;
+            set_fullscreen_window(active_fullscreen_window);
+        } else {
+            active_fullscreen_window = -1;
+            show_all_windows();
+        }
+
+        compositor->require_update();
+        update_window_positions();
+        return;
+    }
+
     if ((event->key == 't') && (event->modifier == 2)) {
         spawn("bin/terminal", 0);
         return;
@@ -72,6 +87,26 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
 
     if (active_window != -1)
         windows()[active_window]->keyboard_event(event);
+}
+
+void WindowManager::show_all_windows()
+{
+    for (uint32_t i = 0; i < windows_size(); i++) {
+        if (!windows()[i]->get_controlled())
+            continue;
+        windows()[i]->get_canvas()->hidden = 0;
+    }
+}
+
+void WindowManager::set_fullscreen_window(uint32_t index)
+{
+    for (uint32_t i = 0; i < windows_size(); i++) {
+        if (!windows()[i]->get_controlled())
+            continue;
+        if (i == index)
+            continue;
+        windows()[i]->get_canvas()->hidden = 1;
+    }
 }
 
 void WindowManager::require_update(int pid)
@@ -111,6 +146,11 @@ void WindowManager::sanitizer()
 void WindowManager::update_window_positions()
 {
     sanitizer();
+
+    uint32_t return_tiled_windows = tiled_windows;
+    if (active_fullscreen_window >= 0)
+        tiled_windows = 1;
+
     uint32_t position_x = WINDOW_GAP;
     uint32_t position_y = WINDOW_GAP;
     uint32_t windows_tile_vertical = 2;
@@ -122,6 +162,8 @@ void WindowManager::update_window_positions()
     uint32_t tiled_index = 0;
     for (uint32_t index = 0; index < windows_size(); index++) {
         if (!windows()[index]->get_controlled())
+            continue;
+        if (active_fullscreen_window >= 0 && index != active_fullscreen_window)
             continue;
 
         uint32_t height = horizontal_section - WINDOW_GAP * 2;
@@ -155,6 +197,7 @@ void WindowManager::update_window_positions()
         tiled_index++;
     }
 
+    tiled_windows = return_tiled_windows;
     if (!tiled_windows)
         compositor->require_update();
     compositor->require_update_next();
@@ -169,6 +212,11 @@ Window* WindowManager::compose_window(int pid)
 
 void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint32_t bg, uint8_t flags)
 {
+    if (active_fullscreen_window >= 0) {
+        active_fullscreen_window = -1;
+        show_all_windows();
+    }
+
     nice(2);
     Window* window = compose_window(pid);
     windows_append(window);
@@ -196,6 +244,11 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint
 
 void WindowManager::destroy_window(uint32_t index)
 {
+    if (active_fullscreen_window >= 0) {
+        active_fullscreen_window = -1;
+        show_all_windows();
+    }
+
     compositor->remove_render_layer(windows()[index]->get_canvas());
     if (windows()[index]->get_controlled())
         tiled_windows--;
