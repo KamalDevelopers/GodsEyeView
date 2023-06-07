@@ -77,27 +77,40 @@ int main(int argc, char** argv)
     }
 
     char file[100];
+    bool is_supported = false;
     memset(file, 0, 100);
     strcpy(file, argv[0]);
     char* token = strtok(argv[0], ".");
     char* new_token = token;
     int last_token_size = 0;
+
     while (new_token != NULL) {
         token = new_token;
         new_token = strtok(NULL, ".");
     }
 
     if (strncmp(token, "raw", 3) == 0) {
+        is_supported = true;
         if (argc < 3) {
             printf("File format 'raw' requires specifying image width and height\n");
             return 0;
         }
     }
 
+    if (!is_supported) {
+        printf("File '%s' format unsupported\n", file);
+        return 0;
+    }
+
     int width = atoi(argv[1]);
     int height = atoi(argv[2]);
 
     canvas_t* image_canvas = request_canvas(width, height);
+
+    if (!is_supported) {
+        printf("File '%s' format unsupported\n", file);
+        return 0;
+    }
 
     if (read_bitmap(file, image_canvas) == 0) {
         printf("File '%s' does not exist\n", file);

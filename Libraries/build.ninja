@@ -30,6 +30,3 @@ build libsound.a: library LibSound/connection.o LibSound/wave.o
 
 build LibFont/font.o: cpp ./LibFont/font.cpp
 build libfont.a: library LibFont/font.o
-
-build LibCompress/lzw.o: cpp ./LibCompress/lzw.cpp
-build libcompress.a: library LibCompress/lzw.o
