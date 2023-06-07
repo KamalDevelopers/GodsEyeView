@@ -56,6 +56,7 @@ public:
     void set_workspace(uint16_t workspace);
     void show_all_windows();
     void set_fullscreen_window(uint32_t index);
+    void set_window_master(uint32_t index);
 };
 
 #endif

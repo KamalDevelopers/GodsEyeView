@@ -66,7 +66,16 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
         return;
     }
 
+    if ((event->key == ' ') && (event->modifier == 2)) {
+        if (active_window < 0)
+            return;
+        set_window_master(active_window);
+        return;
+    }
+
     if ((event->key == 10) && (event->modifier == 2)) {
+        if (active_window < 0)
+            return;
         if (active_fullscreen_window < 0) {
             active_fullscreen_window = active_window;
             set_fullscreen_window(active_fullscreen_window);
@@ -87,6 +96,21 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
 
     if (active_window != -1)
         windows()[active_window]->keyboard_event(event);
+}
+
+void WindowManager::set_window_master(uint32_t index)
+{
+    if (windows_size() <= 0 || index > windows_size())
+        return;
+    Window* window_ptr_source = windows()[index];
+    Window* window_ptr_destination = windows()[0];
+    windows()[0] = window_ptr_source;
+    windows()[index] = window_ptr_destination;
+    active_window = 0;
+    update_window_border(0);
+    update_window_border(index);
+    update_window_positions();
+    compositor->require_update();
 }
 
 void WindowManager::show_all_windows()
