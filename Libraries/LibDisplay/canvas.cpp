@@ -1,4 +1,5 @@
 #include "canvas.hpp"
+#include "gaussian.hpp"
 
 #define GET_ALPHA(color) ((color >> 24) & 0x000000FF)
 #define GET_RED(color) ((color >> 16) & 0x000000FF)
@@ -63,6 +64,22 @@ int request_framebuffer(uint32_t* framebuffer, uint32_t* width, uint32_t* height
         return 0;
     }
     return 1;
+}
+
+void canvas_blur(uint32_t* destination, int size, int width, int height, uint32_t blur_level)
+{
+    int pixels = 0;
+
+    for (uint32_t i = 1; i < size - 1; i++) {
+        uint32_t nred = gaussian_blur_pixel(destination, i, width, 16, blur_level);
+        uint32_t ngreen = gaussian_blur_pixel(destination, i, width, 8, blur_level);
+        uint32_t nblue = gaussian_blur_pixel(destination, i, width, 0, blur_level);
+        destination[i] = (0 << 24) | (nred << 16) | (ngreen << 8) | (nblue << 0);
+
+        pixels++;
+        if (pixels >= size)
+            return;
+    }
 }
 
 void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, alpha_lookup_t* lookup)

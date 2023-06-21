@@ -8,6 +8,7 @@ Compositor::Compositor()
 {
     request_framebuffer(&display_framebuffer, &display_width, &display_height);
     final_layer = request_canvas(display_width, display_height);
+    blured_final_layer = request_canvas(display_width, display_height);
     root_layer = request_canvas(display_width, display_height);
     mouse_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
     mouse_ghost_layer = request_canvas(MOUSE_WIDTH, MOUSE_HEIGHT);
@@ -18,6 +19,7 @@ Compositor::Compositor()
     display_layer.x = 0;
     display_layer.y = 0;
     display_layer.framebuffer = (uint32_t*)display_framebuffer;
+    has_blured_final_layer = 0;
 }
 
 Compositor::~Compositor()
@@ -25,24 +27,41 @@ Compositor::~Compositor()
     request_canvas_destroy(root_layer);
     request_canvas_destroy(mouse_layer);
     request_canvas_destroy(final_layer);
+    request_canvas_destroy(blured_final_layer);
     request_canvas_destroy(mouse_ghost_layer);
     free(mouse_bitmap);
 }
 
 void Compositor::render_canvas(canvas_t* canvas)
 {
+    /* Gaussian blur */
+    if (!has_blured_final_layer) {
+        has_blured_final_layer = 1;
+        canvas_copy(blured_final_layer, root_layer);
+        uint32_t address = (uint32_t)(blured_final_layer->framebuffer);
+        for (uint32_t y = 4; y < final_layer->height - 4; y++) {
+            canvas_blur((uint32_t*)address, final_layer->width, final_layer->width, final_layer->height, 4096);
+            address += final_layer->width * sizeof(int32_t);
+        }
+    }
+
     uint32_t final_layer_address = (uint32_t)(final_layer->framebuffer) + canvas->x * sizeof(int32_t);
     final_layer_address += canvas->y * (final_layer->width * sizeof(int32_t));
+    uint32_t blured_final_layer_address = (uint32_t)(blured_final_layer->framebuffer) + canvas->x * sizeof(int32_t);
+    blured_final_layer_address += canvas->y * (blured_final_layer->width * sizeof(int32_t));
     uint32_t canvas_address = (uint32_t)(canvas->framebuffer);
 
     for (uint32_t y = 0; y < canvas->height; y++) {
-        if (canvas->alpha_lookup)
+        if (canvas->alpha_lookup) {
+            canvas_copy((uint32_t*)final_layer_address, (uint32_t*)blured_final_layer_address, canvas->width);
             canvas_copy_alpha((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width, canvas->alpha_lookup);
-        else
+        } else {
             canvas_copy((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width);
+        }
 
         canvas_address += canvas->width * sizeof(int32_t);
         final_layer_address += final_layer->width * sizeof(int32_t);
+        blured_final_layer_address += blured_final_layer->width * sizeof(int32_t);
     }
 }
 

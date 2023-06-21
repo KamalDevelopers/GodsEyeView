@@ -20,9 +20,11 @@ private:
     uint32_t display_height = 0;
     bool needs_update = false;
     bool next_needs_update = false;
+    bool has_blured_final_layer = false;
 
     canvas_t* update_canvas = 0;
     canvas_t display_layer;
+    canvas_t* blured_final_layer = 0;
     canvas_t* final_layer = 0;
     canvas_t* root_layer = 0;
     canvas_t* mouse_layer = 0;
