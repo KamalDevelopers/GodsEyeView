@@ -7,6 +7,7 @@
 #include <LibC/string.h>
 #include <LibC/unistd.h>
 #include <LibDisplay/connection.hpp>
+#include <LibFont/font.hpp>
 
 class Launcher {
 private:
@@ -15,6 +16,7 @@ private:
     bool is_running = false;
     uint32_t width = 0;
     uint32_t height = 0;
+    font_t* default_font;
     canvas_t window_canvas;
 
 public:

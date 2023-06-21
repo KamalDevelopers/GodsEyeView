@@ -1,5 +1,4 @@
 #include "launcher.hpp"
-#include <LibFont/font.hpp>
 
 Launcher::Launcher()
 {
@@ -12,7 +11,7 @@ Launcher::Launcher()
     window_events_file = request_display_window(window_canvas, width, height, 0x3C080808, flags);
     canvas_set(window_canvas.framebuffer, 0x3C080808, window_canvas.size);
 
-    font_load("bitmaps/font.tftf");
+    default_font = font_load("bitmaps/font.tftf");
 
     request_update_window();
 }
@@ -20,7 +19,7 @@ Launcher::Launcher()
 Launcher::~Launcher()
 {
     request_destroy_window();
-    font_unload();
+    font_unload(default_font);
 }
 
 void Launcher::resize_window(display_event_t* display_event)
@@ -50,7 +49,7 @@ uint32_t Launcher::display_string(const char* text, int pos_x, int pos_y)
 {
     size_t size = strlen(text);
     for (uint32_t i = 0; i < size; i++)
-        pos_x = font_display_character(&window_canvas, text[i], pos_x, pos_y, 0x979797, 0x3C080808, false);
+        pos_x = font_display_character_with_bg(default_font, &window_canvas, text[i], pos_x, pos_y, 0x979797, 0x3C080808, false);
     return pos_x;
 }
 

@@ -13,16 +13,17 @@ static int escape_flag = 0;
 static char terminal_text_buffer[2048];
 static uint8_t cursor_show = 0;
 static uint32_t char_need_clear = 0;
+static font_t* default_font;
 
 void init(const char* font)
 {
-    font_load(font);
+    default_font = font_load(font);
     memset(terminal_text_buffer, 0, 2048);
 }
 
 void uninit()
 {
-    font_unload();
+    font_unload(default_font);
 }
 
 void cursor_set(canvas_t* canvas, bool show)
@@ -102,7 +103,7 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
             if (pos_x >= 18) {
                 if (cursor_show)
                     cursor_set(canvas, false);
-                pos_x -= current_font_header()->width + 1;
+                pos_x -= default_font->font_header->width + 1;
                 char_need_clear++;
             }
             return;
@@ -134,13 +135,13 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
     if (index == 8) {
         if (pos_x >= 18) {
             cursor_set(canvas, false);
-            pos_x -= current_font_header()->width + 1;
+            pos_x -= default_font->font_header->width + 1;
             pos_y -= 2;
             character_set(canvas, 32, true);
             pos_y += 2;
-            pos_x -= current_font_header()->width + 1;
+            pos_x -= default_font->font_header->width + 1;
             character_set(canvas, 32, true);
-            pos_x -= current_font_header()->width + 1;
+            pos_x -= default_font->font_header->width + 1;
         }
         return;
     }
@@ -155,18 +156,18 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
         return;
 
     if (char_need_clear && index != 32 && index != 8) {
-        pos_x += current_font_header()->width + 1;
+        pos_x += default_font->font_header->width + 1;
         character_set(canvas, 8, true);
         char_need_clear--;
     }
 
     cursor_set(canvas, false);
     if (!bg_blend)
-        font_display_character(canvas, index, pos_x, pos_y, color);
+        font_display_character(default_font, canvas, index, pos_x, pos_y, color);
     else
-        font_display_character(canvas, index, pos_x, pos_y, color, BACKGROUND_COLOR, true);
+        font_display_character_with_bg(default_font, canvas, index, pos_x, pos_y, color, BACKGROUND_COLOR, true);
 
-    pos_x += current_font_header()->width + 1;
+    pos_x += default_font->font_header->width + 1;
     if (pos_x >= canvas->width - TEXT_GAP_X)
         next_line(canvas);
 }
