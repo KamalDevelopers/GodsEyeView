@@ -45,23 +45,20 @@ void Compositor::render_canvas(canvas_t* canvas)
         }
     }
 
-    uint32_t final_layer_address = (uint32_t)(final_layer->framebuffer) + canvas->x * sizeof(int32_t);
-    final_layer_address += canvas->y * (final_layer->width * sizeof(int32_t));
-    uint32_t blured_final_layer_address = (uint32_t)(blured_final_layer->framebuffer) + canvas->x * sizeof(int32_t);
-    blured_final_layer_address += canvas->y * (blured_final_layer->width * sizeof(int32_t));
+    uint32_t offset = canvas->x * sizeof(int32_t);
+    offset += canvas->y * (final_layer->width * sizeof(int32_t));
     uint32_t canvas_address = (uint32_t)(canvas->framebuffer);
 
     for (uint32_t y = 0; y < canvas->height; y++) {
         if (canvas->alpha_lookup) {
-            canvas_copy((uint32_t*)final_layer_address, (uint32_t*)blured_final_layer_address, canvas->width);
-            canvas_copy_alpha((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width, canvas->alpha_lookup);
+            canvas_copy((uint32_t*)(offset + (uint32_t)final_layer->framebuffer), (uint32_t*)(offset + (uint32_t)blured_final_layer->framebuffer), canvas->width);
+            canvas_copy_alpha((uint32_t*)(offset + (uint32_t)final_layer->framebuffer), (uint32_t*)canvas_address, canvas->width, canvas->alpha_lookup);
         } else {
-            canvas_copy((uint32_t*)final_layer_address, (uint32_t*)canvas_address, canvas->width);
+            canvas_copy((uint32_t*)(offset + (uint32_t)final_layer->framebuffer), (uint32_t*)canvas_address, canvas->width);
         }
 
         canvas_address += canvas->width * sizeof(int32_t);
-        final_layer_address += final_layer->width * sizeof(int32_t);
-        blured_final_layer_address += blured_final_layer->width * sizeof(int32_t);
+        offset += final_layer->width * sizeof(int32_t);
     }
 }
 
