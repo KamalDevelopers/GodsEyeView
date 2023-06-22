@@ -1,9 +1,23 @@
-#ifndef GAUSSIAN_HPP
-#define GAUSSIAN_HPP
+#include "filter.hpp"
 
-#include <LibC/types.h>
+uint32_t box_blur_pixel(uint32_t* destination, uint32_t i, uint32_t width, uint32_t coff, uint32_t blur_level)
+{
+    uint32_t sum = 0;
+    uint32_t div = 0;
+    int width_offset = width * blur_level;
+    for (uint32_t x_offset = 0; x_offset < (blur_level * 2); x_offset++) {
+        int offset = blur_level;
+        for (uint32_t y_offset = 0; y_offset < (blur_level * 2); y_offset++) {
+            sum += ((destination[width_offset + offset + i] >> coff) & 0x000000FF);
+            div++;
+            offset--;
+        }
+        width_offset -= width;
+    }
+    return sum / div;
+}
 
-static uint32_t gaussian_blur_pixel(uint32_t* destination, uint32_t i, uint32_t width, uint32_t coff, uint32_t blur_level)
+uint32_t gaussian_blur_pixel(uint32_t* destination, uint32_t i, uint32_t width, uint32_t coff, uint32_t blur_level)
 {
     /* clang-format off */
 
@@ -229,5 +243,3 @@ static uint32_t gaussian_blur_pixel(uint32_t* destination, uint32_t i, uint32_t 
 
     /* clang-format on */
 }
-
-#endif

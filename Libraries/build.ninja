@@ -21,8 +21,9 @@ build LibC/crt0.o: crt0 ./LibC/crt0.c
 build libc.a: library LibC/unistd.o LibC/string.o LibC/stdio.o LibC/stdlib.o LibC/path.o LibC/mem.o LibC/crt0.o LibC/exit.o
 
 build LibDisplay/canvas.o: cpp ./LibDisplay/canvas.cpp
+build LibDisplay/filter.o: cpp ./LibDisplay/filter.cpp
 build LibDisplay/connection.o: cpp ./LibDisplay/connection.cpp
-build libdisplay.a: library LibDisplay/canvas.o LibDisplay/connection.o
+build libdisplay.a: library LibDisplay/canvas.o LibDisplay/connection.o LibDisplay/filter.o
 
 build LibSound/connection.o: cpp ./LibSound/connection.cpp
 build LibSound/wave.o: cpp ./LibSound/wave.cpp

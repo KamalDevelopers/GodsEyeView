@@ -34,16 +34,8 @@ Compositor::~Compositor()
 
 void Compositor::render_canvas(canvas_t* canvas)
 {
-    /* Gaussian blur */
-    if (!has_blured_final_layer) {
-        has_blured_final_layer = 1;
-        canvas_copy(blured_final_layer, root_layer);
-        uint32_t address = (uint32_t)(blured_final_layer->framebuffer);
-        for (uint32_t y = 4; y < final_layer->height - 4; y++) {
-            canvas_blur((uint32_t*)address, final_layer->width, final_layer->width, final_layer->height, 4096);
-            address += final_layer->width * sizeof(int32_t);
-        }
-    }
+    if (!has_blured_final_layer)
+        create_blur_layer();
 
     uint32_t offset = canvas->x * sizeof(int32_t);
     offset += canvas->y * (final_layer->width * sizeof(int32_t));
@@ -59,6 +51,29 @@ void Compositor::render_canvas(canvas_t* canvas)
 
         canvas_address += canvas->width * sizeof(int32_t);
         offset += final_layer->width * sizeof(int32_t);
+    }
+}
+
+void Compositor::create_blur_layer()
+{
+    has_blured_final_layer = 1;
+    canvas_copy(blured_final_layer, root_layer);
+    uint32_t address = (uint32_t)(blured_final_layer->framebuffer);
+    uint32_t max = final_layer->height / 2 - 110;
+    uint32_t max2 = final_layer->height - 110;
+    uint32_t offset = final_layer->width * sizeof(int32_t) * 2;
+    uint32_t offset2 = final_layer->width * sizeof(int32_t);
+    uint32_t start = offset2 * 20 + 40;
+
+    for (uint32_t y = 30; y < max; y++) {
+        canvas_blur_gaussian((uint32_t*)address + start, final_layer->width - 100, final_layer->width, final_layer->height, 4096);
+        address += offset;
+    }
+
+    address = (uint32_t)(blured_final_layer->framebuffer) + offset;
+    for (uint32_t y = 30; y < max2; y++) {
+        canvas_blur_box((uint32_t*)address + start, final_layer->width - 100, final_layer->width, final_layer->height, 5);
+        address += offset2;
     }
 }
 
@@ -159,6 +174,7 @@ int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)
 void Compositor::load_background_bitmap(const char* file_name)
 {
     read_bitmap(file_name, root_layer);
+    has_blured_final_layer = false;
 }
 
 void Compositor::load_mouse_bitmap(const char* file_name)

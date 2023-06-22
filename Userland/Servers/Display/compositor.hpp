@@ -31,6 +31,8 @@ private:
     canvas_t* mouse_ghost_layer = 0;
     Vector<canvas_t*, MAX_LAYERS> layers;
 
+    void create_blur_layer();
+
 public:
     Compositor();
     ~Compositor();
