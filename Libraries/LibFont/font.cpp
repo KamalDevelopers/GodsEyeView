@@ -27,6 +27,12 @@ uint32_t font_display_character_with_bg(font_t* use_font, canvas_t* canvas, char
         for (uint32_t x = 0; x < use_font->font_header->width; x++) {
             uint8_t alpha = *font;
             uint32_t orig = (use_bg) ? bg : *dptr;
+            if (c == ' ') {
+                *dptr = bg;
+                dptr++;
+                font++;
+                continue;
+            }
 
             if (cache_color == color && cache_pixel == orig && cache_alpha == alpha) {
                 *dptr = cache_pixel_value;

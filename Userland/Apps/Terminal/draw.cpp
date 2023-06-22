@@ -162,7 +162,7 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
     }
 
     cursor_set(canvas, false);
-    if (!bg_blend)
+    if (!bg_blend && index != ' ')
         font_display_character(default_font, canvas, index, pos_x, pos_y, color);
     else
         font_display_character_with_bg(default_font, canvas, index, pos_x, pos_y, color, BACKGROUND_COLOR, true);
