@@ -81,9 +81,9 @@ void Compositor::render_rounded_borders(canvas_t* canvas)
 {
     int radius = 20;
     uint32_t border_color = canvas->border_decoration;
-    if ((!border_color) || (canvas->height <= radius) || (!canvas->alpha_lookup))
-        return;
     int pow_radius = radius * radius;
+    if ((!border_color) || (canvas->height <= radius * 2) || (!canvas->alpha_lookup))
+        return;
 
     for (uint32_t i = 1; i < radius; i++) {
         uint32_t offset = sqrt(pow_radius - (pow(radius - i, 2)));
