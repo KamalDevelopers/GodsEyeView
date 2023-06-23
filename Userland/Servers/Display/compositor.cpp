@@ -77,6 +77,48 @@ void Compositor::create_blur_layer()
     }
 }
 
+void Compositor::render_rounded_borders(canvas_t* canvas)
+{
+    int radius = 20;
+    uint32_t border_color = canvas->border_decoration;
+    if ((!border_color) || (canvas->height <= radius) || (!canvas->alpha_lookup))
+        return;
+    int pow_radius = radius * radius;
+
+    for (uint32_t i = 1; i < radius; i++) {
+        uint32_t offset = sqrt(pow_radius - (pow(radius - i, 2)));
+        uint32_t iw = canvas->width * i;
+        uint32_t hw = canvas->width * canvas->height;
+        uint32_t fill = 0xFFFFFFFF;
+
+        canvas_set(canvas->framebuffer + iw, fill, radius - offset); // top left
+        canvas->framebuffer[iw + radius - offset - 1] = border_color;
+        canvas_set(canvas->framebuffer + (hw - iw), fill, radius - offset); // top right
+        canvas->framebuffer[(hw - iw) + radius - offset - 1] = border_color;
+        canvas_set(canvas->framebuffer + iw + canvas->width - radius + offset, fill, radius - offset); // bottom right
+        canvas->framebuffer[iw + canvas->width - radius + offset] = border_color;
+        canvas_set(canvas->framebuffer + (hw - iw) + canvas->width - radius + offset, fill, radius - offset); // bottom left
+        canvas->framebuffer[(hw - iw) + canvas->width - radius + offset] = border_color;
+
+        if (i < (ceil(radius / 2) + 5)) {
+            canvas->framebuffer[iw + radius - offset - 2] = border_color;
+            canvas->framebuffer[(hw - iw) + radius - offset - 2] = border_color;
+            canvas->framebuffer[iw + canvas->width - radius + offset + 1] = border_color;
+            canvas->framebuffer[(hw - iw) + canvas->width - radius + offset + 1] = border_color;
+        }
+        if (i < 4) {
+            canvas->framebuffer[iw + radius - offset - 3] = border_color;
+            canvas->framebuffer[(hw - iw) + radius - offset - 3] = border_color;
+            canvas->framebuffer[iw + canvas->width - radius + offset + 2] = border_color;
+            canvas->framebuffer[(hw - iw) + canvas->width - radius + offset + 2] = border_color;
+        }
+        if (i == 1) {
+            canvas_set(canvas->framebuffer, fill, radius - offset);
+            canvas_set(canvas->framebuffer + canvas->width - radius + offset + 1, fill, radius - offset - 1);
+        }
+    }
+}
+
 void Compositor::render_borders(canvas_t* canvas)
 {
     uint32_t border_color = canvas->border_decoration;
@@ -105,6 +147,7 @@ void Compositor::render_single_layer(canvas_t* canvas)
     }
 
     render_borders(canvas);
+    render_rounded_borders(canvas);
     render_canvas(canvas);
 
     update_mouse_position(mouse_layer->x, mouse_layer->y, true);
@@ -131,6 +174,7 @@ void Compositor::render_stack()
         if (layers[i]->x + layers[i]->width > root_layer->width || layers[i]->y + layers[i]->height > root_layer->height)
             continue;
         render_borders(layers[i]);
+        render_rounded_borders(layers[i]);
         render_canvas(layers[i]);
     }
 

@@ -49,6 +49,7 @@ public:
     void update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack = false);
 
     void render_single_layer(canvas_t* canvas);
+    void render_rounded_borders(canvas_t* canvas);
     void render_borders(canvas_t* canvas);
     void render_canvas(canvas_t* canvas);
     void render_stack();
