@@ -26,24 +26,27 @@ void Shell::autocomplete_table_builder()
         free(autocomplete_table[i]);
     autocomplete_table_size = 0;
 
-    /* default autocomplete words */
-    append_autocomplete_word("pwd");
-    append_autocomplete_word("shell");
-    append_autocomplete_word("shutdown");
-    append_autocomplete_word("cat");
-    append_autocomplete_word("reboot");
-    append_autocomplete_word("ls");
-    append_autocomplete_word("clear");
-
     getcwd(cwd);
     fs_entry_t* entries = (fs_entry_t*)malloc(sizeof(fs_entry_t) * 100);
-    int count = listdir(cwd, entries, 100);
 
-    if (count == 0)
-        return;
+    append_autocomplete_word("ls");
+    append_autocomplete_word("pwd");
 
-    for (uint32_t i = 0; i < count; i++)
-        append_autocomplete_word(entries[i].name);
+    int count = listdir("/bin/", entries, 100);
+    if (count > 0) {
+        for (uint32_t i = 0; i < count; i++)
+            append_autocomplete_word(entries[i].name);
+    }
+
+    append_autocomplete_word("shutdown");
+    append_autocomplete_word("reboot");
+    append_autocomplete_word("clear");
+
+    count = listdir(cwd, entries, 100);
+    if (count > 0) {
+        for (uint32_t i = 0; i < count; i++)
+            append_autocomplete_word(entries[i].name);
+    }
 
     free(entries);
 }
