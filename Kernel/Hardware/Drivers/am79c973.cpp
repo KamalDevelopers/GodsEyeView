@@ -110,7 +110,10 @@ void AM79C973::receive()
                 size -= 4;
 
             uint8_t* buffer = (uint8_t*)(receive_buffer_descriptions[receive_buffer_index].address);
-            ETH->handle_packet(buffer, size);
+            uint8_t* persistent_buffer = (uint8_t*)kmalloc(size);
+            memcpy(persistent_buffer, buffer, size);
+            ETH->handle_packet(persistent_buffer, size);
+            kfree(persistent_buffer);
         }
 
         receive_buffer_descriptions[receive_buffer_index].flags2 = 0;

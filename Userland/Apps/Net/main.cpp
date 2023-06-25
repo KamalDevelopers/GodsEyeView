@@ -64,15 +64,31 @@ void protocol_tcp(uint32_t ip, uint16_t port)
     err = disconnect(fd);
 }
 
-void protocol_http(char* host, uint16_t port)
+void protocol_http(char* url, uint16_t port)
 {
+    size_t url_path_seek = 0;
+    size_t url_size = strlen(url);
+    char host[BUFSIZ];
+    char web_path[BUFSIZ];
+
+    memset(host, 0, BUFSIZ);
+    memset(web_path, 0, BUFSIZ);
+
+    while (url_path_seek != url_size && url[url_path_seek] != '/')
+        url_path_seek++;
+
+    strncpy(host, url, url_path_seek);
+    if (url_size != url_path_seek)
+        strncpy(web_path, url + url_path_seek + 1, url_size - url_path_seek - 1);
+
     char request[256];
-    snprintf(request, sizeof(request), "GET /?T HTTP/1.1\r\nHost: %s\r\nUser-Agent: wget\r\nConnection: close\r\n\r\n", host);
+    snprintf(request, sizeof(request), "GET /%s HTTP/1.1\r\nHost: %s\r\nUser-Agent: wget\r\nConnection: close\r\n\r\n", web_path, host);
     uint32_t remote_ip = gethostbyname(host, strlen(host));
 
     int fd = socket(NET_PROTOCOL_TCP);
     connect(fd, remote_ip, port);
     send(fd, (void*)request, strlen(request), 0x018);
+    memset(recvbuffer, 0, sizeof(recvbuffer));
     int size = recv(fd, recvbuffer, sizeof(recvbuffer));
 
     for (uint32_t i = 0; i < size; i++)
@@ -85,7 +101,7 @@ void protocol_http(char* host, uint16_t port)
 int main(int argc, char** argv)
 {
     if (argc < 1) {
-        printf("Usage: netweasel <protocol> [ip] [port]\n");
+        printf("Usage: net <protocol> [ip] [port]\n");
         return 0;
     }
 

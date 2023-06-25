@@ -12,7 +12,7 @@ int socket_ack_received(tcp_socket_t* socket, void* packet, uint16_t size, uint3
     tcp_header_t* header = (tcp_header_t*)packet;
     if (socket->state == SYN_RECEIVED) {
         socket->state = ESTABLISHED;
-        return -1;
+        return 2;
     }
 
     if (socket->state == FIN_WAIT1) {
@@ -28,14 +28,17 @@ int socket_ack_received(tcp_socket_t* socket, void* packet, uint16_t size, uint3
     if (size) {
         Pipe::append(socket->receive_pipe, ((uint8_t*)packet) + header->header_size * 4, size);
         TM->test_poll();
+        return 1;
     }
-    return 1;
+
+    return 3;
 }
 
 int socket_fin_received(tcp_socket_t* socket, void* packet, uint32_t from_ip)
 {
     if (socket->state == ESTABLISHED) {
         socket->state = CLOSE_WAIT;
+        socket->sequence_number++;
         socket->acknowledgement_number++;
         TCP::send(socket, 0, 0, ACK_FLAG);
         TCP::send(socket, 0, 0, FIN_FLAG | ACK_FLAG);
@@ -49,6 +52,7 @@ int socket_fin_received(tcp_socket_t* socket, void* packet, uint32_t from_ip)
 
     if (socket->state == FIN_WAIT1 || socket->state == FIN_WAIT2) {
         socket->state = CLOSED;
+        socket->sequence_number++;
         socket->acknowledgement_number++;
         TCP::send(socket, 0, 0, ACK_FLAG);
         return 0;
@@ -66,8 +70,8 @@ int socket_syn_received(tcp_socket_t* socket, void* packet, uint32_t from_ip)
     socket->state = SYN_RECEIVED;
     socket->remote_port = header->source_port;
     socket->remote_ip = DHCP::ip();
-    socket->acknowledgement_number = htonl(header->sequence_number) + 1;
-    socket->sequence_number = 0xbeefcafe;
+    socket->acknowledgement_number = ntohl(header->sequence_number) + 1;
+    socket->sequence_number = ntohl(header->acknowledgement_number);
     TCP::send(socket, 0, 0, SYN_FLAG | ACK_FLAG);
     return 0;
 }
@@ -109,11 +113,7 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
     int reset = 0;
     int cont = 0;
 
-    switch (header->flags & (SYN_SENT | ACK_SENT | FIN_SENT)) {
-    case SYN_SENT:
-        reset = socket_syn_received(socket, packet, from_ip);
-        break;
-
+    switch (header->flags) {
     case SYN_SENT | ACK_SENT:
         reset = socket_syn_ack_received(socket, packet, from_ip);
         break;
@@ -123,18 +123,33 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
         reset = 1;
         break;
 
+    case FIN_SENT | PSH_SENT | ACK_SENT:
+        cont = socket_ack_received(socket, packet, size, from_ip);
+        socket->acknowledgement_number = ntohl(header->sequence_number) + size;
+        socket->sequence_number = ntohl(header->acknowledgement_number);
+        socket->state = FIN_WAIT1;
+        send(socket, 0, 0, ACK_FLAG | FIN_FLAG);
+        return;
+
     case FIN_SENT:
     case FIN_SENT | ACK_SENT:
         reset = socket_fin_received(socket, packet, from_ip);
         break;
 
     case PSH_SENT | ACK_SENT:
+        cont = socket_ack_received(socket, packet, size, from_ip);
+        break;
+
     case ACK_SENT:
         cont = socket_ack_received(socket, packet, size, from_ip);
         break;
 
+    case SYN_SENT:
+        reset = socket_syn_received(socket, packet, from_ip);
+        break;
+
     default:
-        cont = 1;
+        cont = 0;
         break;
     }
 
@@ -142,21 +157,20 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
         return;
 
     if (cont == 1) {
-        if (socket->await_ack) {
-            socket->await_ack = 0;
-            return;
-        }
-
         reset = 0;
-        socket->acknowledgement_number += size;
+        socket->acknowledgement_number = ntohl(header->sequence_number) + size;
+        socket->sequence_number = ntohl(header->acknowledgement_number);
         send(socket, 0, 0, ACK_FLAG);
     }
+
+    if (cont == 2)
+        socket->acknowledgement_number = ntohl(header->acknowledgement_number);
 
     if (reset)
         send(socket, 0, 0, RST_FLAG);
 
-    /* if (socket->state == CLOSED)
-        TCP::close(socket); */
+    if (socket->state == CLOSED)
+        TCP::close(socket);
 }
 
 void TCP::connect(tcp_socket_t* socket, uint32_t ip, uint16_t port)
@@ -168,7 +182,7 @@ void TCP::connect(tcp_socket_t* socket, uint32_t ip, uint16_t port)
     socket->remote_port = ((port & 0xFF00) >> 8) | ((port & 0x00FF) << 8);
     socket->local_port = ((tcp_port & 0xFF00) >> 8) | ((tcp_port & 0x00FF) << 8);
     socket->state = SYN_SENT;
-    socket->sequence_number = 2689161935;
+    socket->sequence_number = 0;
     socket->acknowledgement_number = 0;
     tcp_port++;
 
@@ -188,12 +202,15 @@ void TCP::close(tcp_socket_t* socket)
 
     int socket_index = -1;
     for (uint32_t i = 0; i < tcp_sockets.size(); i++) {
-        if (tcp_sockets[i] == socket)
+        if ((tcp_sockets.at(i)->remote_port == socket->remote_port)
+            && (tcp_sockets.at(i)->local_port == socket->local_port)
+            && (tcp_sockets.at(i)->remote_ip == socket->remote_ip)) {
             socket_index = i;
+        }
     }
 
     if (socket_index == -1) {
-        klog("Could not close TCP connection");
+        /* klog("Could not close TCP connection tcp_sockets.size() = %d", tcp_sockets.size()); */
         return;
     }
 
@@ -206,6 +223,7 @@ void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flag
 {
     uint32_t packet_size = size + sizeof(tcp_header_t) + sizeof(tcp_pseudo_header_t);
     uint8_t* buffer = (uint8_t*)kmalloc(packet_size);
+    memset(buffer, 0, packet_size);
 
     tcp_pseudo_header_t* pheader = (tcp_pseudo_header_t*)buffer;
     tcp_header_t* header = (tcp_header_t*)(buffer + sizeof(tcp_pseudo_header_t));

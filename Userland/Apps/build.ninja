@@ -30,9 +30,9 @@ rule mixer
     command = cd ./Mixer && ninja && ninja move && cd ../
     description = building mixer application
 
-rule netweasel
-    command = cd ./Netweasel && ninja && ninja move && cd ../
-    description = building netweasel application
+rule net
+    command = cd ./Net && ninja && ninja move && cd ../
+    description = building net application
 
 rule terminal
     command = cd ./Terminal && ninja && ninja move && cd ../
@@ -54,7 +54,7 @@ build cat: cat
 build rm: rm
 build ls: ls
 build mixer: mixer
-build netweasel: netweasel
+build net: net
 build terminal: terminal
 build launcher: launcher
 build image: image
