@@ -25,12 +25,12 @@ private:
     window_group_t* workspaces;
     Compositor* compositor;
 
-    Window* compose_window(int pid);
-
     int active_fullscreen_window = -1;
     int active_windows = 0;
     int active_window = -1;
     uint32_t tiled_windows = 0;
+
+    Window* compose_window(int pid);
 
 public:
     WindowManager(Compositor* compositor);
