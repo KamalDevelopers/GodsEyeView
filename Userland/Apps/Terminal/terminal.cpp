@@ -9,7 +9,6 @@ Terminal::Terminal()
 
     init("bitmaps/ter-u12b.psfu");
     spawn_shell();
-    request_update_window();
 }
 
 Terminal::~Terminal()
