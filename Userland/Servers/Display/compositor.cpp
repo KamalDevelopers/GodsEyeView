@@ -58,22 +58,23 @@ void Compositor::create_blur_layer()
 {
     has_blured_final_layer = 1;
     canvas_copy(blured_final_layer, root_layer);
-    uint32_t address = (uint32_t)(blured_final_layer->framebuffer);
-    uint32_t max = final_layer->height / 2 - 110;
-    uint32_t max2 = final_layer->height - 110;
+    uint32_t address = 0;
+    uint32_t max = final_layer->height / 2 - 85;
+    uint32_t max2 = final_layer->height - 85;
     uint32_t offset = final_layer->width * sizeof(int32_t) * 2;
     uint32_t offset2 = final_layer->width * sizeof(int32_t);
-    uint32_t start = offset2 * 20 + 40;
-
-    for (uint32_t y = 30; y < max; y++) {
-        canvas_blur_gaussian((uint32_t*)address + start, final_layer->width - 100, final_layer->width, final_layer->height, 4096);
-        address += offset;
-    }
+    uint32_t start = offset2 * 15 + 40;
 
     address = (uint32_t)(blured_final_layer->framebuffer) + offset;
     for (uint32_t y = 30; y < max2; y++) {
-        canvas_blur_box((uint32_t*)address + start, final_layer->width - 100, final_layer->width, final_layer->height, 5);
+        canvas_blur_box((uint32_t*)address + start, final_layer->width - 100, final_layer->width, final_layer->height, 15);
         address += offset2;
+    }
+
+    address = (uint32_t)(blured_final_layer->framebuffer);
+    for (uint32_t y = 30; y < max; y++) {
+        canvas_blur_gaussian((uint32_t*)address + start, final_layer->width - 100, final_layer->width, final_layer->height, 4096);
+        address += offset;
     }
 }
 

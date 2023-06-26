@@ -1,20 +1,61 @@
 #include "filter.hpp"
 
+static uint32_t box_blur_rcache = 0;
+static uint32_t box_blur_b2cache = 0;
+static uint32_t box_blur_bbcache = 0;
+static uint32_t box_blur_wcache = 0;
+static uint32_t box_blur_cache = 0;
+static uint32_t box_blur_coffcache = 0;
+static uint32_t box_blur_rstcache = 0;
+
+void reset_box_blur_cache()
+{
+    box_blur_rcache = 0;
+    box_blur_rstcache = 0;
+}
+
 uint32_t box_blur_pixel(uint32_t* destination, uint32_t i, uint32_t width, uint32_t coff, uint32_t blur_level)
 {
-    uint32_t sum = 0;
-    uint32_t div = 0;
-    int width_offset = width * blur_level;
-    for (uint32_t x_offset = 0; x_offset < (blur_level * 2); x_offset++) {
-        int offset = blur_level;
-        for (uint32_t y_offset = 0; y_offset < (blur_level * 2); y_offset++) {
-            sum += ((destination[width_offset + offset + i] >> coff) & 0x000000FF);
-            div++;
-            offset--;
-        }
-        width_offset -= width;
+    if (box_blur_cache != blur_level || box_blur_coffcache != coff) {
+        reset_box_blur_cache();
+        box_blur_cache = blur_level;
+        box_blur_b2cache = blur_level * 2;
+        box_blur_bbcache = box_blur_b2cache * box_blur_b2cache;
+        box_blur_wcache = blur_level * width;
+        box_blur_coffcache = coff;
     }
-    return sum / div;
+
+    uint32_t sum = 0;
+    uint32_t b2 = box_blur_b2cache;
+    int width_offset = box_blur_wcache;
+
+    if (!box_blur_rstcache) {
+        box_blur_rstcache = blur_level + 4;
+        for (uint32_t x_offset = 0; x_offset < b2; x_offset++) {
+            int offset = blur_level;
+            for (uint32_t y_offset = 0; y_offset < b2; y_offset++) {
+                sum += ((destination[width_offset + offset + i] >> coff) & 0x000000FF);
+                offset--;
+            }
+            width_offset -= width;
+        }
+
+        box_blur_rcache = sum;
+        return sum / box_blur_bbcache;
+    }
+
+    sum = box_blur_rcache;
+
+    int loffset = box_blur_wcache;
+    for (uint32_t y_offset = 0; y_offset < b2; y_offset++) {
+        sum -= ((destination[loffset + i - blur_level + 1] >> coff) & 0x000000FF);
+        sum += ((destination[loffset + i + blur_level] >> coff) & 0x000000FF);
+        loffset -= width;
+    }
+
+    box_blur_rcache = sum;
+    box_blur_rstcache--;
+    return sum / box_blur_bbcache;
 }
 
 uint32_t gaussian_blur_pixel(uint32_t* destination, uint32_t i, uint32_t width, uint32_t coff, uint32_t blur_level)

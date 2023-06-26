@@ -84,15 +84,20 @@ void canvas_blur_gaussian(uint32_t* destination, int size, int width, int height
 void canvas_blur_box(uint32_t* destination, int size, int width, int height, uint32_t blur_level)
 {
     /* blur level = kernel width and height */
-    int pixels = 0;
-    for (uint32_t i = 1; i < size - 1; i++) {
-        uint32_t nred = box_blur_pixel(destination, i, width, 16, blur_level);
-        uint32_t ngreen = box_blur_pixel(destination, i, width, 8, blur_level);
-        uint32_t nblue = box_blur_pixel(destination, i, width, 0, blur_level);
-        destination[i] = (0 << 24) | (nred << 16) | (ngreen << 8) | (nblue << 0);
-        pixels++;
-        if (pixels >= size)
-            return;
+    reset_box_blur_cache();
+    const uint8_t p2[] = { 16, 8, 0 };
+
+    for (uint32_t c = 0; c < 3; c++) {
+        int pixels = 0;
+        for (uint32_t i = 1; i < size - 1; i++) {
+            uint8_t color = box_blur_pixel(destination, i, width, p2[c], blur_level);
+            if (c == 0)
+                destination[i] = 0;
+            destination[i] = (destination[i] & ~0xFF) | color << p2[c];
+            pixels++;
+            if (pixels >= size)
+                break;
+        }
     }
 }
 

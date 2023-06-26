@@ -49,7 +49,7 @@ uint32_t Launcher::display_string(const char* text, int pos_x, int pos_y)
 {
     size_t size = strlen(text);
     for (uint32_t i = 0; i < size; i++)
-        pos_x = font_display_character_with_bg(default_font, &window_canvas, text[i], pos_x, pos_y, 0x979797, 0x3C080808, false);
+        pos_x = font_display_character_with_bg(default_font, &window_canvas, text[i], pos_x, pos_y, fg, bg, false);
     return pos_x;
 }
 
