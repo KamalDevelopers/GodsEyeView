@@ -17,8 +17,8 @@ PhysicalMemoryManager::~PhysicalMemoryManager()
 
 void PhysicalMemoryManager::info()
 {
-    klog("total memory: %d MB (%d pages)\n", (available_pages * PAGE_SIZE) / MB, available_pages);
-    klog("used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
+    klog("PMM: total memory: %d MB (%d pages)\n", (available_pages * PAGE_SIZE) / MB, available_pages);
+    klog("PMM: used memory: %d MB (%d pages)\n", (used_pages * PAGE_SIZE) / MB, used_pages);
 }
 
 void PhysicalMemoryManager::stat(uint32_t* free_p, uint32_t* used_p)
@@ -37,13 +37,13 @@ uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
     uint32_t address = PHYSICAL_MEMORY_START + index * PAGE_SIZE;
 
     if (debug)
-        klog("allocating (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
+        klog("PMM: allocating (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
 
     for (uint32_t i = 0; i < pages; i++) {
         uint32_t map_address = address + (i * PAGE_SIZE);
         if (page_bitmap.bit_get(index + i)) {
             klog("PMM: [0x%x i: %d], is already allocated!", map_address, index + i);
-            PANIC("Out of memory");
+            PANIC("PMM: out of memory");
         }
 
         used_pages++;
@@ -68,7 +68,7 @@ int PhysicalMemoryManager::free_pages(uint32_t address, size_t size)
     uint32_t index = (address - PHYSICAL_MEMORY_START) / PAGE_SIZE;
 
     if (debug)
-        klog("freeing (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
+        klog("PMM: freeing (%d) pages at [0x%x i: %d] -> [0x%x i: %d]\n", pages, address, index, address + size, index + pages);
 
     for (uint32_t i = 0; i < pages; i++) {
         uint32_t map_address = virtual_address + (i * PAGE_SIZE);

@@ -58,6 +58,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 {
     QemuSerial qemu_serial;
     klog("Kernel initialization started");
+    klog("CPU detection started");
     cpuid_detect();
 
     GDT gdt;
@@ -67,7 +68,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     VirtualFilesystem vfs;
     Audio audio;
 
-    klog("Starting memory management and paging");
+    klog("Memory management and paging started");
     uint32_t total_memory = detect_memory(multiboot_info_ptr);
     uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
     total_memory = (total_memory - (total_memory % (memory_divide))) - 15 * MB;
@@ -88,7 +89,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Syscalls syscalls(&interrupts, 0x80);
     SoundBlaster16 sb16(&interrupts);
 
-    klog("Mounting filesystem");
+    klog("Filesystem mounting started");
     if (!pci.find_driver(ATA::identifier()))
         klog("Could not find ATA device");
     ATA ata1s(&interrupts, pci.get_descriptor(), 0x1F0, true);
@@ -100,33 +101,37 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         PANIC("Could not mount the filesystem");
     vfs.mount(&fs_tar);
 
-    klog("Starting PCI drivers and networking");
+    klog("Drivers and networking initialization");
 
     MouseDriver mouse(&interrupts, multiboot_info_ptr->framebuffer_width,
         multiboot_info_ptr->framebuffer_height);
     KeyboardDriver keyboard(&interrupts);
 
     if (sb16.activated()) {
+        klog("PCI: audio driver sb16");
         AUDIO->set_audio_driver(&sb16);
     }
 
     if (pci.find_driver(ES1370::identifier())) {
+        klog("PCI: audio driver es1370");
         ES1370* es1370 = new ES1370(&interrupts, pci.get_descriptor());
         AUDIO->set_audio_driver(es1370);
     }
 
     Ethernet ethernet;
     if (pci.find_driver(AM79C973::identifier())) {
+        klog("PCI: ethernet driver am79c973");
         AM79C973* am79c973 = new AM79C973(&interrupts, pci.get_descriptor());
         ethernet.set_network_driver(am79c973);
     }
 
     if (pci.find_driver(RTL8139::identifier())) {
+        klog("PCI: ethernet driver rtl8139");
         RTL8139* rtl8139 = new RTL8139(&interrupts, pci.get_descriptor());
         ethernet.set_network_driver(rtl8139);
     }
 
-    klog("Setting up loaders and tasks");
+    klog("ELF loader initialization");
     Elf elf_load("elf32");
     Loader loader;
     loader.add(&elf_load);
@@ -138,6 +143,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TM->spawn("bin/terminal", 0);
     TM->spawn("bin/launcher", 0);
 
+    klog("IRQ activate reached");
     Mutex::enable();
     ata1s.set_dma(true);
     IRQ::activate();
@@ -148,7 +154,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         ARP::broadcast_mac_address(DHCP::gateway());
     }
 
+    klog("TM activate reached");
     TM->activate();
+
     while (1)
         ;
 }

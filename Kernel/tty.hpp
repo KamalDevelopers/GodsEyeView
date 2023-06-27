@@ -1,13 +1,12 @@
 #ifndef TTY_HPP
 #define TTY_HPP
 
-#include "Hardware/Drivers/qemu.hpp"
+#include "Hardware/Drivers/virtual.hpp"
+#include "panic.hpp"
 #include "pipe.hpp"
 #include <LibC/poll.h>
 #include <LibC/stdlib.h>
 #include <LibC/types.h>
-
-#define klog QemuSerial::active->qemu_debug
 
 class TTY {
 private:

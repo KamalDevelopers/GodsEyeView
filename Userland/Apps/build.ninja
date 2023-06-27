@@ -18,6 +18,10 @@ rule cat
     command = cd ./Cat && ninja && ninja move && cd ../
     description = building cat application
 
+rule kern
+    command = cd ./Kern && ninja && ninja move && cd ../
+    description = building kern application
+
 rule rm
     command = cd ./Remove && ninja && ninja move && cd ../
     description = building rm application
@@ -51,6 +55,7 @@ build nenf: nenf
 build shell: shell
 build brainfuck: brainfuck
 build cat: cat
+build kern: kern
 build rm: rm
 build ls: ls
 build mixer: mixer

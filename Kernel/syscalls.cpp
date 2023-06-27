@@ -50,6 +50,10 @@ int Syscalls::sys_read(int fd, void* data, int length)
         size = sizeof(uint32_t);
         break;
 
+    case DEV_KLOG_FD:
+        size = kernel_log_memory_read((char*)data, length);
+        break;
+
     default:
         size = VFS->read(fd, (uint8_t*)data, length);
         break;
@@ -76,6 +80,9 @@ int Syscalls::sys_write(int fd, void* data, int length)
     case DEV_AUDIO_FD:
         AUDIO->write((uint8_t*)data, length);
         break;
+
+    case DEV_KLOG_FD:
+        return -1;
 
     default:
         /* FIXME: Cannot overwrite existing file */

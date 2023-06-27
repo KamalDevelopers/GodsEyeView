@@ -74,6 +74,9 @@ int VirtualFilesystem::open_fifo(char* file_name, int flags)
 
 int VirtualFilesystem::open(char* file_name, int flags)
 {
+    if (strcmp(file_name, "/dev/klog") == 0)
+        return DEV_KLOG_FD;
+
     if (strcmp(file_name, "/dev/audio") == 0)
         return DEV_AUDIO_FD;
 

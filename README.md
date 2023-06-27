@@ -1,7 +1,7 @@
 <br><h1 align="center">GevOS</h1>
 <strong>GevOS</strong> is a <strong>32-bit</strong> modern operating system with <strong>VESA</strong> graphics, a <strong>TAR filesystem</strong>, an <strong>IPV4 networking</strong> stack, a <strong>LibC & LibC++</strong> standard library, multiple audio and networking drivers, and different ports including a <strong>GBC emulator</strong>; all with userland support. GevOS runs on <strong>real hardware</strong>. <br><br>
 
-![gevos.png](https://i.postimg.cc/CxSbHBKQ/gevosimage.png)
+![gevos.png](https://i.postimg.cc/Px4JtnPq/GEVIMG.png)
 
 ### Features
   * System servers which communicate with other processes using IPC, [DisplayServer](Userland/Servers/Display/) & [SoundServer](Userland/Servers/Sound/)
