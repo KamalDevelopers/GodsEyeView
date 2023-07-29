@@ -115,6 +115,7 @@ uint8_t Shell::handle_input_line_key()
     }
 
     if (input_line_buffer[input_line_index - 1] == KEY_ENTER) {
+        flush_autocomplete(0);
         printf("\n");
         return 2;
     }
