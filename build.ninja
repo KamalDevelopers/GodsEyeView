@@ -17,7 +17,7 @@ rule asm
     command = as --32 $in -o $out
 
 rule link
-    command = ld -melf_i386 -T linker.ld -o $out $in ./Libraries/libc.a ./Libraries/libdisplay.a ./Libraries/libsound.a
+    command = ld -melf_i386 -T Arch/i386/linker.ld -o $out $in ./Libraries/libc.a ./Libraries/libdisplay.a ./Libraries/libsound.a
 
 build Kernel/kernel.o: cpp ./Kernel/kernel.cpp
 build Kernel/multitasking.o: cpp ./Kernel/multitasking.cpp
