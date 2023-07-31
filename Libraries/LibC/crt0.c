@@ -53,32 +53,33 @@ uintptr_t __stack_chk_guard = 0xe2dee396;
 void _entry()
 {
     uint32_t argument_pointer;
-    char** arguments;
-    int argc = 0;
-
     asm("movl %%edx, %0;"
         : "=r"(argument_pointer));
 
-    flush();
+    int argc;
+    asm("movl %%ecx, %0;"
+          : "=r"(argc));
 
-    arguments = (char**)malloc(sizeof(char*) * 10);
-    for (uint32_t i = 0; i < 10; ++i)
+    char** arguments = (char**)malloc(sizeof(char*) * 10);
+    for (uint32_t i = 0; i < 10; ++i) {
         arguments[i] = (char*)malloc(50);
-
-    for (uint32_t i = 0; i < 10; i++)
         memset(arguments[i], 0, 50);
+    }
 
     char* arg = strtok((char*)argument_pointer, " ");
-    while (arg) {
+    int count = 0;
+    argc = (argc > 10) ? 10 : argc;
+
+    while (arg && (count < argc)) {
         if (arg) {
-            strcpy(arguments[argc], arg);
-            argc++;
+            strcpy(arguments[count], arg);
+            count++;
         }
         arg = strtok(NULL, " ");
     }
 
+    flush();
     int status = main(argc, (char**)arguments);
-
     uint32_t exits = atexit_count();
     void (*exit_func)(void);
 
@@ -90,8 +91,8 @@ void _entry()
     for (uint32_t i = 0; i < 10; i++)
         free(arguments[i]);
     free(arguments);
-    flush();
 
+    flush();
     _exit(status);
 
     while (1)

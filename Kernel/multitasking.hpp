@@ -169,7 +169,7 @@ public:
     void sleep(uint32_t ticks);
     int waitpid(int pid);
     void test_poll();
-    int spawn(char* file, char** args);
+    int spawn(char* file, char** args, uint8_t argc);
     bool add_task(Task* task);
     bool append_tasks(int count, ...);
     int8_t send_signal(int pid, int sig);

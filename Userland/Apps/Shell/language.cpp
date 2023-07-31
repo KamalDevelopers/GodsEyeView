@@ -150,7 +150,7 @@ int Language::exec()
     close(fd);
     strcat(program_path, program);
 
-    int pid = spawn(program_path, program_arguments);
+    int pid = spawn(program_path, program_arguments, program_arguments_count);
     if (strcmp(program_arguments[0], "&") != 0)
         if (pid != -1)
             waitpid(pid);

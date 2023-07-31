@@ -358,9 +358,9 @@ int Syscalls::sys_sleep(int sec)
     return 0;
 }
 
-int Syscalls::sys_spawn(char* file, char** args)
+int Syscalls::sys_spawn(char* file, char** args, uint8_t argc)
 {
-    return TM->spawn(file, args);
+    return TM->spawn(file, args, argc);
 }
 
 /* TODO: Add timespec and sigmask */
@@ -526,7 +526,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 401:
-        cpu->eax = sys_spawn((char*)cpu->ebx, (char**)cpu->ecx);
+        cpu->eax = sys_spawn((char*)cpu->ebx, (char**)cpu->ecx, (uint8_t)cpu->edx);
         break;
 
     case 402:

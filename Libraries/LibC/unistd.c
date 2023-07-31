@@ -114,12 +114,12 @@ uint32_t time()
     return timestamp;
 }
 
-int spawn(const char* pathname, char** args)
+int spawn(const char* pathname, char** args, uint8_t argc)
 {
     int pid;
     asm volatile("int $0x80"
                  : "=a"(pid)
-                 : "a"(401), "b"(pathname), "c"(args));
+                 : "a"(401), "b"(pathname), "c"(args), "d"(argc));
     return pid;
 }
 

@@ -137,7 +137,7 @@ void Launcher::display_cpu_usage()
 
 void Launcher::spawns()
 {
-    spawn("bin/terminal", 0);
+    spawn("bin/terminal", 0, 0);
     has_spawned_children = true;
 }
 

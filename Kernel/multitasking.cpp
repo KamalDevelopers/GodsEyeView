@@ -446,7 +446,7 @@ int TaskManager::waitpid(int pid)
     return pid;
 }
 
-int TaskManager::spawn(char* file, char** args)
+int TaskManager::spawn(char* file, char** args, uint8_t argc)
 {
     int fd = VFS->open(file);
     if (fd < 0)
@@ -470,14 +470,15 @@ int TaskManager::spawn(char* file, char** args)
     strcpy(child->working_directory, tasks.at(current_task)->working_directory);
     child->executable(exec);
 
-    if (args) {
-        for (uint32_t i = 0; i < 10; i++) {
+    if (args && argc) {
+        for (uint32_t i = 0; i < argc; i++) {
             strcat(child->arguments, args[i]);
             strcat(child->arguments, " ");
         }
     }
 
-    child->cpustate->edx = (uint32_t)&child->arguments;
+    child->cpustate->ecx = (uint32_t)argc;
+    child->cpustate->edx = (uint32_t)child->arguments;
     add_task(child);
     return child->pid;
 }

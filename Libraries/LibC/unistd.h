@@ -51,7 +51,7 @@ int socketcall(int call, uint32_t* args);
 void usleep(int ticks);
 void sleep(int sec);
 uint32_t time();
-int spawn(const char* pathname, char** args);
+int spawn(const char* pathname, char** args, uint8_t argc);
 int nice(int inc);
 int waitpid(int pid);
 int unlink(const char* pathname);

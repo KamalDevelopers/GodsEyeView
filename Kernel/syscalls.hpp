@@ -53,7 +53,7 @@ private:
     int sys_uname(utsname* buffer);
     int sys_sleep(int time);
     int sys_mkfifo(char* pathname, int mode);
-    int sys_spawn(char* pathname, char** args);
+    int sys_spawn(char* pathname, char** args, uint8_t argc);
     int sys_poll(pollfd* fds, uint32_t nfds);
     int sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count);
     void sys_getcwd(char* buffer);

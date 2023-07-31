@@ -20,7 +20,7 @@ SoundServer::~SoundServer()
 void SoundServer::spawn_audio_slave()
 {
     write(sound_slave_file, &main_audio_stream, sizeof(pcm_stream_t));
-    audio_slave_pid = spawn("servers/sound", 0);
+    audio_slave_pid = spawn("servers/sound", 0, 0);
 }
 
 void SoundServer::kill_audio_slave()

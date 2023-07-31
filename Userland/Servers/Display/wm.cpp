@@ -90,7 +90,7 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
     }
 
     if ((event->key == 't') && (event->modifier == 2)) {
-        spawn("bin/terminal", 0);
+        spawn("bin/terminal", 0, 0);
         return;
     }
 

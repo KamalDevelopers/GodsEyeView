@@ -26,7 +26,7 @@ void Terminal::tty_master()
 
 void Terminal::spawn_shell()
 {
-    shell_pid = spawn("bin/shell", 0);
+    shell_pid = spawn("bin/shell", 0, 0);
 }
 
 void Terminal::kill_shell()
