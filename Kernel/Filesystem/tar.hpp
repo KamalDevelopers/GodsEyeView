@@ -64,9 +64,9 @@ public:
 
     int mount();
     void update_disk(int uentry, int uentry_size);
-    int write_file(char* file_name, uint8_t* data, int size);
-    int read_file(int file_id, uint8_t* data, int size, int seek = 0);
-    int read_file(char* file_name, uint8_t* data, int size, int seek = 0);
+    int write_file(char* file_name, uint8_t* data, size_t size);
+    int read_file(int file_id, uint8_t* data, size_t size, size_t seek = 0);
+    int read_file(char* file_name, uint8_t* data, size_t size, size_t seek = 0);
     int find_file(char* file_name);
     int get_size(char* file_name);
     int get_uid(char* file_name);
@@ -81,7 +81,7 @@ public:
 
     void sector_swap(int sector_src, int sector_dest);
     void write_data(uint32_t sector_start, uint8_t* fdata, int count);
-    void read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek = 0);
+    void read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t seek = 0);
 
     posix_header* file_calculate_checksum(posix_header* header_data);
     int calculate_checksum(posix_header* header_data);

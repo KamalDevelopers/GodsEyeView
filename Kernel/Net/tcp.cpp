@@ -250,7 +250,7 @@ void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flag
     pheader->source_ip = socket->local_ip;
     pheader->remote_ip = socket->remote_ip;
     pheader->protocol = 0x0600;
-    pheader->length = ((size + sizeof(tcp_header_t) & 0x00FF) << 8) | ((size + sizeof(tcp_header_t) & 0xFF00) >> 8);
+    pheader->length = (((size + sizeof(tcp_header_t)) & 0x00FF) << 8) | (((size + sizeof(tcp_header_t)) & 0xFF00) >> 8);
 
     header->checksum = 0;
     header->checksum = IPV4::calculate_checksum((uint16_t*)buffer, packet_size);

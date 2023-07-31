@@ -7,11 +7,12 @@ WindowManager::WindowManager(Compositor* compositor)
 {
     active_fullscreen_window = -1;
     this->compositor = compositor;
-    workspaces = (window_group_t*)malloc(sizeof(window_group_t) * (WORKSPACES + 1));
-    memset(workspaces, 0, sizeof(window_group_t) * (WORKSPACES + 1));
+    /* workspaces = (window_group_t*)malloc(sizeof(window_group_t) * (WORKSPACES + 1));
+    memset(workspaces, 0, sizeof(window_group_t) * (WORKSPACES + 1)); */
 
     for (uint16_t i = 0; i < WORKSPACES; i++) {
-        workspaces[i].windows = (Window**)malloc(sizeof(Window*));
+        workspaces[i].windows = (Window**)malloc(sizeof(Window*) * 50);
+        workspaces[i].windows_ptr_size = 50;
         memset(workspaces[i].windows, 0, sizeof(Window*));
         workspaces[i].stored_active_window = -1;
     }
@@ -21,7 +22,6 @@ WindowManager::~WindowManager()
 {
     for (uint16_t i = 0; i < WORKSPACES; i++)
         free(workspaces[i].windows);
-    free(workspaces);
 }
 
 int WindowManager::find_window_with_pid(int pid)
@@ -325,7 +325,11 @@ void WindowManager::windows_append(Window* window)
 {
     window_group_t* group = &workspaces[active_windows];
 
-    group->windows = (Window**)realloc(group->windows, (group->window_count + 1) * sizeof(Window*));
+    if (group->window_count + 1 >= group->windows_ptr_size) {
+        group->windows = (Window**)realloc(group->windows, (group->window_count + 1) * sizeof(Window*));
+        group->windows_ptr_size = group->window_count + 1;
+    }
+
     group->windows[group->window_count] = window;
     group->window_count++;
 }
@@ -333,7 +337,11 @@ void WindowManager::windows_append(Window* window)
 void WindowManager::windows_remove(uint32_t index)
 {
     window_group_t* group = &workspaces[active_windows];
-    group->windows = (Window**)realloc(group->windows, (group->window_count - 1) * sizeof(Window*));
+
+    if (group->window_count + 1 >= group->windows_ptr_size) {
+        group->windows = (Window**)realloc(group->windows, (group->window_count - 1) * sizeof(Window*));
+        group->windows_ptr_size = group->window_count + 1;
+    }
 
     if (index >= group->window_count)
         return;

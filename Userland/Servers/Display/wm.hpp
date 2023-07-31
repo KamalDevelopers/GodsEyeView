@@ -5,7 +5,7 @@
 #include "window.hpp"
 
 // clang-format off
-#define WORKSPACES 1
+#define WORKSPACES 3
 #define WINDOW_TOP_GAP 20
 #define WINDOW_GAP 50
 #define WINDOW_BORDER_COLOR 0x1E1E1E
@@ -18,11 +18,12 @@ typedef struct window_group {
     uint32_t window_count = 0;
     int stored_active_window = -1;
     uint32_t stored_active_tiled = 0;
+    uint32_t windows_ptr_size = 0;
 } window_group_t;
 
 class WindowManager {
 private:
-    window_group_t* workspaces;
+    window_group_t workspaces[WORKSPACES + 1];
     Compositor* compositor;
 
     int active_fullscreen_window = -1;

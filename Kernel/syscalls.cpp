@@ -337,7 +337,7 @@ int Syscalls::sys_munmap(void* addr, size_t length)
 
 int Syscalls::sys_fchown(int fd, uint32_t owner, uint32_t group)
 {
-    if ((fd == 0) || (fd == 1) && (owner == 1))
+    if ((fd == 0) || ((fd == 1) && (owner == 1)))
         return TM->task()->become_tty_master();
 
     /* TODO: Not implemented */
@@ -401,6 +401,22 @@ int Syscalls::sys_mkfifo(char* pathname, int mode)
 int Syscalls::sys_getchar(int* character)
 {
     return TM->tty()->task_getchar(character);
+}
+
+void Syscalls::sys_guard(uintptr_t stk, uint8_t type)
+{
+    switch (type) {
+    case 0:
+        klog("Crash guard \"%s\" ebp=%d", TM->task()->get_name(), stk);
+        break;
+
+    case 1:
+        klog("Crash guard \"%s\" stack smashing ebp=%d", TM->task()->get_name(), stk);
+        break;
+    }
+
+    uint32_t base = TM->task()->get_exec()->memory.physical_address;
+    dump_stack(base, stk);
 }
 
 uint32_t Syscalls::interrupt(uint32_t esp)
@@ -523,6 +539,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 404:
         cpu->eax = sys_getchar((int*)cpu->ebx);
+        break;
+
+    case 444:
+        sys_guard((uintptr_t)cpu->ebx, (uint8_t)cpu->ecx);
         break;
     }
 

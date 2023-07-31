@@ -8,9 +8,11 @@
 
 /* TODO: VMware Serial interface class */
 
+#define IS_RUNNING_IN_QEMU true
+
 class QemuSerial {
 private:
-    bool support_qemu_serial = true;
+    bool support_qemu_serial = false;
 
 public:
     QemuSerial();

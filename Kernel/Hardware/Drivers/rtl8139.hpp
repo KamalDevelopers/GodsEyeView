@@ -29,9 +29,9 @@ private:
 
     Port32Bit rbstart_port;
     Port8Bit command_port;
+    Port8Bit capr_port;
     Port16Bit interrupt_mask_port;
     Port16Bit interrupt_status_port;
-    Port8Bit capr_port;
 
     Port8Bit config0_port;
     Port8Bit config1_port;

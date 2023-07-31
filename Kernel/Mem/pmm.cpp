@@ -1,12 +1,14 @@
 #include "pmm.hpp"
 #include "../panic.hpp"
 
+static BitArray<MAX_PAGES> page_bitmap;
 PhysicalMemoryManager* PhysicalMemoryManager::active = 0;
 PhysicalMemoryManager::PhysicalMemoryManager(uint32_t pages)
 {
     active = this;
     used_pages = 0;
     available_pages = pages;
+    page_bitmap.bit_clear_range(0, MAX_PAGES);
     if (available_pages >= MAX_PAGES)
         available_pages = MAX_PAGES - 1;
 }

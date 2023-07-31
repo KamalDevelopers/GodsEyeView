@@ -80,7 +80,7 @@ void request_destroy_window()
 
 bool receive_window_event(display_event_t* event)
 {
-    if (read(events_file, (void*)event, sizeof(display_event_t)))
+    if (read(events_file, event, sizeof(display_event_t)))
         return true;
     return false;
 }

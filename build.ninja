@@ -4,14 +4,14 @@ rule format
 
 rule run
     pool = console
-    command = qemu-system-i386 -m 500M -drive file=hdd.tar,format=raw -cdrom ./.out/kernel.iso -boot d -device es1370 -netdev user,id=net0 -device pcnet,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -d cpu_reset --enable-kvm
+    command = qemu-system-i386 -m 500M -drive file=virtdrive,format=raw -cdrom ./.out/kernel.iso -boot d -device es1370 -netdev user,id=net0 -device pcnet,netdev=net0 -object filter-dump,id=f1,netdev=net0,file=dump.dat -serial mon:stdio -d cpu_reset --enable-kvm
 
 rule disk
     pool = console
-    command = cd Base/root && tar cf ../../hdd.tar * && cd ../../ && objcopy -O elf32-i386 -B i386 -I binary hdd.tar hdd.o
+    command = cd Base/root && tar cf ../../hdd.tar * && cd ../../ && objcopy -O elf32-i386 -B i386 -I binary hdd.tar hdd.o && ./fuse
 
 rule cpp
-    command = i686-elf-g++ -ILibraries -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-write-strings -fno-omit-frame-pointer -Wno-address-of-packed-member -c $in -o $out
+    command = i686-elf-g++ -O1 -ILibraries -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wall -Wpedantic -Wno-write-strings -fno-omit-frame-pointer -Wno-address-of-packed-member -c $in -o $out
 
 rule asm
     command = as --32 $in -o $out
@@ -58,11 +58,12 @@ build Kernel/GDT/gdt.o: cpp ./Kernel/GDT/gdt.cpp
 build Kernel/Exec/loader.o: cpp ./Kernel/Exec/loader.cpp
 build Kernel/Exec/elf.o: cpp ./Kernel/Exec/elf.cpp
 build Kernel/Filesystem/tar.o: cpp ./Kernel/Filesystem/tar.cpp
+build Kernel/Filesystem/husky.o: cpp ./Kernel/Filesystem/husky.cpp
 build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/pipe.o Kernel/Hardware/port.o Kernel/Hardware/audio.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/vesa.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/Drivers/virtual.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Hardware/cpuid.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/udp.o Kernel/Net/tcp.o Kernel/Net/dns.o Kernel/Net/dhcp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/mutex.o Kernel/pipe.o Kernel/Hardware/port.o Kernel/Hardware/audio.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/vesa.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/Drivers/virtual.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Hardware/cpuid.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/udp.o Kernel/Net/tcp.o Kernel/Net/dns.o Kernel/Net/dhcp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/husky.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build disk: disk
 build format: format
 build run: run

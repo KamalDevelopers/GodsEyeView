@@ -18,8 +18,8 @@
     .long 0x00000000    /* entry_addr */
 
     .long 0x00000000    /* mode_type */
-    .long 1280          /* width */
-    .long 1024          /* height */
+    .long 1440          /* width */
+    .long 900           /* height */
     .long 32            /* depth */
 
 

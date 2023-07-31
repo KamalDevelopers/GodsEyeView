@@ -50,15 +50,15 @@ uint8_t CMOS::get_rtc_register(int reg)
 
 void CMOS::read_rtc()
 {
-    uint8_t century;
-    uint8_t last_second;
-    uint8_t last_minute;
-    uint8_t last_hour;
-    uint8_t last_day;
-    uint8_t last_month;
-    uint8_t last_year;
-    uint8_t last_century;
-    uint8_t register_b;
+    uint8_t century = 0;
+    uint8_t last_second = 0;
+    uint8_t last_minute = 0;
+    uint8_t last_hour = 0;
+    uint8_t last_day = 0;
+    uint8_t last_month = 0;
+    uint8_t last_year = 0;
+    uint8_t last_century = 0;
+    uint8_t register_b = 0;
 
     while (get_update_in_progress_flag())
         ;

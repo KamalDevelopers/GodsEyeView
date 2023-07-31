@@ -92,6 +92,8 @@ int VirtualFilesystem::open(char* file_name, int flags)
     int fifo = open_fifo(file_name, flags & ~(O_CREAT));
     if (fifo != -1)
         return fifo;
+    if (strncmp(file_name, "/pipe/", 6) == 0)
+        return -1;
 
     char file_path[MAX_PATH_SIZE];
     memset(file_path, 0, MAX_PATH_SIZE);
@@ -174,7 +176,7 @@ int VirtualFilesystem::search(int descriptor)
     return -1;
 }
 
-int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
+int VirtualFilesystem::write(int descriptor, uint8_t* data, size_t size)
 {
     int index = search(descriptor);
     if ((index == -1) || (size <= 0))
@@ -193,7 +195,7 @@ int VirtualFilesystem::write(int descriptor, uint8_t* data, int size)
     return mounts[ft()->files[index].mountfs]->write_file(ft()->files[index].file_name, data, size);
 }
 
-int VirtualFilesystem::read(int descriptor, uint8_t* data, int size)
+int VirtualFilesystem::read(int descriptor, uint8_t* data, size_t size)
 {
     int index = search(descriptor);
     if (index == -1)

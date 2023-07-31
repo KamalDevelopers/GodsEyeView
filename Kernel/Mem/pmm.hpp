@@ -7,7 +7,7 @@
 #include <LibC/stdlib.h>
 
 #define MAX_PAGES 488280 /* around 2 gigabytes */
-#define PHYSICAL_MEMORY_START PAGE_ALIGN(15 * MB)
+#define PHYSICAL_MEMORY_START PAGE_ALIGN(10 * MB)
 #define PMM PhysicalMemoryManager::active
 
 class PhysicalMemoryManager {
@@ -15,7 +15,6 @@ private:
     bool debug = false;
     uint32_t available_pages = 0;
     uint32_t used_pages = 0;
-    BitArray<MAX_PAGES> page_bitmap;
 
 public:
     PhysicalMemoryManager(uint32_t pages);

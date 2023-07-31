@@ -61,8 +61,6 @@ void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
     memcpy(buffer + sizeof(udp_header_t), data, size);
 
     IPV4::send_packet(socket->remote_ip, IPV4_PROTOCOL_UDP, buffer, length);
-
-    kfree(buffer);
 }
 
 void UDP::receive(void* packet, uint32_t from_ip)

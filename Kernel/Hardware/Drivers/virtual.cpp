@@ -4,6 +4,7 @@ QemuSerial* QemuSerial::active = 0;
 QemuSerial::QemuSerial()
 {
     active = this;
+    support_qemu_serial = IS_RUNNING_IN_QEMU;
     if (!support_qemu_serial)
         return;
 

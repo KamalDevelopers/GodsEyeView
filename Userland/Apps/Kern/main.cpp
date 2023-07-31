@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 {
     int fd = open("/dev/klog", O_RDONLY);
 
-    static char buffer[4096];
+    char buffer[1024];
     printf("\33\x2\xF");
     flush();
     memset(buffer, 0, sizeof(buffer));

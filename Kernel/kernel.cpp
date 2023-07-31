@@ -14,6 +14,7 @@
 #include "Net/tcp.hpp"
 #include "Net/udp.hpp"
 
+#include "Filesystem/husky.hpp"
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/am79c973.hpp"
@@ -58,6 +59,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 {
     QemuSerial qemu_serial;
     klog("Kernel initialization started");
+    if (qemu_serial.is_supported())
+        klog("Compile flag QEMU virtualization set");
+
     klog("CPU detection started");
     cpuid_detect();
 
@@ -73,9 +77,11 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
     total_memory = (total_memory - (total_memory % (memory_divide))) - 15 * MB;
     uint32_t available_pages = PAGE_ALIGN(total_memory) / PAGE_SIZE;
+    bool has_volatile_memory = 0;
 
-    Paging::init();
     PhysicalMemoryManager pmm(available_pages);
+    if (!has_volatile_memory)
+        Paging::init();
 
     VGA vga;
     Vesa vesa(multiboot_info_ptr->framebuffer_addr,
@@ -92,17 +98,15 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     klog("Filesystem mounting started");
     if (!pci.find_driver(ATA::identifier()))
         klog("Could not find ATA device");
+
     ATA ata1s(&interrupts, pci.get_descriptor(), 0x1F0, true);
     ata1s.identify();
     ata1s.set_dma(false);
-
     Tar fs_tar(&ata1s);
-    if (fs_tar.mount() != 0)
-        PANIC("Could not mount the filesystem");
-    vfs.mount(&fs_tar);
+    Husky fs_husky(&ata1s);
+    uint8_t has_filesystem = 0;
 
     klog("Drivers and networking initialization");
-
     MouseDriver mouse(&interrupts, multiboot_info_ptr->framebuffer_width,
         multiboot_info_ptr->framebuffer_height);
     KeyboardDriver keyboard(&interrupts);
@@ -131,6 +135,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         ethernet.set_network_driver(rtl8139);
     }
 
+    if (has_volatile_memory)
+        klog("Volatile memory mode");
     klog("ELF loader initialization");
     Elf elf_load("elf32");
     Loader loader;
@@ -138,15 +144,25 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     Task idle("idle", (uint32_t)kernel_idle, 1);
     TM->append_tasks(1, &idle);
-    TM->spawn("servers/display", 0);
-    TM->spawn("servers/sound", 0);
-    TM->spawn("bin/terminal", 0);
-    TM->spawn("bin/launcher", 0);
 
     klog("IRQ activate reached");
     Mutex::enable();
     ata1s.set_dma(true);
     IRQ::activate();
+
+    if (!has_filesystem && (fs_husky.mount() == 0)) {
+        klog("Husky filesystem mounted");
+        vfs.mount(&fs_husky);
+        has_filesystem = 1;
+    }
+    if (!has_filesystem && (fs_tar.mount() == 0)) {
+        klog("TAR filesystem mounted");
+        vfs.mount(&fs_tar);
+        has_filesystem = 2;
+    }
+    if (!has_filesystem) {
+        PANIC("Could not mount the filesystem");
+    }
 
     if (ethernet.get_available_driver() != 0) {
         klog("Network initialization");
@@ -154,6 +170,10 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         ARP::broadcast_mac_address(DHCP::gateway());
     }
 
+    TM->spawn("servers/display", 0);
+    TM->spawn("servers/sound", 0);
+    TM->spawn("bin/terminal", 0);
+    TM->spawn("bin/launcher", 0);
     klog("TM activate reached");
     TM->activate();
 

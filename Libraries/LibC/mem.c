@@ -14,9 +14,6 @@
 #define USE_CASE4
 #define USE_CASE5
 
-static uint32_t (*hpmalloc)(size_t) = 0;
-static int (*hpfree)(uint32_t, size_t) = 0;
-
 int memcmp(const void* buf1, const void* buf2, size_t count)
 {
     if (!count)
@@ -102,7 +99,7 @@ void* memset(void* s, int c, size_t n)
 #define LIBALLOC_DEAD 0xdeaddead
 
 #if defined DEBUG || defined INFO || defined EDEBUG
-#    include <LibC/stdio.hpp>
+#    include <LibC/stdio.h>
 #    define FLUSH() flush()
 
 #endif
@@ -151,7 +148,7 @@ static long long l_possibleOverruns = 0; ///< Number of possible overruns
  * \return 0 if the lock was acquired successfully. Anything else is
  * failure.
  */
-int liballoc_lock()
+inline int liballoc_lock()
 {
     return 0;
 }
@@ -162,7 +159,7 @@ int liballoc_lock()
  *
  * \return 0 if the lock was successfully released.
  */
-int liballoc_unlock()
+inline int liballoc_unlock()
 {
     return 0;
 }
@@ -174,13 +171,10 @@ int liballoc_unlock()
  * \return NULL if the pages were not allocated.
  * \return A pointer to the allocated memory.
  */
-void* liballoc_alloc(int pages)
+static void* liballoc_alloc(int pages)
 {
     unsigned int size = pages * 4096;
     char* p2;
-
-    if (hpmalloc != 0)
-        return (void*)hpmalloc(size);
 
     asm("int $0x80"
         : "=a"(p2)
@@ -200,9 +194,6 @@ void* liballoc_alloc(int pages)
 int liballoc_free(void* ptr, int pages)
 {
     unsigned int size = pages * 4096;
-
-    if (hpfree != 0)
-        return hpfree((uint32_t)ptr, size);
 
     asm("int $0x80"
         :
@@ -855,10 +846,4 @@ void*(realloc)(void* p, size_t size)
     (free)(p);
 
     return ptr;
-}
-
-void memory_hooks(uint32_t (*pmalloc)(size_t), int (*pfree)(uint32_t, size_t))
-{
-    hpmalloc = pmalloc;
-    hpfree = pfree;
 }

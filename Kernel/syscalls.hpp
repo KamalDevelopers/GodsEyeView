@@ -15,6 +15,7 @@
 #include "Net/dns.hpp"
 #include "Net/icmp.hpp"
 #include "multitasking.hpp"
+#include "panic.hpp"
 #include "tty.hpp"
 
 #include <LibC/network.h>
@@ -58,6 +59,7 @@ private:
     void sys_getcwd(char* buffer);
     int sys_osinfo(struct osinfo* buffer);
     int sys_getchar(int* character);
+    void sys_guard(uintptr_t stk, uint8_t type);
 
 public:
     Syscalls(InterruptManager* interrupt_manager, uint8_t interrupt_number);

@@ -33,8 +33,8 @@ public:
     virtual int get_gid(char* file_name) { return 0; }
     virtual int get_uid(char* file_name) { return 0; }
     virtual int get_size(char* file_name) { return 0; }
-    virtual int write_file(char* file_name, uint8_t* data, int size) { return 0; }
-    virtual int read_file(char* file_name, uint8_t* data, int size, int seek = 0) { return 0; }
+    virtual int write_file(char* file_name, uint8_t* data, size_t size) { return 0; }
+    virtual int read_file(char* file_name, uint8_t* data, size_t size, size_t seek = 0) { return 0; }
     virtual int read_dir(char* dirname, fs_entry_t* entries, uint32_t count) { return 0; }
     virtual int find_file(char* file_name) { return 0; }
 };
@@ -79,9 +79,9 @@ public:
     int open(char* file_name, int flags = 0);
     int close_fifo(int index);
     int close(int descriptor);
-    int write(int descriptor, uint8_t* data, int size);
+    int write(int descriptor, uint8_t* data, size_t size);
     int unlink(int descriptor);
-    int read(int descriptor, uint8_t* data, int size);
+    int read(int descriptor, uint8_t* data, size_t size);
     int size(int descriptor);
     int uid(int descriptor);
     int gid(int descriptor);

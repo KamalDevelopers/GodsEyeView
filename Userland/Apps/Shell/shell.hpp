@@ -6,7 +6,7 @@
 #include <LibC/string.h>
 #include <LibC/utsname.h>
 
-#define PS1 "\33\x2\xC%s\33\x3@\33\x2\xF%s\33\x3:\33\x2\xC/%s\33\x3# "
+#define PS1 "\33\x2\xC%s\33\x3@\33\x2\xF%s\33\x3:\33\x2\xC%s\33\x3# "
 #define KEY_TAB 9
 #define KEY_ENTER 10
 #define MAX_AUTOCOMP_WORDS 100

@@ -25,8 +25,15 @@ void Pipe::expand(pipe_t* pipe, size_t size)
     if (pipe->total_size == 0)
         pipe->buffer = (uint8_t*)kmalloc(sizeof(int8_t) * size);
 
-    if (pipe->total_size != 0)
-        pipe->buffer = (uint8_t*)krealloc(pipe->buffer, sizeof(int8_t) * size);
+    if (pipe->total_size != 0) {
+        uint8_t* temp_buffer = (uint8_t*)kmalloc(sizeof(int8_t) * pipe->size);
+        memcpy(temp_buffer, pipe->buffer, sizeof(int8_t) * pipe->size);
+        uint8_t* temp_ptr = pipe->buffer;
+        pipe->buffer = (uint8_t*)kmalloc(sizeof(int8_t) * size);
+        memcpy(pipe->buffer, temp_buffer, sizeof(int8_t) * pipe->size);
+        kfree(temp_buffer);
+        kfree(temp_ptr);
+    }
 
     pipe->total_size = size;
 }

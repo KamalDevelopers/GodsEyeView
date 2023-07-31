@@ -20,6 +20,9 @@ int path_resolver(char* input, bool is_dir)
     char* token = strtok(path_buffer, "/");
     int last_token_size = 0;
 
+    /* NOTE: remove this line for tar support */
+    strcat(input, "/");
+
     while (token != NULL) {
         char* next_token = strtok(NULL, "/");
 

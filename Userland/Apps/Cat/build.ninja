@@ -3,7 +3,7 @@ rule move
     command = mv ./cat ../../../Base/root/bin/ && ninja -t clean
 
 rule cpp
-    command = i686-elf-g++ -fPIC -T link.ld -o cat $in ../../../Libraries/libc.a -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -O2 -I../../../Libraries -lgcc
+    command = i686-elf-g++ -fPIC -T link.ld -o cat $in ../../../Libraries/libc.a -fstack-protector-all -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -I../../../Libraries -lgcc
 
 build ./cat main.o: cpp ./main.cpp
 build move: move

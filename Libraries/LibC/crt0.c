@@ -32,6 +32,24 @@ extern "C" {
 
 int main(int argc, char** argv);
 
+__attribute__((noreturn)) void __stack_chk_fail(void)
+{
+    uint32_t stk = 0;
+    asm ("movl %%ebp,%0" : "=r"(stk) ::);
+    asm volatile("int $0x80"
+                 :
+                 : "a"(444), "b"(stk), "c"(1));
+    for (;;)
+        ;
+}
+
+__attribute__((noreturn)) void __stack_chk_fail_local(void)
+{
+    __stack_chk_fail();
+}
+
+uintptr_t __stack_chk_guard = 0xe2dee396;
+
 void _entry()
 {
     uint32_t argument_pointer;
@@ -41,7 +59,6 @@ void _entry()
     asm("movl %%edx, %0;"
         : "=r"(argument_pointer));
 
-    memory_hooks(0, 0);
     flush();
 
     arguments = (char**)malloc(sizeof(char*) * 10);

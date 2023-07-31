@@ -460,8 +460,10 @@ int TaskManager::spawn(char* file, char** args)
     executable_t exec = Loader::load->exec(elfdata);
     exec.program_data = elfdata;
 
-    if (!exec.valid)
+    if (!exec.valid) {
+        kfree(elfdata);
         return -1;
+    }
 
     int parent = (current_task != -1) ? task()->get_pid() : -1;
     Task* child = new Task(file, 0, 0, parent);

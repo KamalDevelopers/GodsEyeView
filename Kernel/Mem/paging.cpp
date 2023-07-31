@@ -1,9 +1,14 @@
 #include "paging.hpp"
+#include "pmm.hpp"
 
 Paging::page_directory_t* kernel_page_directory;
+static bool is_paging_enabled = false;
 
 uint32_t Paging::virtual_to_physical(uint32_t virtual_address)
 {
+    if (!is_paging_enabled)
+        return virtual_address;
+
     uint32_t page_directory_index = PAGEDIR_INDEX(virtual_address);
     uint32_t page_table_index = PAGETBL_INDEX(virtual_address);
     uint32_t page_frame_offset = PAGEFRAME_INDEX(virtual_address);
@@ -21,10 +26,13 @@ inline void flush_tlb_single(unsigned long addr)
 
 void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
 {
+    if (!is_paging_enabled)
+        return;
+
     uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
     uint32_t table_index = PAGETBL_INDEX(virtual_address);
 
-    page_table_t* table = (page_table_t*)((directory_index * sizeof(page_table_t)) + KERNEL_PAGE_DIR_START + sizeof(page_directory_t) + 0x2000);
+    page_table_t* table = (page_table_t*)((directory_index * sizeof(page_table_t)) + (uint32_t)kernel_page_directory + sizeof(page_directory_t) + 0x2000);
 
     kernel_page_directory->tables[directory_index].present = 1;
     kernel_page_directory->tables[directory_index].rw = 1;
@@ -48,11 +56,13 @@ void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
     table->pages[table_index].reserved2 = 0;
     table->pages[table_index].available = 0;
     table->pages[table_index].frame = physical_address >> 12;
-    flush_tlb_single(virtual_address);
 }
 
 int Paging::unmap_page(uint32_t virtual_address)
 {
+    if (!is_paging_enabled)
+        return 0;
+
     uint32_t directory_index = PAGEDIR_INDEX(virtual_address);
     uint32_t table_index = PAGETBL_INDEX(virtual_address);
     page_table_t* table = kernel_page_directory->reference_tables[directory_index];
@@ -77,7 +87,7 @@ void Paging::enable()
 {
     asm volatile("mov %%eax, %%cr3"
                  :
-                 : "a"(KERNEL_PAGE_DIR_START));
+                 : "a"((uint32_t)kernel_page_directory));
     asm volatile("mov %cr0, %eax");
     asm volatile("orl $0x80000000, %eax");
     asm volatile("mov %eax, %cr0");
@@ -85,10 +95,13 @@ void Paging::enable()
 
 void Paging::init()
 {
-    kernel_page_directory = (page_directory_t*)KERNEL_PAGE_DIR_START;
+    /* kernel_page_directory = (page_directory_t*)KERNEL_PAGE_DIR_START; */
+    kernel_page_directory = (page_directory_t*)PMM->allocate_pages(PAGE_ALIGN(5 * MB));
+    is_paging_enabled = true;
 
     uint32_t page = 0;
-    while (page < (PAGE_SIZE * 1024 * 3)) {
+    uint32_t page_max = PAGE_SIZE * 1024 * 500;
+    while (page < (page_max)) {
         Paging::map_page(page, page);
         page += PAGE_SIZE;
     }

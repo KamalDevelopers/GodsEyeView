@@ -72,7 +72,7 @@ int main(int argc, char** argv)
         if (line == 8)
             printf("\33\x2\xC       . video \33\x2\xF %d x %d", screen_width, screen_height);
         if (line == 10)
-            printf("\33\x2\x7 2020 - 2022");
+            printf("\33\x2\x7 2020 - 2023");
         printf("\n");
     }
 

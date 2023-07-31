@@ -1,44 +1,34 @@
 #include "mm.hpp"
+#include "../Hardware/interrupts.hpp"
+#include "paging.hpp"
 
-static uint32_t allocate_pages_hook(size_t size)
-{
-    return PMM->allocate_pages(size);
-}
-
-static int free_pages_hook(uint32_t address, size_t size)
-{
-    return PMM->free_pages(address, size);
-}
+typedef struct kmem_meta {
+    uint32_t address;
+    uint32_t size;
+    uint8_t allocated;
+} kmem_meta;
 
 void* kmalloc(size_t size)
 {
-    memory_hooks(allocate_pages_hook, free_pages_hook);
-    void* address = malloc(size);
-    memory_hooks(0, 0);
-    return address;
-}
-
-void* krealloc(void* address, size_t new_size)
-{
-    memory_hooks(allocate_pages_hook, free_pages_hook);
-    void* new_address = realloc(address, new_size);
-    memory_hooks(0, 0);
-    return new_address;
-}
-
-void* kcalloc(size_t nitems, size_t size)
-{
-    memory_hooks(allocate_pages_hook, free_pages_hook);
-    void* address = calloc(nitems, size);
-    memory_hooks(0, 0);
-    return address;
+    kmem_meta meta;
+    uint32_t address = PMM->allocate_pages(PAGE_ALIGN(size) + PAGE_SIZE);
+    meta.size = size;
+    meta.address = address + PAGE_SIZE;
+    meta.allocated = 0x10;
+    memcpy((void*)address, (void*)&meta, sizeof(kmem_meta));
+    return (void*)meta.address;
 }
 
 void kfree(void* mem)
 {
-    memory_hooks(allocate_pages_hook, free_pages_hook);
-    free(mem);
-    memory_hooks(0, 0);
+    kmem_meta meta;
+    memcpy(&meta, (void*)((uint32_t)mem - PAGE_SIZE), sizeof(kmem_meta));
+    if (meta.address != (uint32_t)mem || meta.allocated != 0x10) {
+        klog("invalid kfree() detected");
+        return;
+    }
+    PMM->free_pages((uint32_t)mem - PAGE_SIZE, meta.size + PAGE_SIZE);
+    meta.allocated = 0;
 }
 
 void* operator new(size_t size)

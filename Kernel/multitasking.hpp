@@ -177,7 +177,7 @@ public:
     void kill();
 };
 
-inline void kernel_idle()
+static void kernel_idle()
 {
     for (;;)
         TM->yield();

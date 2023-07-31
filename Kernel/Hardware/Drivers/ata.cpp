@@ -97,6 +97,12 @@ uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int scou
     prdt.transfer_size = count;
     prdt.buffer_phys = (uint32_t)data;
 
+    uint8_t sector[512];
+    if (count < 512 && scount == 1) {
+        prdt.transfer_size = 512;
+        prdt.buffer_phys = (uint32_t)sector;
+    }
+
     outb(bar4, 0);
     outbl(bar4 + 4, (uint32_t)&prdt);
     device_port.write(0xE0 | (!master) << 4 | (sector_num & 0x0f000000) >> 24);
@@ -118,6 +124,9 @@ uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int scou
         if (!(dstatus & 0x80))
             break;
     }
+
+    if (count < 512 && scount == 1)
+        memcpy(data, sector, count);
 
     Mutex::unlock(ata);
     return data;
@@ -176,7 +185,6 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
     for (int i = count + (count % 2); i < BUFSIZ; i += 2)
         data_port.read();
 
-    buffer[index + 1] = '\0';
     Mutex::unlock(ata);
     return buffer;
 }

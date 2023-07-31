@@ -1,5 +1,7 @@
 #include "tar.hpp"
 
+/* TODO: support '/' path prefix for compatibility */
+
 Tar::Tar(ATA* ata)
 {
     transfer_buffer = (uint8_t*)kmalloc(MAX_TRANSFER_SIZE);
@@ -162,7 +164,7 @@ int Tar::read_dir(char* dirname, fs_entry_t* entries, uint32_t count)
     return index;
 }
 
-void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, int seek)
+void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t seek)
 {
     int size = count;
     int sector_offset = 0;
@@ -248,7 +250,7 @@ int Tar::get_mode(int file_id, int utype)
 }
 
 /* Reads file from ram */
-int Tar::read_file(int file_id, uint8_t* data, int size, int seek)
+int Tar::read_file(int file_id, uint8_t* data, size_t size, size_t seek)
 {
     if (file_id > file_index)
         return -1;
@@ -268,7 +270,7 @@ int Tar::read_file(int file_id, uint8_t* data, int size, int seek)
 }
 
 /* Reads file from ram using file name */
-int Tar::read_file(char* file_name, uint8_t* data, int size, int seek)
+int Tar::read_file(char* file_name, uint8_t* data, size_t size, size_t seek)
 {
     int file_id = find_file(file_name);
     if ((file_id > file_index) || (file_id == -1))
@@ -339,7 +341,7 @@ int Tar::calculate_checksum(posix_header* header_data)
     return chck;
 }
 
-int Tar::write_file(char* file_name, uint8_t* data, int size)
+int Tar::write_file(char* file_name, uint8_t* data, size_t size)
 {
     /* Calculate where the file should be located */
     file_index++;
