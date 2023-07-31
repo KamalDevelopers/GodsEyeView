@@ -159,6 +159,8 @@ uint8_t Shell::handle_input_line_key()
                 flush_autocomplete(0);
                 autocomplete_input_skip = 0;
             }
+            if (input_line_index > 2 && input_line_buffer[input_line_index - 2] == ' ')
+                flush_autocomplete(0);
             autocomplete_word_size = 0;
             autocomplete_word = -1;
         } else {
