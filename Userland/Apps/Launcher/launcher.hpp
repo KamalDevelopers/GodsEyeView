@@ -14,6 +14,7 @@ private:
     int window_events_file = -1;
     int shell_pid = -1;
     bool is_running = false;
+    bool has_spawned_children = false;
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t bg = 0x3C080808;
@@ -26,6 +27,7 @@ public:
     ~Launcher();
 
     void clear();
+    void spawns();
     void display_time();
     void display_cpu_usage();
     uint32_t display_string(const char* text, int pos_x, int pos_y);

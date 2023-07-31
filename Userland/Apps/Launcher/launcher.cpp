@@ -7,10 +7,10 @@ Launcher::Launcher()
     request_framebuffer(&fb, &width, &height);
     height = 17;
 
+    has_spawned_children = false;
     uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
     window_events_file = request_display_window(window_canvas, width, height, 0x3C080808, flags);
     canvas_set(window_canvas.framebuffer, 0x3C080808, window_canvas.size);
-
     default_font = font_load("bitmaps/font.tftf");
 
     request_update_window();
@@ -135,6 +135,12 @@ void Launcher::display_cpu_usage()
     pos_x = display_string("%", pos_x, pos_y);
 }
 
+void Launcher::spawns()
+{
+    spawn("bin/terminal", 0);
+    has_spawned_children = true;
+}
+
 void Launcher::run()
 {
     is_running = true;
@@ -148,7 +154,9 @@ void Launcher::run()
         display_cpu_usage();
         request_update_window();
         // poll(polls, 1);
-        sleep(3);
+        if (!has_spawned_children)
+            spawns();
+        sleep(2);
         receive_events();
         request_update_window();
 

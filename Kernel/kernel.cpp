@@ -172,7 +172,6 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     TM->spawn("servers/display", 0);
     TM->spawn("servers/sound", 0);
-    TM->spawn("bin/terminal", 0);
     TM->spawn("bin/launcher", 0);
     klog("TM activate reached");
     TM->activate();
