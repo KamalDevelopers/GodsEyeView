@@ -78,33 +78,49 @@ void Husky::write_data(uint32_t sector_start, uint8_t* fdata, int count)
     ata->flush();
 }
 
-void Husky::hhash_str(hhash_t* hsh, const char* s, const size_t n)
+static inline uint32_t murmur3_32_scramble(uint32_t k)
 {
-    uint32_t p = 31, m = 1e5 + 7;
-    uint32_t hashc = 0;
-    uint32_t p_pow = 1;
-    for (size_t i = 0; i < n; i++) {
-        int32_t d = (hashc + (s[i] - 'a' + 1) * p_pow);
-        hashc = d % m;
-        p_pow = (p_pow * p) % m;
-    };
-    hsh->h1 = hashc;
+    k *= 0xcc9e2d51;
+    k = (k << 15) | (k >> 17);
+    k *= 0x1b873593;
+    return k;
+}
 
-    p = 31, m = 1e3 + 8;
-    hashc = 0, p_pow = 1;
-    for (size_t i = 0; i < n; i++) {
-        int32_t d = (hashc + (s[i] - 'a' + 1) * p_pow);
-        hashc = d % m;
-        p_pow = (p_pow * p) % m;
+void Husky::hhash_str(hhash_t* hsh, const char* s, const size_t len)
+{
+    const uint8_t* key = (const uint8_t*)s;
+    uint32_t h = len;
+    uint32_t k;
+
+    for (size_t i = len >> 2; i; i--) {
+        memcpy(&k, key, sizeof(uint32_t));
+        key += sizeof(uint32_t);
+        h ^= murmur3_32_scramble(k);
+        h = (h << 13) | (h >> 19);
+        h = h * 5 + 0xe6546b64;
+    }
+    k = 0;
+
+    for (size_t i = len & 3; i; i--) {
+        k <<= 8;
+        k |= key[i - 1];
     }
 
-    hsh->h2 = hashc;
-    hsh->le = n;
+    h ^= murmur3_32_scramble(k);
+    h ^= len;
+    h ^= h >> 16;
+    h *= 0x85ebca6b;
+    h ^= h >> 13;
+    h *= 0xc2b2ae35;
+    h ^= h >> 16;
+    hsh->h = h;
+    hsh->c = s[len - 1] + (10000 * s[0]);
+    hsh->t = 0xF; /* murmur32 type specifier */
 }
 
 bool Husky::hhash_cmp(hhash_t* hsh1, hhash_t* hsh2)
 {
-    if (hsh1->h1 == hsh2->h1 && hsh1->h2 == hsh2->h2 && hsh1->le == hsh2->le)
+    if (hsh1->h == hsh2->h && hsh1->c == hsh2->c)
         return true;
     return false;
 }

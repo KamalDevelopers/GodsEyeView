@@ -14,9 +14,9 @@
 #define MIN_TRANSFER_SECT 1
 
 typedef struct hhash {
-    uint32_t h1;
-    uint32_t h2;
-    uint16_t le;
+    uint32_t h;
+    uint32_t c;
+    uint16_t t;
 } __attribute__((packed)) hhash_t;
 
 typedef struct block {
@@ -37,7 +37,8 @@ typedef struct super_node {
 
 typedef struct node {
     uint8_t type; /* 0 = not in use */
-    uint32_t uid;
+    uint16_t uid;
+    uint16_t gid;
     uint32_t size_in_bytes;
     uint32_t modification_time;
     uint32_t creation_time;
