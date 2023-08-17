@@ -75,7 +75,6 @@ void Husky::write_data(uint32_t sector_start, uint8_t* fdata, int count)
         ata->write28(sector_start + sector_offset, buffer, 512);
         sector_offset++;
     }
-    ata->flush();
 }
 
 static inline uint32_t murmur3_32_scramble(uint32_t k)
@@ -266,6 +265,7 @@ void Husky::write_node(node_t* node)
     find_empty_node(&free_node_ptr, &free_node_sector);
     memcpy(&nodes_cache[free_node_ptr], node, sizeof(node_t));
     write_data(mount_start_sector + free_node_sector, (uint8_t*)node, sizeof(node_t));
+    ata->flush();
 }
 
 void Husky::mkdir(char* pathname)
@@ -731,5 +731,14 @@ int Husky::get_uid(char* pathname)
 
 int Husky::get_gid(char* pathname)
 {
-    return -1;
+    if (pathname[0] == '\0' || pathname[0] != '/')
+        return -1;
+
+    node_t node;
+    uint32_t node_ptr = 0;
+    hhash_str(&node.own_hash, pathname, strlen(pathname));
+    if (find_node(&node.own_hash, 2, &node_ptr))
+        return -1;
+    memcpy(&node, &nodes_cache[node_ptr], sizeof(node_t));
+    return node.gid;
 }
