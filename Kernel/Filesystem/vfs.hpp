@@ -5,6 +5,7 @@
 #include <LibC++/vector.hpp>
 #include <LibC/path.h>
 #include <LibC/poll.h>
+#include <LibC/stat.h>
 #include <LibC/stdio.h>
 #include <LibC/stdlib.h>
 #include <LibC/string.h>
@@ -30,9 +31,7 @@ public:
     ~Filesystem() { }
 
     virtual int unlink(char* file_name) { return 0; }
-    virtual int get_gid(char* file_name) { return 0; }
-    virtual int get_uid(char* file_name) { return 0; }
-    virtual int get_size(char* file_name) { return 0; }
+    virtual int stat(char* file_name, struct stat* statbuf) { return 0; }
     virtual int write_file(char* file_name, uint8_t* data, size_t size) { return 0; }
     virtual int read_file(char* file_name, uint8_t* data, size_t size, size_t seek = 0) { return 0; }
     virtual int read_dir(char* dirname, fs_entry_t* entries, uint32_t count) { return 0; }
@@ -83,8 +82,7 @@ public:
     int unlink(int descriptor);
     int read(int descriptor, uint8_t* data, size_t size);
     int size(int descriptor);
-    int uid(int descriptor);
-    int gid(int descriptor);
+    int stat(int descriptor, struct stat* statbuf);
 };
 
 #endif

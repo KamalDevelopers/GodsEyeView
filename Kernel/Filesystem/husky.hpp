@@ -16,7 +16,6 @@
 typedef struct hhash {
     uint32_t h;
     uint32_t c;
-    uint16_t t;
 } __attribute__((packed)) hhash_t;
 
 typedef struct block {
@@ -43,6 +42,7 @@ typedef struct node {
     uint32_t modification_time;
     uint32_t creation_time;
     uint32_t last_access_time;
+    uint32_t permission;
     char name[255];
 
     hhash_t own_hash;
@@ -90,9 +90,7 @@ public:
     void create_root_directory();
     int write_file(char* pathname, uint8_t* data, size_t size);
     int read_file(char* pathname, uint8_t* data, size_t size, size_t seek = 0);
-    int get_size(char* pathname);
-    int get_uid(char* pathname);
-    int get_gid(char* pathname);
+    int stat(char* pathname, struct stat* statbuf);
     int find_file(char* pathname);
 
     /* int rename_file(char* file_name, char* new_file_name); */

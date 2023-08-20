@@ -139,10 +139,7 @@ int Syscalls::sys_stat(char* file, struct stat* buffer)
 
 int Syscalls::sys_fstat(int fd, struct stat* buffer)
 {
-    buffer->st_uid = VFS->uid(fd);
-    buffer->st_gid = VFS->gid(fd);
-    buffer->st_size = VFS->size(fd);
-    return (buffer->st_size == -1) ? -1 : 0;
+    return VFS->stat(fd, buffer);
 }
 
 int sys_socket(int type)

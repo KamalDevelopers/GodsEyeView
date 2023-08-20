@@ -68,6 +68,7 @@ public:
     int read_file(int file_id, uint8_t* data, size_t size, size_t seek = 0);
     int read_file(char* file_name, uint8_t* data, size_t size, size_t seek = 0);
     int find_file(char* file_name);
+    int stat(char* file_name, struct stat* statbuf);
     int get_size(char* file_name);
     int get_uid(char* file_name);
     int get_gid(char* file_name);

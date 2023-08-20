@@ -114,7 +114,6 @@ void Husky::hhash_str(hhash_t* hsh, const char* s, const size_t len)
     h ^= h >> 16;
     hsh->h = h;
     hsh->c = s[len - 1] + (10000 * s[0]);
-    hsh->t = 0xF; /* murmur32 type specifier */
 }
 
 bool Husky::hhash_cmp(hhash_t* hsh1, hhash_t* hsh2)
@@ -701,7 +700,7 @@ int Husky::find_file(char* pathname)
     return -1;
 }
 
-int Husky::get_size(char* pathname)
+int Husky::stat(char* pathname, struct stat* statbuf)
 {
     if (pathname[0] == '\0' || pathname[0] != '/')
         return -1;
@@ -709,36 +708,18 @@ int Husky::get_size(char* pathname)
     node_t node;
     uint32_t node_ptr = 0;
     hhash_str(&node.own_hash, pathname, strlen(pathname));
-    if (find_node(&node.own_hash, 2, &node_ptr))
+    if (find_node(&node.own_hash, 2, &node_ptr)) {
+        statbuf->st_size = -1;
         return -1;
+    }
+
+    memset(statbuf, 0, sizeof(struct stat));
     memcpy(&node, &nodes_cache[node_ptr], sizeof(node_t));
-    return node.size_in_bytes;
-}
 
-int Husky::get_uid(char* pathname)
-{
-    if (pathname[0] == '\0' || pathname[0] != '/')
-        return -1;
-
-    node_t node;
-    uint32_t node_ptr = 0;
-    hhash_str(&node.own_hash, pathname, strlen(pathname));
-    if (find_node(&node.own_hash, 2, &node_ptr))
-        return -1;
-    memcpy(&node, &nodes_cache[node_ptr], sizeof(node_t));
-    return node.uid;
-}
-
-int Husky::get_gid(char* pathname)
-{
-    if (pathname[0] == '\0' || pathname[0] != '/')
-        return -1;
-
-    node_t node;
-    uint32_t node_ptr = 0;
-    hhash_str(&node.own_hash, pathname, strlen(pathname));
-    if (find_node(&node.own_hash, 2, &node_ptr))
-        return -1;
-    memcpy(&node, &nodes_cache[node_ptr], sizeof(node_t));
-    return node.gid;
+    statbuf->st_size = node.size_in_bytes;
+    statbuf->st_gid = node.gid;
+    statbuf->st_uid = node.uid;
+    statbuf->st_ctime = node.creation_time;
+    statbuf->st_atime = node.last_access_time;
+    return 0;
 }

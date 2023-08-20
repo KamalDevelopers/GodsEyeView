@@ -33,7 +33,7 @@ void Language::builtin_stat(char* file)
     if (statbuffer.st_size == -1) {
         printf("Could not stat '%s'\n", file);
     } else {
-        printf("Uid: (%d) Gid: (%d) \nName: %s\nSize: %d\n",
+        printf("uid: (%d) gid: (%d) \nname: %s\nsize: %d\n",
             statbuffer.st_uid, statbuffer.st_gid, file, statbuffer.st_size);
     }
 }

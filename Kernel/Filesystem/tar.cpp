@@ -306,6 +306,24 @@ int Tar::get_gid(char* file_name)
     return gid;
 }
 
+int Tar::stat(char* file_name, struct stat* statbuf)
+{
+    memset(statbuf, 0, sizeof(struct stat));
+    int file_id = find_file(file_name);
+    if ((file_id > file_index) || (file_id == -1)) {
+        statbuf->st_size = -1;
+        return -1;
+    }
+
+    int gid = oct_bin(files[file_id].gid, 7);
+    int data_size = oct_bin(files[file_id].size, 11);
+    int uid = oct_bin(files[file_id].uid, 7);
+    statbuf->st_size = data_size;
+    statbuf->st_gid = gid;
+    statbuf->st_uid = uid;
+    return 0;
+}
+
 /* Checksum write in octal */
 posix_header* Tar::file_calculate_checksum(posix_header* header_data)
 {

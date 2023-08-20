@@ -1,10 +1,15 @@
 #ifndef STAT_H
 #define STAT_H
 
+#include "types.h"
+
 struct stat {
     int st_uid;
     int st_gid;
     int st_size;
+    uint32_t st_atime;
+    uint32_t st_mtime;
+    uint32_t st_ctime;
 };
 
 #ifdef __cplusplus

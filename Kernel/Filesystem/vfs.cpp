@@ -119,7 +119,7 @@ int VirtualFilesystem::open(char* file_name, int flags)
     strcpy(file.file_name, file_path);
     file.mountfs = mount;
     file.descriptor = ft()->descriptor_index;
-    file.size = mounts[mount]->get_size(file_path);
+    /* file.size = mounts[mount]->get_size(file_path); */
     file.type = FS_TYPE_FILE;
     file.flags = flags;
     ft()->files.append(file);
@@ -214,31 +214,33 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data, size_t size)
     return read_size;
 }
 
+int VirtualFilesystem::stat(int descriptor, struct stat* statbuf)
+{
+    int index = search(descriptor);
+    if (index == -1) {
+        statbuf->st_size = -1;
+        return -1;
+    }
+
+    if (ft()->files.at(index).type == FS_TYPE_FIFO) {
+        statbuf->st_size = ft()->files.at(index).pipe->size;
+        return 0;
+    }
+
+    return mounts[ft()->files[index].mountfs]->stat(ft()->files[index].file_name, statbuf);
+}
+
 int VirtualFilesystem::size(int descriptor)
 {
     int index = search(descriptor);
     if (index == -1)
         return -1;
 
+    struct stat statbuf;
     if (ft()->files.at(index).type == FS_TYPE_FIFO)
         return ft()->files.at(index).pipe->size;
-    return mounts[ft()->files[index].mountfs]->get_size(ft()->files[index].file_name);
-}
-
-int VirtualFilesystem::uid(int descriptor)
-{
-    int index = search(descriptor);
-    if (index == -1)
-        return -1;
-    return mounts[ft()->files[index].mountfs]->get_uid(ft()->files[index].file_name);
-}
-
-int VirtualFilesystem::gid(int descriptor)
-{
-    int index = search(descriptor);
-    if (index == -1)
-        return -1;
-    return mounts[ft()->files[index].mountfs]->get_gid(ft()->files[index].file_name);
+    mounts[ft()->files[index].mountfs]->stat(ft()->files[index].file_name, &statbuf);
+    return statbuf.st_size;
 }
 
 int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t count)
