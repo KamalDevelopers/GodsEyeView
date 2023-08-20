@@ -11,23 +11,34 @@ uint32_t dns_entry_count = 0;
 void DNS::handle_packet(void* packet, uint32_t length)
 {
     dns_header_t* header = (dns_header_t*)packet;
-    if (!header->answer_count)
+
+    if (!header->answer_count) {
+        klog("[DNS] no answer count");
         return;
+    }
+
+    if (!header->question_count) {
+        klog("[DNS] no question count");
+        return;
+    }
 
     uint8_t* data = (uint8_t*)packet + sizeof(dns_header_t);
     uint32_t qc = ntohs(header->question_count);
 
     /* TODO: Support multiple question entries */
     if (qc > 1) {
-        klog("DNS type not supported!");
+        klog("[DNS] type not supported!");
         return;
     }
 
     char host[256];
+    dns_qheader_t qheader;
+    uint32_t address = 0;
     memset(host, 0, sizeof(host));
 
     uint16_t label_length = *data;
     uint32_t next = 0;
+
     while (label_length) {
         label_length = *data;
         memcpy(host + next, data + 1, label_length);
@@ -40,29 +51,25 @@ void DNS::handle_packet(void* packet, uint32_t length)
     host[next - 1] = 0;
     data += 4;
 
-    uint16_t aname = 0;
-    uint16_t atype = 0;
-    uint16_t aclass = 0;
-    uint32_t attl = 0;
-    uint16_t alen = 0;
-    uint32_t address = 0;
+    for (uint16_t i = 0; i < header->answer_count; i++) {
+        memcpy(&qheader, data, sizeof(dns_qheader_t));
+        data += sizeof(dns_qheader_t);
 
-    memcpy(&aname, data, 2);
-    data += 2;
-    memcpy(&atype, data, 2);
-    data += 2;
-    memcpy(&aclass, data, 2);
-    data += 2;
-    memcpy(&attl, data, 4);
-    data += 4;
-    memcpy(&alen, data, 2);
-    data += 2;
+        if (ntohs(qheader.atype) == 1)
+            break;
+        data += ntohs(qheader.alen);
+    }
 
-    if (ntohs(alen) == 4)
+    if (ntohs(qheader.alen) == 4)
         memcpy(&address, data, 4);
 
     if (dns_entry_count + 1 == 50)
         dns_entry_count = 0;
+
+    if (!address) {
+        query_host(host, strlen(host) - 1);
+        return;
+    }
 
     memcpy(dns_entries[dns_entry_count].host, host, strlen(host) - 1);
     dns_entries[dns_entry_count].remote_ip = address;
@@ -125,5 +132,4 @@ void DNS::query_host(const char* host, uint32_t host_len)
     socket.local_port = htons(53);
     socket.remote_port = htons(53);
     UDP::send(&socket, packet, packet_len);
-    kfree(packet);
 }

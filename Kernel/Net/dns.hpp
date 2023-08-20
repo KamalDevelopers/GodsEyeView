@@ -17,6 +17,14 @@ typedef struct dns_header {
     uint16_t additional_count;
 } __attribute__((packed)) dns_header_t;
 
+typedef struct dns_qheader {
+    uint16_t aname;
+    uint16_t atype;
+    uint16_t aclass;
+    uint32_t attl;
+    uint16_t alen;
+} __attribute__((packed)) dns_qheader_t;
+
 namespace DNS {
 uint32_t get_host_ip(const char* host);
 void query_host(const char* host, uint32_t host_len);
