@@ -77,5 +77,4 @@ void IPV4::send_packet(uint32_t destination_ip, uint8_t protocol, uint8_t* buffe
         route = DHCP::gateway();
 
     ETH->send_packet(ARP::resolve(route), packet, sizeof(ipv4_packet_t) + size, ETHERNET_TYPE_IP);
-    kfree(buffer);
 }

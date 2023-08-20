@@ -34,6 +34,8 @@ void AM79C973::activate()
     register_address_port.write(0);
     register_data_port.write(0x04);
 
+    receive_buffer_index = 0;
+    send_buffer_index = 0;
     init_block.mode = 0x0000;
     init_block.reserved1 = 0;
     init_block.send_buffers = 3;
@@ -46,19 +48,22 @@ void AM79C973::activate()
     memset(send_buffer_descriptions_memory, 0, 2048 + 15);
     memset(receive_buffer_descriptions_memory, 0, 2048 + 15);
 
+    receive_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * 8);
+    send_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * 8);
+
     send_buffer_descriptions = (buffer_description_t*)((((uint32_t)&send_buffer_descriptions_memory[0]) + 15) & ~((uint32_t)0xF));
     init_block.send_descriptor_address = (uint32_t)send_buffer_descriptions;
     receive_buffer_descriptions = (buffer_description_t*)((((uint32_t)&receive_buffer_descriptions_memory[0]) + 15) & ~((uint32_t)0xF));
     init_block.receive_descriptor_address = (uint32_t)receive_buffer_descriptions;
 
     for (uint8_t i = 0; i < 8; i++) {
-        send_buffer_descriptions[i].address = (((uint32_t)&send_buffers[i]) + 15) & ~(uint32_t)0xF;
+        send_buffer_descriptions[i].address = (((uint32_t)send_buffers + (2 * 1024 + 15) * i) + 15) & ~(uint32_t)0xF;
         send_buffer_descriptions[i].flags = 0x7FF
             | 0xF000;
         send_buffer_descriptions[i].flags2 = 0;
         send_buffer_descriptions[i].avail = 0;
 
-        receive_buffer_descriptions[i].address = (((uint32_t)&receive_buffers[i]) + 15) & ~(uint32_t)0xF;
+        receive_buffer_descriptions[i].address = (((uint32_t)receive_buffers + (2 * 1024 + 15) * i) + 15) & ~(uint32_t)0xF;
         receive_buffer_descriptions[i].flags = 0xF7FF
             | 0x80000000;
         receive_buffer_descriptions[i].flags2 = 0;
@@ -103,9 +108,9 @@ void AM79C973::send(uint8_t* buffer, uint32_t size)
 
 void AM79C973::receive()
 {
-    for (; (receive_buffer_descriptions[receive_buffer_index].flags & 0x80000000) == 0; receive_buffer_index = (receive_buffer_index + 1) % 8) {
+    while ((receive_buffer_descriptions[receive_buffer_index].flags & 0x80000000) == 0) {
         if (!(receive_buffer_descriptions[receive_buffer_index].flags & 0x40000000) && (receive_buffer_descriptions[receive_buffer_index].flags & 0x03000000) == 0x03000000) {
-            uint32_t size = receive_buffer_descriptions[receive_buffer_index].flags & 0xFFF;
+            uint32_t size = receive_buffer_descriptions[receive_buffer_index].flags2 & 0xFFF;
             if (size > 64)
                 size -= 4;
 
@@ -118,6 +123,7 @@ void AM79C973::receive()
 
         receive_buffer_descriptions[receive_buffer_index].flags2 = 0;
         receive_buffer_descriptions[receive_buffer_index].flags = 0x8000F7FF;
+        receive_buffer_index = (receive_buffer_index + 1) % 8;
     }
 }
 
@@ -136,12 +142,13 @@ uint32_t AM79C973::interrupt(uint32_t esp)
         klog("[am79c973] memory error");
     if (register_data_port_value & 0x0400)
         receive();
-    /*
-    if (register_data_port_value & 0x0200)
+
+#if PCNET_DEBUG
+    if ((register_data_port_value & 0x0200))
         klog("[am79c973] packet sent");
     if (register_data_port_value & 0x0100)
         klog("[am79c973] init done");
-    */
+#endif
 
     register_address_port.write(0);
     register_data_port.write(register_data_port_value);

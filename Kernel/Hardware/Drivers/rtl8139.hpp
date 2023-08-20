@@ -8,6 +8,10 @@
 #define RX_BUF_SIZE 8192
 #define TX_BUF_SIZE 1518
 
+#define RXFIFOOVER 0x40
+#define RXUNDERRUN 0x20
+#define RXOVERFLOW 0x10
+
 #define RX_READ_POINTER_MASK (~3)
 #define ROK (1 << 0)
 #define RER (1 << 1)
@@ -54,7 +58,6 @@ public:
     uint64_t get_mac_address() { return mac_address; }
     void send(uint8_t* buffer, uint32_t size);
     void receive();
-
     void activate();
     virtual uint32_t interrupt(uint32_t esp);
 };

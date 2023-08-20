@@ -66,7 +66,7 @@ bool Ethernet::send_packet(uint64_t mac, uint8_t* buffer, uint32_t size, uint16_
 
     memcpy(packet + sizeof(ethernet_frame_t), buffer, size);
     network_driver->send(packet, sizeof(ethernet_frame_t) + size);
-
     kfree(packet);
+
     return true;
 }

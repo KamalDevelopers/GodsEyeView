@@ -38,9 +38,7 @@ int socket_fin_received(tcp_socket_t* socket, void* packet, uint32_t from_ip)
 {
     if (socket->state == ESTABLISHED) {
         socket->state = CLOSE_WAIT;
-        socket->sequence_number++;
         socket->acknowledgement_number++;
-        TCP::send(socket, 0, 0, ACK_FLAG);
         TCP::send(socket, 0, 0, FIN_FLAG | ACK_FLAG);
         return 0;
     }
@@ -125,10 +123,13 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
 
     case FIN_SENT | PSH_SENT | ACK_SENT:
         cont = socket_ack_received(socket, packet, size, from_ip);
+        if (socket->state == CLOSED)
+            return;
+
         socket->acknowledgement_number = ntohl(header->sequence_number) + size;
         socket->sequence_number = ntohl(header->acknowledgement_number);
         socket->state = FIN_WAIT1;
-        send(socket, 0, 0, ACK_FLAG | FIN_FLAG);
+        send(socket, 0, 0, ACK_FLAG);
         return;
 
     case FIN_SENT:
@@ -138,6 +139,8 @@ void TCP::receive(void* packet, uint16_t length, uint32_t from_ip)
 
     case PSH_SENT | ACK_SENT:
         cont = socket_ack_received(socket, packet, size, from_ip);
+        socket->acknowledgement_number += size;
+        socket->sequence_number = ntohl(header->acknowledgement_number);
         break;
 
     case ACK_SENT:
@@ -197,8 +200,11 @@ void TCP::connect(tcp_socket_t* socket, uint32_t ip, uint16_t port)
 
 void TCP::close(tcp_socket_t* socket)
 {
-    if (socket->state == ESTABLISHED)
-        send(socket, 0, 0, FIN_WAIT1);
+    if (socket->state == ESTABLISHED) {
+        socket->state = FIN_WAIT1;
+        send(socket, 0, 0, FIN_FLAG);
+        return;
+    }
 
     int socket_index = -1;
     for (uint32_t i = 0; i < tcp_sockets.size(); i++) {
@@ -214,8 +220,6 @@ void TCP::close(tcp_socket_t* socket)
         return;
     }
 
-    if (socket->receive_pipe)
-        Pipe::destroy(socket->receive_pipe);
     tcp_sockets.remove_at(socket_index);
 }
 
@@ -256,5 +260,4 @@ void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flag
     header->checksum = IPV4::calculate_checksum((uint16_t*)buffer, packet_size);
 
     IPV4::send_packet(socket->remote_ip, 0x06, (uint8_t*)(buffer + sizeof(tcp_pseudo_header_t)), size + sizeof(tcp_header_t));
-    kfree(buffer);
 }

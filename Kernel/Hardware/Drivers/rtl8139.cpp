@@ -1,6 +1,7 @@
 #include "rtl8139.hpp"
 #include "../../Mem/paging.hpp"
 
+#define ROUND(a, b) (((a) + (b)-1) & ~((b)-1))
 uint8_t TSAD_ports[4] = { 0x20, 0x24, 0x28, 0x2C };
 uint8_t TSD_ports[4] = { 0x10, 0x14, 0x18, 0x1C };
 
@@ -20,6 +21,7 @@ RTL8139::RTL8139(InterruptManager* interrupt_manager, device_descriptor_t device
     , rx_config_port(device.port_base + 0x44)
     , port_base { device.port_base }
 {
+    packet_index = 0;
     PCI::active->enable_busmaster(device);
     activate();
 }
@@ -38,10 +40,9 @@ void RTL8139::activate()
         ;
 
     memset(receive_buffer, 0x0, 8192 + 16 + 1500);
-    rbstart_port.write((uint32_t)&receive_buffer);
+    rbstart_port.write((uint32_t)receive_buffer);
 
     interrupt_mask_port.write(0x0005);
-    command_port.write(0x0C);
     rx_config_port.write(0xF | (1 << 7));
 
     uint64_t mac0 = mac0_address_port.read() % 256;
@@ -51,6 +52,7 @@ void RTL8139::activate()
     uint64_t mac4 = mac4_address_port.read() % 256;
     uint64_t mac5 = mac4_address_port.read() / 256;
     mac_address = mac5 << 40 | mac4 << 32 | mac3 << 24 | mac2 << 16 | mac1 << 8 | mac0;
+    command_port.write(0x0C);
 }
 
 void RTL8139::send(uint8_t* buffer, uint32_t size)
@@ -66,8 +68,11 @@ void RTL8139::send(uint8_t* buffer, uint32_t size)
 
 void RTL8139::receive()
 {
+    uint32_t status = interrupt_status_port.read();
+    interrupt_status_port.write(status & ~(RXFIFOOVER | RXOVERFLOW | ROK));
+
     uint16_t* data = (uint16_t*)(receive_buffer + packet_index);
-    uint16_t packet_length = *(data + 1);
+    uint16_t packet_length = *(data + 1) - 4;
 
     data = data + 2;
 
@@ -76,18 +81,17 @@ void RTL8139::receive()
 
     ETH->handle_packet((uint8_t*)packet, packet_length);
 
-    packet_index = (packet_index + packet_length + 4 + 3) & RX_READ_POINTER_MASK;
-
-    if (packet_index > RX_BUF_SIZE)
-        packet_index -= RX_BUF_SIZE;
-
+    // packet_index = ROUND(packet_index + packet_length + 4, 4);
+    packet_index = (packet_index + packet_length + 4 + 4 + 3) & ~3;
     capr_port.write(packet_index - 0x10);
+    interrupt_status_port.write(status & ~(RXFIFOOVER | RXOVERFLOW | ROK));
     kfree(packet);
 }
 
 uint32_t RTL8139::interrupt(uint32_t esp)
 {
     uint16_t status = interrupt_status_port.read();
+    interrupt_status_port.write(0x05);
 
     if (status & ROK) {
 #if RTL_DEBUG
@@ -105,6 +109,5 @@ uint32_t RTL8139::interrupt(uint32_t esp)
         klog("[RTL8139] packet sent");
 #endif
 
-    interrupt_status_port.write(0x5);
     return esp;
 }

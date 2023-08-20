@@ -89,11 +89,17 @@ void protocol_http(char* url, uint16_t port)
     connect(fd, remote_ip, port);
     send(fd, (void*)request, strlen(request), 0x018);
     memset(recvbuffer, 0, sizeof(recvbuffer));
-    int size = recv(fd, recvbuffer, sizeof(recvbuffer));
 
-    for (uint32_t i = 0; i < size; i++)
-        printf("%c", recvbuffer[i]);
-    flush();
+    while (true) {
+        int size = recv(fd, recvbuffer, sizeof(recvbuffer));
+
+        if (!size)
+            break;
+
+        for (uint32_t i = 0; i < size; i++)
+            printf("%c", recvbuffer[i]);
+        flush();
+    }
 
     disconnect(fd);
 }

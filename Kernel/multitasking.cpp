@@ -195,10 +195,12 @@ int Task::destroy_socket(int sockfd)
     ipv4_socket_t* socket = sockets.at(index);
     if (socket->type == NET_PROTOCOL_UDP) {
         UDP::close(socket->udp_socket);
+        Pipe::destroy(socket->udp_socket->receive_pipe);
         kfree(socket->udp_socket);
     }
     if (socket->type == NET_PROTOCOL_TCP) {
         TCP::close(socket->tcp_socket);
+        Pipe::destroy(socket->tcp_socket->receive_pipe);
         kfree(socket->tcp_socket);
     }
     kfree(sockets.at(index));
@@ -214,6 +216,8 @@ bool Task::socket_has_data(ipv4_socket_t* socket)
     }
 
     if (socket->type == NET_PROTOCOL_TCP) {
+        if (socket->tcp_socket->state == CLOSED)
+            return true;
         if (socket->tcp_socket->receive_pipe->size)
             return true;
     }

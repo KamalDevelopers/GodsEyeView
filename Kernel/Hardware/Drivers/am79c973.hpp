@@ -6,6 +6,7 @@
 #include "../pci.hpp"
 #include "../port.hpp"
 
+#define PCNET_DEBUG 0
 #define RX_BUF_SIZE 8192
 #define TX_BUF_SIZE 1518
 
@@ -44,12 +45,11 @@ private:
 
     buffer_description_t* send_buffer_descriptions;
     uint8_t send_buffer_descriptions_memory[2048 + 15];
-    uint8_t send_buffers[2 * 1024 + 15][8];
+    uint8_t* send_buffers = 0;
     uint8_t send_buffer_index = 0;
-
     buffer_description_t* receive_buffer_descriptions;
     uint8_t receive_buffer_descriptions_memory[2048 + 15];
-    uint8_t receive_buffers[2 * 1024 + 15][8];
+    uint8_t* receive_buffers = 0;
     uint8_t receive_buffer_index = 0;
     uint64_t mac_address = 0;
 
@@ -61,7 +61,6 @@ public:
     uint64_t get_mac_address() { return mac_address; }
     void send(uint8_t* buffer, uint32_t size);
     void receive();
-
     void activate();
     virtual uint32_t interrupt(uint32_t esp);
 };
