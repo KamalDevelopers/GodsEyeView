@@ -31,8 +31,11 @@ int main(int argc, char** argv)
         if (!read_size)
             continue;
 
+        uint32_t cd_index = language.get_cd_index();
         language.execute(shell.input_line(), read_size);
         is_running = !(language.should_exit());
+        if (cd_index != language.get_cd_index())
+            shell.autocomplete_table_builder();
     }
 
     return 0;

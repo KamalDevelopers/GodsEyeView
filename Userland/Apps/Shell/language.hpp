@@ -13,6 +13,7 @@ class Language {
 private:
     size_t script_index = 0;
     size_t script_size = 0;
+    size_t cd_index = 0;
     char script_line[BUFSIZ];
     char program[100];
     char** program_arguments = 0;
@@ -35,6 +36,7 @@ public:
     Language();
     ~Language();
 
+    size_t get_cd_index() { return cd_index; }
     bool should_exit() { return has_exit; }
     int run_line(const char* script);
     int execute(const char* script, size_t size);

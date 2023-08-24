@@ -5,7 +5,7 @@
 int main(int argc, char** argv)
 {
     if (!argc) {
-        printf("No input file(s)");
+        printf("No input file(s)\n");
         return 0;
     }
 
@@ -13,13 +13,13 @@ int main(int argc, char** argv)
         if (unlink(argv[i]) != -1) {
             if (i != 0)
                 printf("\n");
-            printf("Unlinking %s", argv[i]);
+            printf("Unlinking %s\n", argv[i]);
             continue;
         }
 
         if (i != 0)
             printf("\n");
-        printf("File '%s' does not exist", argv[i]);
+        printf("File '%s' does not exist\n", argv[i]);
     }
 
     return 0;

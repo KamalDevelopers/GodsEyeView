@@ -38,9 +38,9 @@ void AM79C973::activate()
     send_buffer_index = 0;
     init_block.mode = 0x0000;
     init_block.reserved1 = 0;
-    init_block.send_buffers = 3;
+    init_block.send_buffers = NUM_DESCRIPTORS_LOG2;
     init_block.reserved2 = 0;
-    init_block.receive_buffers = 3;
+    init_block.receive_buffers = NUM_DESCRIPTORS_LOG2;
     init_block.physical_address = mac_address;
     init_block.reserved3 = 0;
     init_block.logical_address = 0;
@@ -48,15 +48,15 @@ void AM79C973::activate()
     memset(send_buffer_descriptions_memory, 0, 2048 + 15);
     memset(receive_buffer_descriptions_memory, 0, 2048 + 15);
 
-    receive_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * 8);
-    send_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * 8);
+    receive_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * NUM_DESCRIPTORS);
+    send_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * NUM_DESCRIPTORS);
 
     send_buffer_descriptions = (buffer_description_t*)((((uint32_t)&send_buffer_descriptions_memory[0]) + 15) & ~((uint32_t)0xF));
     init_block.send_descriptor_address = (uint32_t)send_buffer_descriptions;
     receive_buffer_descriptions = (buffer_description_t*)((((uint32_t)&receive_buffer_descriptions_memory[0]) + 15) & ~((uint32_t)0xF));
     init_block.receive_descriptor_address = (uint32_t)receive_buffer_descriptions;
 
-    for (uint8_t i = 0; i < 8; i++) {
+    for (uint8_t i = 0; i < NUM_DESCRIPTORS; i++) {
         send_buffer_descriptions[i].address = (((uint32_t)send_buffers + (2 * 1024 + 15) * i) + 15) & ~(uint32_t)0xF;
         send_buffer_descriptions[i].flags = 0x7FF
             | 0xF000;
@@ -91,7 +91,7 @@ void AM79C973::activate()
 void AM79C973::send(uint8_t* buffer, uint32_t size)
 {
     uint8_t send_descriptor = send_buffer_index;
-    send_buffer_index = (send_buffer_index + 1) % 8;
+    send_buffer_index = (send_buffer_index + 1) % NUM_DESCRIPTORS;
     size = (size > TX_BUF_SIZE) ? TX_BUF_SIZE : size;
 
     for (uint8_t *src = buffer + size - 1,
@@ -123,7 +123,7 @@ void AM79C973::receive()
 
         receive_buffer_descriptions[receive_buffer_index].flags2 = 0;
         receive_buffer_descriptions[receive_buffer_index].flags = 0x8000F7FF;
-        receive_buffer_index = (receive_buffer_index + 1) % 8;
+        receive_buffer_index = (receive_buffer_index + 1) % NUM_DESCRIPTORS;
     }
 }
 

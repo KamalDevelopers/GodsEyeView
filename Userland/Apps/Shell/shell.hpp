@@ -27,13 +27,13 @@ private:
     void flush_chars(int size);
     void flush_autocomplete(int start);
     uint8_t handle_input_line_key();
-    void autocomplete_table_builder();
 
 public:
     Shell();
     ~Shell();
 
     const char* input_line() { return input_line_buffer; }
+    void autocomplete_table_builder();
     int match_autocomplete(const char* word, size_t word_size);
     uint8_t append_autocomplete_word(const char* word);
     void exec(const char* script);

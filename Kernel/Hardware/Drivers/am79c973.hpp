@@ -9,6 +9,8 @@
 #define PCNET_DEBUG 0
 #define RX_BUF_SIZE 8192
 #define TX_BUF_SIZE 1518
+#define NUM_DESCRIPTORS 32
+#define NUM_DESCRIPTORS_LOG2 5
 
 typedef struct init_block {
     uint16_t mode;

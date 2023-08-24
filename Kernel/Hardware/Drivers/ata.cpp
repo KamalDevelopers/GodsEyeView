@@ -221,10 +221,18 @@ void ATA::write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count)
 void ATA::write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count)
 {
     Mutex::lock(ata);
+
     prdt.transfer_size = count;
     prdt.buffer_phys = (uint32_t)data;
     outb(bar4, 0);
     outbl(bar4 + 4, (uint32_t)&prdt);
+
+    uint8_t sector[512];
+    if (count < 512) {
+        memcpy(sector, data, 512);
+        prdt.transfer_size = 512;
+        prdt.buffer_phys = (uint32_t)sector;
+    }
 
     device_port.write(0xE0 | (!master) << 4 | (sector_num & 0x0f000000) >> 24);
     sector_count_port.write(1);

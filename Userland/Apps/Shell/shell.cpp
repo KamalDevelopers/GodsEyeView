@@ -12,6 +12,7 @@ Shell::Shell()
     strncpy(user, "terry", 5);
     uname(&uname_struct);
     lowercase(uname_struct.sysname);
+    autocomplete_table_builder();
 }
 
 Shell::~Shell()
@@ -200,7 +201,6 @@ uint8_t Shell::handle_input_line_key()
 
 size_t Shell::read_input_line()
 {
-    autocomplete_table_builder();
     memset(input_line_buffer, 0, sizeof(input_line_buffer));
     input_line_index = 0;
     autocomplete_input_skip = 0;

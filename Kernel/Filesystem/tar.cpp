@@ -205,16 +205,11 @@ void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t see
 
 void Tar::write_data(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t buffer[513];
-    int size = count;
     int sector_offset = 0;
-
-    for (; size > 0; size -= 512) {
-        int tsize = (size < 512) ? size : 512;
-        memset(buffer, 0, 512);
-        memcpy(buffer, fdata + count - size, tsize);
-        ata->write28(sector_start + sector_offset, buffer, 512);
+    for (uint32_t i = 0; i < count;) {
+        ata->write28(sector_start + sector_offset, fdata + i, 512);
         sector_offset++;
+        i += 512;
     }
     ata->flush();
 }

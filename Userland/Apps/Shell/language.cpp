@@ -83,6 +83,8 @@ void Language::builtin_cd(char* dir)
         printf("Path does not exist '%s'\n", dir);
         return;
     }
+
+    cd_index++;
 }
 
 int Language::parse_token(char* token)

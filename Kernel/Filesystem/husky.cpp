@@ -64,16 +64,12 @@ void Husky::read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t s
 
 void Husky::write_data(uint32_t sector_start, uint8_t* fdata, int count)
 {
-    uint8_t buffer[513];
-    int size = count;
     int sector_offset = 0;
-
-    for (; size > 0; size -= 512) {
-        int tsize = (size < 512) ? size : 512;
-        memset(buffer, 0, 512);
-        memcpy(buffer, fdata + count - size, tsize);
-        ata->write28(sector_start + sector_offset, buffer, 512);
+    for (uint32_t i = 0; i < count;) {
+        uint32_t siz = ((count - i) >= 512) ? 512 : count - i;
+        ata->write28(sector_start + sector_offset, fdata + i, siz);
         sector_offset++;
+        i += siz;
     }
 }
 
