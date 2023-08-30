@@ -74,7 +74,10 @@ void MouseDriver::on_mouse_move(int x, int y)
     move_event.y = mouse_y;
     move_event.modifier = 0;
     unread_move_event = true;
+
     TM->test_poll();
+    /* yield() = performance increase? */
+    TM->yield();
 }
 
 void MouseDriver::on_mouse_up()
