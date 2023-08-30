@@ -7,6 +7,7 @@ template<uint32_t T>
 class BitArray {
 private:
     uint8_t bitmap[T / 8];
+    uint32_t last_unset_index = 0;
 
 public:
     BitArray()
@@ -80,15 +81,36 @@ public:
         uint32_t index = 0;
         for (; index < size(); index++) {
             bool fits = true;
-
             for (uint32_t i = 0; i < length; i++) {
-                if (bit_get(index + i))
+                if (bit_get(index + i)) {
                     fits = false;
+                    index += i;
+                }
             }
-
             if (fits)
                 break;
         }
+        last_unset_index = index + length;
+        return index;
+    }
+
+    uint32_t fast_find_unset(uint32_t length = 1)
+    {
+        uint32_t index = last_unset_index;
+        for (; index < size(); index++) {
+            bool fits = true;
+            for (uint32_t i = 0; i < length; i++) {
+                if (bit_get(index + i)) {
+                    fits = false;
+                    index += i;
+                }
+            }
+            if (fits)
+                break;
+        }
+        if (index + 1 >= size())
+            return find_unset(length);
+        last_unset_index = index + length;
         return index;
     }
 };

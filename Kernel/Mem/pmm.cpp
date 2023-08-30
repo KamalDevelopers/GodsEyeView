@@ -35,7 +35,7 @@ uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
         size = PAGE_ALIGN(size);
 
     uint32_t pages = size / PAGE_SIZE;
-    uint32_t index = page_bitmap.find_unset(pages);
+    uint32_t index = page_bitmap.fast_find_unset(pages);
     uint32_t address = PHYSICAL_MEMORY_START + index * PAGE_SIZE;
 
     if (debug)
