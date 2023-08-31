@@ -37,13 +37,9 @@ void Terminal::kill_shell()
 
 void Terminal::resize_window(display_event_t* display_event)
 {
-    window_canvas = display_event->canvas;
-    if (window_canvas.height < 150 || window_canvas.width < 50) {
-        if (!window_canvas.height || !window_canvas.width)
-            return;
-        is_running = false;
+    if (window_canvas.height == display_event->canvas.height && window_canvas.width == display_event->canvas.width)
         return;
-    }
+    window_canvas = display_event->canvas;
     resize_text(&window_canvas);
     request_update_window();
 }

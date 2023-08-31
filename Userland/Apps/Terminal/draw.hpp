@@ -1,7 +1,7 @@
 #ifndef DRAW_HPP
 #define DRAW_HPP
 
-#include "font.hpp"
+#include "LibFont/font.hpp"
 #include <LibC/stat.h>
 #include <LibC/stdlib.h>
 #include <LibC/string.h>
