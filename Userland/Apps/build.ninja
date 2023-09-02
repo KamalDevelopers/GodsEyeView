@@ -42,6 +42,10 @@ rule terminal
     command = cd ./Terminal && ninja && ninja move && cd ../
     description = building terminal (core) GUI application
 
+rule eye
+    command = cd ./Eye && ninja && ninja move && cd ../
+    description = building eye (core) GUI application
+
 rule launcher
     command = cd ./Launcher && ninja && ninja move && cd ../
     description = building launcher (core) GUI application
@@ -61,5 +65,6 @@ build ls: ls
 build mixer: mixer
 build net: net
 build terminal: terminal
+build eye: eye
 build launcher: launcher
 build image: image

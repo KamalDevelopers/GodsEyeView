@@ -102,10 +102,12 @@ void WindowManager::set_window_master(uint32_t index)
 {
     if (windows_size() <= 0 || index > windows_size())
         return;
+
     Window* window_ptr_source = windows()[index];
     Window* window_ptr_destination = windows()[0];
     windows()[0] = window_ptr_source;
     windows()[index] = window_ptr_destination;
+
     active_window = 0;
     update_window_border(0);
     update_window_border(index);
@@ -174,6 +176,8 @@ void WindowManager::update_window_positions()
     uint32_t return_tiled_windows = tiled_windows;
     if (active_fullscreen_window >= 0)
         tiled_windows = 1;
+    if (tiled_windows >= MAX_VISIBLE_WINDOWS + 1)
+        tiled_windows = MAX_VISIBLE_WINDOWS;
 
     uint32_t position_x = WINDOW_GAP;
     uint32_t position_y = WINDOW_GAP;
@@ -189,6 +193,10 @@ void WindowManager::update_window_positions()
             continue;
         if (active_fullscreen_window >= 0 && index != active_fullscreen_window)
             continue;
+        if (index >= MAX_VISIBLE_WINDOWS + 1) {
+            windows()[index]->resize(0, 0);
+            continue;
+        }
 
         uint32_t height = horizontal_section - WINDOW_GAP * 2;
         uint32_t width = vertical_section - WINDOW_GAP;
@@ -203,8 +211,7 @@ void WindowManager::update_window_positions()
         if (tiled_index == 0) {
             height -= WINDOW_TOP_GAP;
             position_y += WINDOW_TOP_GAP;
-        }
-        if (tiled_index == 1) {
+        } else if (tiled_index == 1) {
             height -= WINDOW_TOP_GAP;
         }
 
@@ -299,6 +306,12 @@ void WindowManager::destroy_window(uint32_t index)
         }
         current++;
     }
+
+    if (tiled_windows)
+        update_window_border(active_window);
+
+    update_window_positions();
+    compositor->require_update();
 }
 
 void WindowManager::destroy_window_pid(int pid)
@@ -308,7 +321,6 @@ void WindowManager::destroy_window_pid(int pid)
         return;
 
     destroy_window(index);
-    update_window_positions();
 }
 
 Window** WindowManager::windows()

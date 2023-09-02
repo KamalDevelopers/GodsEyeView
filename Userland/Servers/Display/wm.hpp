@@ -6,8 +6,9 @@
 
 // clang-format off
 #define WORKSPACES 3
+#define MAX_VISIBLE_WINDOWS 4
 #define WINDOW_TOP_GAP 20
-#define WINDOW_GAP 50
+#define WINDOW_GAP 43
 #define WINDOW_BORDER_COLOR 0x1E1E1E
 #define WINDOW_ACTIVE_BORDER_COLOR 0x70C2FF
 #define CLAMP(a, b, c) (a < b ? b : a > c ? c : a)
