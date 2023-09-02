@@ -42,6 +42,7 @@ void Shell::autocomplete_table_builder()
     append_autocomplete_word("shutdown");
     append_autocomplete_word("reboot");
     append_autocomplete_word("clear");
+    autocomplete_skip_bins = count + 5;
 
     count = listdir(cwd, entries, 100);
     if (count > 0) {
@@ -56,6 +57,8 @@ int Shell::match_autocomplete(const char* word, size_t word_size)
 {
     for (uint32_t t = 0; t < autocomplete_table_size; t++) {
         bool match = true;
+        if (t < autocomplete_skip_bins && !is_first_word)
+            match = false;
         for (uint32_t i = 0; i < word_size; i++) {
             if ((autocomplete_table[t][i] == 0) || (word[i] != autocomplete_table[t][i])) {
                 match = false;
@@ -110,6 +113,7 @@ void Shell::flush_autocomplete(int start)
 uint8_t Shell::handle_input_line_key()
 {
     if (input_line_buffer[input_line_index - 1] == ' ') {
+        is_first_word = 0;
         flush_autocomplete(input_line_index - 1 - autocomplete_input_skip);
         autocomplete_word_size = 0;
         autocomplete_input_skip = input_line_index;
@@ -129,6 +133,7 @@ uint8_t Shell::handle_input_line_key()
         if (input_line_index >= 1 && input_line_buffer[input_line_index - 1] == ' ')
             return 1;
 
+        is_first_word = 0;
         flush_chars(input_line_index - autocomplete_input_skip);
         flush_autocomplete(0);
         memset(input_line_buffer + autocomplete_input_skip, 0, sizeof(input_line_buffer) - autocomplete_input_skip);
@@ -159,12 +164,16 @@ uint8_t Shell::handle_input_line_key()
             if (input_line_index <= autocomplete_input_skip) {
                 flush_autocomplete(0);
                 autocomplete_input_skip = 0;
+                is_first_word = 1;
             }
-            if (input_line_index > 2 && input_line_buffer[input_line_index - 2] == ' ')
+            if (input_line_index > 2 && input_line_buffer[input_line_index - 2] == ' ') {
                 flush_autocomplete(0);
+                is_first_word = 1;
+            }
             autocomplete_word_size = 0;
             autocomplete_word = -1;
         } else {
+            is_first_word = 1;
             input_line_buffer[input_line_index - 1] = 0;
             input_line_index--;
         }
@@ -206,6 +215,7 @@ size_t Shell::read_input_line()
     autocomplete_input_skip = 0;
     autocomplete_word = -1;
     autocomplete_word_size = 0;
+    is_first_word = 1;
 
     while (input_line_index <= sizeof(input_line_buffer) - 1) {
         flush();

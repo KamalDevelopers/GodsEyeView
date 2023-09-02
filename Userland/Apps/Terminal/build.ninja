@@ -3,7 +3,7 @@ rule move
     command = mv ./terminal ../../../Base/root/bin/ && ninja -t clean
 
 rule cpp
-    command = i686-elf-g++ -fPIC -c $in -o $out -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -fstack-protector -I../../../Libraries -lgcc
+    command = i686-elf-g++ -fPIC -O2 -c $in -o $out -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -fstack-protector -I../../../Libraries -lgcc
 
 rule link
     command = ld -melf_i386 -T link.ld -o $out $in ../../../Libraries/libc.a ../../../Libraries/libdisplay.a ../../../Libraries/libfont.a

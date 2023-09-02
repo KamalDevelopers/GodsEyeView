@@ -17,8 +17,10 @@ private:
     uint32_t input_line_index = 0;
     uint32_t autocomplete_word_size = 0;
     uint32_t autocomplete_table_size = 0;
+    uint32_t autocomplete_skip_bins = 0;
     int autocomplete_word = -1;
     int autocomplete_input_skip = 0;
+    bool is_first_word = 1;
     char input_line_buffer[100];
     char cwd[100];
     char user[25];
