@@ -321,6 +321,8 @@ void WindowManager::destroy_window_pid(int pid)
         return;
 
     destroy_window(index);
+    if (active_window == -1)
+        update_window_positions();
 }
 
 Window** WindowManager::windows()
