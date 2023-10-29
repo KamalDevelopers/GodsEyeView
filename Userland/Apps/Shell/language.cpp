@@ -154,10 +154,10 @@ int Language::exec()
 
     int pid = spawn(program_path, program_arguments, program_arguments_count);
     if (strcmp(program_arguments[0], "&") != 0)
-        if (pid != -1)
+        if (pid > 0)
             waitpid(pid);
 
-    if (pid == -1)
+    if (pid < 0)
         return -1;
     return 1;
 }
