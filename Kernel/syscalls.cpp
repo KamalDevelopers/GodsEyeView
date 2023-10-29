@@ -66,7 +66,7 @@ int Syscalls::sys_read(int fd, void* data, int length)
 int Syscalls::sys_write(int fd, void* data, int length)
 {
     if (length <= 0)
-        return -1;
+        return 0;
 
     switch (fd) {
     case 0:
@@ -96,12 +96,18 @@ int Syscalls::sys_write(int fd, void* data, int length)
 
 int Syscalls::sys_open(char* file, int flags)
 {
-    return VFS->open(file, flags);
+    int ret = VFS->open(file, flags);
+    if (ret < 0)
+        return -E_VFSENTRY;
+    return ret;
 }
 
 int Syscalls::sys_close(int fd)
 {
-    return VFS->close(fd);
+    int ret = VFS->close(fd);
+    if (ret < 0)
+        return -E_INVALIDFD;
+    return ret;
 }
 
 int Syscalls::sys_waitpid(int pid)

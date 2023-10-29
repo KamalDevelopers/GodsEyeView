@@ -147,7 +147,7 @@ int Language::exec()
     memset(program_path, 0, sizeof(program_path));
 
     int fd = open(program, O_RDONLY);
-    if (fd == -1)
+    if (fd < 0)
         strcat(program_path, "/bin/");
     close(fd);
     strcat(program_path, program);

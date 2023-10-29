@@ -20,7 +20,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, ui
     request.bg = bg;
 
     display_file = -1;
-    while (display_file == -1) {
+    while (display_file < 0) {
         display_file = open("/pipe/display", O_RDWR | O_APPEND);
         usleep(5);
     }
@@ -37,7 +37,7 @@ int request_display_window(canvas_t& canvas, uint32_t width, uint32_t height, ui
     strcat(events_file_name, pid);
 
     events_file = -1;
-    while (events_file == -1) {
+    while (events_file < 0) {
         events_file = open(events_file_name, O_RDWR);
         usleep(5);
     }

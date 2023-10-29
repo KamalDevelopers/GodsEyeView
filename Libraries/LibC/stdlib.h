@@ -3,6 +3,7 @@
 
 #include "cmath.h"
 #include "mem.h"
+#include "errno.h"
 #include "types.h"
 
 typedef struct {

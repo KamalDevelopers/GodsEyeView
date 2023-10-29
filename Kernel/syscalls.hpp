@@ -18,6 +18,7 @@
 #include "panic.hpp"
 #include "tty.hpp"
 
+#include <LibC/errno.h>
 #include <LibC/network.h>
 #include <LibC/path.h>
 #include <LibC/poll.h>

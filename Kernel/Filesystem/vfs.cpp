@@ -151,7 +151,7 @@ int VirtualFilesystem::close_fifo(int index)
 int VirtualFilesystem::close(int descriptor)
 {
     if (descriptor >= MAX_FILE_DESCRIPTORS)
-        return 1;
+        return -1;
 
     int index = search(descriptor);
     if (index == -1)

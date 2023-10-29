@@ -454,7 +454,7 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
 {
     int fd = VFS->open(file);
     if (fd < 0)
-        return -1;
+        return -E_INVALIDFD;
 
     int size = VFS->size(fd);
     uint8_t* elfdata = (uint8_t*)kmalloc(size);
@@ -466,7 +466,7 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
 
     if (!exec.valid) {
         kfree(elfdata);
-        return -1;
+        return -E_INVALIDEXEC;
     }
 
     int parent = (current_task != -1) ? task()->get_pid() : -1;
