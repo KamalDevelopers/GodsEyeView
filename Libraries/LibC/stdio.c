@@ -111,7 +111,7 @@ void putx(int c)
 
 void vprintf(const char* format, va_list v)
 {
-    int size = len(format);
+    int size = strlen(format);
     int i = 0;
     int flag = 0;
 

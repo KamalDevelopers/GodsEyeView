@@ -1,6 +1,6 @@
 #include "string.h"
 
-size_t strlen(const char* str)
+size_t _strlen(const char* str)
 {
     int l = 0;
     while (str[l] != '\0')
@@ -8,31 +8,150 @@ size_t strlen(const char* str)
     return l;
 }
 
-size_t strspn(char* str1, char* str2)
+size_t strlen(const char* str)
 {
-    int res = 0;
-    while ((*str1) && (*str2)) {
-        if (*str1++ != *str2++)
-            return res;
-        res++;
+    const char* char_ptr = str;
+    const size_t* longword_ptr;
+    size_t longword, magic_bits, himagic, lomagic;
+
+    /* if (sizeof(longword) > 4)
+        return _strlen(str); */
+
+    for (; ((size_t)char_ptr & (sizeof(longword) - 1)) != 0; ++char_ptr)
+        if (*char_ptr == '\0')
+            return char_ptr - str;
+
+    longword_ptr = (size_t*)char_ptr;
+    magic_bits = 0x7efefeffL;
+    himagic = 0x80808080L;
+    lomagic = 0x01010101L;
+
+    for (;;) {
+        longword = *longword_ptr++;
+
+        if (((longword - lomagic) & himagic) != 0) {
+            const char* cp = (const char*)(longword_ptr - 1);
+
+            if (cp[0] == 0)
+                return cp - str;
+            if (cp[1] == 0)
+                return cp - str + 1;
+            if (cp[2] == 0)
+                return cp - str + 2;
+            if (cp[3] == 0)
+                return cp - str + 3;
+        }
     }
-    return res;
 }
 
-int len(const char* arr)
+char* strchrnul(const char* s, int c_in)
 {
-    int l = 0;
-    while (arr[l] != '\0') {
-        l++;
+    const unsigned char* char_ptr;
+    const unsigned long int* longword_ptr;
+    unsigned long int longword, magic_bits, charmask;
+    unsigned char c;
+
+    c = (unsigned char)c_in;
+
+    for (char_ptr = (const unsigned char*)s;
+         ((unsigned long int)char_ptr & (sizeof(longword) - 1)) != 0;
+         ++char_ptr)
+        if (*char_ptr == c || *char_ptr == '\0')
+            return (char*)char_ptr;
+    longword_ptr = (unsigned long int*)char_ptr;
+    magic_bits = -1;
+    magic_bits = magic_bits / 0xff * 0xfe << 1 >> 1 | 1;
+
+    charmask = c | (c << 8);
+    charmask |= charmask << 16;
+    if (sizeof(longword) > 4)
+        charmask |= (charmask << 16) << 16;
+    if (sizeof(longword) > 8)
+        return 0;
+
+    for (;;) {
+        longword = *longword_ptr++;
+
+        if ((((longword + magic_bits)
+                 ^ ~longword)
+                & ~magic_bits)
+                != 0
+            ||
+
+            ((((longword ^ charmask) + magic_bits) ^ ~(longword ^ charmask))
+                & ~magic_bits)
+                != 0) {
+            const unsigned char* cp = (const unsigned char*)(longword_ptr - 1);
+
+            if (*cp == c || *cp == '\0')
+                return (char*)cp;
+            if (*++cp == c || *cp == '\0')
+                return (char*)cp;
+            if (*++cp == c || *cp == '\0')
+                return (char*)cp;
+            if (*++cp == c || *cp == '\0')
+                return (char*)cp;
+            if (sizeof(longword) > 4) {
+                if (*++cp == c || *cp == '\0')
+                    return (char*)cp;
+                if (*++cp == c || *cp == '\0')
+                    return (char*)cp;
+                if (*++cp == c || *cp == '\0')
+                    return (char*)cp;
+                if (*++cp == c || *cp == '\0')
+                    return (char*)cp;
+            }
+        }
     }
-    return l;
+
+    return NULL;
+}
+
+#define BITOP(a, b, op) \
+    ((a)[(size_t)(b) / (8 * sizeof *(a))] op(size_t) 1 << ((size_t)(b) % (8 * sizeof *(a))))
+
+size_t strcspn(const char* s, const char* c)
+{
+    const char* a = s;
+    size_t byteset[32 / sizeof(size_t)];
+
+    if (!c[0] || !c[1])
+        return strchrnul(s, *c) - a;
+
+    memset(byteset, 0, sizeof byteset);
+    for (; *c && BITOP(byteset, *(unsigned char*)c, |=); c++)
+        ;
+    for (; *s && !BITOP(byteset, *(unsigned char*)s, &); s++)
+        ;
+    return s - a;
+}
+
+size_t strspn(const char* str1, const char* str2)
+{
+    const char* a = str1;
+    size_t byteset[32 / sizeof(size_t)] = { 0 };
+
+    if (!str2[0])
+        return 0;
+    if (!str2[1]) {
+        for (; *str1 == *str2; str1++)
+            ;
+        return str1 - a;
+    }
+
+    for (; *str2 && BITOP(byteset, *(unsigned char*)str2, |=); str2++)
+        ;
+    for (; *str1 && BITOP(byteset, *(unsigned char*)str1, &); str1++)
+        ;
+    return str1 - a;
 }
 
 char* strcpy(char* s1, const char* s2)
 {
     char* save = s1;
-	for (; (*s1 = *s2); ++s2, ++s1);
-	return save;
+    for (; (*s1 = *s2); ++s2, ++s1)
+        ;
+    return save;
 }
 
 char* strncpy(char* arr, const char* str, int l)
@@ -121,13 +240,12 @@ char* strcat(char* dest, const char* src)
     return dest;
 }
 
-char* strchr(const char *s, int c)
+char* strchr(const char* s, int c)
 {
     if (s == NULL)
         return NULL;
 
-    while (*s != 0)
-    {
+    while (*s != 0) {
         if (*s == (char)c)
             return (char*)s;
         s++;
@@ -138,8 +256,7 @@ char* strchr(const char *s, int c)
 const char* strstr(const char* str1, const char* str2)
 {
     size_t n = strlen(str2);
-    while (*str1)
-    {
+    while (*str1) {
         if (!memcmp(str1, str2, n))
             return str1;
         str1++;
@@ -147,42 +264,20 @@ const char* strstr(const char* str1, const char* str2)
     return 0;
 }
 
-char* strtok(char* str, const char* delimiter)
+char* strtok(char* str, const char* sep)
 {
-    static int pos;
-    static char* s;
-    int start = pos;
-
-    if (str != 0) {
-        pos = 0;
-        start = 0;
-        s = str;
-    }
-
-    int j = 0;
-    while (s[pos] != '\0') {
-        j = 0;
-        while (delimiter[j] != '\0') {
-            if (s[pos] == delimiter[j]) {
-                s[pos] = '\0';
-                pos = pos + 1;
-                if (s[start] != '\0')
-                    return (&s[start]);
-                else {
-                    start = pos;
-                    pos--;
-                    break;
-                }
-            }
-            j++;
-        }
-        pos++;
-    }
-    s[pos] = '\0';
-    if (s[start] == '\0')
-        return 0;
+    static char* p;
+    if (!str && !(str = p))
+        return NULL;
+    str += strspn(str, sep);
+    if (!*str)
+        return p = 0;
+    p = str + strcspn(str, sep);
+    if (*p)
+        *p++ = 0;
     else
-        return &s[start];
+        p = 0;
+    return str;
 }
 
 char strpbrk(char* str, const char* cmp)
@@ -225,9 +320,9 @@ float stof(const char* str)
         };
     };
     return rez * fact;
-};
+}
 
-void int_to_ascii(int n, char str[])
+void itos(int n, char str[])
 {
     int i, sign;
     if ((sign = n) < 0)
