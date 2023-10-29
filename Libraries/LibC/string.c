@@ -110,40 +110,40 @@ char* strchrnul(const char* s, int c_in)
 #define BITOP(a, b, op) \
     ((a)[(size_t)(b) / (8 * sizeof *(a))] op(size_t) 1 << ((size_t)(b) % (8 * sizeof *(a))))
 
-size_t strcspn(const char* str1, const char* str2)
+size_t strcspn(const char* s1, const char* s2)
 {
-    const char* a = str1;
+    const char* a = s1;
     size_t byteset[32 / sizeof(size_t)];
 
-    if (!str2[0] || !str2[1])
-        return strchrnul(str1, *str2) - a;
+    if (!s2[0] || !s2[1])
+        return strchrnul(s1, *s2) - a;
 
     memset(byteset, 0, sizeof byteset);
-    for (; *str2 && BITOP(byteset, *(unsigned char*)str2, |=); str2++)
+    for (; *s2 && BITOP(byteset, *(unsigned char*)s2, |=); s2++)
         ;
-    for (; *str1 && !BITOP(byteset, *(unsigned char*)str1, &); str1++)
+    for (; *s1 && !BITOP(byteset, *(unsigned char*)s1, &); s1++)
         ;
-    return str1 - a;
+    return s1 - a;
 }
 
-size_t strspn(const char* str1, const char* str2)
+size_t strspn(const char* s1, const char* s2)
 {
-    const char* a = str1;
+    const char* a = s1;
     size_t byteset[32 / sizeof(size_t)] = { 0 };
 
-    if (!str2[0])
+    if (!s2[0])
         return 0;
-    if (!str2[1]) {
-        for (; *str1 == *str2; str1++)
+    if (!s2[1]) {
+        for (; *s1 == *s2; s1++)
             ;
-        return str1 - a;
+        return s1 - a;
     }
 
-    for (; *str2 && BITOP(byteset, *(unsigned char*)str2, |=); str2++)
+    for (; *s2 && BITOP(byteset, *(unsigned char*)s2, |=); s2++)
         ;
-    for (; *str1 && BITOP(byteset, *(unsigned char*)str1, &); str1++)
+    for (; *s1 && BITOP(byteset, *(unsigned char*)s1, &); s1++)
         ;
-    return str1 - a;
+    return s1 - a;
 }
 
 char* strcpy(char* s1, const char* s2)
@@ -189,14 +189,14 @@ int strcmp(const char* s1, const char* s2)
     return 0;
 }
 
-int strncmp(const char* s1, const char* s2, int count)
+int strncmp(const char* s1, const char* s2, int l)
 {
     const unsigned char* p1 = (const unsigned char*)s1;
     const unsigned char* p2 = (const unsigned char*)s2;
     int index = 0;
 
     while (*p1 != '\0') {
-        if (index == count)
+        if (index == l)
             break;
         if (*p2 == '\0')
             return 1;
@@ -253,43 +253,43 @@ char* strchr(const char* s, int c)
     return NULL;
 }
 
-const char* strstr(const char* str1, const char* str2)
+const char* strstr(const char* s1, const char* s2)
 {
-    size_t n = strlen(str2);
-    while (*str1) {
-        if (!memcmp(str1, str2, n))
-            return str1;
-        str1++;
+    size_t n = strlen(s2);
+    while (*s1) {
+        if (!memcmp(s1, s2, n))
+            return s1;
+        s1++;
     }
     return 0;
 }
 
-char* strtok(char* str, const char* sep)
+char* strtok(char* s, const char* sep)
 {
     static char* p;
-    if (!str && !(str = p))
+    if (!s && !(s = p))
         return NULL;
-    str += strspn(str, sep);
-    if (!*str)
+    s += strspn(s, sep);
+    if (!*s)
         return p = 0;
-    p = str + strcspn(str, sep);
+    p = s + strcspn(s, sep);
     if (*p)
         *p++ = 0;
     else
         p = 0;
-    return str;
+    return s;
 }
 
-char strpbrk(char* str, const char* cmp)
+char strpbrk(char* s, const char* cmp)
 {
-    int l = strlen(str);
+    int l = strlen(s);
     int x = 0;
     int y = 0;
 
     while (x < l) {
         while (y < strlen(cmp)) {
-            if (str[x] == cmp[y]) {
-                return str[x];
+            if (s[x] == cmp[y]) {
+                return s[x];
             }
             y++;
         }
@@ -299,20 +299,20 @@ char strpbrk(char* str, const char* cmp)
     return '\0';
 }
 
-float stof(const char* str)
+float stof(const char* s)
 {
-    const char* s = str;
+    const char* a = s;
     float rez = 0, fact = 1;
-    if (*s == '-') {
-        s++;
+    if (*a == '-') {
+        a++;
         fact = -1;
     };
-    for (int point_seen = 0; *s; s++) {
-        if (*s == '.') {
+    for (int point_seen = 0; *a; a++) {
+        if (*a == '.') {
             point_seen = 1;
             continue;
         };
-        int d = *s - '0';
+        int d = *a - '0';
         if (d >= 0 && d <= 9) {
             if (point_seen)
                 fact /= 10.0f;
@@ -322,29 +322,29 @@ float stof(const char* str)
     return rez * fact;
 }
 
-void itos(int n, char str[])
+void itos(int n, char s[])
 {
     int i, sign;
     if ((sign = n) < 0)
         n = -n;
     i = 0;
     do {
-        str[i++] = n % 10 + '0';
+        s[i++] = n % 10 + '0';
     } while ((n /= 10) > 0);
 
     if (sign < 0)
-        str[i++] = '-';
-    str[i] = '\0';
+        s[i++] = '-';
+    s[i] = '\0';
 }
 
-void uppercase(char* str)
+void uppercase(char* s)
 {
-    for (int i = 0; i < strlen(str); i++)
-        str[i] = toupper(str[i]);
+    for (int i = 0; i < strlen(s); i++)
+        s[i] = toupper(s[i]);
 }
 
-void lowercase(char* str)
+void lowercase(char* s)
 {
-    for (int i = 0; i < strlen(str); i++)
-        str[i] = tolower(str[i]);
+    for (int i = 0; i < strlen(s); i++)
+        s[i] = tolower(s[i]);
 }

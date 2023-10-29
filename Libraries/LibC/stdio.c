@@ -59,14 +59,14 @@ void putc(int c)
     puts(buff);
 }
 
-void puti(int num)
+void puti(int n)
 {
-    if (num < 0) {
-        num = -num;
+    if (n < 0) {
+        n = -n;
         puts("-");
     }
-    char str[20];
-    itoa(num, str);
+    static char str[50];
+    itoa(n, str);
     puts(str);
 }
 
@@ -76,15 +76,15 @@ void putf(float f)
         f = -f;
         puts("-");
     }
-    char* str;
-    ftoa(f, str, 2);
+    static char str[50];
+    ftoa(f, str, 5);
     puts(str);
 }
 
 void putx(int c)
 {
-    char hex[20];
-    char res[20];
+    static char hex[50];
+    static char res[50];
 
     int i = 0;
     while (c != 0) {

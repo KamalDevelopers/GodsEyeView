@@ -51,9 +51,9 @@ int memcmp(const void* buf1, const void* buf2, size_t count)
     return (*((unsigned char*)buf1) - *((unsigned char*)buf2));
 }
 
-void* memchr(const void* str, int c, size_t n)
+void* memchr(const void* s, int c, size_t n)
 {
-    unsigned char* p = (unsigned char*)str;
+    unsigned char* p = (unsigned char*)s;
     while (n--)
         if (*p != (unsigned char)c)
             p++;

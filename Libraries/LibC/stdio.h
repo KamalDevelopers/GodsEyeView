@@ -17,7 +17,7 @@ extern "C" {
 void puts_hook(void (*t)(char*));
 void flush();
 void puts(char* str);
-void puti(int num);
+void puti(int n);
 void putc(int c);
 void putx(int c);
 void vprintf(const char* format, va_list v);
