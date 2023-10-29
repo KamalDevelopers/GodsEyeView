@@ -110,20 +110,20 @@ char* strchrnul(const char* s, int c_in)
 #define BITOP(a, b, op) \
     ((a)[(size_t)(b) / (8 * sizeof *(a))] op(size_t) 1 << ((size_t)(b) % (8 * sizeof *(a))))
 
-size_t strcspn(const char* s, const char* c)
+size_t strcspn(const char* str1, const char* str2)
 {
-    const char* a = s;
+    const char* a = str1;
     size_t byteset[32 / sizeof(size_t)];
 
-    if (!c[0] || !c[1])
-        return strchrnul(s, *c) - a;
+    if (!str2[0] || !str2[1])
+        return strchrnul(str1, *str2) - a;
 
     memset(byteset, 0, sizeof byteset);
-    for (; *c && BITOP(byteset, *(unsigned char*)c, |=); c++)
+    for (; *str2 && BITOP(byteset, *(unsigned char*)str2, |=); str2++)
         ;
-    for (; *s && !BITOP(byteset, *(unsigned char*)s, &); s++)
+    for (; *str1 && !BITOP(byteset, *(unsigned char*)str1, &); str1++)
         ;
-    return s - a;
+    return str1 - a;
 }
 
 size_t strspn(const char* str1, const char* str2)

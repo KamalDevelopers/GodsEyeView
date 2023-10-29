@@ -13,6 +13,7 @@ size_t strlen(const char* str);
 
 char* strchrnul(const char* s, int c_in);
 size_t strspn(const char* str1, const char* str2);
+size_t strcspn(const char* str1, const char* str2);
 char* strcpy(char* s1, const char* s2);
 char* strncpy(char* arr, const char* str, int l);
 int strcmp(const char* s1, const char* s2);
