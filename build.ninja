@@ -25,7 +25,7 @@ rule link
 
 rule chain
     pool = console
-    command = objcopy -R .note -R .comment -S -O binary ./.out/kernel.bin ./kernel.bin && cat bootloader.bin kernel.bin > boot.bin && ./sector_align.py boot.bin && cat boot.bin virtdrive > drive
+    command = objcopy -R .note -R .comment -S -O binary ./.out/kernel.bin ./kernel.bin && cat bootloader.bin kernel.bin > boot.bin && ./align.py boot.bin 512 && cat boot.bin virtdrive > drive
 
 build Kernel/kernel.o: cpp ./Kernel/kernel.cpp
 build Kernel/multitasking.o: cpp ./Kernel/multitasking.cpp
