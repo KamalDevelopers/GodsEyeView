@@ -3,9 +3,14 @@
 ninja disk 
 ninja format
 cd Libraries 
+echo -e "\033[32;1;4mCompiling libraries\033[0m"
 ninja
+echo -e "\033[0mDone.\n"
 cd ..
+echo -e "\033[32;1;4mCompiling kernel\033[0m"
 ninja
+echo -e "\033[0mDone.\n"
+
 
 if [ "$1" != "nousr" ]
 then
@@ -20,7 +25,9 @@ then
     ninja disk
 fi
 
+echo -e "\033[32;1;4mCompiling bootloader\033[0m"
 ninja bootloader
+echo -e "\033[0mDone.\n"
 ninja chain
 
 if [ "$1" != "norun" ]

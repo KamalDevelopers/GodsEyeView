@@ -15,3 +15,5 @@ dump.dat
 
 /Bootloader/*.bin
 /Bootloader/*.o
+/Bootloader/c.compiled.asm
+/Bootloader/fin.compiled.asm
