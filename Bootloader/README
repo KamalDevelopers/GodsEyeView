@@ -1,0 +1,8 @@
+God's Eye View bootloader
+
+./* "Stage 1"
+    size: 512 bytes
+
+./Entry/* "Stage 2"
+    size: 512 * 10 bytes
+    "final_assembly" order: assembly, C, appendix

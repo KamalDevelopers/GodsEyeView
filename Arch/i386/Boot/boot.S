@@ -1,46 +1,40 @@
-.set MULTIBOOT_MAGIC,         0x1badb002
-.set MULTIBOOT_PAGE_ALIGN,    0x1
-.set MULTIBOOT_MEMORY_INFO,   0x2
-.set MULTIBOOT_VIDEO_MODE,    0x4  /* 4 for graphics */
-.set multiboot_flags,         MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO | MULTIBOOT_VIDEO_MODE
-.set multiboot_checksum,      -(MULTIBOOT_MAGIC + multiboot_flags)
+.extern __kernel_size
+.global loader
 
 .section .multiboot
-    .align 4
-    .long MULTIBOOT_MAGIC
-    .long multiboot_flags
-    .long multiboot_checksum
-
-    .long 0x00000000    /* header_addr */
-    .long 0x00000000    /* load_addr */
-    .long 0x00000000    /* load_end_addr */
-    .long 0x00000000    /* bss_end_addr */
-    .long 0x00000000    /* entry_addr */
-
-    .long 0x00000000    /* mode_type */
-    .long 1440          /* width */
-    .long 900           /* height */
-    .long 32            /* depth */
-
+    .ascii "gods"
+    .long __kernel_size
+    .long loader
 
 .section .text
 .extern kernel_main 
 .extern call_constructors
-.global loader
+
+.extern sbss
+.extern ebss
 
 .extern multiboot_info_ptr
 .type multiboot_info_ptr, @object
 
 loader:
+    movl %ebx, multiboot_info_ptr
     cli
     cld
 
+    mov sbss, %ebx
+.zloop:
+    movb $0, (%ebx)
+    inc %ebx
+    cmp ebss, %ebx
+    jb .zloop
+
     pushl %eax
     pushl %ebx
-    movl %ebx, multiboot_info_ptr
 
     mov $kernel_stack, %esp
     call call_constructors
+    pushl %eax
+    pushl %ebx
     call kernel_main 
 
 

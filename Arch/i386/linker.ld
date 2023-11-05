@@ -25,9 +25,12 @@ SECTIONS
 
   .bss  :
   {
+    sbss = .;
     *(.bss)
+    ebss = .;
   }
   
   kernel_end = .;
+  __kernel_size = ((SIZEOF(.text) + SIZEOF(.data)) / 512 + 0x10);
   /DISCARD/ : { *(.fini_array*) *(.comment) }
 }

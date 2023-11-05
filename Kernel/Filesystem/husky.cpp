@@ -128,6 +128,8 @@ int Husky::mount()
     while (mount_start_sector * 512 < disk_size) {
         ata->read28(mount_start_sector, (uint8_t*)&super_node, sizeof(super_node_t), 1);
         mount_start_sector++;
+        if (super_node.magic[0] != 'm')
+            continue;
         if (strncmp(super_node.magic, "magisk.1690243253", 17) == 0) {
             has_found = 1;
             break;

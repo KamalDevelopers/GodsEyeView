@@ -1,5 +1,16 @@
 #include <LibC/types.h>
 
+/* custom multiboot header */
+typedef struct multi {
+    uint32_t resv;
+    uint32_t vesa_width;
+    uint32_t vesa_height;
+    uint32_t vesa_bpp;
+    uint32_t vesa_pitch;
+    uint32_t vesa_framebuffer;
+} __attribute__((packed)) multi_t;
+
+/* grub multiboot header */
 struct multiboot_aout_symbol_table {
     uint32_t tabsize;
     uint32_t strsize;

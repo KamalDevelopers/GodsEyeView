@@ -75,7 +75,6 @@ public:
     void render_mouse(short int bitmap[], int mx, int my);
     void put_pixel(uint32_t x, uint32_t y, uint8_t colorindex);
     void render_bit_map(int bitmap[], uint8_t colorindex, int x_offset = 0, int y_offset = 0);
-    void print(char* str, uint8_t colorindex, int x_offset = 0, int y_offset = 0);
     void reset_offset();
     void decrease_offset(int x) { vga_x_offset -= x; }
     void set_plane(unsigned p);

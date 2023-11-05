@@ -29,7 +29,7 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     cpustate->esp = 0;
     cpustate->ss = 0;
     cpustate->eip = eip;
-    cpustate->cs = GDT::active->get_code_segment_selector();
+    cpustate->cs = GDT_CODE_DATA_SEGMENT;
     cpustate->eflags = 0x202;
     this->parent = parent;
 
@@ -307,7 +307,7 @@ void Task::sleep(int sleeping_modifier)
     TM->yield();
 }
 
-TaskManager::TaskManager(GDT* gdt)
+TaskManager::TaskManager()
 {
     pid_bitmap.bit_set(0);
     active = this;

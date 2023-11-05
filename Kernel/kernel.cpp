@@ -52,30 +52,33 @@ extern "C" void call_constructors()
 }
 
 extern "C" {
-multiboot_info_t* multiboot_info_ptr;
+multi_t* multiboot_info_ptr;
 }
 
 extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int magicnumber)
 {
+    gdt();
+    tss(5, 0x10, 0);
+
     QemuSerial qemu_serial;
-    klog("Kernel initialization started");
     if (qemu_serial.is_supported())
         klog("Compile flag QEMU virtualization set");
 
     klog("CPU detection started");
     cpuid_detect();
 
-    GDT gdt;
     PCI pci;
     CMOS time;
-    TaskManager task_manager(&gdt);
+    TaskManager task_manager;
     VirtualFilesystem vfs;
     Audio audio;
 
     klog("Memory management and paging started");
-    uint32_t total_memory = detect_memory(multiboot_info_ptr);
-    uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
-    total_memory = (total_memory - (total_memory % (memory_divide))) - 15 * MB;
+    /* FIXME: support custom bootlaoder methods */
+    // uint32_t total_memory = detect_memory(multiboot_info_ptr);
+    uint32_t total_memory = 500 * MB;
+    // uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
+    // total_memory = (total_memory - (total_memory % (memory_divide))) - 15 * MB;
     uint32_t available_pages = PAGE_ALIGN(total_memory) / PAGE_SIZE;
     bool has_volatile_memory = 0;
 
@@ -84,14 +87,14 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         Paging::init();
 
     VGA vga;
-    Vesa vesa(multiboot_info_ptr->framebuffer_addr,
-        multiboot_info_ptr->framebuffer_width,
-        multiboot_info_ptr->framebuffer_height,
-        multiboot_info_ptr->framebuffer_pitch,
-        multiboot_info_ptr->framebuffer_bpp);
+    Vesa vesa(multiboot_info_ptr->vesa_framebuffer,
+        multiboot_info_ptr->vesa_width,
+        multiboot_info_ptr->vesa_height,
+        multiboot_info_ptr->vesa_pitch,
+        multiboot_info_ptr->vesa_bpp);
 
     klog("Initializing drivers and syscalls");
-    InterruptManager interrupts(0x20, &gdt, &task_manager);
+    InterruptManager interrupts(0x20, &task_manager);
     Syscalls syscalls(&interrupts, 0x80);
     SoundBlaster16 sb16(&interrupts);
 
@@ -102,13 +105,14 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     ATA ata1s(&interrupts, pci.get_descriptor(), 0x1F0, true);
     ata1s.identify();
     ata1s.set_dma(false);
+
     Tar fs_tar(&ata1s);
     Husky fs_husky(&ata1s);
     uint8_t has_filesystem = 0;
 
     klog("Drivers and networking initialization");
-    MouseDriver mouse(&interrupts, multiboot_info_ptr->framebuffer_width,
-        multiboot_info_ptr->framebuffer_height);
+    MouseDriver mouse(&interrupts, multiboot_info_ptr->vesa_width,
+        multiboot_info_ptr->vesa_height);
     KeyboardDriver keyboard(&interrupts);
 
     if (sb16.activated()) {
@@ -150,6 +154,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     ata1s.set_dma(true);
     IRQ::activate();
 
+    klog("Filesystem detection started");
     if (!has_filesystem && (fs_husky.mount() == 0)) {
         klog("Husky filesystem mounted");
         vfs.mount(&fs_husky);
@@ -170,10 +175,13 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         ARP::broadcast_mac_address(DHCP::gateway());
     }
 
+    klog("Spawning services");
     TM->spawn("servers/display", 0, 0);
     TM->spawn("servers/sound", 0, 0);
     TM->spawn("bin/launcher", 0, 0);
+
     klog("TM activate reached");
+    tss_save_stack();
     TM->activate();
 
     while (1)

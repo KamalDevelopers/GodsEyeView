@@ -37,7 +37,7 @@
 #define SLEEP_WAIT_WAKE 1
 #define SLEEP_WAIT_STDIN 2
 #define SLEEP_WAIT_POLL 3
-#define PROCESS_QUANTUM 6
+#define PROCESS_QUANTUM 6 * 2
 #define MAX_PRIORITIES 6
 #define MAX_PIDS 512
 #define MAX_TASKS 512
@@ -142,7 +142,7 @@ private:
     Vector<Task*, MAX_TASKS> tasks;
 
 public:
-    TaskManager(GDT* gdt);
+    TaskManager();
     ~TaskManager();
 
     static TaskManager* active;

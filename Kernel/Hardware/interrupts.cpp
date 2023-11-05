@@ -44,7 +44,7 @@ void InterruptManager::set_interrupt_descriptor_table_entry(uint8_t interrupt,
     interrupt_descriptor_table[interrupt].reserved = 0;
 }
 
-InterruptManager::InterruptManager(uint16_t hardware_interrupt_offset, GDT* global_descriptor_table, TaskManager* task_manager)
+InterruptManager::InterruptManager(uint16_t hardware_interrupt_offset, TaskManager* task_manager)
     : master_command_port(0x20)
     , master_data_port(0x21)
     , slave_command_port(0xA0)
@@ -53,7 +53,7 @@ InterruptManager::InterruptManager(uint16_t hardware_interrupt_offset, GDT* glob
     active = this;
     this->task_manager = task_manager;
     this->hardware_interrupt_offset = hardware_interrupt_offset;
-    uint32_t code_segment = global_descriptor_table->get_code_segment_selector();
+    uint32_t code_segment = GDT_CODE_DATA_SEGMENT;
 
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
     for (uint8_t i = 255; i > 0; --i) {
@@ -150,7 +150,8 @@ void InterruptManager::activate()
     outb(0x40, h);
 
     active_handler = this;
-    TM->yield();
+    if (TM->is_active())
+        TM->yield();
     asm("sti");
 }
 

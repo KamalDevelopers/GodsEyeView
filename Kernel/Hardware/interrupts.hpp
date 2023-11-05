@@ -102,7 +102,7 @@ protected:
     Port8BitSlow slave_data_port;
 
 public:
-    InterruptManager(uint16_t hardware_interrupt_offset, GDT* global_descriptor_table, TaskManager* task_manager);
+    InterruptManager(uint16_t hardware_interrupt_offset, TaskManager* task_manager);
     ~InterruptManager();
 
     static InterruptManager* active_handler;
