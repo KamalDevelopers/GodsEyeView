@@ -12,4 +12,6 @@ compile_flags.txt
 libc.a
 libaudio.a
 dump.dat
-dr_wav.h
+
+./Bootloader/*.bin
+./Bootloader/final_bootloader.asm
