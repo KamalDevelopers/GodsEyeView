@@ -13,7 +13,7 @@ call verify_a20
 call boot_main ; call C bootloader
 
 trampoline:
-    ; load rest of kernel
+    call e820_memory_map
     call vbe_init
     call kernel_load
 
@@ -28,6 +28,8 @@ trampoline:
     mov dword [multiboot.vesa_pitch], eax
     mov eax, [vbe_screen.framebuffer]
     mov dword [multiboot.vesa_framebuffer], eax
+    mov eax, [total_continuous_memory]
+    mov dword [multiboot.upper_memory], eax
 
     ; set the ds register
     cli
@@ -44,7 +46,6 @@ trampoline:
 
     ; go to 32-bit code
     jmp 0x08:trampoline32
-
 
 ; serial print using BIOS VGA
 print:
@@ -213,20 +214,20 @@ kernel_relocate:
 ;     12 |    4 | upper 32-bits of 48-bit starting LBAs               ;
 ; =================================================================== ;
 K_DAP:
-	.size:
-		db 	0x10
-	.zero:
-		db 	0x00
-	.sector_count:
-		dw 	0x0000
-	.transfer_buffer:
-		dw 	0x1000          ; temporary location
-	.transfer_buffer_seg:
-		dw 	0x0
-	.lower_lba:
-		dd 	0xB             ; sector index 11
-	.higher_lba:
-		dd 	0x00000000
+.size:
+    db 	0x10
+.zero:
+    db 	0x00
+.sector_count:
+    dw 	0x0000
+.transfer_buffer:
+    dw 	0x1000          ; temporary location
+.transfer_buffer_seg:
+    dw 	0x0
+.lower_lba:
+    dd 	0xB             ; sector index 11
+.higher_lba:
+    dd 	0x00000000
 
 
 BOOT_DRIVE db 0
@@ -279,8 +280,6 @@ trampoline64:
 
 
 [BITS 16]
-; vesa BIOS functions
-%include "vesa.asm"
 
 multiboot:
     .reserv            dd 0
@@ -289,9 +288,14 @@ multiboot:
 	.vesa_bpp          dd 0
 	.vesa_pitch        dd 0
 	.vesa_framebuffer  dd 0
+    .upper_memory      dd 0
+
+; vesa BIOS functions
+%include "vesa.asm"
+%include "memory.asm"
 
 ; Disassembly of file: bootloader.o
-; Sun Nov  5 15:14:31 2023
+; Sun Nov  5 19:50:42 2023
 ; Type: ELF32
 ; Syntax: NASM
 ; Instruction set: 80386

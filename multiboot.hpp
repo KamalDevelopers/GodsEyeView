@@ -8,6 +8,7 @@ typedef struct multi {
     uint32_t vesa_bpp;
     uint32_t vesa_pitch;
     uint32_t vesa_framebuffer;
+    uint32_t upper_memory;
 } __attribute__((packed)) multi_t;
 
 /* grub multiboot header */

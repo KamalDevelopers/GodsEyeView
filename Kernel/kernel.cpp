@@ -74,11 +74,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Audio audio;
 
     klog("Memory management and paging started");
-    /* FIXME: support custom bootlaoder methods */
-    // uint32_t total_memory = detect_memory(multiboot_info_ptr);
-    uint32_t total_memory = 500 * MB;
-    // uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
-    // total_memory = (total_memory - (total_memory % (memory_divide))) - 15 * MB;
+    uint32_t total_memory = multiboot_info_ptr->upper_memory;
+    uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
+    total_memory = (total_memory - (total_memory % (memory_divide))) - 20 * MB;
     uint32_t available_pages = PAGE_ALIGN(total_memory) / PAGE_SIZE;
     bool has_volatile_memory = 0;
 

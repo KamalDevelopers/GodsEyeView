@@ -15,4 +15,3 @@ dump.dat
 
 /Bootloader/*.bin
 /Bootloader/*.o
-/Bootloader/final_bootloader.asm

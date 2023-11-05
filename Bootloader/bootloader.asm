@@ -1,6 +1,6 @@
 
 ; Disassembly of file: bootloader.o
-; Sun Nov  5 15:14:31 2023
+; Sun Nov  5 19:50:42 2023
 ; Type: ELF32
 ; Syntax: NASM
 ; Instruction set: 80386
