@@ -13,7 +13,8 @@
   * [Terminal](Userland/Apps/Terminal) application, [Shell](Userland/Apps/Shell) program, [Brainfuck](Userland/Apps/Brainfuck) interpreter, and many [more](Userland/Apps/) 
   * Different ports, including Koenk's GameBoy Color emulator [GBC](Userland/Ports/GBC)
   * A tiling and minimalistic [WM](Userland/Servers/Display) inspired by [dwm](https://dwm.suckless.org/) which supports workspaces
-  * Modern and sleek system with an overall clean design.
+  * A custom [bootloader](Bootloader) with unreal mode, A20, LBA, VBE, and multiboot support
+  * Modern and sleek system with an overall clean design
 
 ### Building GevOS
 

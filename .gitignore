@@ -13,6 +13,6 @@ libc.a
 libaudio.a
 dump.dat
 
-/bootloader/*.bin
-/bootloader/*.o
+/Bootloader/*.bin
+/Bootloader/*.o
 /Bootloader/final_bootloader.asm
