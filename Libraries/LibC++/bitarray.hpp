@@ -94,7 +94,59 @@ public:
         return index;
     }
 
-    uint32_t fast_find_unset(uint32_t length = 1)
+    uint32_t fast_find_unset16(uint32_t length = 1)
+    {
+        if (size() < 16)
+            return find_unset(length);
+
+        uint32_t index = 0;
+        uint16_t* bitmap_ptr = (uint16_t*)bitmap;
+        while (bitmap_ptr[index] == 0xFFFF && index < size())
+            index++;
+        index = index * 16;
+
+        for (; index < size(); index++) {
+            bool fits = true;
+            for (uint32_t i = 0; i < length; i++) {
+                if (bit_get(index + i)) {
+                    fits = false;
+                    index += i;
+                }
+            }
+            if (fits)
+                break;
+        }
+        last_unset_index = index + length;
+        return index;
+    }
+
+    uint32_t fast_find_unset32(uint32_t length = 1)
+    {
+        if (size() < 32)
+            return fast_find_unset16(length);
+
+        uint32_t index = 0;
+        uint32_t* bitmap_ptr = (uint32_t*)bitmap;
+        while (bitmap_ptr[index] == 0xFFFFFFFF && index < size())
+            index++;
+        index = index * 32;
+
+        for (; index < size(); index++) {
+            bool fits = true;
+            for (uint32_t i = 0; i < length; i++) {
+                if (bit_get(index + i)) {
+                    fits = false;
+                    index += i;
+                }
+            }
+            if (fits)
+                break;
+        }
+        last_unset_index = index + length;
+        return index;
+    }
+
+    uint32_t buffer_find_unset(uint32_t length = 1)
     {
         uint32_t index = last_unset_index;
         for (; index < size(); index++) {
