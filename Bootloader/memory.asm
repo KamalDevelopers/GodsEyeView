@@ -69,13 +69,14 @@ e820_memory_map:
 .e820_failed:
     jmp .e820_failed
 
+; skip and set new max continuous memory
 .e820_clear_skip:
     mov eax, [total_continuous_memory]
     cmp dword [total_memory], eax
-    jbe .e820_skip_
+    jbe .e820_clear_skip_
     mov eax, [total_memory]
     mov dword [total_continuous_memory], eax
-.e820_skip_:
+.e820_clear_skip_:
     mov dword [total_memory], 0
 	test ebx, ebx
 	jne .e820lp

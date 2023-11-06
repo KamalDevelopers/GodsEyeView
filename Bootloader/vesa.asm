@@ -1,8 +1,8 @@
 ; set VESA vbe mode, OUT: vbe_screen structure
 
 align 32
-vbe_width			dw 1440
-vbe_height			dw 900
+vbe_width           dw 1440
+vbe_height          dw 900
 vbe_bpp             dw 32
 
 vbe_init:
@@ -25,7 +25,7 @@ vbe_init:
     cmp ax, 0x4F
     jne .no_vbe
 
-    ; FIXME find closest mode?
+    ; FIXME: find closest mode?
     mov ax, [vbe_width]
     mov bx, [vbe_height]
     mov cl, [vbe_bpp]
@@ -36,6 +36,7 @@ vbe_init:
     ret
 
 .no_vbe:
+    ; halt on fail
     jmp $ 
 
 
@@ -156,6 +157,7 @@ vbe_set_mode:
     jmp .vbe_find_mode
  
 .vbe_error:
+    ; halt on fail
     jmp $
     stc
     ret

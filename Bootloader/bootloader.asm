@@ -2,15 +2,17 @@
 [ORG 0x7E00]
 ; first instruction adress
 
-; bootloader begin
+; bootloader stage 2 begin
 .start:
 
-mov	sp, 0x9c00
+mov sp, 0x9c00
 ; BIOS boot drive in dl
 mov [BOOT_DRIVE], dl
 
+; needed for memory access
 call verify_a20
-call boot_main ; call C bootloader
+; call C bootloader
+call boot_main
 
 trampoline:
     call e820_memory_map
@@ -54,67 +56,67 @@ print:
 
     mov si, [bp+4]
     mov bl, [bp+6]
-	mov ah, 0x0E
+    mov ah, 0x0E
 .print_repeat:
-	lodsb
-	int 0x10
-	cmp al, 0
-	jne .print_repeat
+    lodsb
+    int 0x10
+    cmp al, 0
+    jne .print_repeat
 
     pop bp
     ret
 
 ; verify a20 line else hang
 verify_a20:
-	pushf
-	push si
-	push di
-	push ds
-	push es
-	cli
+    pushf
+    push si
+    push di
+    push ds
+    push es
+    cli
  
-	mov ax, 0x0000
-	mov ds, ax
-	mov si, 0x0500
+    mov ax, 0x0000
+    mov ds, ax
+    mov si, 0x0500
  
-	not ax
-	mov es, ax
-	mov di, 0x0510
+    not ax
+    mov es, ax
+    mov di, 0x0510
  
-	mov al, [ds:si]
-	mov byte [.belowmb], al
-	mov al, [es:di]
-	mov byte [.overmb], al
+    mov al, [ds:si]
+    mov byte [.belowmb], al
+    mov al, [es:di]
+    mov byte [.overmb], al
  
-	mov ah, 1
-	mov byte [ds:si], 0
-	mov byte [es:di], 1
-	mov al, [ds:si]
-	cmp al, [es:di]
-	jne .exit
-	dec ah
+    mov ah, 1
+    mov byte [ds:si], 0
+    mov byte [es:di], 1
+    mov al, [ds:si]
+    cmp al, [es:di]
+    jne .exit
+    dec ah
 .exit:
-	mov al, [.belowmb]
-	mov [ds:si], al
-	mov al, [.overmb]
-	mov [es:di], al
-	shr ax, 8
-	; sti
-	pop es
-	pop ds
-	pop di
-	pop si
-	popf
+    mov al, [.belowmb]
+    mov [ds:si], al
+    mov al, [.overmb]
+    mov [es:di], al
+    shr ax, 8
+    ; sti
+    pop es
+    pop ds
+    pop di
+    pop si
+    popf
 
     cmp ax, 0
     jne .final
     jmp $
 
 .final:
-	ret
+    ret
  
-	.belowmb: db 0
-	.overmb: db 0
+    .belowmb: db 0
+    .overmb: db 0
 
 ; standard read from disk using BIOS
 disk_load:
@@ -153,12 +155,12 @@ kernel_load__:
     mov ax, 1
     mov [K_DAP.sector_count], ax
 
-	mov ah, 0x42		  ; al is unused
-	mov al, 0x42		  ; al is unused
-	mov dl, [BOOT_DRIVE]  ; drive number 0 (OR the drive # with 0x80)
+    mov ah, 0x42          ; al is unused
+    mov al, 0x42          ; al is unused
+    mov dl, [BOOT_DRIVE]  ; drive number 0 (OR the drive # with 0x80)
     mov si, K_DAP         ; address of "disk address packet"
-	int 0x13
-	jc .error
+    int 0x13
+    jc .error
     cmp ah, 0
     jne .error
 
@@ -183,23 +185,24 @@ kernel_load__:
     jmp $
 
 kernel_relocate:
-	 ; number of dwords to move [512/4]
-     mov ecx, 128
-	.relocation_loop_start__:
-		mov edx, dword [KERNEL_ADDRESS]
-		mov ebx, 0x1000
-	.relocation_loop__:
-		mov eax, dword [ebx]
-		mov dword [edx], eax
-		add ebx, 4
-		add edx, 4
+    ; number of dwords to move [512/4]
+    mov ecx, 128
+    .relocation_loop_start__:
+    mov edx, dword [KERNEL_ADDRESS]
+    mov ebx, 0x1000
 
-        mov eax, 0
-        mov dword [edx], eax
+    .relocation_loop__:
+    mov eax, dword [ebx]
+    mov dword [edx], eax
+    add ebx, 4
+    add edx, 4
 
-		loop .relocation_loop__
-	
-	mov dword [KERNEL_ADDRESS], edx
+    mov eax, 0
+    mov dword [edx], eax
+
+    loop .relocation_loop__
+    
+    mov dword [KERNEL_ADDRESS], edx
     ret
 
 ; =================================================================== ;
@@ -215,19 +218,19 @@ kernel_relocate:
 ; =================================================================== ;
 K_DAP:
 .size:
-    db 	0x10
+    db     0x10
 .zero:
-    db 	0x00
+    db     0x00
 .sector_count:
-    dw 	0x0000
+    dw     0x0000
 .transfer_buffer:
-    dw 	0x1000          ; temporary location
+    dw     0x1000          ; temporary location
 .transfer_buffer_seg:
-    dw 	0x0
+    dw     0x0
 .lower_lba:
-    dd 	0xB             ; sector index 11
+    dd     0xB             ; sector index 11
 .higher_lba:
-    dd 	0x00000000
+    dd     0x00000000
 
 
 BOOT_DRIVE db 0
@@ -240,12 +243,12 @@ KERNEL_ADDRESS dd 0x0100000
 ; support for 32-bit trampoline
 trampoline32:
     ; set segment registers
-    mov 	ax, 0x10
-    mov 	es, ax
-    mov 	fs, ax
-    mov 	ds, ax
-    mov 	gs, ax
-    mov 	ss, ax
+    mov     ax, 0x10
+    mov     es, ax
+    mov     fs, ax
+    mov     ds, ax
+    mov     gs, ax
+    mov     ss, ax
     mov esp, 0x090000 ; set up stack pointer
 
     mov byte [0xB8000], 88
@@ -283,11 +286,11 @@ trampoline64:
 
 multiboot:
     .reserv            dd 0
-	.vesa_width        dd 0
-	.vesa_height       dd 0
-	.vesa_bpp          dd 0
-	.vesa_pitch        dd 0
-	.vesa_framebuffer  dd 0
+    .vesa_width        dd 0
+    .vesa_height       dd 0
+    .vesa_bpp          dd 0
+    .vesa_pitch        dd 0
+    .vesa_framebuffer  dd 0
     .upper_memory      dd 0
 
 ; vesa BIOS functions
