@@ -179,7 +179,6 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     TM->spawn("bin/launcher", 0, 0);
 
     klog("TM activate reached");
-    tss_save_stack();
     TM->activate();
 
     while (1)

@@ -3,9 +3,9 @@
 extern "C" void tss_flush();
 extern "C" void gdt_flush(uint32_t gdt_ptr);
 
-gdt_entry_t gdt_entries[GDT_NUM_DESCRIPTORS];
-gdt_ptr_t gdt_ptr;
-tss_entry_t kernel_tss;
+static gdt_entry_t gdt_entries[GDT_NUM_DESCRIPTORS];
+static gdt_ptr_t gdt_ptr;
+static tss_entry_t kernel_tss;
 
 void gdt()
 {

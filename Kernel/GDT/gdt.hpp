@@ -9,11 +9,11 @@
 
 /* save kernel stack;
  * due to potential syscalls from userspace */
-#define tss_save_stack()         \
-    uint32_t esp;                \
-    asm volatile("mov %%esp, %0" \
-                 : "=r"(esp));   \
-    tss_set_stack(GDT_KERNEL_DATA_SEGMENT, esp);
+#define tss_save_stack()                        \
+    uint32_t __tss_save_stack_esp;              \
+    asm volatile("mov %%esp, %0"                \
+                 : "=r"(__tss_save_stack_esp)); \
+    tss_set_stack(GDT_KERNEL_DATA_SEGMENT, __tss_save_stack_esp);
 
 typedef struct tss_entry {
     uint32_t prevtss;

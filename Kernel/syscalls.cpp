@@ -424,6 +424,7 @@ void Syscalls::sys_guard(uintptr_t stk, uint8_t type)
 
 uint32_t Syscalls::interrupt(uint32_t esp)
 {
+    tss_save_stack();
     cpu_state* cpu = (cpu_state*)esp;
     IRQ::activate();
 
