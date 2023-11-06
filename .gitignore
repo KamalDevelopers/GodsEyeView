@@ -11,6 +11,7 @@ compile_flags.txt
 libc.a
 libaudio.a
 dump.dat
+virtdrive
 
 /Bootloader/*.bin
 /Bootloader/*.o
