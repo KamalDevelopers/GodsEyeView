@@ -48,7 +48,7 @@ uint32_t PhysicalMemoryManager::allocate_slab0(size_t size)
     uint32_t slabs = size / SLAB0;
     if ((size % SLAB0) != 0)
         ++slabs;
-    uint32_t index = slab0_bitmap.fast_find_unset(slabs);
+    uint32_t index = slab0_bitmap.find_unset(slabs); /* FIXME: buggy fast_find_unset()? */
     slab0_bitmap.bit_modify_range(index, slabs, 1);
     uint32_t address = slab0_ptr + index * SLAB0;
     if (debug)
@@ -63,7 +63,7 @@ uint32_t PhysicalMemoryManager::allocate_slab1(size_t size)
     uint32_t slabs = size / SLAB1;
     if ((size % SLAB1) != 0)
         ++slabs;
-    uint32_t index = slab1_bitmap.fast_find_unset(slabs);
+    uint32_t index = slab1_bitmap.find_unset(slabs); /* FIXME: buggy fast_find_unset()? */
     slab1_bitmap.bit_modify_range(index, slabs, 1);
     uint32_t address = slab1_ptr + index * SLAB1;
     if (debug)
@@ -78,7 +78,7 @@ uint32_t PhysicalMemoryManager::allocate_slab2(size_t size)
     uint32_t slabs = size / SLAB2;
     if ((size % SLAB2) != 0)
         ++slabs;
-    uint32_t index = slab2_bitmap.fast_find_unset(slabs);
+    uint32_t index = slab2_bitmap.find_unset(slabs); /* FIXME: buggy fast_find_unset()? */
     slab2_bitmap.bit_modify_range(index, slabs, 1);
     uint32_t address = slab2_ptr + index * SLAB2;
     if (debug)
