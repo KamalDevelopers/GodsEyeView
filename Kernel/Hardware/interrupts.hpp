@@ -8,7 +8,7 @@
 #include <LibC/stdio.h>
 #include <LibC/types.h>
 
-#define PIT_HZ 2600
+#define PIT_HZ 800
 
 class InterruptManager;
 
