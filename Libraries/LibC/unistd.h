@@ -62,6 +62,7 @@ int getpid();
 int setsid();
 int sys_osinfo(struct osinfo* buffer);
 int getchar(int* character);
+void sys_yield();
 
 #ifdef __cplusplus
 }

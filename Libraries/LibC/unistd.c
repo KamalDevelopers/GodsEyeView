@@ -210,3 +210,8 @@ int getchar(int* character)
                  : "a"(404), "b"(character));
     return size;
 }
+
+void sys_yield()
+{
+    usleep(1);
+}

@@ -13,14 +13,25 @@ Window::~Window()
     close(process_send_event_file);
 }
 
+void Window::die()
+{
+    zombie = true;
+}
+
 void Window::set_position(uint32_t x, uint32_t y)
 {
+    if (zombie)
+        return;
+
     canvas->x = x;
     canvas->y = y;
 }
 
 void Window::resize(uint32_t width, uint32_t height)
 {
+    if (zombie)
+        return;
+
     if (canvas == 0) {
         canvas = request_canvas(width, height);
         canvas_set(canvas->framebuffer, 0, canvas->size);
@@ -76,6 +87,9 @@ bool Window::is_point_in_window(uint32_t x, uint32_t y)
 
 void Window::resize_event(canvas_t* canvas)
 {
+    if (zombie)
+        return;
+
     display_event_t event;
     event.type = DISPLAY_EVENT_RESIZE;
     memcpy(&event.canvas, canvas, sizeof(canvas_t));
@@ -84,6 +98,9 @@ void Window::resize_event(canvas_t* canvas)
 
 void Window::mouse_event(mouse_event_t* event)
 {
+    if (zombie)
+        return;
+
     if (!is_point_in_window(event->x, event->y))
         return;
 
@@ -98,6 +115,9 @@ void Window::mouse_event(mouse_event_t* event)
 
 void Window::keyboard_event(keyboard_event_t* event)
 {
+    if (zombie)
+        return;
+
     display_event_t send_event;
     send_event.type = DISPLAY_EVENT_KEYBOARD;
     memcpy(&send_event.keyboard, event, sizeof(keyboard_event_t));

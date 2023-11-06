@@ -15,6 +15,7 @@ private:
     int process_send_event_file = 0;
     int associated_workspace = -1;
     bool controlled = true;
+    bool zombie = false;
 
 public:
     Window(int pid = -1);
@@ -24,7 +25,9 @@ public:
     int get_pid() { return associated_pid; }
     int get_controlled() { return controlled; }
     int get_workspace() { return associated_workspace; }
+    bool get_zombie() { return zombie; }
 
+    void die();
     void disown();
     void adopt(int workspace);
     void set_position(uint32_t x, uint32_t y);

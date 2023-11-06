@@ -154,7 +154,7 @@ void WindowManager::sanitizer()
 {
     uint32_t index = 0;
     while (index < windows_size()) {
-        if (!windows()[index]->get_controlled()) {
+        if ((windows()[index]->get_zombie()) || (!windows()[index]->get_controlled())) {
             index++;
             continue;
         }
@@ -162,6 +162,7 @@ void WindowManager::sanitizer()
         int pid = windows()[index]->get_pid();
         if (kill(pid, 0) < 0) {
             destroy_window(index);
+            index++;
             continue;
         }
 
@@ -189,6 +190,8 @@ void WindowManager::update_window_positions()
 
     uint32_t tiled_index = 0;
     for (uint32_t index = 0; index < windows_size(); index++) {
+        if (windows()[index]->get_zombie())
+            continue;
         if (!windows()[index]->get_controlled())
             continue;
         if (active_fullscreen_window >= 0 && index != active_fullscreen_window)
@@ -283,6 +286,13 @@ void WindowManager::destroy_window(uint32_t index)
     compositor->remove_render_layer(windows()[index]->get_canvas());
     if (windows()[index]->get_controlled())
         tiled_windows--;
+
+    windows()[index]->die();
+    if (tiled_windows) {
+        /* Prepare other windows */
+        update_window_positions();
+        sys_yield();
+    }
 
     delete windows()[index];
     windows_remove(index);
