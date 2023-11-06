@@ -44,7 +44,6 @@ void dump_stack()
 static char kernel_log_memory[KERNEL_LOG_MEMORY_SIZE];
 static uint32_t kernel_log_memory_index = 0;
 static uint32_t kernel_msg_index = 0;
-
 size_t kernel_log_memory_read(char* destination, size_t size)
 {
     if (size >= KERNEL_LOG_MEMORY_SIZE)
@@ -67,7 +66,36 @@ void kernel_log_write_hook(char* text)
         QemuSerial::active->puts(text);
 }
 
-void kernel_debug(const char* file, uint32_t line, const char* format, ...)
+static char kernel_debug_memory[1024];
+static uint32_t kernel_debug_memory_index = 0;
+void kernel_debug_write_hook(char* text)
+{
+    if (!kernel_debug_memory_index)
+        memset(kernel_debug_memory, 0, sizeof(kernel_debug_memory));
+    size_t siz = strlen(text);
+    if (siz + kernel_debug_memory_index > sizeof(kernel_debug_memory) || text[0] == '\n') {
+        if (QemuSerial::active->is_supported() && kernel_debug_memory_index)
+            QemuSerial::active->puts(kernel_debug_memory);
+        kernel_debug_memory_index = 0;
+    }
+    strcat(kernel_debug_memory, text);
+    kernel_debug_memory_index += siz;
+}
+
+/* Debug method (Qemu only), don't write to kern file */
+void kernel_debug(const char* format, ...)
+{
+    va_list arg;
+    puts_hook(kernel_debug_write_hook);
+    va_start(arg, format);
+    vprintf(format, arg);
+    va_end(arg);
+    kernel_debug_write_hook(" \n");
+    puts_hook(0);
+}
+
+/* Log method, write to kern file */
+void kernel_log(const char* file, uint32_t line, const char* format, ...)
 {
     kernel_msg_index++;
     const char* klog_virt_prefix = "\033[01;34m";
