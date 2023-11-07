@@ -7,6 +7,9 @@
 ; begins here.
 ; dl is set by BIOS
 .start:
+xor ax, ax
+mov ds, ax
+mov ss, ax
 mov [BOOT_DRIVE], dl      ; save ident of boot drive
 
 reset_screen:             ; BIOS VGA screen clear
@@ -96,5 +99,5 @@ gdt_end:
 
 
 
-TIMES 510 - ($ - $$) db 0	; Fill the rest of sector with 0
+TIMES 510 - ($ - $$) db 0 ; Fill the rest of sector with 0
 DW 0xaa55 ; Add boot signature at the end of bootloader
