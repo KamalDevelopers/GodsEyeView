@@ -73,7 +73,8 @@ public:
     static VirtualFilesystem* active;
     void mount(Filesystem* fs);
 
-    int listdir(char* dirname, fs_entry_t* entries, uint32_t count);
+    bool is_virtual_directory(char* dirname);
+    int list_directory(char* dirname, fs_entry_t* entries, uint32_t count);
     int open_fifo(char* file_name, int flags = 0);
     int open(char* file_name, int flags = 0);
     int close_fifo(int index);

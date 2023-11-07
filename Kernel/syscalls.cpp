@@ -375,7 +375,7 @@ int Syscalls::sys_poll(pollfd* fds, uint32_t nfds)
 /* TODO: Replace with getdents */
 int Syscalls::sys_listdir(char* dirname, fs_entry_t* entries, uint32_t count)
 {
-    return VFS->listdir(dirname, entries, count);
+    return VFS->list_directory(dirname, entries, count);
 }
 
 int Syscalls::sys_osinfo(struct osinfo* buffer)

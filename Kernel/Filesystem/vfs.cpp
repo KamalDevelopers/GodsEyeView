@@ -243,12 +243,19 @@ int VirtualFilesystem::size(int descriptor)
     return statbuf.st_size;
 }
 
-int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t count)
+bool VirtualFilesystem::is_virtual_directory(char* dirname)
+{
+    if (strncmp(dirname, "/pipe/", 6) == 0)
+        return true;
+    return false;
+}
+
+int VirtualFilesystem::list_directory(char* dirname, fs_entry_t* entries, uint32_t count)
 {
     path_resolver(dirname, true);
     int fscount = mounts[0]->read_dir(dirname, entries, count);
 
-    if (strcmp(dirname, "pipe/") == 0) {
+    if (strncmp(dirname, "/pipe/", 6) == 0) {
         for (uint32_t i = 0; i < kernel_file_table.files.size(); i++) {
             if (kernel_file_table.files.at(i).type == FS_TYPE_FIFO) {
                 if (strlen(kernel_file_table.files.at(i).file_name) < 8)
@@ -263,8 +270,8 @@ int VirtualFilesystem::listdir(char* dirname, fs_entry_t* entries, uint32_t coun
         }
     }
 
-    if (strlen(dirname) == 0) {
-        strncpy(entries[fscount].name, "pipe/", 5);
+    if (strlen(dirname) == 1 && dirname[0] == '/' && fscount < count) {
+        strncpy(entries[fscount].name, "pipe", 4);
         entries[fscount].type = FS_ENTRY_VIRTDIR;
         fscount++;
     }

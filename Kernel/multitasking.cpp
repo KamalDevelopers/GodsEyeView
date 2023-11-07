@@ -125,12 +125,14 @@ int Task::chdir(char* dir)
     strcat(dir_path, dir);
     path_resolver(dir_path, true);
 
+    if (VFS->is_virtual_directory(dir_path))
+        return -1;
     if (strlen(dir_path) == 0) {
         memset(working_directory, 0, MAX_PATH_SIZE);
         return 0;
     }
 
-    if (VFS->listdir(dir_path, entries, 1) == 0)
+    if (VFS->list_directory(dir_path, entries, 1) == 0)
         return -1;
 
     strcpy(working_directory, dir_path);
