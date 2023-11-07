@@ -6,7 +6,7 @@ os.system("nasm Entry/entry.asm -f bin -o entry_boot.bin")
 
 
 """ stage 2 """
-os.system("i686-elf-gcc -fno-asynchronous-unwind-tables -s -c -o bootloader.o bootloader.c")
+os.system("i686-elf-gcc -O3 -fno-asynchronous-unwind-tables -s -c -o bootloader.o bootloader.c")
 os.system("objconv -v0 -fnasm bootloader.o c.compiled.asm")
 
 with open("c.compiled.asm") as f:

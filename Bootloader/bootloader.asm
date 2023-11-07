@@ -15,10 +15,6 @@ call verify_a20
 call boot_main
 
 trampoline:
-    call e820_memory_map
-    call vbe_init
-    call kernel_load
-
     ; set multiboot header
     mov eax, [vbe_screen.width]
     mov [multiboot.vesa_width], eax
@@ -110,7 +106,7 @@ verify_a20:
 
     cmp ax, 0
     jne .final
-    jmp $
+    jmp err_verify_a20
 
 .final:
     ret
@@ -182,7 +178,7 @@ kernel_load__:
     popa
     ret
 .error:
-    jmp $
+    jmp err_kernel_load
 
 kernel_relocate:
     ; number of dwords to move [512/4]

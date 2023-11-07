@@ -10,13 +10,13 @@ e820_memory_map:
 	mov ecx, 24
 	int 0x15
 
-	jc short .e820_failed
+	jc .e820_failed
 	mov edx, 0x0534D4150
 	cmp eax, edx
-	jne short .e820_failed
+	jne .e820_failed
 	test ebx, ebx
-	je short .e820_failed
-	jmp short .e820_
+	je .e820_failed
+	jmp .e820_
 
 ; loop next memory region
 .e820lp:
@@ -24,15 +24,15 @@ e820_memory_map:
 	mov [es:di + 20], dword 1
 	mov ecx, 24
 	int 0x15
-	jc short .e820_final
+	jc .e820_final
 	mov edx, 0x0534D4150
 
 .e820_:
 	jcxz .e820_skip
 	cmp cl, 20
-	jbe short .e820_notext
+	jbe .e820_notext
 	test byte [es:di + 20], 1
-	je short .e820_skip
+	je .e820_skip
 
 .e820_notext:
 	mov ecx, [es:di + 8]
@@ -62,12 +62,12 @@ e820_memory_map:
 
 .e820_skip:
 	test ebx, ebx
-	jne short .e820lp
+	jne .e820lp
 .e820_final:
 	ret
 ; halt on fail
 .e820_failed:
-    jmp .e820_failed
+    jmp err_e820
 
 ; skip and set new max continuous memory
 .e820_clear_skip:

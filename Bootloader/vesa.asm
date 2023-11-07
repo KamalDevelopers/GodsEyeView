@@ -37,7 +37,8 @@ vbe_init:
 
 .no_vbe:
     ; halt on fail
-    jmp $ 
+    jmp err_vbe
+    jmp .no_vbe
 
 
 vbe_set_mode:
@@ -157,9 +158,7 @@ vbe_set_mode:
     jmp .vbe_find_mode
  
 .vbe_error:
-    ; halt on fail
-    jmp $
-    stc
+    jmp err_vbe
     ret
 
 .width       dw 0
