@@ -1,9 +1,9 @@
 God's Eye View Bootloader
 requires python3 to build
 
-./* "Stage 1"
+./Entry/* "Stage 1"
     size: 512 bytes
 
-./Entry/* "Stage 2"
+./* "Stage 2"
     size: 512 * 10 bytes
-    "final_assembly" order: assembly, C, appendix
+    "final_assembly" order: *.asm, *.c, end.asm
