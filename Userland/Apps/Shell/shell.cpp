@@ -217,7 +217,7 @@ size_t Shell::read_input_line()
     autocomplete_word_size = 0;
     is_first_word = 1;
 
-    while (input_line_index <= sizeof(input_line_buffer) - 1) {
+    while (input_line_index <= sizeof(input_line_buffer) - 2) {
         flush();
         int size = getchar((int*)(input_line_buffer + input_line_index));
         if (!size)
@@ -225,6 +225,8 @@ size_t Shell::read_input_line()
 
         input_line_index++;
         int ret = handle_input_line_key();
+        if (input_line_index == sizeof(input_line_buffer) - 1)
+            printf("\n");
         if (ret == 1)
             continue;
         if (ret == 2)
