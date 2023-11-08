@@ -247,10 +247,10 @@ index d97e504..509a4b7 100644
  }
 diff --git a/display.c b/display.c
 new file mode 100644
-index 0000000..ef424a3
+index 0000000..6edb2d2
 --- /dev/null
 +++ b/display.c
-@@ -0,0 +1,161 @@
+@@ -0,0 +1,174 @@
 +#include "gui.h"
 +
 +#include <LibC/stdlib.h>
@@ -264,6 +264,8 @@ index 0000000..ef424a3
 +static int lcd_width, lcd_height, lcd_zoom;
 +static uint32_t last_tick = 0;
 +static bool can_render = 1;
++static int usleep_time = 10;
++static uint8_t key_press_buffer[256];
 +
 +void audio_callback(void *userdata, uint8_t *stream, int len) {
 +    return;
@@ -274,6 +276,8 @@ index 0000000..ef424a3
 +}
 +
 +int gui_lcd_init(int width, int height, int zoom, char *wintitle) {
++    memset(key_press_buffer, 0, sizeof(key_press_buffer));
++    usleep_time = 450;
 +    window_events_file = request_display_window(window_canvas, width * zoom, height * zoom, 0x000000);
 +    if (width * zoom > window_canvas.width || height * zoom > window_canvas.height)
 +        zoom = 1;
@@ -292,7 +296,7 @@ index 0000000..ef424a3
 +
 +void gui_lcd_render_frame(char use_colors, uint16_t *pixbuf) {
 +    if (!can_render) {
-+        usleep(100);
++        usleep(usleep_time);
 +        return;
 +    }
 +
@@ -366,7 +370,7 @@ index 0000000..ef424a3
 +    if (last_tick == 0 || tick_diff < 0)
 +        tick_diff = 0;
 +
-+    usleep(100 - tick_diff);
++    usleep(usleep_time - tick_diff);
 +    last_tick = tick;
 +}
 +
@@ -381,18 +385,20 @@ index 0000000..ef424a3
 +        if (display_event.type == DISPLAY_EVENT_KEYBOARD) {
 +            keyboard_event_t keyboard_event;
 +            memcpy(&keyboard_event, &display_event.keyboard, sizeof(keyboard_event_t));
++            if (keyboard_event.key < sizeof(key_press_buffer))
++                key_press_buffer[keyboard_event.key] = (keyboard_event.state == KEY_DOWN);
 +
-+            if (keyboard_event.key == 'q') input->special_quit = 1;
-+            if (keyboard_event.key == 27) input->special_quit = 1;
-+            if (keyboard_event.key == 'x') input->button_b = 1;
-+            else if (keyboard_event.key == 'z') input->button_a = 1;
-+            else if (keyboard_event.key == '\b') input->button_select = 1;
-+            else if (keyboard_event.key == 10) input->button_start = 1;
++            input->button_select = key_press_buffer['\b'];
++            input->button_start = key_press_buffer[10];
++            input->special_quit = key_press_buffer[27];
++            key_press_buffer[10] = 0;
++            key_press_buffer[27] = 0;
++            key_press_buffer['\b'] = 0;
++        }
 +
-+            else if (keyboard_event.key == 'i') input->button_up = 1;
-+            else if (keyboard_event.key == 'l') input->button_right = 1;
-+            else if (keyboard_event.key == 'k') input->button_down = 1;
-+            else if (keyboard_event.key == 'j') input->button_left = 1;
++        if (input->special_quit) {
++            request_destroy_window();
++            exit(0);
 +        }
 +
 +        if (display_event.type == DISPLAY_EVENT_RESIZE) {
@@ -410,6 +416,13 @@ index 0000000..ef424a3
 +        }
 +    }
 +
++    input->button_b = key_press_buffer['x'];
++    input->button_a = key_press_buffer['z'];
++    input->button_up = key_press_buffer['i'];
++    input->button_down = key_press_buffer['k'];
++    input->button_left = key_press_buffer['j'];
++    input->button_right = key_press_buffer['l'];
++    
 +    return 1;
 +}
 diff --git a/emu.c b/emu.c
@@ -823,7 +836,7 @@ index 2a2279e..5581eae 100644
  }
 +
 diff --git a/mmu.c b/mmu.c
-index 7295123..5cbcc62 100644
+index 7295123..9241539 100644
 --- a/mmu.c
 +++ b/mmu.c
 @@ -1,4 +1,4 @@
@@ -832,7 +845,7 @@ index 7295123..5cbcc62 100644
  
  #include "mmu.h"
  #include "hwdefs.h"
-@@ -8,13 +8,13 @@
+@@ -8,19 +8,20 @@
  #define MMU_DEBUG_W(fmt, ...) \
      do { \
          if (s->emu_state->dbg_print_mmu) \
@@ -848,7 +861,27 @@ index 7295123..5cbcc62 100644
      } while(0)
  #else
  #define MMU_DEBUG_W(...)
-@@ -66,8 +66,8 @@ static void mmu_hdma_start(struct gb_state *s, u8 lenmode) {
+ #define MMU_DEBUG_R(...)
+ #endif
+ 
++#ifdef DEBUG
+ #define mmu_error(fmt, ...) \
+     do { \
+         printf("MMU Error: " fmt "\n", ##__VA_ARGS__); \
+@@ -34,6 +35,12 @@
+             dbg_run_debugger(s); \
+         } \
+     } while (0)
++#endif
++
++#ifndef DEBUG
++#define mmu_error(fmt, ...) if(1==2)asm("nop");
++#define mmu_assert(cond) if(1==2)asm("nop");
++#endif
+ 
+ static void mmu_hdma_do(struct gb_state *s) {
+     /* DMA one block (0x10 byte), should be called at start of H-Blank. */
+@@ -66,8 +73,8 @@ static void mmu_hdma_start(struct gb_state *s, u8 lenmode) {
      u16 dst = ((s->io_hdma_dst_high << 8) | s->io_hdma_dst_low) & ~0xf;
      dst = (dst & 0x1fff) | 0x8000; /* Ignore upper 3 bits (always in VRAM) */
  
@@ -859,7 +892,30 @@ index 7295123..5cbcc62 100644
  
      if (s->io_hdma_running && !mode_hblank) {
          /* Cancel ongoing H-Blank HDMA transfer */
-@@ -238,12 +238,12 @@ void mmu_write(struct gb_state *s, u16 location, u8 value) {
+@@ -124,9 +131,9 @@ void mmu_write(struct gb_state *s, u16 location, u8 value) {
+         if (value == 0 && s->mbc != 5)
+             value = 1;
+ 
+-        if (s->mbc == 0)
++        if (s->mbc == 0) {
+             mmu_assert(value == 1);
+-        else if (s->mbc == 1)
++        } else if (s->mbc == 1)
+             value &= 0x1f;
+         else if (s->mbc == 3)
+             value &= 0x7f;
+@@ -157,8 +164,9 @@ void mmu_write(struct gb_state *s, u16 location, u8 value) {
+             }
+         } else if (s->mbc == 3) {
+             MMU_DEBUG_W("EXTRAM bank number -OR- RTC register select");
+-            if (value < 8)
++            if (value < 8) {
+                 mmu_assert(value < s->mem_num_banks_extram);
++            }
+             else {
+                 mmu_assert(value <= 0xc); /* RTC is at 08-0C */
+                 mmu_assert(s->has_rtc);
+@@ -238,12 +246,12 @@ void mmu_write(struct gb_state *s, u16 location, u8 value) {
          s->mem_WRAM[s->mem_bank_wram * WRAM_BANKSIZE + location - 0xd000] = value;
          break;
      case 0xe000: /* E000 - FDFF */
@@ -875,7 +931,7 @@ index 7295123..5cbcc62 100644
              break;
          }
          if (location < 0xfea0) { /* FE00 - FE9F */
-@@ -585,7 +585,7 @@ u8 mmu_read(struct gb_state *s, u16 location) {
+@@ -585,7 +593,7 @@ u8 mmu_read(struct gb_state *s, u16 location) {
      }
      case 0x8000: /* 8000 - 9FFF */
      case 0x9000:
@@ -884,7 +940,7 @@ index 7295123..5cbcc62 100644
          return s->mem_VRAM[s->mem_bank_vram * VRAM_BANKSIZE + location - 0x8000];
      case 0xa000: /* A000 - BFFF */
      case 0xb000:
-@@ -644,10 +644,11 @@ u8 mmu_read(struct gb_state *s, u16 location) {
+@@ -644,10 +652,11 @@ u8 mmu_read(struct gb_state *s, u16 location) {
  
          if (location < 0xff80) { /* FF00 - FF7F */
              /*MMU_DEBUG_R("I/O ports "); */
@@ -898,10 +954,10 @@ index 7295123..5cbcc62 100644
                      rv = (s->io_buttons & 0xf0) | (s->io_buttons_dirs & 0x0f);
                  else if ((s->io_buttons & (1 << 5)) == 0)
 diff --git a/state.c b/state.c
-index d8ccaa3..09f1a83 100644
+index d8ccaa3..a561f8f 100644
 --- a/state.c
 +++ b/state.c
-@@ -1,17 +1,21 @@
+@@ -1,16 +1,27 @@
 -#include <stdio.h>
 -#include <stdlib.h>
 -#include <string.h>
@@ -913,22 +969,52 @@ index d8ccaa3..09f1a83 100644
  #include "state.h"
  #include "hwdefs.h"
  
++#define DEBUG 0
++
++#ifdef DEBUG
  #define err(fmt, ...) \
      do { \
 -        fprintf(stderr, "[State] " fmt "\n", ##__VA_ARGS__); \
 +        printf("[State] " fmt "\n", ##__VA_ARGS__); \
          return 1; \
      } while (0)
- 
++#endif
++#ifndef DEBUG
++#define err(fmt, ...) asm("nop");
++#endif
++
 +int assert(int statement) {
 +    if (!statement)
 +        printf("assert failed\n");
 +}
-+
+ 
  void print_rom_header_info(u8* rom) {
      printf("Title: %s\n", &rom[ROMHDR_TITLE]);
+@@ -163,6 +174,7 @@ int rom_get_info(u8 *rom, size_t rom_size, struct rominfo *ret_rominfo) {
+     /* HuCn not supported */
+     default:
+         err("Unsupported cartridge type: %x", hdr_cart_type);
++        break;
+     }
  
-@@ -290,7 +294,7 @@ int state_save(struct gb_state *s, u8 **ret_state_buf, size_t *ret_state_size) {
+     switch (hdr_rom_size) {
+@@ -180,6 +192,7 @@ int rom_get_info(u8 *rom, size_t rom_size, struct rominfo *ret_rominfo) {
+     case 0x54: rom_banks = 96;  break; /* 1.5M */
+     default:
+         err("Unsupported ROM size: %x", hdr_rom_size);
++        break;
+     }
+ 
+     switch (hdr_extram_size) {
+@@ -191,6 +204,7 @@ int rom_get_info(u8 *rom, size_t rom_size, struct rominfo *ret_rominfo) {
+     case 0x05: extram_banks = 8;  break; /* 64KB */
+     default:
+         err("Unsupported EXT_RAM size: %x", hdr_extram_size);
++        break;
+     }
+ 
+     assert((extram == 0 && extram_banks == 0) ||
+@@ -290,7 +304,7 @@ int state_save(struct gb_state *s, u8 **ret_state_buf, size_t *ret_state_size) {
      size_t vram_size = VRAM_BANKSIZE * s->mem_num_banks_vram;
  
      if (s->in_bios) {
