@@ -16,12 +16,20 @@
   * A custom [bootloader](Bootloader) with unreal mode, A20, LBA, VBE, and multiboot support
   * Modern and sleek system with an overall clean design
 
+### WM key sequences
+  * `Ctrl+T` spawn a new terminal
+  * `Esc` close active window
+  * `Ctrl+Space` set active window as master
+  * `Ctrl+Enter` fullscreen active window
+  * `Ctrl+[1-3]` swap between workspaces 1 through 3
+
 ### Building GevOS
 
-Instructions on how to build GevOS are on the [Wiki](https://github.com/KamalDevelopers/GevOS/wiki/Building-GevOS)
+Instructions on how to build GevOS are on the [Wiki](https://github.com/KamalDevelopers/GevOS/wiki/Building)
 
 ### Contributing to GevOS
 
 Support with expanding the system would be greatly appreciated! <br>
-Instructions on contributing to GevOS are on the [Wiki](https://github.com/KamalDevelopers/GevOS/wiki/Contributing-to-GevOS)
+Instructions on contributing to GevOS are on the [Wiki](https://github.com/KamalDevelopers/GevOS/wiki/Contributing)
+
 
