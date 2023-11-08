@@ -3,6 +3,9 @@
 
 #include <LibC/types.h>
 
+#define KEY_DOWN 1
+#define KEY_UP 0
+
 typedef struct mouse_event {
     uint32_t x = 0;
     uint32_t y = 0;
@@ -12,6 +15,7 @@ typedef struct mouse_event {
 typedef struct keyboard_event {
     char key = 0;
     uint32_t modifier = 0;
+    uint8_t state = 0;
 } keyboard_event_t;
 
 #endif

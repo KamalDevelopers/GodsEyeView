@@ -187,10 +187,19 @@ void KeyboardDriver::on_key(uint8_t keypress)
     if (keypress == CTRL_RELEASED)
         modifier = 0;
 
-    last_key = key_a(keypress);
+    bool is_pressed_down = (keypress < 0x80
+        || keypress >= M_RELEASED
+        || keypress < Q_PRESSED);
+    uint8_t temp_keypress = keypress;
+
+    if (!is_pressed_down)
+        temp_keypress -= 0x80;
+    last_key = key_a(temp_keypress);
+
     if (last_key != 0) {
         events[events_index].key = last_key;
         events[events_index].modifier = modifier;
+        events[events_index].state = is_pressed_down;
         events_index++;
 
         if (events_index >= MAX_KEYBOARD_EVENTS) {

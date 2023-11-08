@@ -49,6 +49,9 @@ void Terminal::receive_keyboard_event(display_event_t* display_event)
     keyboard_event_t keyboard_event;
     memcpy(&keyboard_event, &display_event->keyboard, sizeof(keyboard_event_t));
 
+    if (keyboard_event.state == KEY_UP)
+        return;
+
     if (keyboard_event.key == 27) {
         is_running = false;
         return;

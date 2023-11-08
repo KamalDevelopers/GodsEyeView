@@ -60,6 +60,11 @@ void WindowManager::mouse_event(mouse_event_t* event)
 
 void WindowManager::keyboard_event(keyboard_event_t* event)
 {
+    if (active_window != -1 && event->state != KEY_DOWN) {
+        windows()[active_window]->keyboard_event(event);
+        return;
+    }
+
     if ((event->key >= 49 && event->key <= 49 + WORKSPACES - 1) && (event->modifier == 2) && (WORKSPACES > 1)) {
         int workspace = CLAMP(event->key - 49, 0, WORKSPACES - 1);
         set_workspace(workspace);
