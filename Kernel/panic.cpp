@@ -90,7 +90,7 @@ void kernel_debug(const char* format, ...)
     va_start(arg, format);
     vprintf(format, arg);
     va_end(arg);
-    kernel_debug_write_hook(" \n");
+    // kernel_debug_write_hook(" \n");
     puts_hook(0);
 }
 
