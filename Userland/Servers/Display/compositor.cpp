@@ -67,7 +67,7 @@ void Compositor::create_blur_layer()
 
     address = (uint32_t)(blured_final_layer->framebuffer) + offset;
     for (uint32_t y = 30; y < max2; y++) {
-        canvas_blur_box((uint32_t*)address + start, final_layer->width - 80, final_layer->width, final_layer->height, 15);
+        canvas_blur_box((uint32_t*)address + start, final_layer->width - 80, final_layer->width, final_layer->height, 12);
         address += offset2;
     }
 
