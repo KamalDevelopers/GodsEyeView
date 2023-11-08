@@ -14,7 +14,7 @@
 #include "Net/dhcp.hpp"
 #include "Net/dns.hpp"
 #include "Net/icmp.hpp"
-#include "multitasking.hpp"
+#include "Tasks/multitasking.hpp"
 #include "panic.hpp"
 #include "tty.hpp"
 

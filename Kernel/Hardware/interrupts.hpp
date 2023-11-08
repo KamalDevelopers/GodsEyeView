@@ -2,7 +2,7 @@
 #define INTERRUPTS_HPP
 
 #include "../GDT/gdt.hpp"
-#include "../multitasking.hpp"
+#include "../Tasks/multitasking.hpp"
 #include "../tty.hpp"
 #include "port.hpp"
 #include <LibC/stdio.h>

@@ -1,6 +1,6 @@
 #include "es1370.hpp"
 
-MUTEX(es1370);
+MUTEX(mutex_es1370);
 
 ES1370::ES1370(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
@@ -48,13 +48,13 @@ void ES1370::activate()
 
 void ES1370::wait()
 {
-    Mutex::lock(es1370);
-    Mutex::unlock(es1370);
+    Mutex::lock(mutex_es1370);
+    Mutex::unlock(mutex_es1370);
 }
 
 bool ES1370::is_playing()
 {
-    return es1370.locked;
+    return mutex_es1370.locked;
 }
 
 void ES1370::set_sample_rate(uint16_t hz)
@@ -74,7 +74,7 @@ void ES1370::write_codec(int reg, uint16_t value)
 
 void ES1370::write(uint8_t* buffer, uint32_t length)
 {
-    Mutex::lock(es1370);
+    Mutex::lock(mutex_es1370);
     memory_page_port.write(0xC);
 
     /* Set sample counts and buffer length */
@@ -116,7 +116,7 @@ uint32_t ES1370::interrupt(uint32_t esp)
         /* Stop playback */
         control_port.write(ctrl & ~CTRL_DAC2_EN);
         serial_port.write(sctrl & ~SCTRL_P2INTEN);
-        Mutex::unlock(es1370);
+        Mutex::unlock(mutex_es1370);
         TM->test_poll();
     }
 

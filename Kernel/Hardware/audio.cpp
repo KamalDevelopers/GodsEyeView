@@ -1,5 +1,5 @@
 #include "audio.hpp"
-#include "../multitasking.hpp"
+#include "../Tasks/multitasking.hpp"
 
 Audio* Audio::active = 0;
 Audio::Audio()

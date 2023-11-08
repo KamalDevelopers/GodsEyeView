@@ -1,7 +1,7 @@
 #ifndef ATA_HPP
 #define ATA_HPP
 
-#include "../../mutex.hpp"
+#include "../../Locks/mutex.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
 #include <LibC/stdio.h>

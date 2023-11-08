@@ -1,8 +1,8 @@
 #include "pipe.hpp"
+#include "Locks/mutex.hpp"
 #include "Mem/mm.hpp"
-#include "mutex.hpp"
 
-MUTEX(pipe_mutex);
+MUTEX(mutex_pipe);
 
 pipe_t* Pipe::create()
 {
@@ -60,7 +60,7 @@ int Pipe::read(pipe_t* pipe, uint8_t* buffer, size_t size)
     if ((size > pipe->total_size) || (size > pipe->size))
         size = pipe->size;
 
-    Mutex::lock(pipe_mutex);
+    Mutex::lock(mutex_pipe);
     memcpy(buffer, pipe->buffer, size);
 
     if (pipe->size - size == 0) {
@@ -74,7 +74,7 @@ int Pipe::read(pipe_t* pipe, uint8_t* buffer, size_t size)
 
     pipe->size = pipe->size - size;
     buffer[size] = 0;
-    Mutex::unlock(pipe_mutex);
+    Mutex::unlock(mutex_pipe);
     return size;
 }
 
@@ -83,7 +83,7 @@ int Pipe::write(pipe_t* pipe, uint8_t* buffer, size_t size)
     if (size <= 0)
         return -1;
 
-    Mutex::lock(pipe_mutex);
+    Mutex::lock(mutex_pipe);
     if (size > pipe->total_size)
         expand(pipe, size);
     if ((size < pipe->total_size) && (size >= PIPE_SIZE))
@@ -91,7 +91,7 @@ int Pipe::write(pipe_t* pipe, uint8_t* buffer, size_t size)
 
     pipe->size = size;
     memcpy(pipe->buffer, buffer, size);
-    Mutex::unlock(pipe_mutex);
+    Mutex::unlock(mutex_pipe);
     return size;
 }
 
@@ -100,7 +100,7 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
     if (size <= 0)
         return -1;
 
-    Mutex::lock(pipe_mutex);
+    Mutex::lock(mutex_pipe);
     if (size + pipe->size > pipe->total_size) {
         uint8_t* temporary = new uint8_t[pipe->total_size];
         int temporary_size = pipe->total_size;
@@ -112,6 +112,6 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
 
     memcpy(pipe->buffer + pipe->size, buffer, size);
     pipe->size += size;
-    Mutex::unlock(pipe_mutex);
+    Mutex::unlock(mutex_pipe);
     return size;
 }

@@ -1,12 +1,12 @@
 #ifndef MULTITASKING_H
 #define MULTITASKING_H
 
-#include "Exec/loader.hpp"
-#include "Filesystem/vfs.hpp"
-#include "GDT/gdt.hpp"
-#include "Mem/mm.hpp"
-#include "Net/ipv4.hpp"
-#include "tty.hpp"
+#include "../Exec/loader.hpp"
+#include "../Filesystem/vfs.hpp"
+#include "../GDT/gdt.hpp"
+#include "../Mem/mm.hpp"
+#include "../Net/ipv4.hpp"
+#include "../tty.hpp"
 
 #include <LibC++/bitarray.hpp>
 #include <LibC++/vector.hpp>
@@ -37,7 +37,7 @@
 #define SLEEP_WAIT_WAKE 1
 #define SLEEP_WAIT_STDIN 2
 #define SLEEP_WAIT_POLL 3
-#define PROCESS_QUANTUM 5
+#define PROCESS_QUANTUM 4
 #define MAX_PRIORITIES 6
 #define MAX_PIDS 512
 #define MAX_TASKS 512
@@ -111,9 +111,9 @@ public:
     int socket(uint8_t type);
     int nice(int inc);
 
+    void test_poll();
     int become_tty_master();
     void wake_from_poll();
-    void test_poll();
     int setsid();
 
     void process_mmap(memory_region_t region);

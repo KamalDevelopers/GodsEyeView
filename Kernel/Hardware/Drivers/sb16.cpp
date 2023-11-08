@@ -1,6 +1,6 @@
 #include "sb16.hpp"
 
-MUTEX(sb16);
+MUTEX(mutex_sb16);
 
 SoundBlaster16* SoundBlaster16::active = 0;
 SoundBlaster16::SoundBlaster16(InterruptManager* interrupt_manager)
@@ -22,13 +22,13 @@ SoundBlaster16::~SoundBlaster16()
 
 void SoundBlaster16::wait()
 {
-    Mutex::lock(sb16);
-    Mutex::unlock(sb16);
+    Mutex::lock(mutex_sb16);
+    Mutex::unlock(mutex_sb16);
 }
 
 bool SoundBlaster16::is_playing()
 {
-    return sb16.locked;
+    return mutex_sb16.locked;
 }
 
 void SoundBlaster16::identify()
@@ -120,7 +120,7 @@ void SoundBlaster16::write(uint8_t* buffer, uint32_t length)
     if (length > CHUNK_SIZE)
         return;
 
-    Mutex::lock(sb16);
+    Mutex::lock(mutex_sb16);
     total_size = length;
 
     dma_start(buffer, CHUNK_SIZE);
@@ -143,7 +143,7 @@ uint32_t SoundBlaster16::interrupt(uint32_t esp)
         inb(0x22F);
 
     stop();
-    Mutex::unlock(sb16);
+    Mutex::unlock(mutex_sb16);
     TM->test_poll();
     return esp;
 }

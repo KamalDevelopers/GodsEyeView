@@ -1,7 +1,7 @@
 #ifndef ES1370_HPP
 #define ES1370_HPP
 
-#include "../../mutex.hpp"
+#include "../../Locks/mutex.hpp"
 #include "../audio.hpp"
 #include "../interrupts.hpp"
 #include "../pci.hpp"

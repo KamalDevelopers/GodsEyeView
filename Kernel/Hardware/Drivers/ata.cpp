@@ -1,6 +1,6 @@
 #include "ata.hpp"
 
-MUTEX(ata);
+MUTEX(mutex_ata);
 #ifdef RAMDISK
 extern char _binary_hdd_tar_start;
 extern char _binary_hdd_tar_end;
@@ -93,7 +93,7 @@ uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int scou
     return data;
 #endif
 
-    Mutex::lock(ata);
+    Mutex::lock(mutex_ata);
     prdt.transfer_size = count;
     prdt.buffer_phys = (uint32_t)data;
 
@@ -128,7 +128,7 @@ uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int scou
     if (count < 512 && scount == 1)
         memcpy(data, sector, count);
 
-    Mutex::unlock(ata);
+    Mutex::unlock(mutex_ata);
     return data;
 }
 
@@ -140,7 +140,7 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
     return data;
 #endif
 
-    Mutex::lock(ata);
+    Mutex::lock(mutex_ata);
     static uint8_t buffer[BUFSIZ];
     uint16_t index = 0;
 
@@ -148,7 +148,7 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
         buffer[i] = 0;
 
     if (sector_num > 0x0FFFFFFF) {
-        Mutex::unlock(ata);
+        Mutex::unlock(mutex_ata);
         return nullptr;
     }
 
@@ -166,7 +166,7 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
         status = command_port.read();
 
     if (status & 0x01) {
-        Mutex::unlock(ata);
+        Mutex::unlock(mutex_ata);
         return nullptr;
     }
 
@@ -185,7 +185,7 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
     for (int i = count + (count % 2); i < BUFSIZ; i += 2)
         data_port.read();
 
-    Mutex::unlock(ata);
+    Mutex::unlock(mutex_ata);
     return buffer;
 }
 
@@ -197,7 +197,7 @@ void ATA::write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count)
     if ((sector_num > 0x0FFFFFFF) || (count > BUFSIZ))
         return;
 
-    Mutex::lock(ata);
+    Mutex::lock(mutex_ata);
     device_port.write((master ? 0xE0 : 0xF0) | ((sector_num & 0x0F000000) >> 24));
     error_port.write(0);
     sector_count_port.write(1);
@@ -215,12 +215,12 @@ void ATA::write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count)
 
     for (int i = count + (count % 2); i < BUFSIZ; i += 2)
         data_port.write(0x0000);
-    Mutex::unlock(ata);
+    Mutex::unlock(mutex_ata);
 }
 
 void ATA::write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count)
 {
-    Mutex::lock(ata);
+    Mutex::lock(mutex_ata);
 
     prdt.transfer_size = count;
     prdt.buffer_phys = (uint32_t)data;
@@ -250,7 +250,7 @@ void ATA::write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count)
         if (!(dstatus & 0x80))
             break;
     }
-    Mutex::unlock(ata);
+    Mutex::unlock(mutex_ata);
 }
 
 void ATA::flush_pio()
@@ -267,11 +267,11 @@ void ATA::flush_pio()
     if (status == 0x00)
         return;
 
-    Mutex::lock(ata);
+    Mutex::lock(mutex_ata);
     while (((status & 0x80) == 0x80)
         && ((status & 0x01) != 0x01))
         status = command_port.read();
-    Mutex::unlock(ata);
+    Mutex::unlock(mutex_ata);
 
     if (status & 0x01)
         return;

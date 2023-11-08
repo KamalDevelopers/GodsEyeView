@@ -1,6 +1,6 @@
 #include "vfs.hpp"
 #include "../Mem/mm.hpp"
-#include "../multitasking.hpp"
+#include "../Tasks/multitasking.hpp"
 #include "../tty.hpp"
 
 VirtualFilesystem* VirtualFilesystem::active = 0;

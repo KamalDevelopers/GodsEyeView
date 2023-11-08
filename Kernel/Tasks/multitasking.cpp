@@ -1,8 +1,8 @@
 #include "multitasking.hpp"
-#include "Hardware/Drivers/keyboard.hpp"
-#include "Hardware/Drivers/mouse.hpp"
-#include "Hardware/audio.hpp"
-#include "Net/icmp.hpp"
+#include "../Hardware/Drivers/keyboard.hpp"
+#include "../Hardware/Drivers/mouse.hpp"
+#include "../Hardware/audio.hpp"
+#include "../Net/icmp.hpp"
 #include <LibC/network.h>
 
 BitArray<MAX_PIDS> pid_bitmap;

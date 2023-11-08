@@ -30,8 +30,8 @@
 #include "Hardware/cpuid.hpp"
 #include "Hardware/interrupts.hpp"
 #include "Hardware/pci.hpp"
+#include "Tasks/multitasking.hpp"
 
-#include "multitasking.hpp"
 #include "panic.hpp"
 #include "syscalls.hpp"
 
