@@ -1,7 +1,7 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-#include "cmath.h"
+#include "math.h"
 #include "mem.h"
 #include "errno.h"
 #include "types.h"

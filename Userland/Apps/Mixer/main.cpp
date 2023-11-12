@@ -22,7 +22,7 @@ bool play(char* file_name)
 
     request_stream_wait_done(&stream_context);
 
-    printf("%s", "\b\b\b [done]");
+    printf("%s", "\b\b\b [done]\n");
     return true;
 }
 

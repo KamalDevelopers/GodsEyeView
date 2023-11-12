@@ -36,8 +36,8 @@
 #include "panic.hpp"
 #include "syscalls.hpp"
 
-#include <LibC/cmath.h>
 #include <LibC/ctype.h>
+#include <LibC/math.h>
 #include <LibC/stdio.h>
 #include <LibC/stdlib.h>
 
