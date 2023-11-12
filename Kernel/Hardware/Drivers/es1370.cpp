@@ -94,7 +94,6 @@ void ES1370::write(uint8_t* buffer, uint32_t length)
     /* Start dac2 playback */
     uint32_t ctrl = control_port.read();
     control_port.write(ctrl | CTRL_DAC2_EN);
-    ignore_irq = (ignore_irq) ? ignore_irq : 2;
 }
 
 uint32_t ES1370::interrupt(uint32_t esp)
@@ -108,9 +107,7 @@ uint32_t ES1370::interrupt(uint32_t esp)
         serial_port.write(sctrl & ~SCTRL_P2INTEN);
         serial_port.write(sctrl | SCTRL_P2INTEN);
 
-        /* FIXME: What do these IRQs mean? */
-        ignore_irq--;
-        if (ignore_irq != 0)
+        if (dac2_buffer_size_port.read() > chunk_size())
             return esp;
 
         /* Stop playback */

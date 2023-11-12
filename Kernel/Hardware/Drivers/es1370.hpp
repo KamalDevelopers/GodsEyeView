@@ -49,7 +49,6 @@ private:
     Port32Bit dac2_buffer_port;
     Port32Bit dac2_buffer_size_port;
 
-    uint8_t ignore_irq = 3;
     uint16_t sample_rate = 0;
     const uint8_t interrupt_mask = 0x3;
 
