@@ -76,6 +76,7 @@ void kernel_debug_write_hook(char* text)
     if (siz + kernel_debug_memory_index > sizeof(kernel_debug_memory) || text[0] == '\n') {
         if (QemuSerial::active->is_supported() && kernel_debug_memory_index)
             QemuSerial::active->puts(kernel_debug_memory);
+        memset(kernel_debug_memory, 0, kernel_debug_memory_index);
         kernel_debug_memory_index = 0;
     }
     strcat(kernel_debug_memory, text);
