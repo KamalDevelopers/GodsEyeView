@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     }
 
     for (uint32_t i = 0; i < argc; i++) {
-        if (unlink(argv[i]) != -1) {
+        if (unlink(argv[i]) >= 0) {
             if (i != 0)
                 printf("\n");
             printf("Unlinking %s\n", argv[i]);

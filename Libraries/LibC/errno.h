@@ -11,6 +11,8 @@
 #define DESC_E_INVALIDEXEC ("E_INVALIDEXEC: Invalid executable")
 #define E_INVALIDFD 9
 #define DESC_E_INVALIDFD ("E_INVALIDFD: Invalid file descriptor")
+#define E_NOCHILD 10
+#define DESC_E_NOCHILD ("E_NOCHILD: Child or pid does not exist")
 
 const char* error_what(int e);
 

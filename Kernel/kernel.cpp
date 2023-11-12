@@ -109,7 +109,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     Husky fs_husky(&ata1s);
     uint8_t has_filesystem = 0;
 
-    klog("Drivers and networking initialization");
+    klog("Driver initialization");
     MouseDriver mouse(&interrupts, multiboot_info_ptr->vesa_width,
         multiboot_info_ptr->vesa_height);
     KeyboardDriver keyboard(&interrupts);

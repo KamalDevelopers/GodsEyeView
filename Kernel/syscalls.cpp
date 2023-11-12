@@ -82,7 +82,7 @@ int Syscalls::sys_write(int fd, void* data, int length)
         break;
 
     case DEV_KLOG_FD:
-        return -1;
+        return -E_PERMISSION;
 
     default:
         /* FIXME: Cannot overwrite existing file */
@@ -112,18 +112,22 @@ int Syscalls::sys_close(int fd)
 
 int Syscalls::sys_waitpid(int pid)
 {
-    return TM->waitpid(pid);
+    int ret = TM->waitpid(pid);
+    if (ret < 0)
+        return -E_NOCHILD;
+    return ret;
 }
 
 int Syscalls::sys_unlink(char* pathname)
 {
-    int err = 0;
     int fd = VFS->open(pathname);
     if (fd < 0)
-        return -1;
-    err = VFS->unlink(fd);
+        return -E_VFSENTRY;
+    int ret = VFS->unlink(fd);
     close(fd);
-    return err;
+    if (ret < 0)
+        return -E_VFSENTRY;
+    return ret;
 }
 
 int Syscalls::sys_chdir(char* dir)

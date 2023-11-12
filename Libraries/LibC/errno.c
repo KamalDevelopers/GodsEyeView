@@ -1,12 +1,12 @@
 #include "errno.h"
+#include "math.h"
 
 const char* error_what(int e)
 {
-    if (e >= 0)
-        return "none";
+    e = abs(e);
 
     const char* error_table[] = {
-        "none",
+        DESC_E_UNKNOWN,
         DESC_E_PERMISSION,
         DESC_E_VSFENTRY,
         DESC_E_UNKNOWN,
@@ -16,9 +16,10 @@ const char* error_what(int e)
         DESC_E_UNKNOWN,
         DESC_E_INVALIDEXEC,
         DESC_E_INVALIDFD,
+        DESC_E_NOCHILD,
     };
 
-    if (-e >= (sizeof(error_table) / sizeof(char*)))
+    if (e >= (sizeof(error_table) / sizeof(char*)))
         return DESC_E_UNKNOWN;
-    return error_table[-e];
+    return error_table[e];
 }
