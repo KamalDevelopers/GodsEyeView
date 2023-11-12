@@ -4,6 +4,7 @@
 static char write_buffer[BUFSIZ];
 static int write_index = 0;
 static void (*hwrite)(char*) = 0;
+static int printf_out_size = 0;
 
 void puts_hook(void (*t)(char*))
 {
@@ -30,6 +31,7 @@ void puts(char* str)
 
     uint32_t len = strlen(str);
     bool do_flush = 0;
+    printf_out_size += len;
 
     if (len >= BUFSIZ) {
         write(1, str, len);
@@ -156,13 +158,15 @@ void vprintf(const char* format, va_list v)
     }
 }
 
-void printf(const char* format, ...)
+int printf(const char* format, ...)
 {
+    printf_out_size = 0;
     va_list arg;
 
     va_start(arg, format);
     vprintf(format, arg);
     va_end(arg);
+    return printf_out_size;
 }
 
 static char* snprintf_string = 0;
