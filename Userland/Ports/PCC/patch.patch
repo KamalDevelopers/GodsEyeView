@@ -1,0 +1,151 @@
+diff --git a/build.ninja b/build.ninja
+new file mode 100644
+index 0000000..f128c47
+--- /dev/null
++++ b/build.ninja
+@@ -0,0 +1,10 @@
++rule move
++    pool = console
++    command = mv ./pcc ../../../../Base/root/bin/ && ninja -t clean
++
++rule cpp
++    command = i686-elf-g++ -fPIC -T link.ld -o pcc $in ../../../../Libraries/libc.a -fstack-protector -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -O2 -I../../../../Libraries -lgcc
++
++build ./pcc pcc.o: cpp ./pcc.c
++build move: move
++default ./pcc
+diff --git a/link.ld b/link.ld
+new file mode 100644
+index 0000000..dffbea1
+--- /dev/null
++++ b/link.ld
+@@ -0,0 +1,23 @@
++ENTRY(_entry)
++SECTIONS
++{
++    . = 0x0;
++	.text BLOCK(4K) : ALIGN(4K)
++	{
++		*(.text)
++	}
++	.rodata BLOCK(4K) : ALIGN(4K)
++	{
++		*(.rodata)
++	}
++	.data BLOCK(4K) : ALIGN(4K)
++	{
++		*(.data)
++	}
++	.bss BLOCK(4K) : ALIGN(4K)
++	{
++		*(COMMON)
++		*(.bss)
++		*(.bootstrap_stack)
++	}
++}
+diff --git a/pcc.c b/pcc.c
+index ea8b55e..53cc143 100644
+--- a/pcc.c
++++ b/pcc.c
+@@ -1,7 +1,7 @@
+-#include "stdio.h"
+-#include "stdlib.h"
+-#include "memory.h"
+-#include "string.h"
++#include <LibC/stdio.h>
++#include <LibC/stdlib.h>
++#include <LibC/mem.h>
++#include <LibC/string.h>
+ 
+ int DEBUG;
+ int ASM;
+@@ -1479,7 +1479,7 @@ int eval () {
+ 			
+ 			else if (op == CLOS)	{ ax = close(*sp); }
+ 			else if (op == READ) 	{ ax = read(sp[2], (char *)sp[1], *sp); }
+-			else if (op == PRTF)	{ tmp = sp + pc[1]; ax = printf( (char *)tmp[-1], tmp[-2], tmp[-3], tmp[-4], tmp[-5], tmp[-6]); }
++            else if (op == PRTF)	{ tmp = sp + pc[1]; ax = printf( (char *)tmp[-1], tmp[-2], tmp[-3], tmp[-4], tmp[-5], tmp[-6]); }
+ 			else if (op == MALC)	{ ax = (int)malloc(*sp); }
+ 			else if (op == MSET) 	{ ax = (int)memset( (char *)sp[2], sp[1], *sp); }
+ 			else if (op == MCMP) 	{ ax = memcmp( (char *)sp[2], (char *)sp[1], *sp); }
+@@ -1507,24 +1507,23 @@ int main (int argc, char **argv) {
+ 
+ 	DEBUG = 0;
+ 	ASM = 0;
++    int has_exts = 0;
+ 
+-	argc--;
+-	argv++;
+-
+-	if ( (argc > 0) && (**argv == '-') && ( (*argv)[1] == 's') ) {
++	if (has_exts && (argc > 0) && (**argv == '-') && ( (*argv)[1] == 's') ) {
+ 		ASM = 1;
+ 		--argc;
+ 		++argv;
+ 	}
+ 	
+-	if ( (argc > 0) && (**argv == '-') && ( (*argv)[1] == 'd') ) {
++	if (has_exts && (argc > 0) && (**argv == '-') && ( (*argv)[1] == 'd') ) {
+ 		DEBUG = 1;
+ 		--argc;
+ 		++argv;
+ 	}
+ 	
+ 	if (argc < 1) {
+-		printf("USAGE : pcc [-s] [-d] file \n");
++		printf("Patrick Wu's C interpreter\n");
++		printf("usage : pcc [file] \n");
+ 		return -1;
+ 	}
+ 
+@@ -1559,22 +1558,22 @@ int main (int argc, char **argv) {
+ 	// Note : currently pcc does not support uninitialised variables, such that there would be no bss segment.
+ 
+ 	// allocate memory for VM
+-	if ( !(text = old_text = malloc(poolsize)) ) {
++	if ( !(text = old_text = (int*)malloc(poolsize)) ) {
+ 		printf("ERROR : could not malloc size of %d for text area\n", poolsize);
+ 		return -1;
+ 	}
+ 
+-	if ( !(data = malloc(poolsize)) ) {
++	if ( !(data = (char*)malloc(poolsize)) ) {
+ 		printf("ERROR : could not malloc size of %d for data area\n", poolsize);
+ 		return -1;
+ 	}
+ 
+-	if ( !(stack = malloc(poolsize)) ) {
++	if ( !(stack = (int*)malloc(poolsize)) ) {
+ 		printf("ERROR : could not malloc size of %d for stack area\n", poolsize);
+ 		return -1;
+ 	}
+ 	
+-	if ( !(symbols = malloc(poolsize)) ) {
++	if ( !(symbols = (int*)malloc(poolsize)) ) {
+ 		printf("ERROR : could not malloc size of %d for symbol table\n", poolsize);
+ 		return -1;
+ 	}
+@@ -1587,7 +1586,7 @@ int main (int argc, char **argv) {
+ 
+ 	old_text = text;
+ 	
+-	src = "char else enum if int return sizeof while "
++	src = (char*)"char else enum if int return sizeof while "
+ 	      "open read close printf malloc memset memcmp exit void main";
+ 
+ 	// add keywords to symbol table
+@@ -1609,7 +1608,7 @@ int main (int argc, char **argv) {
+ 	next(); current_id[Token] = Char; // if void, pcc handle it as null char
+ 	next(); idmain = current_id; // keep track of the main function
+ 	
+-	if ( !(src = old_src = malloc(poolsize)) ) {
++	if ( !(src = old_src = (char*)malloc(poolsize)) ) {
+ 		printf("ERROR : could not malloc size of %d for source area\n", poolsize);
+ 		return -1;
+ 	}
+@@ -1641,3 +1640,5 @@ int main (int argc, char **argv) {
+ 
+ 	return eval();
+ }
++
++
