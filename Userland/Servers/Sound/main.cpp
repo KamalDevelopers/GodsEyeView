@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
     nice(-1);
     int slave_file = open("/pipe/sound-slave", O_RDWR);
-    if (slave_file != -1)
+    if (slave_file != -E_VFSENTRY)
         return slave_audio_device_write(slave_file);
 
     SoundServer sound_server;

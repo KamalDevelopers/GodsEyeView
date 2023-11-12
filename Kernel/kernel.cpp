@@ -17,6 +17,7 @@
 #include "Filesystem/husky.hpp"
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
+#include "Hardware/Drivers/ac97.hpp"
 #include "Hardware/Drivers/am79c973.hpp"
 #include "Hardware/Drivers/ata.hpp"
 #include "Hardware/Drivers/cmos.hpp"
@@ -122,6 +123,12 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         klog("PCI: audio driver es1370");
         ES1370* es1370 = new ES1370(&interrupts, pci.get_descriptor());
         AUDIO->set_audio_driver(es1370);
+    }
+
+    else if (pci.find_driver(AC97::identifier())) {
+        klog("PCI: audio driver AC97");
+        AC97* ac97 = new AC97(&interrupts, pci.get_descriptor());
+        AUDIO->set_audio_driver(ac97);
     }
 
     Ethernet ethernet;
