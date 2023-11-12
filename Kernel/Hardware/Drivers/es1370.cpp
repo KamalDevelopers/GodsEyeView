@@ -4,17 +4,17 @@ MUTEX(mutex_es1370);
 
 ES1370::ES1370(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
-    , control_port(device.port_base + 0x00)
-    , status_port(device.port_base + 0x04)
-    , uart_data_port(device.port_base + 0x08)
-    , uart_status_port(device.port_base + 0x09)
-    , memory_page_port(device.port_base + 0x0C)
-    , codec_port(device.port_base + 0x10)
-    , legacy_port(device.port_base + 0x18)
-    , serial_port(device.port_base + 0x20)
-    , dac2_sample_port(device.port_base + 0x28)
-    , dac2_buffer_port(device.port_base + 0x38)
-    , dac2_buffer_size_port(device.port_base + 0x3C)
+    , control_port(device.bar0 + 0x00)
+    , status_port(device.bar0 + 0x04)
+    , uart_data_port(device.bar0 + 0x08)
+    , uart_status_port(device.bar0 + 0x09)
+    , memory_page_port(device.bar0 + 0x0C)
+    , codec_port(device.bar0 + 0x10)
+    , legacy_port(device.bar0 + 0x18)
+    , serial_port(device.bar0 + 0x20)
+    , dac2_sample_port(device.bar0 + 0x28)
+    , dac2_buffer_port(device.bar0 + 0x38)
+    , dac2_buffer_size_port(device.bar0 + 0x3C)
 {
     PCI::active->enable_busmaster(device);
     activate();

@@ -2,24 +2,24 @@
 #include "../../Mem/paging.hpp"
 
 #define ROUND(a, b) (((a) + (b)-1) & ~((b)-1))
-uint8_t TSAD_ports[4] = { 0x20, 0x24, 0x28, 0x2C };
-uint8_t TSD_ports[4] = { 0x10, 0x14, 0x18, 0x1C };
+uint8_t tsad_ports[4] = { 0x20, 0x24, 0x28, 0x2C };
+uint8_t tsd_ports[4] = { 0x10, 0x14, 0x18, 0x1C };
 
 RTL8139::RTL8139(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
-    , mac0_address_port(device.port_base)
-    , mac2_address_port(device.port_base + 0x02)
-    , mac4_address_port(device.port_base + 0x04)
-    , rbstart_port(device.port_base + 0x30)
-    , command_port(device.port_base + 0x37)
-    , capr_port(device.port_base + 0x38)
-    , interrupt_mask_port(device.port_base + 0x3C)
-    , interrupt_status_port(device.port_base + 0x3E)
-    , config0_port(device.port_base + 0x51)
-    , config1_port(device.port_base + 0x52)
-    , tx_config_port(device.port_base + 0x40)
-    , rx_config_port(device.port_base + 0x44)
-    , port_base { device.port_base }
+    , mac0_address_port(device.bar0)
+    , mac2_address_port(device.bar0 + 0x02)
+    , mac4_address_port(device.bar0 + 0x04)
+    , rbstart_port(device.bar0 + 0x30)
+    , command_port(device.bar0 + 0x37)
+    , capr_port(device.bar0 + 0x38)
+    , interrupt_mask_port(device.bar0 + 0x3C)
+    , interrupt_status_port(device.bar0 + 0x3E)
+    , config0_port(device.bar0 + 0x51)
+    , config1_port(device.bar0 + 0x52)
+    , tx_config_port(device.bar0 + 0x40)
+    , rx_config_port(device.bar0 + 0x44)
+    , bar0 { device.bar0 }
 {
     packet_index = 0;
     PCI::active->enable_busmaster(device);
@@ -59,8 +59,8 @@ void RTL8139::send(uint8_t* buffer, uint32_t size)
 {
     size = (size > TX_BUF_SIZE) ? TX_BUF_SIZE : size;
     memcpy(transfer_buffer[tx_index], buffer, size);
-    outbl(port_base + TSAD_ports[tx_index], (uint32_t)transfer_buffer[tx_index]);
-    outbl(port_base + TSD_ports[tx_index++], size);
+    outbl(bar0 + tsad_ports[tx_index], (uint32_t)transfer_buffer[tx_index]);
+    outbl(bar0 + tsd_ports[tx_index++], size);
 
     if (tx_index > 3)
         tx_index = 0;

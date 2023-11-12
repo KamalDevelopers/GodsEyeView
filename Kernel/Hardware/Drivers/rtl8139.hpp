@@ -45,7 +45,7 @@ private:
 
     char receive_buffer[8192 + 16 + 1500];
     uint64_t mac_address = 0;
-    uint32_t port_base = 0;
+    uint32_t bar0 = 0;
     uint32_t tx_index = 0;
     uint32_t packet_index = 0;
     uint8_t transfer_buffer[4][TX_BUF_SIZE];

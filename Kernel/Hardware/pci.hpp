@@ -15,7 +15,10 @@ typedef struct base_address_register {
 } base_address_register_t;
 
 typedef struct device_descriptor {
-    uint32_t port_base;
+    uint32_t bar0 = 0;
+    uint32_t bar1 = 0;
+    uint32_t bar2 = 0;
+    uint32_t bar3 = 0;
     uint32_t interrupt;
 
     uint16_t bus;

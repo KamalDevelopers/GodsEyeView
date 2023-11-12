@@ -89,8 +89,14 @@ bool PCI::find_driver(driver_identifier_t identifier, uint16_t bus, uint16_t dev
 
         for (int bar_num = 0; bar_num < 6; bar_num++) {
             get_base_address_register(bus, device, function, bar_num);
-            if (bar.address && (bar.type == 1))
-                dev.port_base = (uint32_t)bar.address;
+            if (bar.address && (bar.type == 1) && (bar_num == 0))
+                dev.bar0 = (uint32_t)bar.address;
+            if (bar.address && (bar.type == 1) && (bar_num == 1))
+                dev.bar1 = (uint32_t)bar.address;
+            if (bar.address && (bar.type == 1) && (bar_num == 2))
+                dev.bar2 = (uint32_t)bar.address;
+            if (bar.address && (bar.type == 1) && (bar_num == 3))
+                dev.bar3 = (uint32_t)bar.address;
         }
 
         if ((dev.vendor_id == identifier.vendor_id) && (dev.device_id == identifier.device_id))

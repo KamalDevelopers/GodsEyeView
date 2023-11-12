@@ -61,6 +61,7 @@ public:
 
     static driver_identifier_t identifier() { return { 0x1274, 0x5000 }; }
     uint32_t chunk_size() { return 256000; }
+    uint16_t current_sample_rate() { return sample_rate; }
 
     void set_sample_rate(uint16_t hz);
     void write_codec(int reg, uint16_t value);

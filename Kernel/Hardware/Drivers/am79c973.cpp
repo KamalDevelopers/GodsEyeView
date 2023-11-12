@@ -2,13 +2,13 @@
 
 AM79C973::AM79C973(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
-    , mac0_address_port(device.port_base)
-    , mac2_address_port(device.port_base + 0x02)
-    , mac4_address_port(device.port_base + 0x04)
-    , register_data_port(device.port_base + 0x10)
-    , register_address_port(device.port_base + 0x12)
-    , reset_port(device.port_base + 0x14)
-    , bus_control_register_data_port(device.port_base + 0x16)
+    , mac0_address_port(device.bar0)
+    , mac2_address_port(device.bar0 + 0x02)
+    , mac4_address_port(device.bar0 + 0x04)
+    , register_data_port(device.bar0 + 0x10)
+    , register_address_port(device.bar0 + 0x12)
+    , reset_port(device.bar0 + 0x14)
+    , bus_control_register_data_port(device.bar0 + 0x16)
 {
     PCI::active->enable_busmaster(device);
     activate();
