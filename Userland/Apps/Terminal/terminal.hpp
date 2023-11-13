@@ -15,6 +15,7 @@ private:
     int window_events_file = -1;
     int keys_pressed = -1;
     int shell_pid = -1;
+    bool skip_frame_render = 0;
     bool is_running = false;
     canvas_t window_canvas;
 

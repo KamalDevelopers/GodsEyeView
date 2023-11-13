@@ -4,11 +4,13 @@ Terminal::Terminal()
 {
     tty_master();
     memset(stdout_buffer, 0, sizeof(stdout_buffer));
-    window_events_file = request_display_window(window_canvas, 700, 500, BACKGROUND_COLOR);
-    canvas_set(window_canvas.framebuffer, BACKGROUND_COLOR, window_canvas.size);
 
     init("bitmaps/font.tftf");
     spawn_shell();
+
+    window_events_file = request_display_window(window_canvas, 700, 500, BACKGROUND_COLOR);
+    receive_stdout();
+    request_update_window();
 }
 
 Terminal::~Terminal()
@@ -27,6 +29,7 @@ void Terminal::tty_master()
 void Terminal::spawn_shell()
 {
     shell_pid = spawn("bin/shell", 0, 0);
+    sys_yield();
 }
 
 void Terminal::kill_shell()
@@ -99,6 +102,7 @@ void Terminal::receive_stdout()
     if (read(1, stdout_buffer, sizeof(stdout_buffer) - 1)) {
         draw_text(&window_canvas, stdout_buffer);
         memset(stdout_buffer, 0, sizeof(stdout_buffer));
+        skip_frame_render = 0;
     }
 }
 
@@ -112,10 +116,13 @@ void Terminal::run()
     polls[1].fd = window_events_file;
 
     while (1) {
+        skip_frame_render = 1;
         poll(polls, 2);
         receive_events();
         receive_stdout();
-        request_update_window();
+
+        if (!skip_frame_render)
+            request_update_window();
 
         if (!is_running)
             return;

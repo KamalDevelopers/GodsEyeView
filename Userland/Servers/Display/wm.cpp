@@ -151,7 +151,9 @@ void WindowManager::require_update(int pid)
 
 void WindowManager::update_window_border(uint32_t index)
 {
-    windows()[index]->get_canvas()->border_decoration = (index == active_window) ? WINDOW_ACTIVE_BORDER_COLOR : WINDOW_BORDER_COLOR;
+    windows()[index]->get_canvas()->border_decoration = (index == active_window)
+        ? WINDOW_ACTIVE_BORDER_COLOR
+        : WINDOW_BORDER_COLOR;
 }
 
 void WindowManager::sanitizer()
