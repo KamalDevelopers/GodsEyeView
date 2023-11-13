@@ -89,44 +89,44 @@ void Language::builtin_cd(char* dir)
 
 int Language::parse_token(char* token)
 {
-    if (!has_parsed_function && (strncmp(token, "exit", 4) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "exit") == 0)) {
         builtin_exit();
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "stat", 4) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "stat") == 0)) {
         char* file = strtok(NULL, " ");
         builtin_stat(file);
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "uname", 5) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "uname") == 0)) {
         builtin_uname();
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "cd", 2) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "cd") == 0)) {
         char* dir = strtok(NULL, " ");
         builtin_cd(dir);
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "clear", 5) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "clear") == 0)) {
         builtin_clear();
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "pwd", 3) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "pwd") == 0)) {
         builtin_pwd();
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "shutdown", 8) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "shutdown") == 0)) {
         builtin_shutdown();
         return 1;
     }
 
-    if (!has_parsed_function && (strncmp(token, "reboot", 6) == 0)) {
+    if (!has_parsed_function && (strcmp(token, "reboot") == 0)) {
         builtin_reboot();
         return 1;
     }
