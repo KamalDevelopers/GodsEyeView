@@ -7,7 +7,7 @@ Terminal::Terminal()
     window_events_file = request_display_window(window_canvas, 700, 500, BACKGROUND_COLOR);
     canvas_set(window_canvas.framebuffer, BACKGROUND_COLOR, window_canvas.size);
 
-    init("bitmaps/ter-u12b.psfu");
+    init("bitmaps/font.tftf");
     spawn_shell();
 }
 

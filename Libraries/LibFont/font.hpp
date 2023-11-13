@@ -28,7 +28,7 @@ uint32_t font_display_character_with_bg(font_t* use_font, canvas_t* canvas, char
     uint32_t pos_y, uint32_t color, uint32_t bg, bool use_bg);
 uint32_t font_display_character(font_t* use_font, canvas_t* canvas, char c, uint32_t pos_x,
     uint32_t pos_y, uint32_t color);
-font_t* font_load(const char* name);
+font_t* font_load(const char* pathname);
 void font_unload(font_t* font);
 
 #endif

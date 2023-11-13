@@ -66,12 +66,12 @@ void font_unload(font_t* font)
     free(font);
 }
 
-font_t* font_load(const char* name)
+font_t* font_load(const char* pathname)
 {
     font_t* font = (font_t*)malloc(sizeof(font_t));
     memset(font, 0, sizeof(font_t));
     struct stat statbuffer;
-    int file_descriptor = open("bitmaps/font.tftf", O_RDONLY);
+    int file_descriptor = open(pathname, O_RDONLY);
     fstat(file_descriptor, &statbuffer);
     font->font_buffer = (uint8_t*)malloc(sizeof(char) * statbuffer.st_size);
     memset(font->font_buffer, 0, sizeof(char) * statbuffer.st_size);
