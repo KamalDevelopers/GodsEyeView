@@ -143,9 +143,8 @@ void WindowManager::set_fullscreen_window(uint32_t index)
 void WindowManager::require_update(int pid)
 {
     int index = find_window_with_pid(pid);
-    if (index == -1)
+    if ((index == -1) || (windows()[index]->get_canvas()->hidden))
         return;
-
     update_window_border(index);
     compositor->require_update_canvas(windows()[index]->get_canvas());
 }
