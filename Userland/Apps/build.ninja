@@ -34,6 +34,10 @@ rule mixer
     command = cd ./Mixer && ninja && ninja move && cd ../
     description = building mixer application
 
+rule led
+    command = cd ./Led && ninja && ninja move && cd ../
+    description = building led application
+
 rule net
     command = cd ./Net && ninja && ninja move && cd ../
     description = building net application
@@ -45,6 +49,7 @@ rule terminal
 rule launcher
     command = cd ./Launcher && ninja && ninja move && cd ../
     description = building launcher (core) GUI application
+
 
 rule image
     command = cd ./Image && ninja && ninja move && cd ../
@@ -62,4 +67,5 @@ build mixer: mixer
 build net: net
 build terminal: terminal
 build launcher: launcher
+build led: led
 build image: image
