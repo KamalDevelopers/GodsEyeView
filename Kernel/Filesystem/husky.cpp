@@ -141,7 +141,7 @@ int Husky::mount()
 
     available_disk_size(super_node.mount_size);
     previous_node_ptr = 0;
-    previous_block_ptr = 0;
+    previous_block_ptr = mount_start_sector;
     nodes_cache = (node_t*)kmalloc(super_node.nodes_count * sizeof(node_t));
     read_data(mount_start_sector, (uint8_t*)nodes_cache, super_node.nodes_count * sizeof(node_t));
     create_root_directory();
