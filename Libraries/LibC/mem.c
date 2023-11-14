@@ -663,7 +663,7 @@ void*(malloc)(size_t req_size)
     return NULL;
 }
 
-void(free)(void* ptr)
+void(free)(const void* ptr)
 {
     struct liballoc_minor* min;
     struct liballoc_major* maj;
