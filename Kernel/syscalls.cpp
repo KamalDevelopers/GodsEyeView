@@ -213,7 +213,7 @@ int sys_recv(int fd, void* buffer, uint32_t len)
         struct pollfd polls[1];
         polls[0].events = POLLINS;
         polls[0].fd = fd;
-        poll(polls, 1);
+        poll(polls, 1, 0);
         return 1;
     }
 
@@ -228,7 +228,7 @@ int sys_recv(int fd, void* buffer, uint32_t len)
         struct pollfd polls[1];
         polls[0].events = POLLINS;
         polls[0].fd = fd;
-        poll(polls, 1);
+        poll(polls, 1, 0);
         return Pipe::read(pipe, (uint8_t*)buffer, len);
     }
 
@@ -376,9 +376,9 @@ int Syscalls::sys_spawn(char* file, char** args, uint8_t argc)
 }
 
 /* TODO: Add timespec and sigmask */
-int Syscalls::sys_poll(pollfd* fds, uint32_t nfds)
+int Syscalls::sys_poll(pollfd* fds, uint32_t nfds, int timeout)
 {
-    return TM->task()->poll(fds, nfds);
+    return TM->poll(fds, nfds, timeout * 180);
 }
 
 /* TODO: Replace with getdents */
@@ -527,7 +527,7 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         break;
 
     case 168:
-        cpu->eax = sys_poll((pollfd*)cpu->ebx, (uint32_t)cpu->ecx);
+        cpu->eax = sys_poll((pollfd*)cpu->ebx, (uint32_t)cpu->ecx, (int)cpu->edx);
         break;
 
     case 183:

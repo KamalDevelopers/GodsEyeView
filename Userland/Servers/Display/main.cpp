@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     polls[2].fd = client_communication_file;
 
     while (1) {
-        poll(polls, 3);
+        poll(polls, 3, 0);
         send_events(&wm);
         receive_connections(&wm);
         compositor.render_stack();

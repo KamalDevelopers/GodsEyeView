@@ -38,7 +38,7 @@ void Audio::write(pcm_stream_t pcm)
         if ((size != chunk_size) && (pcm.size > chunk_size))
             break;
         audio_position = i;
-        TM->task()->poll(polls, 1);
+        TM->poll(polls, 1, 0);
         audio_driver->write(pcm.data + i, size);
     }
 

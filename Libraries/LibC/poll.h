@@ -22,12 +22,12 @@ struct pollfd {
 extern "C" {
 #endif
 
-inline int poll(pollfd* fds, uint32_t nfds)
+inline int poll(pollfd* fds, uint32_t nfds, int timeout)
 {
     int status;
     asm volatile("int $0x80"
                  : "=a"(status)
-                 : "a"(168), "b"(fds), "c"(nfds));
+                 : "a"(168), "b"(fds), "c"(nfds), "d"(timeout));
     return status;
 }
 

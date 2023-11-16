@@ -117,7 +117,7 @@ void Terminal::run()
 
     while (1) {
         skip_frame_render = 1;
-        poll(polls, 2);
+        poll(polls, 2, 0);
         receive_events();
         receive_stdout();
 

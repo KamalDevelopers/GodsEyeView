@@ -129,7 +129,7 @@ int main(int argc, char** argv)
     request_update_window();
 
     while (1) {
-        poll(polls, 2);
+        poll(polls, 2, 0);
         if (receive_events(window_canvas, *image_canvas))
             break;
     }

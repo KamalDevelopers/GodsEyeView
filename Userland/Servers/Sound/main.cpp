@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     polls[0].fd = client_communication_file;
 
     while (1) {
-        poll(polls, 1);
+        poll(polls, 1, 0);
         receive_connections(&sound_server);
     }
 

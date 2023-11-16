@@ -156,12 +156,15 @@ int Task::become_tty_master()
     return 0;
 }
 
-int Task::poll(pollfd* pollfds, uint32_t npolls)
+int Task::poll(pollfd* pollfds, uint32_t npolls, int timeout)
 {
     if (npolls >= sizeof(polls) / sizeof(pollfd))
         return -1;
 
     sleeping = -SLEEP_WAIT_POLL;
+    poll_sleeping = timeout;
+    if (!poll_sleeping)
+        poll_sleeping = -1;
     quantum = 0;
 
     for (uint32_t i = 0; i < npolls; i++)
@@ -423,6 +426,14 @@ int8_t TaskManager::send_signal(int pid, int sig)
     return receiver->notify(sig);
 }
 
+int TaskManager::poll(pollfd* pollfds, uint32_t npolls, int timeout)
+{
+    int ticks = 0;
+    if (timeout > 0)
+        ticks = current_ticks + timeout;
+    return tasks.at(current_task)->poll(pollfds, npolls, ticks);
+}
+
 void TaskManager::sleep(uint32_t ticks)
 {
     tasks.at(current_task)->sleep(current_ticks + ticks);
@@ -531,8 +542,12 @@ void TaskManager::pick_next_task()
     if (tasks.at(current_task)->state != ALIVE)
         pick_next_task();
 
-    if (tasks.at(current_task)->sleeping < 0)
-        pick_next_task();
+    if (tasks.at(current_task)->sleeping < 0) {
+        if (tasks.at(current_task)->poll_sleeping > 0 && current_ticks >= tasks.at(current_task)->poll_sleeping)
+            tasks.at(current_task)->wake_from_poll();
+        else
+            pick_next_task();
+    }
 
     if (current_ticks >= tasks.at(current_task)->sleeping)
         tasks.at(current_task)->sleeping = 0;

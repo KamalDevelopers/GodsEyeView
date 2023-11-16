@@ -81,6 +81,7 @@ private:
     bool is_executable = false;
     bool is_inherited_tty = false;
     int sleeping = 0;
+    int poll_sleeping = -1;
     int quantum = PROCESS_QUANTUM;
     int wake_pid_on_exit = 0;
     int process_group = 0;
@@ -105,7 +106,7 @@ public:
 
     int chdir(char* dir);
     void cwd(char* buffer);
-    int poll(pollfd* pollfds, uint32_t npolls);
+    int poll(pollfd* pollfds, uint32_t npolls, int timeout);
     bool socket_has_data(ipv4_socket_t* socket);
     int destroy_socket(int sockfd);
     int socket(uint8_t type);
@@ -166,6 +167,7 @@ public:
     Task* task(int pid);
 
     uint32_t last_cpu_usage();
+    int poll(pollfd* pollfds, uint32_t npolls, int timeout);
     void sleep(uint32_t ticks);
     int waitpid(int pid);
     void test_poll();

@@ -32,7 +32,7 @@ void SoundServer::kill_audio_slave()
     polls[0].events = POLLOUT;
     polls[0].fd = audio_device_file;
 
-    poll(polls, 1);
+    poll(polls, 1, 0);
     kill(audio_slave_pid, 2);
 }
 

@@ -149,14 +149,15 @@ void Launcher::run()
     polls[0].fd = window_events_file;
 
     while (1) {
-        canvas_set(window_canvas.framebuffer, 0x3C080808, window_canvas.size);
+        canvas_set(window_canvas.framebuffer, bg, window_canvas.size);
         display_time();
         display_cpu_usage();
         request_update_window();
-        // poll(polls, 1);
+
         if (!has_spawned_children)
             spawns();
-        sleep(2);
+
+        poll(polls, 1, 2700);
         receive_events();
         request_update_window();
 
