@@ -21,7 +21,8 @@
   * `Esc` close active window
   * `Ctrl+Space` set active window as master
   * `Ctrl+Enter` fullscreen active window
-  * `Ctrl+[1-3]` swap between workspaces 1 through 3
+  * `Ctrl+K` positive change active window
+  * `Ctrl+J` negative change active window
 
 ### Building GevOS
 

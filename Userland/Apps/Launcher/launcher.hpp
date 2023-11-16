@@ -17,8 +17,8 @@ private:
     bool has_spawned_children = false;
     uint32_t width = 0;
     uint32_t height = 0;
-    uint32_t bg = 0x3C080808;
-    uint32_t fg = 0x979797;
+    const uint32_t bg = 0x65080808;
+    const uint32_t fg = 0x979797;
     font_t* default_font;
     canvas_t window_canvas;
 

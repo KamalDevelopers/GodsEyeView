@@ -78,6 +78,24 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
         return;
     }
 
+    if ((event->key == 'k') && (event->modifier == 2)) {
+        if (active_window <= 0)
+            return;
+        set_active_window(active_window - 1);
+        if (!windows()[active_window]->get_controlled())
+            set_active_window(active_window + 1);
+        return;
+    }
+
+    if ((event->key == 'j') && (event->modifier == 2)) {
+        if (active_window >= tiled_windows || (active_window + 1) >= windows_size())
+            return;
+        set_active_window(active_window + 1);
+        if (!windows()[active_window]->get_controlled())
+            set_active_window(active_window - 1);
+        return;
+    }
+
     if ((event->key == 10) && (event->modifier == 2)) {
         if (active_window < 0)
             return;
