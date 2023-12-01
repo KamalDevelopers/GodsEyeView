@@ -60,9 +60,9 @@ void font_unload(font_t* font)
 {
     if (!font)
         return;
+    free(font->font_buffer);
     font->font_buffer = 0;
     font->font_header = 0;
-    free(font->font_buffer);
     free(font);
 }
 
