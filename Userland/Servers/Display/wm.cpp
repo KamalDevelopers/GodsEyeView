@@ -11,8 +11,8 @@ WindowManager::WindowManager(Compositor* compositor)
     memset(workspaces, 0, sizeof(window_group_t) * (WORKSPACES + 1)); */
 
     for (uint16_t i = 0; i < WORKSPACES; i++) {
-        workspaces[i].windows = (Window**)malloc(sizeof(Window*) * 50);
-        workspaces[i].windows_ptr_size = 50;
+        workspaces[i].windows = (Window**)malloc(sizeof(Window*) * 300);
+        workspaces[i].windows_ptr_size = 300;
         memset(workspaces[i].windows, 0, sizeof(Window*));
         workspaces[i].stored_active_window = -1;
     }
@@ -374,7 +374,12 @@ void WindowManager::windows_append(Window* window)
     window_group_t* group = &workspaces[active_windows];
 
     if (group->window_count + 1 >= group->windows_ptr_size) {
-        group->windows = (Window**)realloc(group->windows, (group->window_count + 1) * sizeof(Window*));
+        /* ((very unlikely)) realloc */
+        void* new_group_windows = malloc((group->window_count + 1) * sizeof(Window*));
+        memcpy(new_group_windows, group->windows, group->window_count * sizeof(Window*));
+        free(group->windows);
+        group->windows = (Window**)new_group_windows;
+
         group->windows_ptr_size = group->window_count + 1;
     }
 
@@ -386,10 +391,9 @@ void WindowManager::windows_remove(uint32_t index)
 {
     window_group_t* group = &workspaces[active_windows];
 
-    if (group->window_count + 1 >= group->windows_ptr_size) {
-        group->windows = (Window**)realloc(group->windows, (group->window_count - 1) * sizeof(Window*));
-        group->windows_ptr_size = group->window_count + 1;
-    }
+    /* FIXME: this did not seem right */
+    /*if (group->window_count >= group->windows_ptr_size) {
+    } */
 
     if (index >= group->window_count)
         return;

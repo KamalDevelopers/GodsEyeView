@@ -97,7 +97,8 @@ int main(int argc, char** argv)
     }
 
     char* buffer = (char*)malloc(statbuffer.st_size);
-    int* tape = (int*)calloc(30000, sizeof(int));
+    int* tape = (int*)malloc(30000 * sizeof(int));
+    memset(tape, 0, 30000 * sizeof(int));
 
     read(file_descriptor, buffer, statbuffer.st_size);
     close(file_descriptor);

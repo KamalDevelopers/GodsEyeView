@@ -157,7 +157,7 @@ void Launcher::run()
         if (!has_spawned_children)
             spawns();
 
-        poll(polls, 1, 2700);
+        poll(polls, 1, 3200);
         receive_events();
         request_update_window();
 

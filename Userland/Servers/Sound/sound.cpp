@@ -169,7 +169,12 @@ void SoundServer::mix_streams()
         }
     }
 
-    main_audio_stream.data = (uint8_t*)realloc(main_audio_stream.data, audio_stream_size);
+    /* realloc */
+    void* new_audio_stream = malloc(audio_stream_size);
+    memcpy(new_audio_stream, main_audio_stream.data, main_audio_stream.size);
+    free(main_audio_stream.data);
+    main_audio_stream.data = (uint8_t*)new_audio_stream;
+
     main_audio_stream.size = audio_stream_size;
     memcpy(main_audio_stream.data, streams.at(largest_stream).pcm.data + streams.at(largest_stream).position, audio_stream_size);
 

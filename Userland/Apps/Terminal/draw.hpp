@@ -8,7 +8,7 @@
 #include <LibC/unistd.h>
 #include <LibDisplay/canvas.hpp>
 
-#define BACKGROUND_COLOR 0x2F080808
+#define BACKGROUND_COLOR 0x31080808
 #define TEXT_GAP_X 12
 #define TEXT_GAP_Y 16
 

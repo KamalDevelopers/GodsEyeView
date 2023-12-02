@@ -27,7 +27,9 @@ int editor_open_file(const char* pathname)
     struct stat statbuffer;
     fstat(fd, &statbuffer);
 
-    edit.doc.buffer = (char*)calloc(statbuffer.st_size + APPEND_SIZ, sizeof(char));
+    edit.doc.buffer = (char*)malloc(statbuffer.st_size + APPEND_SIZ);
+    memset(edit.doc.buffer, 0, statbuffer.st_size + APPEND_SIZ);
+
     read(fd, (void*)edit.doc.buffer, statbuffer.st_size);
     edit.doc.filled_size = statbuffer.st_size;
     edit.doc.size = statbuffer.st_size + APPEND_SIZ;
