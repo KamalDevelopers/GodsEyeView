@@ -13,7 +13,7 @@ WindowManager::WindowManager(Compositor* compositor)
     for (uint16_t i = 0; i < WORKSPACES; i++) {
         workspaces[i].windows = (Window**)malloc(sizeof(Window*) * 300);
         workspaces[i].windows_ptr_size = 300;
-        memset(workspaces[i].windows, 0, sizeof(Window*));
+        memset(workspaces[i].windows, 0, sizeof(Window*) * 300);
         workspaces[i].stored_active_window = -1;
     }
 }

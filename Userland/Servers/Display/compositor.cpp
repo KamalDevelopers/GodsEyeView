@@ -134,8 +134,22 @@ void Compositor::render_borders(canvas_t* canvas)
     }
 }
 
+bool Compositor::is_layer_visible(canvas_t* canvas)
+{
+    if (canvas->hidden)
+        return 0;
+    if (canvas->x + canvas->width > root_layer->width)
+        return 0;
+    if (canvas->y + canvas->height > root_layer->height)
+        return 0;
+    return 1;
+}
+
 void Compositor::render_single_layer(canvas_t* canvas)
 {
+    if (!is_layer_visible(canvas))
+        return;
+
     uint32_t final_layer_address = (uint32_t)(final_layer->framebuffer) + canvas->x * sizeof(int32_t);
     final_layer_address += canvas->y * (final_layer->width * sizeof(int32_t));
     uint32_t canvas_address = (uint32_t)(root_layer->framebuffer) + canvas->x * sizeof(int32_t);
@@ -170,9 +184,7 @@ void Compositor::render_stack()
     /* TODO: Make this faster by reducing draw areas! */
     render_canvas(root_layer);
     for (uint32_t i = 0; i < layers.size(); i++) {
-        if (layers[i]->hidden)
-            continue;
-        if (layers[i]->x + layers[i]->width > root_layer->width || layers[i]->y + layers[i]->height > root_layer->height)
+        if (!is_layer_visible(layers[i]))
             continue;
         render_borders(layers[i]);
         render_rounded_borders(layers[i]);

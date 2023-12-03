@@ -47,6 +47,7 @@ public:
     void load_mouse_bitmap(const char* file_name);
     int read_bitmap(const char* file_name, canvas_t* canvas);
     void update_mouse_position(uint32_t x, uint32_t y, bool is_updating_stack = false);
+    bool is_layer_visible(canvas_t* canvas);
 
     void render_single_layer(canvas_t* canvas);
     void render_rounded_borders(canvas_t* canvas);
