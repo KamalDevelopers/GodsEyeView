@@ -117,6 +117,7 @@ typedef struct pool {
 typedef struct major {
     uint8_t open_pools[11];
     int16_t free_pool[11];
+    uint8_t cached_open_pools[11];
     pool_t pools[11][126];
 } major_t;
 
@@ -163,10 +164,22 @@ void sh_free_stamp(const void* addr)
 
 int8_t find_open_pool(uint32_t chunk_size_index, uint8_t* pool_index)
 {
-    /* TODO: Cache! */
-    for (*pool_index = 0; *pool_index < 126; ++(*pool_index))
-        if (major.pools[chunk_size_index][*pool_index].is_open)
+    /* With cache */
+    uint8_t cached_open = major.cached_open_pools[chunk_size_index];
+    if (major.pools[chunk_size_index][cached_open].is_open) {
+        *pool_index = cached_open;
+        return 0;
+    }
+
+    /* Without cache */
+    for (*pool_index = 0; *pool_index < 126; ++(*pool_index)) {
+        if (major.pools[chunk_size_index][*pool_index].is_open) {
+            major.cached_open_pools[chunk_size_index] = *pool_index;
             return 0;
+        }
+    }
+
+    /* Not found */
     *pool_index = 0;
     return 1;
 }
@@ -175,6 +188,8 @@ int8_t find_open_pool_pos(pool_t* pool, uint32_t chunk_size, uint32_t* index_in_
 {
     uint32_t start = 0;
     uint32_t i = 0;
+
+    /* Scan pool for free spaces */
     while (start < 4096) {
         if (!((uint8_t*)(pool->address) + start)[0]) {
             *index_in_pool = i;
@@ -196,12 +211,12 @@ int16_t find_free_pool(uint32_t chunk_size_index)
 
 void sh_free_pool(const void* address)
 {
-    /* determine pool number */
+    /* Determine pool number */
     uint8_t stamp = ((uint8_t*)address - 1)[0];
     uint8_t pool = (stamp >> 1) - 1;
     int range;
 
-    /* determine chunk size index */
+    /* Determine chunk size index */
     int8_t chunk_size_index = -1;
     for (uint8_t i = 0; i < 11; ++i) {
         range = (uint8_t*)address - (uint8_t*)major.pools[i][pool].address;
@@ -215,13 +230,13 @@ void sh_free_pool(const void* address)
 
     *((uint8_t*)address - 1) = 0;
 
-    /* case 1: pool was full but is re-opened */
+    /* Case 1: pool was full but is re-opened */
     if (!major.pools[chunk_size_index][pool].is_open) {
         major.pools[chunk_size_index][pool].is_open = 1;
         major.open_pools[chunk_size_index]++;
     }
 
-    /* case 2: when pool index > MAX_BUFFER_POOLS
+    /* Case 2: when pool index > MAX_BUFFER_POOLS
      * last chunk free'd, delete pool */
     if (range == 1 && pool > MAX_BUFFER_POOLS)  {
         pfree(major.pools[chunk_size_index][pool].address, 4096);
@@ -243,13 +258,13 @@ void* sh_malloc_pool(uint32_t size)
     chunk_size++;
     uint8_t chunk_size_index = __builtin_ffs(chunk_size) - 1;
 
-    /* check for pool */
+    /* Check for pool */
     uint8_t pool;
     int8_t do_create_pool = 1;
     if (major.open_pools[chunk_size_index])
         do_create_pool = find_open_pool(chunk_size_index, &pool);
 
-    /* slow? */
+    /* Create new pool, slow? */
     if (do_create_pool) {
         if (major.free_pool[chunk_size_index] < 0)
             return sh_malloc_stamp(size); // plan b
@@ -284,7 +299,7 @@ void* sh_malloc_pool(uint32_t size)
         return address + 1;
     }
 
-    /* assert not reached! */
+    /* Assert not reached! */
     return 0;
 }
 
@@ -298,6 +313,8 @@ void sh_free(const void* address)
 
 void* sh_malloc(size_t size)
 {
+    if (!size)
+        return 0;
     if (size <= 1024)
         return sh_malloc_pool(size);
     return sh_malloc_stamp(size);
