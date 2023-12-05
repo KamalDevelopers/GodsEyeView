@@ -1,26 +1,27 @@
 #include "mem.h"
 
-void* memmove(void* dest, const void* src, size_t n)
+void* memmove(void* dst, const void* src, size_t cnt)
 {
-	uint8_t* from = (uint8_t*)src;
-	uint8_t* to = (uint8_t*)dest;
-
-	if (from == to || n == 0)
-		return dest;
-	if (to > from && to-from < (int)n) {
-		int i;
-		for(i=n-1; i>=0; i--)
-			to[i] = from[i];
-		return dest;
-	}
-	if (from > to && from-to < (int)n) {
-		size_t i;
-		for(i=0; i<n; i++)
-			to[i] = from[i];
-		return dest;
-	}
-	memcpy(dest, src, n);
-	return dest;
+    void* temp = dst;
+    if ((uintptr_t)dst <= (uintptr_t)src || (uintptr_t)dst >= (uintptr_t)src + cnt) {
+        asm volatile (
+            "rep movsb"
+            :"=D"(dst),"=S"(src),"=c"(cnt)
+            :"0"(dst),"1"(src),"2"(cnt)
+            :"memory"
+        );
+    }
+    else {
+        asm volatile (
+            "std\n\t"
+            "rep movsb\n\t"
+            "cld"
+            :"=D"(dst),"=S"(src),"=c"(cnt)
+            :"0"((uintptr_t)dst + cnt - 1),"1"((uintptr_t)src + cnt - 1),"2"(cnt)
+            :"memory"
+        );
+    }
+    return temp;
 }
 
 
@@ -48,15 +49,16 @@ void* memchr(const void* s, int c, size_t n)
     return 0;
 }
 
-void* memcpy(void* dst, const void* src, unsigned int cnt)
+void* memcpy(void* d, const void* s, uint32_t c)
 {
-    char* psz_dest = (char*)dst;
-    const char* psz_source = (const char*)src;
-    while (cnt) {
-        *(psz_dest++) = *(psz_source++);
-        --cnt;
-    }
-    return dst;
+    void* temp = d;
+    asm volatile (
+        "rep movsb"
+        :"=D"(d),"=S"(s),"=c"(c)
+        :"0"(d),"1"(s),"2"(c)
+        :"memory"
+    );
+    return temp;
 }
 
 void* memcpy32(void* dst, const void* src, size_t cnt)
@@ -76,12 +78,16 @@ void* memcpy32(void* dst, const void* src, size_t cnt)
     return dst;
 }
 
-void* memset(void* s, int c, size_t n)
+void* memset(void* d, int s, size_t c)
 {
-    unsigned int i;
-    for (i = 0; i < n; i++)
-        ((char*)s)[i] = c;
-    return s;
+    void * temp = d;
+    asm volatile (
+        "rep stosb"
+        :"=D"(d),"=c"(c)
+        :"0"(d),"a"(s),"1"(c)
+        :"memory"
+    );
+    return temp;
 }
 
 inline void* palloc(int size)
@@ -305,6 +311,8 @@ void* sh_malloc_pool(uint32_t size)
 
 void sh_free(const void* address)
 {
+    if (!address)
+        return;
     uint8_t stamp = ((uint8_t*)address - 1)[0];
     if (stamp & (1 << 0))
         return sh_free_stamp(address);
@@ -328,4 +336,14 @@ void* malloc(size_t size)
 void free(const void* address)
 {
     return sh_free(address);
+}
+
+void* calloc(size_t count, size_t size)
+{
+  if (count == 0 || size == 0)
+      return 0;
+
+    void* p = malloc(count * size);
+    memset(p, 0, size * count);
+    return p;
 }

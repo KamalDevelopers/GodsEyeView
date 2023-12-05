@@ -379,7 +379,6 @@ void WindowManager::windows_append(Window* window)
         memcpy(new_group_windows, group->windows, group->window_count * sizeof(Window*));
         free(group->windows);
         group->windows = (Window**)new_group_windows;
-
         group->windows_ptr_size = group->window_count + 1;
     }
 
@@ -390,11 +389,6 @@ void WindowManager::windows_append(Window* window)
 void WindowManager::windows_remove(uint32_t index)
 {
     window_group_t* group = &workspaces[active_windows];
-
-    /* FIXME: this did not seem right */
-    /*if (group->window_count >= group->windows_ptr_size) {
-    } */
-
     if (index >= group->window_count)
         return;
     for (int i = index; i < group->window_count - 1; i++)
