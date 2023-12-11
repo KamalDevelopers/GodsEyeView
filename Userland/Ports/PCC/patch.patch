@@ -1,6 +1,6 @@
 diff --git a/build.ninja b/build.ninja
 new file mode 100644
-index 0000000..f128c47
+index 0000000..e5f37da
 --- /dev/null
 +++ b/build.ninja
 @@ -0,0 +1,10 @@
@@ -44,7 +44,7 @@ index 0000000..dffbea1
 +	}
 +}
 diff --git a/pcc.c b/pcc.c
-index ea8b55e..53cc143 100644
+index ea8b55e..ad15355 100644
 --- a/pcc.c
 +++ b/pcc.c
 @@ -1,7 +1,7 @@
@@ -59,7 +59,30 @@ index ea8b55e..53cc143 100644
  
  int DEBUG;
  int ASM;
-@@ -1479,7 +1479,7 @@ int eval () {
+@@ -94,13 +94,18 @@ void next () {
+ 		if 	(token == '\n') {
+ 			if (ASM) {
+ 				// output compile information
+-				printf("Line %d : %.*s", line, src-old_src, old_src);
++				// printf("Line %d : %.*s", line, src-old_src, old_src);
+ 				old_src = src;
+ 
+ 				while (old_text < text) {
+-					printf("%8.4s", & 	"LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,"
+-                                      				"OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,"
+-                                      				"OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT" [*++old_text * 5] );
++                    char token[10];
++                    token[5] = 0;
++					const char* p = "LEA  IMM  JMP  CALL JZ   JNZ  ENT  ADJ  LEV  LI   LC   SI   SC   PUSH "
++                                      				"OR   XOR  AND  EQ   NE   LT   GT   LE   GE   SHL  SHR  ADD  SUB  MUL  DIV  MOD  "
++                                      				"OPEN READ CLOS PRTF MALC MSET MCMP EXIT";
++                    strncpy(token, p + (*++old_text * 5), 5);
++                    printf("%s", token);
++
+ 
+ 					if (*old_text <= ADJ) printf("%d\n", *++old_text);
+ 					else printf("\n");
+@@ -1479,7 +1484,7 @@ int eval () {
  			
  			else if (op == CLOS)	{ ax = close(*sp); }
  			else if (op == READ) 	{ ax = read(sp[2], (char *)sp[1], *sp); }
@@ -68,7 +91,7 @@ index ea8b55e..53cc143 100644
  			else if (op == MALC)	{ ax = (int)malloc(*sp); }
  			else if (op == MSET) 	{ ax = (int)memset( (char *)sp[2], sp[1], *sp); }
  			else if (op == MCMP) 	{ ax = memcmp( (char *)sp[2], (char *)sp[1], *sp); }
-@@ -1507,24 +1507,23 @@ int main (int argc, char **argv) {
+@@ -1507,24 +1512,23 @@ int main (int argc, char **argv) {
  
  	DEBUG = 0;
  	ASM = 0;
@@ -78,7 +101,7 @@ index ea8b55e..53cc143 100644
 -	argv++;
 -
 -	if ( (argc > 0) && (**argv == '-') && ( (*argv)[1] == 's') ) {
-+	if (has_exts && (argc > 0) && (**argv == '-') && ( (*argv)[1] == 's') ) {
++	if ((argc > 0) && (**argv == '-') && ( (*argv)[1] == 's') ) {
  		ASM = 1;
  		--argc;
  		++argv;
@@ -94,11 +117,11 @@ index ea8b55e..53cc143 100644
  	if (argc < 1) {
 -		printf("USAGE : pcc [-s] [-d] file \n");
 +		printf("Patrick Wu's C interpreter\n");
-+		printf("usage : pcc [file] \n");
++		printf("usage : pcc [-s] <file> \n");
  		return -1;
  	}
  
-@@ -1559,22 +1558,22 @@ int main (int argc, char **argv) {
+@@ -1559,22 +1563,22 @@ int main (int argc, char **argv) {
  	// Note : currently pcc does not support uninitialised variables, such that there would be no bss segment.
  
  	// allocate memory for VM
@@ -125,7 +148,7 @@ index ea8b55e..53cc143 100644
  		printf("ERROR : could not malloc size of %d for symbol table\n", poolsize);
  		return -1;
  	}
-@@ -1587,7 +1586,7 @@ int main (int argc, char **argv) {
+@@ -1587,7 +1591,7 @@ int main (int argc, char **argv) {
  
  	old_text = text;
  	
@@ -134,7 +157,7 @@ index ea8b55e..53cc143 100644
  	      "open read close printf malloc memset memcmp exit void main";
  
  	// add keywords to symbol table
-@@ -1609,7 +1608,7 @@ int main (int argc, char **argv) {
+@@ -1609,7 +1613,7 @@ int main (int argc, char **argv) {
  	next(); current_id[Token] = Char; // if void, pcc handle it as null char
  	next(); idmain = current_id; // keep track of the main function
  	
@@ -143,7 +166,7 @@ index ea8b55e..53cc143 100644
  		printf("ERROR : could not malloc size of %d for source area\n", poolsize);
  		return -1;
  	}
-@@ -1641,3 +1640,5 @@ int main (int argc, char **argv) {
+@@ -1641,3 +1645,5 @@ int main (int argc, char **argv) {
  
  	return eval();
  }
