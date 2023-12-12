@@ -154,16 +154,41 @@ char* strcpy(char* s1, const char* s2)
     return save;
 }
 
-char* strncpy(char* arr, const char* str, int l)
+char* strncpy(char* s1, const char* s2, int l)
 {
     int x = 0;
-
     while (x != l) {
-        *arr++ = *str++;
+        *s1++ = *s2++;
         x++;
     }
-    *arr = 0;
-    return arr;
+    *s1 = 0;
+    return s1;
+}
+
+int strncasecmp(const char* s1, const char* s2, int l)
+{
+    const unsigned char* p1 = (const unsigned char*)s1;
+    const unsigned char* p2 = (const unsigned char*)s2;
+    int result;
+    if (p1 == p2)
+        return 0;
+    for (; ((result = tolower(*p1) - tolower(*p2++)) == 0) && l; l--)
+        if (*p1++ == '\0' || !l)
+            break;
+    return result;
+}
+
+int strcasecmp(const char* s1, const char* s2)
+{
+    const unsigned char* p1 = (const unsigned char*)s1;
+    const unsigned char* p2 = (const unsigned char*)s2;
+    int result;
+    if (p1 == p2)
+        return 0;
+    while ((result = tolower(*p1) - tolower(*p2++)) == 0)
+        if (*p1++ == '\0')
+            break;
+    return result;
 }
 
 int strcmp(const char* s1, const char* s2)
