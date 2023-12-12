@@ -19,6 +19,11 @@ static int isblank(int c)
     return 0;
 }
 
+static int isupper(int ch)
+{
+    return (((ch >= 'A' && ch <= 'Z')) || (ch >= 0xC0 && ch <= 0xDD));
+}
+
 static int isalpha(int c)
 {
     char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -65,6 +70,10 @@ static int ispunct(int c)
     return 1;
 }
 
+static int isprint(int c)
+{
+    return ((c >= ' ' && c <= '~') ? 1 : 0);
+}
 
 #ifdef __cplusplus
 }
