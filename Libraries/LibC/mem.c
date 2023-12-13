@@ -365,6 +365,8 @@ void sh_free(const void* address)
 
 void* sh_realloc(const void* address, size_t size)
 {
+    if (!address)
+        return malloc(size);
     if (size <= 1024)
         return sh_realloc_pool(address, size);
     return sh_realloc_stamp(address, size);
