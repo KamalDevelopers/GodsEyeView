@@ -13,5 +13,6 @@ void* memset(void* s, int c, size_t n);
 void* malloc(size_t size);
 void free(const void* addr);
 void* calloc(size_t count, size_t size);
+void* realloc(const void* address, size_t size);
 
 #endif

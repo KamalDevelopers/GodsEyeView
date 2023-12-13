@@ -215,25 +215,32 @@ int16_t find_free_pool(uint32_t chunk_size_index)
     return -1;
 }
 
-void sh_free_pool(const void* address)
+void sh_stamp_pool(const void* address, int* range,
+        uint8_t* stamp, uint8_t* pool, int8_t* chunk_size_index)
 {
     /* Determine pool number */
-    uint8_t stamp = ((uint8_t*)address - 1)[0];
-    uint8_t pool = (stamp >> 1) - 1;
-    int range;
+    *stamp = ((uint8_t*)address - 1)[0];
+    *pool = (*stamp >> 1) - 1;
 
     /* Determine chunk size index */
-    int8_t chunk_size_index = -1;
+    *chunk_size_index = -1;
     for (uint8_t i = 0; i < 11; ++i) {
-        range = (uint8_t*)address - (uint8_t*)major.pools[i][pool].address;
-        if (range > 0 && range < 4096) {
-            chunk_size_index = i;
+        *range = (uint8_t*)address - (uint8_t*)major.pools[i][*pool].address;
+        if (*range > 0 && *range < 4096) {
+            *chunk_size_index = i;
             break;
         }
     }
+}
+
+void sh_free_pool(const void* address)
+{
+    int range;
+    uint8_t stamp, pool;
+    int8_t chunk_size_index;
+    sh_stamp_pool(address, &range, &stamp, &pool, &chunk_size_index);
     if (chunk_size_index < 0)
         return;
-
     *((uint8_t*)address - 1) = 0;
 
     /* Case 1: pool was full but is re-opened */
@@ -309,6 +316,43 @@ void* sh_malloc_pool(uint32_t size)
     return 0;
 }
 
+void* sh_realloc_pool(const void* address, uint32_t size)
+{
+    int range;
+    uint8_t stamp, pool;
+    int8_t chunk_size_index;
+    sh_stamp_pool(address, &range, &stamp, &pool, &chunk_size_index);
+    if (chunk_size_index < 0)
+        return 0;
+
+    uint32_t old_size = 2 << (chunk_size_index - 1);
+    void* new_alloc = malloc(old_size);
+    memcpy(new_alloc, address, old_size);
+    sh_free_pool(address);
+    return new_alloc;
+}
+
+void* sh_realloc_stamp(const void* address, uint32_t size)
+{
+    uint8_t* addr = (uint8_t*)address;
+    addr--;
+    uint8_t small_stamp = ((uint8_t*)addr)[0];
+    uint16_t big_stamp = 0;
+    small_stamp = small_stamp >> 1;
+
+    if (small_stamp == 127) {
+        big_stamp = ((uint16_t*)(addr - 2))[0] + 127;
+        addr -= 2;
+    }
+
+    uint16_t stamp = (!big_stamp) ? small_stamp : big_stamp;
+    uint32_t old_size = stamp * 4096;
+    void* new_alloc = malloc(size);
+    memcpy(new_alloc, address, old_size);
+    pfree(addr, old_size);
+    return new_alloc;
+}
+
 void sh_free(const void* address)
 {
     if (!address)
@@ -317,6 +361,13 @@ void sh_free(const void* address)
     if (stamp & (1 << 0))
         return sh_free_stamp(address);
     return sh_free_pool(address);
+}
+
+void* sh_realloc(const void* address, size_t size)
+{
+    if (size <= 1024)
+        return sh_realloc_pool(address, size);
+    return sh_realloc_stamp(address, size);
 }
 
 void* sh_malloc(size_t size)
@@ -331,6 +382,11 @@ void* sh_malloc(size_t size)
 void* malloc(size_t size)
 {
     return sh_malloc(size);
+}
+
+void* realloc(const void* address, size_t size)
+{
+    return sh_realloc(address, size);
 }
 
 void free(const void* address)
