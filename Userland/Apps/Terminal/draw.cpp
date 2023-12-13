@@ -68,32 +68,148 @@ void next_line(canvas_t* canvas)
     pos_y += TEXT_GAP_Y;
 }
 
-void character_set(canvas_t* canvas, int index, bool bg_blend)
+void move_cursor_y(canvas_t* canvas, int start, int lines)
 {
-    if ((index == '\33') && !escape_flag) {
-        escape_flag = 1;
+    start += TEXT_GAP_Y * lines;
+    if (start >= canvas->height - TEXT_GAP_Y)
         return;
+    if (start < TEXT_GAP_Y)
+        return;
+    cursor_set(canvas, false);
+    pos_y = start;
+}
+
+void move_cursor_x(canvas_t* canvas, int start, int columns)
+{
+    start += (default_font->font_header->width + 1) * columns;
+    if (start >= canvas->width - TEXT_GAP_X)
+        return;
+    if (start < TEXT_GAP_X)
+        return;
+    cursor_set(canvas, false);
+    pos_x = start;
+}
+
+bool handle_escape_flag_legacy(canvas_t* canvas, int index)
+{
+    static char legacy_escape_sequence[25];
+    static int legacy_escape_sequence_index;
+    bool do_return = 0;
+
+    if (index == '[') {
+        escape_flag = 200;
+        return 1;
     }
 
+    if (escape_flag == 200 && index == 'H') {
+        pos_x = TEXT_GAP_X;
+        pos_y = TEXT_GAP_Y;
+        escape_flag = 0;
+        return 1;
+    }
+
+    if ((index == 'A' || index == 'B') && escape_flag >= 200 && legacy_escape_sequence_index) {
+        for (int i = 0; i < legacy_escape_sequence_index; ++i)
+            if (!isdigit(legacy_escape_sequence[i]))
+                return 1;
+        int mul = (index == 'B') ? 1 : -1;
+        int lines = atoi(legacy_escape_sequence);
+        move_cursor_y(canvas, pos_y, lines * mul);
+        escape_flag = 0;
+        legacy_escape_sequence_index = 0;
+        return 1;
+    }
+
+    if ((index == 'C' || index == 'D' || index == 'G') && escape_flag >= 200 && legacy_escape_sequence_index) {
+        for (int i = 0; i < legacy_escape_sequence_index; ++i)
+            if (!isdigit(legacy_escape_sequence[i]))
+                return 1;
+        int mul = (index == 'D') ? -1 : 1;
+        int start_col = (index == 'G') ? TEXT_GAP_X : pos_x;
+        int cols = atoi(legacy_escape_sequence);
+        move_cursor_x(canvas, start_col, cols * mul);
+        escape_flag = 0;
+        legacy_escape_sequence_index = 0;
+        return 1;
+    }
+
+    if (index >= 48 && index <= 57 && escape_flag == 200) {
+        if (legacy_escape_sequence_index < sizeof(legacy_escape_sequence) - 1) {
+            legacy_escape_sequence[legacy_escape_sequence_index] = index;
+            legacy_escape_sequence_index++;
+            legacy_escape_sequence[legacy_escape_sequence_index] = 0;
+        }
+        escape_flag = 200;
+        do_return = 1;
+    }
+
+    if (index == '2' && escape_flag == 200) {
+        escape_flag = 202;
+        return 1;
+    }
+
+    if (index == '3' && escape_flag == 200) {
+        escape_flag = 203;
+        return 1;
+    }
+
+    if (escape_flag == 202) {
+        escape_flag = 200;
+        if (index == 'J')
+            clear_text(canvas);
+        return 1;
+    }
+
+    if (escape_flag == 203) {
+        escape_flag = 200;
+        int term_color_index = index - 48;
+        if (term_color_index < 0 || term_color_index > 16)
+            return 1;
+        color = text_mode_colors[term_color_index];
+        return 1;
+    }
+
+    if (index == '0' && escape_flag == 200) {
+        color = 0xA8A7A7;
+        return 1;
+    }
+
+    if (index == ';') {
+        escape_flag = 200;
+        legacy_escape_sequence_index = 0;
+        return 1;
+    }
+
+    if (index == 'm' && escape_flag == 200) {
+        escape_flag = 0;
+        legacy_escape_sequence_index = 0;
+        return 1;
+    }
+
+    return do_return;
+}
+
+bool handle_escape_flag(canvas_t* canvas, int index)
+{
     if (escape_flag == 1) {
         escape_flag = 0;
         switch (index) {
         case 1:
             clear_text(canvas);
-            return;
+            return 1;
         case 2:
             escape_flag = 2;
-            return;
+            return 1;
         case 3:
             color = 0xA8A7A7;
-            return;
+            return 1;
         case 5:
             color = 0x0;
             escape_flag = 10;
-            return;
+            return 1;
         case 6:
             escape_flag = 20;
-            return;
+            return 1;
         }
     }
 
@@ -106,15 +222,15 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
                 pos_x -= default_font->font_header->width + 1;
                 char_need_clear++;
             }
-            return;
+            return 1;
         }
-        return;
+        return 1;
     }
 
     if (escape_flag == 2) {
         escape_flag = 0;
         color = text_mode_colors[index];
-        return;
+        return 1;
     }
 
     if (escape_flag >= 10 && escape_flag <= 12) {
@@ -129,7 +245,30 @@ void character_set(canvas_t* canvas, int index, bool bg_blend)
         escape_flag++;
         if (escape_flag == 13)
             escape_flag = 0;
+        return 1;
+    }
+
+    return 0;
+}
+
+void character_set(canvas_t* canvas, int index, bool bg_blend)
+{
+    if ((index == '\x1B') && (!escape_flag || escape_flag >= 200)) {
+        escape_flag = 100;
         return;
+    }
+
+    if ((index == '\34') && !escape_flag) {
+        escape_flag = 1;
+        return;
+    }
+
+    if (escape_flag >= 100) {
+        if (handle_escape_flag_legacy(canvas, index))
+            return;
+    } else if (escape_flag) {
+        if (handle_escape_flag(canvas, index))
+            return;
     }
 
     if (index == 8) {

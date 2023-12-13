@@ -200,7 +200,7 @@ void snprintf(char* s, size_t n, const char* format, ...)
 
 void clear()
 {
-    puts("\33\x1");
+    puts("\34\x1");
 }
 
 void beep(uint32_t ms_time, uint32_t frequency)

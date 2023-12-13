@@ -34,9 +34,6 @@ Compositor::~Compositor()
 
 void Compositor::render_canvas(canvas_t* canvas)
 {
-    if (!has_blured_final_layer)
-        create_blur_layer();
-
     uint32_t offset = canvas->x * sizeof(int32_t);
     offset += canvas->y * (final_layer->width * sizeof(int32_t));
     uint32_t canvas_address = (uint32_t)(canvas->framebuffer);
@@ -56,19 +53,16 @@ void Compositor::render_canvas(canvas_t* canvas)
 
 void Compositor::create_blur_layer()
 {
-    has_blured_final_layer = 1;
     canvas_copy(blured_final_layer, root_layer);
     uint32_t address = 0;
-    uint32_t max = final_layer->height / 2 - 65;
-    uint32_t max2 = final_layer->height - 65;
-    uint32_t offset = final_layer->width * sizeof(int32_t) * 2;
-    uint32_t offset2 = final_layer->width * sizeof(int32_t);
-    uint32_t start = offset2 * 15 + 40;
+    uint32_t max = final_layer->height - 65;
+    uint32_t offset = final_layer->width * sizeof(int32_t);
+    uint32_t start = offset * 15 + 40;
 
-    address = (uint32_t)(blured_final_layer->framebuffer) + offset;
-    for (uint32_t y = 30; y < max2; y++) {
+    address = (uint32_t)(blured_final_layer->framebuffer);
+    for (uint32_t y = 30; y < max; y++) {
         canvas_blur_box((uint32_t*)address + start, final_layer->width - 80, final_layer->width, final_layer->height, 4);
-        address += offset2;
+        address += offset;
     }
 
     address = (uint32_t)(blured_final_layer->framebuffer);
@@ -76,6 +70,7 @@ void Compositor::create_blur_layer()
         canvas_blur_gaussian((uint32_t*)address + start, final_layer->width - 80, final_layer->width, final_layer->height, 4096 * 2);
         address += offset;
     }
+    has_blured_final_layer = 1;
 }
 
 void Compositor::render_rounded_borders(canvas_t* canvas)
@@ -172,6 +167,9 @@ void Compositor::render_single_layer(canvas_t* canvas)
 
 void Compositor::render_stack()
 {
+    if (!has_blured_final_layer)
+        create_blur_layer();
+
     if (!needs_update && !update_canvas)
         return;
 

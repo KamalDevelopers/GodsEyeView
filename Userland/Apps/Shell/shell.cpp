@@ -198,12 +198,12 @@ uint8_t Shell::handle_input_line_key()
         return 0;
     autocomplete_word_size = new_word_size;
 
-    printf("\33\x2\x8");
+    printf("\34\x2\x8");
     for (uint32_t z = input_line_index - autocomplete_input_skip; z < autocomplete_word_size; z++)
         printf("%c", autocomplete_table[autocomplete_word][z]);
-    printf("\33\x3");
+    printf("\34\x3");
     for (uint32_t z = input_line_index - autocomplete_input_skip; z < autocomplete_word_size; z++)
-        printf("\33\x6\x1");
+        printf("\34\x6\x1");
 
     return 0;
 }
