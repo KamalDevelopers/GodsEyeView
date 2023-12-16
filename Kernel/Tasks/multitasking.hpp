@@ -41,7 +41,7 @@
 #define MAX_PRIORITIES 6
 #define MAX_PIDS 512
 #define MAX_TASKS 512
-#define MAX_MEMORY_REGIONS 256
+#define MAX_MEMORY_REGIONS 512
 #define TM TaskManager::active
 
 struct cpu_state {
