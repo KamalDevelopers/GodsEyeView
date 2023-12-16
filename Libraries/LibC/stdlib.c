@@ -1,7 +1,7 @@
 #include "stdlib.h"
 #include "ctype.h"
-#include "types.h"
 #include "unistd.h"
+#include "math.h"
 
 void exit(int status)
 {

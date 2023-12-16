@@ -34,6 +34,7 @@
 #include "svg.h"
 #include <LibC/math.h>
 #include <LibC/stat.h>
+#include <LibC/ctype.h>
 #include <LibC/stdio.h>
 #include <LibC/stdlib.h>
 #include <LibC/string.h>

@@ -2,6 +2,7 @@
 #define DRAW_HPP
 
 #include "LibFont/font.hpp"
+#include <LibC/ctype.h>
 #include <LibC/stat.h>
 #include <LibC/stdlib.h>
 #include <LibC/string.h>

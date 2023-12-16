@@ -1,4 +1,5 @@
 #include "compositor.hpp"
+#include <LibC/math.h>
 #include <LibC/stat.h>
 #include <LibC/stdio.h>
 #include <LibC/string.h>

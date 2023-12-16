@@ -1,5 +1,9 @@
 #include "mem.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void* memmove(void* dst, const void* src, size_t cnt)
 {
     void* temp = dst;
@@ -406,3 +410,7 @@ void* calloc(size_t count, size_t size)
     memset(p, 0, size * count);
     return p;
 }
+
+#ifdef __cplusplus
+}
+#endif
