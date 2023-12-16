@@ -14,6 +14,7 @@
   * Different ports, including Koenk's GameBoy Color emulator [GBC](Userland/Ports/GBC)
   * A tiling and minimalistic [WM](Userland/Servers/Display) inspired by [dwm](https://dwm.suckless.org/) which supports workspaces
   * A custom [bootloader](Bootloader) with unreal mode, A20, LBA, VBE, and multiboot support
+  * Supports SVG and PNG file formats using upng and nanosvg ports [LibImage](Libraries/LibImage)
   * Modern and sleek system with an overall clean design
 
 ### WM key sequences
