@@ -142,6 +142,18 @@ void vprintf(const char* format, va_list v)
 
             if (format[i + 1] == 'x')
                 putx(va_arg(v, int));
+
+            if (format[i + 1] == 'u')
+                puti(va_arg(v, unsigned int));
+
+            if (format[i + 1] == 'l') {
+                i++;
+                if (format[i + 1] == 'd')
+                    puti(va_arg(v, long int));
+                else if (format[i + 1] == 'u')
+                    puti(va_arg(v, long unsigned int));
+            }
+
             i += 2;
         }
 
