@@ -3,6 +3,8 @@
 #include <LibC/stdlib.h>
 #include <LibDisplay/connection.hpp>
 #include <LibDisplay/events.hpp>
+#include <LibImage/png.h>
+#include <LibImage/svg.h>
 
 int init(canvas_t& window_canvas)
 {
@@ -83,39 +85,70 @@ int main(int argc, char** argv)
     char* token = strtok(argv[0], ".");
     char* new_token = token;
     int last_token_size = 0;
+    int file_format = 0;
 
     while (new_token != NULL) {
         token = new_token;
         new_token = strtok(NULL, ".");
     }
 
+    if (strncmp(token, "svg", 3) == 0) {
+        file_format = 1;
+        is_supported = true;
+    }
     if (strncmp(token, "raw", 3) == 0) {
         is_supported = true;
+        file_format = 2;
         if (argc < 3) {
             printf("File format 'raw' requires specifying image width and height\n");
             return 0;
         }
     }
+    if (strncmp(token, "png", 3) == 0) {
+        file_format = 3;
+        is_supported = true;
+    }
 
     if (!is_supported) {
         printf("File '%s' format unsupported\n", file);
         return 0;
     }
 
-    int width = atoi(argv[1]);
-    int height = atoi(argv[2]);
+    canvas_t* image_canvas = 0;
 
-    canvas_t* image_canvas = request_canvas(width, height);
+    if (file_format == 3) {
+        static png_image_t png_image;
+        if (decode_png(file, &png_image) < 0) {
+            printf("File '%s' does not exist or unsupported\n", file);
+            return 0;
+        }
 
-    if (!is_supported) {
-        printf("File '%s' format unsupported\n", file);
-        return 0;
+        image_canvas = request_canvas(png_image.width, png_image.height);
+        memcpy32(image_canvas->framebuffer, png_image.buffer, png_image.width * png_image.height * 4);
+        free_png(&png_image);
     }
 
-    if (read_bitmap(file, image_canvas) == 0) {
-        printf("File '%s' does not exist\n", file);
-        request_canvas_destroy(image_canvas);
-        return 0;
+    if (file_format == 2) {
+        int width = atoi(argv[1]);
+        int height = atoi(argv[2]);
+        image_canvas = request_canvas(width, height);
+        if (read_bitmap(file, image_canvas) == 0) {
+            printf("File '%s' does not exist\n", file);
+            request_canvas_destroy(image_canvas);
+            return 0;
+        }
+    }
+
+    if (file_format == 1) {
+        static svg_image_t svg_image;
+        if (decode_svg(file, 0, &svg_image) < 0) {
+            printf("File '%s' does not exist or unsupported\n", file);
+            return 0;
+        }
+
+        image_canvas = request_canvas(svg_image.width, svg_image.height);
+        memcpy32(image_canvas->framebuffer, svg_image.buffer, svg_image.width * svg_image.height * 4);
+        free_svg(&svg_image);
     }
 
     canvas_t window_canvas;

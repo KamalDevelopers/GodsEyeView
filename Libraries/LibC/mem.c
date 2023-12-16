@@ -279,6 +279,7 @@ void* sh_malloc_pool(uint32_t size)
 
     /* Create new pool, slow? */
     if (do_create_pool) {
+        /* FIXME: plan b... we should make pool size greater */
         if (major.free_pool[chunk_size_index] < 0)
             return sh_malloc_stamp(size); // plan b
 

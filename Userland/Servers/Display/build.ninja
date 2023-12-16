@@ -6,7 +6,7 @@ rule cpp
     command = i686-elf-g++ -O3 -fPIC -c $in -o $out -fno-builtin -fno-use-cxa-atexit -fno-rtti -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -I../../../Libraries -lgcc
 
 rule link
-    command = ld -melf_i386 -T link.ld -o $out $in ../../../Libraries/libc.a ../../../Libraries/libdisplay.a
+    command = ld -melf_i386 -T link.ld -o $out $in ../../../Libraries/libc.a ../../../Libraries/libdisplay.a ../../../Libraries/libimage.a
 
 build main.o: cpp ./main.cpp
 build event.o: cpp ./event.cpp

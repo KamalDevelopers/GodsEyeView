@@ -3,6 +3,8 @@
 #include <LibC/stdio.h>
 #include <LibC/string.h>
 #include <LibC/unistd.h>
+#include <LibImage/png.h>
+#include <LibImage/svg.h>
 
 Compositor::Compositor()
 {
@@ -226,10 +228,49 @@ int Compositor::read_bitmap(const char* file_name, canvas_t* canvas)
     return size;
 }
 
-void Compositor::load_background_bitmap(const char* file_name)
+int Compositor::read_svg(const char* file_name, canvas_t* canvas)
 {
-    read_bitmap(file_name, root_layer);
     has_blured_final_layer = false;
+    static svg_image_t image;
+    if (decode_svg(file_name, 0, &image) < 0)
+        return 0;
+    int size = image.height * image.width * 4;
+    memcpy32(canvas->framebuffer, image.buffer, size);
+    free_svg(&image);
+    return size;
+}
+
+int Compositor::read_png(const char* file_name, canvas_t* canvas)
+{
+    has_blured_final_layer = false;
+    static png_image_t image;
+    if (decode_png(file_name, &image) < 0)
+        return 0;
+    int size = image.height * image.width * 4;
+    memcpy32(canvas->framebuffer, image.buffer, size);
+    free_png(&image);
+    return size;
+}
+
+int Compositor::load_background_png(const char* file_name)
+{
+    int ret = read_png(file_name, root_layer);
+    has_blured_final_layer = false;
+    return ret;
+}
+
+int Compositor::load_background_svg(const char* file_name)
+{
+    int ret = read_svg(file_name, root_layer);
+    has_blured_final_layer = false;
+    return ret;
+}
+
+int Compositor::load_background_bitmap(const char* file_name)
+{
+    int ret = read_bitmap(file_name, root_layer);
+    has_blured_final_layer = false;
+    return ret;
 }
 
 void Compositor::load_mouse_bitmap(const char* file_name)
