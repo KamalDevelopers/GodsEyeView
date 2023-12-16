@@ -19,12 +19,18 @@
 extern "C" {
 #endif
 
-inline double pow(double x, double y)
+inline double pow(double x, int y)
 {
-    int temp = x;
-    for (int i = 0; i < y - 1; i++)
-        temp = temp * x;
-    return temp;
+    double temp;
+    if (y == 0)
+        return 1;
+    temp = pow(x, y / 2);
+    if ((y % 2) == 0) {
+        return temp * temp;
+    } else {
+        if (y > 0) return x * temp * temp;
+        else return (temp * temp) / x;
+    }
 }
 
 inline double sqrt(double x)
@@ -36,14 +42,55 @@ inline double sqrt(double x)
     return result;
 }
 
+inline float sqrtf(float x)
+{
+    double y = (double)x;
+    return (float)sqrt(y);
+}
+
 inline double floor(double x)
 {
-    return (double)(x <= x ? x : x - 1);
+    if (x < 0)
+        return (int)x - 1;
+    else
+        return (int)x;
+}
+
+inline float floorf(float x)
+{
+    return (float)floor((double)x);
 }
 
 inline double ceil(double x)
 {
-    return (double)(x < x ? x + 1 : x);
+    float f = (float)x;
+    unsigned input;
+    ((char*)&input)[0] = ((char*)&f)[0];
+    ((char*)&input)[1] = ((char*)&f)[1];
+    ((char*)&input)[2] = ((char*)&f)[2];
+    ((char*)&input)[3] = ((char*)&f)[3];
+
+    int exponent = ((input >> 23) & 255) - 127;
+    if (exponent < 0) return (f > 0);
+
+    int fractional_bits = 23 - exponent;
+    if (fractional_bits <= 0) return f;
+
+    unsigned integral_mask = 0xffffffff << fractional_bits;
+    unsigned output = input & integral_mask;
+
+    ((char*)&f)[0] = ((char*)&output)[0];
+    ((char*)&f)[1] = ((char*)&output)[1];
+    ((char*)&f)[2] = ((char*)&output)[2];
+    ((char*)&f)[3] = ((char*)&output)[3];
+    if (f > 0 && output != input) ++f;
+
+    return f;
+}
+
+inline float ceilf(float x)
+{
+    return (float)ceil((double)x);
 }
 
 inline double fabs(double x)
@@ -51,10 +98,39 @@ inline double fabs(double x)
     return x >= 0 ? x : -1 * x;
 }
 
+inline float fabsf(float x)
+{
+    return (float)fabs((float)x);
+}
+
 inline double modf(double x, int* integer)
 {
     *integer = x;
     return x - *integer;
+}
+
+inline float cosf(float x)
+{
+    double result;
+    asm("fcos"
+        : "=t"(result)
+        : "0"(x));
+    return result;
+}
+
+inline double tan(double x)
+{
+    double result;
+    asm("fptan"
+        : "=t"(result)
+        : "0"(x));
+    return result;
+}
+
+inline float tanf(float x)
+{
+    double y = (double)x;
+    return (float)tan(y);
 }
 
 inline double sin(double x)
@@ -66,11 +142,61 @@ inline double sin(double x)
     return result;
 }
 
+inline float sinf(float x)
+{
+    double y = (double)x;
+    return (float)sin(y);
+}
+
 inline int abs(int num)
 {
     if (num < 0)
         num = (-1) * num;
     return num;
+}
+
+inline float acosf(float x)
+{
+    float nate = (float)(x < 0);
+    if (x < 0) x = (-1) * x;
+    float ret = -0.0187293;
+    ret = ret * x;
+    ret = ret + 0.0742610;
+    ret = ret * x;
+    ret = ret - 0.2121144;
+    ret = ret * x;
+    ret = ret + 1.5707288;
+    ret = ret * sqrt(1.0 - x);
+    ret = ret - 2 * nate * ret;
+    return nate * 3.14159265358979 + ret;
+}
+
+inline float atan2f(float y, float x)
+{
+    const float piby2 =  1.5707963f;
+    const float pi = 3.14159265f;
+	if (x == 0.0f) {
+		if (y > 0.0f) return piby2;
+		if (y == 0.0f) return 0.0f;
+		return -piby2;
+	}
+
+	float atan;
+	float z = y/x;
+	if (fabs(z) < 1.0f) {
+		atan = z / (1.0f + 0.28f * z * z);
+		if (x < 0.0f) {
+            if (y < 0.0f)
+                return atan - pi;
+            return atan + pi;
+		}
+	}
+	else {
+		atan = piby2 - z / (z * z + 0.28f);
+		if (y < 0.0f)
+            return atan - pi;
+	}
+	return atan;
 }
 
 inline double truncate(double x)
@@ -81,6 +207,25 @@ inline double truncate(double x)
 inline double fmod(double x, double y)
 {
     return x - truncate(x / y) * y;
+}
+
+inline float fmodf(float x, float y)
+{
+    return (float)fmod((float)x, (float)y);
+}
+
+inline double round(double arg)
+{
+    if (arg < 0.0)
+        return ceil((float)(arg - 0.5));
+    else
+        return floor((double)(arg + 0.5));
+}
+
+inline float roundf(float arg)
+{
+    double d = (double)arg;
+    return round(d);
 }
 
 #ifdef __cplusplus
