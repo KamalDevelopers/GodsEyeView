@@ -9,10 +9,9 @@ bool print_file(char* file_name)
     if (file_descriptor < 0)
         return false;
 
-    char buffer[BUFSIZ];
+    static char buffer[BUFSIZ];
     int size = 1;
     bool is_first = true;
-    memset(buffer, 0, sizeof(buffer));
 
     while (size > 0) {
         size = read(file_descriptor, buffer, sizeof(buffer));
@@ -20,7 +19,7 @@ bool print_file(char* file_name)
 
         if (size && !is_first) {
             flush();
-            usleep(400);
+            usleep(100);
         }
 
         is_first = false;
