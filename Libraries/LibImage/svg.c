@@ -4738,8 +4738,13 @@ int decode_svg(const char* file, uint32_t session_size, svg_image_t* svg_image)
         return -1;
     }
 
-    svg_image->original_width = image->width;
-    svg_image->original_height = image->height;
+    if (!svg_image->in_resize)
+        svg_image->in_resize = 1;
+    image->width *= svg_image->in_resize;
+    image->height *= svg_image->in_resize;
+
+    svg_image->float_width = image->width;
+    svg_image->float_height = image->height;
     int w = (int)image->width;
     int h = (int)image->height;
     svg_image->width = w;
@@ -4758,7 +4763,7 @@ int decode_svg(const char* file, uint32_t session_size, svg_image_t* svg_image)
         printf("Could not init buffer.\n");
         return -1;
     }
-    nsvgRasterize(rast, image, 0, 0, 1, svg_image->buffer, w, h, w * 4);
+    nsvgRasterize(rast, image, 0, 0, svg_image->in_resize, svg_image->buffer, w, h, w * 4);
 
     /* RGBA -> ARGB */
     uint32_t* ptr = (uint32_t*)svg_image->buffer;
