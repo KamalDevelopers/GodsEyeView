@@ -42,6 +42,7 @@
 #define MAX_PIDS 512
 #define MAX_TASKS 512
 #define MAX_MEMORY_REGIONS 512
+#define MAX_SIZE_ARGS 500
 #define TM TaskManager::active
 
 struct cpu_state {
@@ -92,7 +93,7 @@ private:
     int execute;
     char name[20];
     char working_directory[MAX_PATH_SIZE];
-    char arguments[500];
+    char arguments[MAX_SIZE_ARGS];
     uint16_t state;
     uint8_t privilege;
     void (*notify_callback)(int);

@@ -490,7 +490,13 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
     child->executable(exec);
 
     if (args && argc) {
+        int args_size = MAX_SIZE_ARGS;
+
         for (uint32_t i = 0; i < argc; i++) {
+            args_size -= strlen(args[i]);
+            if (args_size <= 0)
+                return -E_OVERFLOW;
+
             strcat(child->arguments, args[i]);
             strcat(child->arguments, " ");
         }

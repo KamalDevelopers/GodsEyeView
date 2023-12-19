@@ -170,7 +170,8 @@ int PhysicalMemoryManager::free_pages(uint32_t address, size_t size)
     uint32_t map_address = virtual_address;
     for (uint32_t i = 0; i < pages; i++) {
         used_pages--;
-        Paging::unmap_page(map_address);
+        if (Paging::unmap_page(map_address) < 0)
+            is_valid = -1;
         map_address += PAGE_SIZE;
     }
 

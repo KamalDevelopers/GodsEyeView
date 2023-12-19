@@ -339,11 +339,19 @@ uint32_t Syscalls::sys_mmap(void* addr, size_t length)
 
 int Syscalls::sys_munmap(void* addr, size_t length)
 {
+    if (!addr || !PAGE_ALIGN(addr)) {
+        klog("Warning sys_munmap: Bad address");
+        return -E_INVAL;
+    }
+
     TM->deactivate();
     uint32_t physical_address = Paging::virtual_to_physical((uint32_t)addr);
     TM->task()->process_munmap({ (uint32_t)addr, physical_address, length });
     int err = PMM->free_pages((uint32_t)addr, length);
     TM->activate();
+
+    if (err < 0)
+        return -E_FAULT;
     return err;
 }
 
