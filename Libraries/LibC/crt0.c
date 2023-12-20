@@ -60,18 +60,28 @@ void _entry()
     asm("movl %%ecx, %0;"
           : "=r"(argc));
 
-    char** arguments = (char**)calloc(argc, sizeof(char*));
+    /* NOTE: No need to deallocate
+     * arguments_dynamic as it will live
+     * through entire program execution. */
+    static char* arguments_static[100];
+    char** arguments_dynamic = 0;
+    char** args = arguments_static;
     char* arg = strtok((char*)argument_pointer, " ");
-    int count = 0;
+    if (argc >= 100) {
+        arguments_dynamic = (char**)calloc(argc, sizeof(char*));
+        args = arguments_dynamic;
+    }
 
+    /* Arguments are given to us
+     * as a single string. */
+    int count = 0;
     while (arg && (count < argc)) {
-        arguments[count] = arg;
+        args[count] = arg;
         count++;
         arg = strtok(NULL, " ");
     }
 
     flush();
-    char** args = arguments;
     int status = main(argc, (char**)args);
     uint32_t exits = atexit_count();
     void (*exit_func)(void);
