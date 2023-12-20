@@ -12,6 +12,14 @@ ninja
 echo -e "\033[0mDone.\n"
 
 
+if [ "$1" == "ports" ]
+then
+    cd Userland/Ports
+    ./install.sh
+    cd ../../
+    ninja disk
+fi
+
 if [ "$1" != "nousr" ]
 then
     cd Userland/Apps
