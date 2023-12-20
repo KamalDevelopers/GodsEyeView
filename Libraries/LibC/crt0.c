@@ -60,26 +60,19 @@ void _entry()
     asm("movl %%ecx, %0;"
           : "=r"(argc));
 
-    char** arguments = (char**)malloc(sizeof(char*) * 10);
-    for (uint32_t i = 0; i < 10; ++i) {
-        arguments[i] = (char*)malloc(50);
-        memset(arguments[i], 0, 50);
-    }
-
+    char** arguments = (char**)calloc(argc, sizeof(char*));
     char* arg = strtok((char*)argument_pointer, " ");
     int count = 0;
-    argc = (argc > 10) ? 10 : argc;
 
     while (arg && (count < argc)) {
-        if (arg) {
-            strcpy(arguments[count], arg);
-            count++;
-        }
+        arguments[count] = arg;
+        count++;
         arg = strtok(NULL, " ");
     }
 
     flush();
-    int status = main(argc, (char**)arguments);
+    char** args = arguments;
+    int status = main(argc, (char**)args);
     uint32_t exits = atexit_count();
     void (*exit_func)(void);
 
@@ -87,10 +80,6 @@ void _entry()
         exit_func = (void(*)(void))(atexit_func(i));
         exit_func();
     }
-
-    for (uint32_t i = 0; i < 10; i++)
-        free(arguments[i]);
-    free(arguments);
 
     flush();
     _exit(status);
