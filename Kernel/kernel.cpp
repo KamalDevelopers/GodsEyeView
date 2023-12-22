@@ -41,6 +41,8 @@
 #include <LibC/stdio.h>
 #include <LibC/stdlib.h>
 
+#define SYSTEM_INIT "bin/init"
+
 typedef void (*constructor)();
 extern "C" uint8_t kernel_end;
 extern "C" constructor start_ctors;
@@ -181,7 +183,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     }
 
     klog("Spawning init system");
-    TM->spawn("bin/init", 0, 0);
+    TM->spawn(SYSTEM_INIT, 0, 0);
 
     klog("TM activate reached");
     TM->activate();
