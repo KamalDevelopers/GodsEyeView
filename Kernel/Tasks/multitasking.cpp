@@ -176,6 +176,11 @@ int Task::poll(pollfd* pollfds, uint32_t npolls, int timeout)
     return npolls;
 }
 
+void Task::will_spawn_with_parent(uint8_t toggle)
+{
+    spawn_with_parent = toggle;
+}
+
 int Task::nice(int inc)
 {
     priority += inc;
@@ -484,7 +489,7 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
         return -E_INVALIDEXEC;
     }
 
-    int parent = (current_task != -1) ? task()->get_pid() : -1;
+    int parent = (current_task != -1 && task()->spawn_with_parent) ? task()->get_pid() : -1;
     Task* child = new Task(file, 0, 0, parent);
     strcpy(child->working_directory, tasks.at(current_task)->working_directory);
     child->executable(exec);

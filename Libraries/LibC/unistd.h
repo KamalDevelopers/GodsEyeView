@@ -52,6 +52,7 @@ void usleep(int ticks);
 void sleep(int sec);
 uint32_t time();
 int spawn(const char* pathname, char** args, uint8_t argc);
+int spawn_orphan(const char* pathname, char** args, uint8_t argc);
 int nice(int inc);
 int waitpid(int pid);
 int unlink(const char* pathname);

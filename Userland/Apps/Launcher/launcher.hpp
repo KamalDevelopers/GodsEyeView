@@ -14,7 +14,6 @@ private:
     int window_events_file = -1;
     int shell_pid = -1;
     bool is_running = false;
-    bool has_spawned_children = false;
     uint32_t width = 0;
     uint32_t height = 0;
     const uint32_t bg = 0x65080808;

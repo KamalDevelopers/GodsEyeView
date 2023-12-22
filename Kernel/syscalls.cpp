@@ -378,6 +378,14 @@ int Syscalls::sys_sleep(int sec)
     return 0;
 }
 
+int Syscalls::sys_spawn_orphan(char* file, char** args, uint8_t argc)
+{
+    TM->task()->will_spawn_with_parent(0);
+    int pid = TM->spawn(file, args, argc);
+    TM->task()->will_spawn_with_parent(1);
+    return pid;
+}
+
 int Syscalls::sys_spawn(char* file, char** args, uint8_t argc)
 {
     return TM->spawn(file, args, argc);
@@ -542,12 +550,16 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         sys_getcwd((char*)cpu->ebx);
         break;
 
-    case 400:
-        cpu->eax = sys_mkfifo((char*)cpu->ebx, (int)cpu->ecx);
+    case 390:
+        cpu->eax = sys_spawn((char*)cpu->ebx, (char**)cpu->ecx, (uint8_t)cpu->edx);
         break;
 
-    case 401:
-        cpu->eax = sys_spawn((char*)cpu->ebx, (char**)cpu->ecx, (uint8_t)cpu->edx);
+    case 391:
+        cpu->eax = sys_spawn_orphan((char*)cpu->ebx, (char**)cpu->ecx, (uint8_t)cpu->edx);
+        break;
+
+    case 400:
+        cpu->eax = sys_mkfifo((char*)cpu->ebx, (int)cpu->ecx);
         break;
 
     case 402:

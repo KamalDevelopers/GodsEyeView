@@ -84,6 +84,7 @@ private:
     int sleeping = 0;
     int poll_sleeping = -1;
     int quantum = PROCESS_QUANTUM;
+    uint8_t spawn_with_parent = 1;
     int wake_pid_on_exit = 0;
     int process_group = 0;
     int parent = -1;
@@ -112,6 +113,7 @@ public:
     int destroy_socket(int sockfd);
     int socket(uint8_t type);
     int nice(int inc);
+    void will_spawn_with_parent(uint8_t toggle);
 
     void test_poll();
     int become_tty_master();
