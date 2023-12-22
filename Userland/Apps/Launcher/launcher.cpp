@@ -11,7 +11,7 @@ Launcher::Launcher()
     uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
     window_events_file = request_display_window(window_canvas, width, height, bg, flags);
     canvas_set(window_canvas.framebuffer, bg, window_canvas.size);
-    default_font = font_load("bitmaps/font.tftf");
+    default_font = font_load("/home/bitmaps/font.tftf");
 
     request_update_window();
 }

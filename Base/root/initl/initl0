@@ -1,0 +1,4 @@
+0: enabled: /servers/display
+0: enabled: /servers/sound
+1: enabled: /bin/launcher
+1: enabled: /bin/terminal

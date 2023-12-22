@@ -5,7 +5,7 @@ Terminal::Terminal()
     tty_master();
     memset(stdout_buffer, 0, sizeof(stdout_buffer));
 
-    init("bitmaps/font.tftf");
+    init("/home/bitmaps/font.tftf");
     spawn_shell();
 
     window_events_file = request_display_window(window_canvas, 700, 500, BACKGROUND_COLOR);
