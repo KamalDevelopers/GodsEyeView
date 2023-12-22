@@ -1,0 +1,10 @@
+rule move
+    pool = console
+    command = mv ./init ../../../Base/root/bin/ && ninja -t clean
+
+rule c 
+    command = i686-elf-gcc -O3 -fPIC -T link.ld -o init $in ../../../Libraries/libc.a -fno-builtin -fno-exceptions -fno-leading-underscore -nostdlib -ffreestanding -I../../../Libraries -lgcc
+
+build ./init main.o: c ./main.c
+build move: move
+default ./init

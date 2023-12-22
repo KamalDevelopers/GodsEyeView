@@ -32,7 +32,7 @@ bool print_file(char* file_name)
 int main(int argc, char** argv)
 {
     if (!argc) {
-        printf("No input file\n");
+        printf("Usage: cat [file(s)]\n");
         return 0;
     }
 

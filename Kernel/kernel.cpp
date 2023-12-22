@@ -180,10 +180,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         ARP::broadcast_mac_address(DHCP::gateway());
     }
 
-    klog("Spawning services");
-    TM->spawn("servers/display", 0, 0);
-    TM->spawn("servers/sound", 0, 0);
-    TM->spawn("bin/launcher", 0, 0);
+    klog("Spawning init system");
+    TM->spawn("bin/init", 0, 0);
 
     klog("TM activate reached");
     TM->activate();

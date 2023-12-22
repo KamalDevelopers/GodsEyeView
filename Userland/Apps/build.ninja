@@ -1,3 +1,7 @@
+rule init
+    command = cd ./Init && ninja && ninja move && cd ../
+    description = building init system
+
 rule tonysay
     command = cd ./Tonysay && ninja && ninja move && cd ../
     description = building tonysay application
@@ -50,11 +54,11 @@ rule launcher
     command = cd ./Launcher && ninja && ninja move && cd ../
     description = building launcher (core) GUI application
 
-
 rule image
     command = cd ./Image && ninja && ninja move && cd ../
     description = building image GUI application
 
+build init: init
 build tonysay: tonysay
 build nenf: nenf
 build shell: shell
