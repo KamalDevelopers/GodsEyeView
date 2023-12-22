@@ -15,8 +15,8 @@
 #include "Net/dns.hpp"
 #include "Net/icmp.hpp"
 #include "Tasks/multitasking.hpp"
+#include "Tasks/tty.hpp"
 #include "panic.hpp"
-#include "tty.hpp"
 
 #include <LibC/errno.h>
 #include <LibC/network.h>

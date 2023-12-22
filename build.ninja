@@ -29,10 +29,10 @@ rule chain
 
 build Kernel/kernel.o: cpp ./Kernel/kernel.cpp
 build Kernel/syscalls.o: cpp ./Kernel/syscalls.cpp
-build Kernel/tty.o: cpp ./Kernel/tty.cpp
 build Kernel/panic.o: cpp ./Kernel/panic.cpp
 build Kernel/Locks/mutex.o: cpp ./Kernel/Locks/mutex.cpp
 build Kernel/pipe.o: cpp ./Kernel/pipe.cpp
+build Kernel/Tasks/tty.o: cpp ./Kernel/Tasks/tty.cpp
 build Kernel/Tasks/multitasking.o: cpp ./Kernel/Tasks/multitasking.cpp
 build Kernel/Hardware/Drivers/mouse.o: cpp ./Kernel/Hardware/Drivers/mouse.cpp
 build Kernel/Hardware/Drivers/keyboard.o: cpp ./Kernel/Hardware/Drivers/keyboard.cpp
@@ -73,7 +73,7 @@ build Kernel/Filesystem/vfs.o: cpp ./Kernel/Filesystem/vfs.cpp
 build Kernel/Hardware/interruptstubs.o: asm ./Kernel/Hardware/interruptstubs.S
 build Kernel/Hardware/power.o: asm ./Kernel/Hardware/power.S
 build Arch/i386/Boot/boot.o: asm ./Arch/i386/Boot/boot.S
-build ./.out/kernel.bin: link Kernel/kernel.o Kernel/Tasks/multitasking.o Kernel/syscalls.o Kernel/tty.o Kernel/panic.o Kernel/Locks/mutex.o Kernel/pipe.o Kernel/Hardware/port.o Kernel/Hardware/audio.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/vesa.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/Drivers/ac97.o Kernel/Hardware/Drivers/virtual.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Hardware/cpuid.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/udp.o Kernel/Net/tcp.o Kernel/Net/dns.o Kernel/Net/dhcp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/GDT/gdt_helper.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/husky.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
+build ./.out/kernel.bin: link Kernel/kernel.o Kernel/Tasks/multitasking.o Kernel/syscalls.o Kernel/Tasks/tty.o Kernel/panic.o Kernel/Locks/mutex.o Kernel/pipe.o Kernel/Hardware/port.o Kernel/Hardware/audio.o Kernel/Hardware/Drivers/mouse.o Kernel/Hardware/Drivers/keyboard.o Kernel/Hardware/Drivers/vga.o Kernel/Hardware/Drivers/vesa.o Kernel/Hardware/Drivers/am79c973.o Kernel/Hardware/Drivers/rtl8139.o Kernel/Hardware/Drivers/pcs.o Kernel/Hardware/Drivers/sb16.o Kernel/Hardware/Drivers/cmos.o Kernel/Hardware/Drivers/ata.o Kernel/Hardware/Drivers/es1370.o Kernel/Hardware/Drivers/ac97.o Kernel/Hardware/Drivers/virtual.o Kernel/Hardware/interrupts.o Kernel/Hardware/pci.o Kernel/Hardware/cpuid.o Kernel/Mem/paging.o Kernel/Mem/mm.o Kernel/Mem/pmm.o Kernel/Net/ethernet.o Kernel/Net/ipv4.o Kernel/Net/icmp.o Kernel/Net/udp.o Kernel/Net/tcp.o Kernel/Net/dns.o Kernel/Net/dhcp.o Kernel/Net/arp.o Kernel/GDT/gdt.o Kernel/GDT/gdt_helper.o Kernel/Exec/loader.o Kernel/Exec/elf.o Kernel/Filesystem/tar.o Kernel/Filesystem/husky.o Kernel/Filesystem/vfs.o Kernel/Hardware/interruptstubs.o Kernel/Hardware/power.o Arch/i386/Boot/boot.o
 build disk: disk
 build format: format
 build bootloader: bootloader

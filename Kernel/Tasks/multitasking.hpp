@@ -6,7 +6,7 @@
 #include "../GDT/gdt.hpp"
 #include "../Mem/mm.hpp"
 #include "../Net/ipv4.hpp"
-#include "../tty.hpp"
+#include "tty.hpp"
 
 #include <LibC++/bitarray.hpp>
 #include <LibC++/vector.hpp>

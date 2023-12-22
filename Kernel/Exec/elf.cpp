@@ -1,4 +1,5 @@
 #include "elf.hpp"
+#include "../panic.hpp"
 
 Elf::Elf(char* name)
     : Execf(name)
@@ -45,7 +46,7 @@ executable_t Elf::exec(uint8_t* file_data)
     executable_t executable;
 
     if (probe(file_data) != 1) {
-        klog("Could not probe!");
+        kdbg("ELF: Could not probe!\n");
         return executable;
     }
 

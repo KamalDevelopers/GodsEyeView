@@ -2,6 +2,7 @@
 #define MM_HPP
 
 #include "pmm.hpp"
+#include <LibC/types.h>
 
 void* kmalloc(size_t size);
 void kfree(void* mem);

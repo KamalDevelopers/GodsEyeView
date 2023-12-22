@@ -190,7 +190,7 @@ void TCP::connect(tcp_socket_t* socket, uint32_t ip, uint16_t port)
     tcp_port++;
 
     if (tcp_sockets.is_full()) {
-        klog("Could not create TCP connection");
+        kdbg("TCP: Could not create TCP connection\n");
         return;
     }
 
@@ -216,7 +216,7 @@ void TCP::close(tcp_socket_t* socket)
     }
 
     if (socket_index == -1) {
-        /* klog("Could not close TCP connection tcp_sockets.size() = %d", tcp_sockets.size()); */
+        /* kdbg("Could not close TCP connection tcp_sockets.size() = %d \n", tcp_sockets.size()); */
         return;
     }
 

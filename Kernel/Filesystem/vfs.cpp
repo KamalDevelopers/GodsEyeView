@@ -1,7 +1,7 @@
 #include "vfs.hpp"
 #include "../Mem/mm.hpp"
 #include "../Tasks/multitasking.hpp"
-#include "../tty.hpp"
+#include "../Tasks/tty.hpp"
 
 VirtualFilesystem* VirtualFilesystem::active = 0;
 VirtualFilesystem::VirtualFilesystem()
@@ -63,7 +63,7 @@ int VirtualFilesystem::open_fifo(char* file_name, int flags)
     kernel_file_table.files.append(file);
 
     if (kernel_file_table.descriptor_index >= MAX_FILE_DESCRIPTORS) {
-        klog("We ran out of kernel descriptors while opening pipe");
+        kdbg("VFS: We ran out of kernel descriptors while opening pipe\n");
         kernel_file_table.descriptor_index = 4;
     }
     kernel_file_table.descriptor_index++;
@@ -125,7 +125,7 @@ int VirtualFilesystem::open(char* file_name, int flags)
     ft()->files.append(file);
 
     if (ft()->descriptor_index >= MAX_FILE_DESCRIPTORS) {
-        klog("We ran out of descriptors ft=%d", (uint32_t)ft());
+        kdbg("VFS: We ran out of descriptors ft=%d\n", (uint32_t)ft());
         kernel_file_table.descriptor_index = 0;
     }
 

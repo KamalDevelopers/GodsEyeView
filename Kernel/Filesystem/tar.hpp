@@ -3,7 +3,6 @@
 
 #include "../Hardware/Drivers/ata.hpp"
 #include "../Mem/mm.hpp"
-#include "../tty.hpp"
 #include "vfs.hpp"
 #include <LibC/stdio.h>
 #include <LibC/stdlib.h>

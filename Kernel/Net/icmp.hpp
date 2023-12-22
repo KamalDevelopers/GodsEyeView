@@ -1,7 +1,6 @@
 #ifndef ICMP_HPP
 #define ICMP_HPP
 
-#include "../tty.hpp"
 #include "ethernet.hpp"
 #include "ipv4.hpp"
 #include <LibC/types.h>

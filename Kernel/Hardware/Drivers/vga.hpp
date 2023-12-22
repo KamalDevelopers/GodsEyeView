@@ -2,7 +2,6 @@
 #define VGA_HPP
 
 #include "../../Mem/mm.hpp"
-#include "../../tty.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
 #include <LibC/stdio.h>

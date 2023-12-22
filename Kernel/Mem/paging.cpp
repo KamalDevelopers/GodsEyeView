@@ -1,4 +1,5 @@
 #include "paging.hpp"
+#include "../panic.hpp"
 #include "pmm.hpp"
 
 Paging::page_directory_t* kernel_page_directory;

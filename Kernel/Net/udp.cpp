@@ -22,7 +22,7 @@ void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
     udp_port++;
 
     if (udp_sockets.is_full()) {
-        klog("Could not create UDP connection");
+        kdbg("UDP: Could not create UDP connection\n");
         return;
     }
 
@@ -38,7 +38,7 @@ void UDP::close(udp_socket_t* socket)
     }
 
     if (socket_index == -1) {
-        klog("Could not close UDP connection");
+        kdbg("UDP: Could not close UDP connection\n");
         return;
     }
 

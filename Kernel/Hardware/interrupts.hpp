@@ -3,7 +3,6 @@
 
 #include "../GDT/gdt.hpp"
 #include "../Tasks/multitasking.hpp"
-#include "../tty.hpp"
 #include "port.hpp"
 #include <LibC/stdio.h>
 #include <LibC/types.h>

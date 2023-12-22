@@ -1,7 +1,6 @@
 #ifndef PAGING_HPP
 #define PAGING_HPP
 
-#include "../tty.hpp"
 #include "mm.hpp"
 #include "pmm.hpp"
 #include <LibC/stdio.h>

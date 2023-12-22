@@ -1,9 +1,9 @@
 #ifndef TTY_HPP
 #define TTY_HPP
 
-#include "Hardware/Drivers/virtual.hpp"
-#include "panic.hpp"
-#include "pipe.hpp"
+#include "../Hardware/Drivers/virtual.hpp"
+#include "../panic.hpp"
+#include "../pipe.hpp"
 #include <LibC/poll.h>
 #include <LibC/stdlib.h>
 #include <LibC/types.h>

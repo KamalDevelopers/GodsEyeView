@@ -1,5 +1,6 @@
 #include "dns.hpp"
 #include "../Mem/mm.hpp"
+#include "../panic.hpp"
 #include "dhcp.hpp"
 #include "udp.hpp"
 #include <LibC/network.h>
@@ -13,12 +14,12 @@ void DNS::handle_packet(void* packet, uint32_t length)
     dns_header_t* header = (dns_header_t*)packet;
 
     if (!header->answer_count) {
-        klog("[DNS] no answer count");
+        kdbg("DNS: No answer count\n");
         return;
     }
 
     if (!header->question_count) {
-        klog("[DNS] no question count");
+        kdbg("DNS: No question count\n");
         return;
     }
 
@@ -27,7 +28,7 @@ void DNS::handle_packet(void* packet, uint32_t length)
 
     /* TODO: Support multiple question entries */
     if (qc > 1) {
-        klog("[DNS] type not supported!");
+        kdbg("DNS: Type not supported!\n");
         return;
     }
 

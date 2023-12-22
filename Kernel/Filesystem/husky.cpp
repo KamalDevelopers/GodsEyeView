@@ -557,7 +557,7 @@ uint32_t Husky::read_file_data_block_list(uint32_t* ptr_list, uint8_t* read_data
         memcpy(&block, sector, sizeof(block_t));
 
         if (block.flags != 2) {
-            klog("fs error: points to invalid block\n");
+            kdbg("FS ERROR: points to invalid block\n");
             return 0;
         }
 
