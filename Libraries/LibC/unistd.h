@@ -49,6 +49,7 @@ int mkfifo(const char* pathname, int flags);
 int fchown(int fd, uint32_t owner, uint32_t group);
 int socketcall(int call, uint32_t* args);
 void usleep(int ticks);
+void sched_yield();
 void sleep(int sec);
 uint32_t time();
 int spawn(const char* pathname, char** args, uint8_t argc);

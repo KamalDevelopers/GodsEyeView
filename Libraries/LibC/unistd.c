@@ -91,6 +91,13 @@ int socketcall(int call, uint32_t* args)
     return ret;
 }
 
+void sched_yield()
+{
+    asm volatile("int $0x80"
+                 :
+                 : "a"(158));
+}
+
 void usleep(int ticks)
 {
     asm volatile("int $0x80"
@@ -222,5 +229,5 @@ int getchar(int* character)
 
 void sys_yield()
 {
-    usleep(1);
+    sched_yield();
 }

@@ -538,6 +538,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
         cpu->eax = sys_uname((utsname*)cpu->ebx);
         break;
 
+    case 158:
+        TM->yield();
+        break;
+
     case 162:
         cpu->eax = sys_sleep((uint32_t)cpu->ebx);
         break;
