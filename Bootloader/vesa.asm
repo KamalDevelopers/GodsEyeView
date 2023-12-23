@@ -1,8 +1,8 @@
 ; set VESA vbe mode, OUT: vbe_screen structure
 
 align 32
-vbe_width           dw 1440
-vbe_height          dw 900
+vbe_width           dw 1440 ; config vesa width
+vbe_height          dw 900  ; config vesa height
 vbe_bpp             dw 32
 
 vbe_init:
