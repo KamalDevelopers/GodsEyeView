@@ -55,14 +55,39 @@ unreal:
     mov word [ds:eax], bx
     cli
 
-; enable a20 line by ioee
-; FIXME: add more a20 methods
+; Enable a20 line
 enable_a20_ioee:
 	push	bp
 	mov	bp, sp
 	in	al, 0xee
 	mov	sp, bp
 	pop	bp
+enable_a20_bios:
+    mov ax, 2403h
+    int 15h
+    jb a20_no_support
+    cmp ah, 0
+    jnz a20_no_support
+
+    mov ax, 2402h
+    int 15h
+    jb a20_failed
+    cmp ah, 0
+    jnz a20_failed
+
+    cmp al, 1
+    jz a20_activated
+
+    mov ax, 2401h
+    int 15h
+    jb a20_failed
+    cmp ah, 0
+    jnz a20_failed
+
+    a20_failed:
+    a20_no_support:
+    a20_activated:
+
 
 call stage_load
 
