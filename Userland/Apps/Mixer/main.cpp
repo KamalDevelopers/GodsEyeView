@@ -8,13 +8,19 @@
 
 bool play(char* file_name)
 {
+    static char pathname[BUFSIZ];
+    memset(pathname, 0, sizeof(pathname));
+    getcwd(pathname);
+    strcat(pathname, file_name);
+    path_resolver(pathname, 0);
+
     struct stat statbuffer;
-    stat(file_name, &statbuffer);
+    stat(pathname, &statbuffer);
     if (statbuffer.st_size == -1)
         return false;
 
     stream_context_t stream_context;
-    request_play_sound_file(&stream_context, file_name);
+    request_play_sound_file(&stream_context, pathname);
     request_stream_wait_playback(&stream_context);
 
     printf("Playing %s ...", file_name);

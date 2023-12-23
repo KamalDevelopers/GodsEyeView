@@ -21,7 +21,7 @@ void Audio::write(pcm_stream_t pcm)
 {
     /* TODO: Support dynamic audio modes */
     if ((pcm.bits != 16) || (pcm.channels != 2)) {
-        klog("Received invalid pcm buffer channels=%d bits=%d", pcm.bits, pcm.channels);
+        kdbg("AUDIO: Received invalid pcm buffer channels=%d bits=%d\n", pcm.bits, pcm.channels);
         return;
     }
 
