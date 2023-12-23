@@ -16,10 +16,10 @@ int main(int argc, char** argv)
     WindowManager wm(&compositor);
     compositor.load_mouse_bitmap("/home/bitmaps/mouse.raw");
 
-    if (compositor.screen_width() == 1440 && compositor.screen_height() == 900) {
-        if (compositor.load_background_png("/home/bitmaps/wallpaper.png") == 0)
-            compositor.load_background_svg("/home/bitmaps/wallpaper.svg");
-    }
+    if (compositor.screen_width() == 1440 && compositor.screen_height() == 900)
+        compositor.load_background_png("/home/bitmaps/wallpaper.png");
+    else
+        compositor.load_background_svg("/home/bitmaps/wallpaper.svg");
 
     compositor.update_mouse_position(compositor.screen_width() / 2 + 10, compositor.screen_height() / 2 - 10);
     compositor.require_update();
