@@ -1,10 +1,103 @@
 #include "ata.hpp"
+#include <LibC/ctype.h>
 
 MUTEX(mutex_ata);
 #ifdef RAMDISK
 extern char _binary_hdd_tar_start;
 extern char _binary_hdd_tar_end;
 #endif
+
+ATActrl::ATActrl(InterruptManager* interrupt_manager, device_descriptor_t device)
+    : ata0m(interrupt_manager, device, 0x1F0, 1)
+    , ata0s(interrupt_manager, device, 0x1F0, 0)
+    , ata1m(interrupt_manager, device, 0x170, 1)
+    , ata1s(interrupt_manager, device, 0x170, 0)
+{
+}
+
+void ATActrl::identify_all()
+{
+    ata0m.identify();
+    ata0s.identify();
+    ata1m.identify();
+    ata1s.identify();
+
+    find_boot_drive();
+}
+
+void ATActrl::enable_dma()
+{
+    ata0m.set_dma(true);
+    ata0s.set_dma(true);
+    ata1m.set_dma(true);
+    ata1s.set_dma(true);
+}
+
+void ATActrl::disable_dma()
+{
+    ata0m.set_dma(false);
+    ata0s.set_dma(false);
+    ata1m.set_dma(false);
+    ata1s.set_dma(false);
+}
+
+void ATActrl::kernel_debug_info_drive(ATA* drive, const char* name)
+{
+    klog("ATA: Drive %s %s %s %s", name,
+        (drive == boot_drive()) ? "{boot}" : "",
+        drive->exists() ? drive->firmware : "",
+        drive->exists() ? drive->model : "");
+}
+
+void ATActrl::kernel_debug_info()
+{
+    kernel_debug_info_drive(&ata0m, "Primary Master");
+    kernel_debug_info_drive(&ata0s, "Primary Slave");
+    kernel_debug_info_drive(&ata1m, "Secondary Master");
+    kernel_debug_info_drive(&ata1s, "Secondary Slave");
+}
+
+void ATActrl::find_boot_drive()
+{
+    ATA* drive = 0;
+    for (int i = 0; i < 4; i++) {
+        if (i == 0)
+            drive = &ata0m;
+        if (i == 1)
+            drive = &ata0s;
+        if (i == 2)
+            drive = &ata1m;
+        if (i == 3)
+            drive = &ata1s;
+        if (!drive)
+            continue;
+        if (is_boot_drive(drive))
+            boot_drive_ptr = drive;
+    }
+}
+
+bool ATActrl::is_boot_drive(ATA* drive)
+{
+    if (!drive->exists())
+        return 0;
+
+    uint8_t buff[4];
+    buff[0] = 0;
+    buff[3] = 0;
+
+    drive->read28_pio(11, buff, 4);
+    if (buff[0] == 'g' && buff[1] == 'o' && buff[2] == 'd' && buff[3] == 's')
+        return 1;
+    return 0;
+}
+
+/* IDENT data structure found here: */
+/* https://people.freebsd.org/~imp/asiabsdcon2015/works/d2161r5-ATAATAPI_Command_Set_-_3.pdf */
+/* page 124 and onwards */
+#define ATA_IDENT_DATA_MODEL_START 27
+#define ATA_IDENT_DATA_MODEL_END 46
+#define ATA_IDENT_DATA_FIRMW_START 23
+#define ATA_IDENT_DATA_FIRMW_END 26
 
 ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32_t port_base, bool master)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt + 14)
@@ -21,7 +114,7 @@ ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32
     PCI::active->enable_busmaster(device);
     dma = false;
 
-    memset(&prdt, 0, sizeof(prdt_t));
+    memset(&prdt, 0, sizeof(ata_prdt_t));
     prdt.buffer_phys = 0;
     prdt.transfer_size = 512;
     prdt.mark_end = 0x8000;
@@ -43,7 +136,34 @@ void ATA::set_dma(bool dma)
     this->dma = dma;
 }
 
-void ATA::identify()
+void ATA::identify_data()
+{
+    memset(model, 0, sizeof(model));
+    char* write_field_model = model;
+    memset(firmware, 0, sizeof(firmware));
+    char* write_field_firmware = firmware;
+
+    /* TODO: Support more ident fields */
+    for (int i = 0; i < 256; i++) {
+        uint16_t data = data_port.read();
+        uint8_t bytes[2];
+
+        bytes[0] = (data >> 8) & 0xFF;
+        bytes[1] = data & 0xFF;
+
+        if (i >= ATA_IDENT_DATA_MODEL_START && i < ATA_IDENT_DATA_MODEL_END) {
+            *(write_field_model++) = bytes[0];
+            *(write_field_model++) = bytes[1];
+        }
+
+        if (i >= ATA_IDENT_DATA_FIRMW_START && i < ATA_IDENT_DATA_FIRMW_END) {
+            *(write_field_firmware++) = bytes[0];
+            *(write_field_firmware++) = bytes[1];
+        }
+    }
+}
+
+bool ATA::identify()
 {
     device_port.write(master ? 0xA0 : 0xB0);
     control_port.write(0);
@@ -51,7 +171,7 @@ void ATA::identify()
     device_port.write(0xA0);
     uint8_t status = command_port.read();
     if (status == 0xFF)
-        return;
+        return 0;
 
     device_port.write(master ? 0xA0 : 0xB0);
     sector_count_port.write(0);
@@ -62,27 +182,25 @@ void ATA::identify()
 
     status = command_port.read();
     if (status == 0x00)
-        return;
+        return 0;
 
     while (((status & 0x80) == 0x80)
         && ((status & 0x01) != 0x01))
         status = command_port.read();
 
     if (status & 0x01)
-        return;
+        return 0;
 
-    for (int i = 0; i < 256; i++) {
-        uint16_t data = data_port.read();
-        char* text = "  \0";
-        text[0] = (data >> 8) & 0xFF;
-        text[1] = data & 0xFF;
-    }
+    identify_data();
 
     uint32_t pci_command_reg = PCI::active->read(device.bus, device.device, device.function, 0x04);
     if (!(pci_command_reg & (1 << 2))) {
         pci_command_reg |= (1 << 2);
         PCI::active->write(device.bus, device.device, device.function, 0x04, pci_command_reg);
     }
+
+    does_exist = 1;
+    return 1;
 }
 
 uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int scount)

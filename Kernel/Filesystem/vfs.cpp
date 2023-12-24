@@ -27,6 +27,8 @@ file_table* VirtualFilesystem::ft()
 
 void VirtualFilesystem::mount(Filesystem* fs)
 {
+    if (num_mounts >= MAX_MOUNTS)
+        klog("VFS: Reached max number of mounts");
     mounts[num_mounts] = fs;
     current_mount = num_mounts;
     num_mounts++;
@@ -109,7 +111,7 @@ int VirtualFilesystem::open(char* file_name, int flags)
 
     if (mount == -1) {
         if (flags & O_CREAT) {
-            mount = 0;
+            mount = 0; // TODO
         } else {
             return -1;
         }
@@ -253,7 +255,7 @@ bool VirtualFilesystem::is_virtual_directory(char* dirname)
 int VirtualFilesystem::list_directory(char* dirname, fs_entry_t* entries, uint32_t count)
 {
     path_resolver(dirname, true);
-    int fscount = mounts[0]->read_dir(dirname, entries, count);
+    int fscount = mounts[0]->read_dir(dirname, entries, count); // TODO
 
     if (strncmp(dirname, "/pipe/", 6) == 0) {
         for (uint32_t i = 0; i < kernel_file_table.files.size(); i++) {

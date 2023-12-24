@@ -103,12 +103,14 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     if (!pci.find_driver(ATA::identifier()))
         klog("Could not find ATA device");
 
-    ATA ata1s(&interrupts, pci.get_descriptor(), 0x1F0, true);
-    ata1s.identify();
-    ata1s.set_dma(false);
+    ATActrl atactrl(&interrupts, pci.get_descriptor());
+    atactrl.identify_all();
+    atactrl.disable_dma();
+    if (atactrl.boot_drive() == 0)
+        klog("ATA: Could not find boot drive");
 
-    Tar fs_tar(&ata1s);
-    Husky fs_husky(&ata1s);
+    Tar fs_tar(atactrl.boot_drive());
+    Husky fs_husky(atactrl.boot_drive());
     uint8_t has_filesystem = 0;
 
     klog("Driver initialization");
@@ -158,7 +160,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     klog("IRQ activate reached");
     Mutex::enable();
-    ata1s.set_dma(true);
+    atactrl.enable_dma();
     IRQ::activate();
 
     klog("Filesystem detection started");
@@ -173,7 +175,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         has_filesystem = 2;
     }
     if (!has_filesystem) {
-        PANIC("Could not mount the filesystem");
+        PANIC("Could not mount any filesystem on boot drive");
     }
 
     if (ethernet.get_available_driver() != 0) {
