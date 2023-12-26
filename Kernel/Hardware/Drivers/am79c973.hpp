@@ -44,15 +44,15 @@ private:
     Port16Bit bus_control_register_data_port;
 
     init_block_t init_block;
-
     buffer_description_t* send_buffer_descriptions;
-    uint8_t send_buffer_descriptions_memory[2048 + 15];
+    uint8_t* send_buffer_descriptions_memory[2048 + 15];
     uint8_t* send_buffers = 0;
     uint8_t send_buffer_index = 0;
     buffer_description_t* receive_buffer_descriptions;
     uint8_t receive_buffer_descriptions_memory[2048 + 15];
     uint8_t* receive_buffers = 0;
     uint8_t receive_buffer_index = 0;
+    bool is_activated = 0;
     uint64_t mac_address = 0;
 
 public:

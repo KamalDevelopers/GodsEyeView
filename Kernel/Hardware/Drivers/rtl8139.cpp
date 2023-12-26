@@ -32,9 +32,12 @@ RTL8139::~RTL8139()
 
 void RTL8139::activate()
 {
-    config1_port.write(0x0);
+    if (is_activated)
+        return;
+    is_activated = true;
 
     /* Reset */
+    config1_port.write(0x0);
     command_port.write(0x10);
     while ((command_port.read() & 0x10) != 0)
         ;

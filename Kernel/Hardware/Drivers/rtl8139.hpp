@@ -48,6 +48,7 @@ private:
     uint32_t bar0 = 0;
     uint32_t tx_index = 0;
     uint32_t packet_index = 0;
+    bool is_activated = 0;
     uint8_t transfer_buffer[4][TX_BUF_SIZE];
 
 public:

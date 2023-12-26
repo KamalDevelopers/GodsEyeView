@@ -20,6 +20,10 @@ AM79C973::~AM79C973()
 
 void AM79C973::activate()
 {
+    if (is_activated)
+        return;
+    is_activated = true;
+
     uint64_t mac0 = mac0_address_port.read() % 256;
     uint64_t mac1 = mac0_address_port.read() / 256;
     uint64_t mac2 = mac2_address_port.read() % 256;
@@ -48,8 +52,8 @@ void AM79C973::activate()
     memset(send_buffer_descriptions_memory, 0, 2048 + 15);
     memset(receive_buffer_descriptions_memory, 0, 2048 + 15);
 
-    receive_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * NUM_DESCRIPTORS);
-    send_buffers = (uint8_t*)kmalloc(2 * 1024 + 15 * NUM_DESCRIPTORS);
+    receive_buffers = (uint8_t*)kmalloc((2 * 1024 + 15) * NUM_DESCRIPTORS);
+    send_buffers = (uint8_t*)kmalloc((2 * 1024 + 15) * NUM_DESCRIPTORS);
 
     send_buffer_descriptions = (buffer_description_t*)((((uint32_t)&send_buffer_descriptions_memory[0]) + 15) & ~((uint32_t)0xF));
     init_block.send_descriptor_address = (uint32_t)send_buffer_descriptions;
