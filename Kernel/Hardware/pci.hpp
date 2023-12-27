@@ -40,6 +40,7 @@ typedef struct driver_identifier {
     uint16_t device_id = 0;
     uint16_t class_id = 0;
     uint16_t subclass_id = 0;
+    uint16_t interface_id = 0;
 } driver_identifier_t;
 
 class PCI {
@@ -52,13 +53,16 @@ public:
     PCI();
     ~PCI();
 
-    uint32_t read(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset);
-    void write(uint16_t bus, uint16_t device, uint16_t function, uint32_t registeroffset, uint32_t value);
+    uint32_t read(device_descriptor_t device, uint32_t register_offset);
+    void write(device_descriptor_t device, uint32_t register_offset, uint32_t value);
+    uint32_t read(uint16_t bus, uint16_t device, uint16_t function, uint32_t register_offset);
+    void write(uint16_t bus, uint16_t device, uint16_t function, uint32_t register_offset, uint32_t value);
     bool device_has_functions(uint16_t bus, uint16_t device);
 
     bool find_driver(driver_identifier_t identifier);
     bool find_driver(driver_identifier_t identifier, uint16_t bus, uint16_t device);
     void enable_busmaster(device_descriptor_t device);
+    void enable_memory_space(device_descriptor_t device);
 
     void get_device_descriptor(uint16_t bus, uint16_t device, uint16_t function);
     void get_base_address_register(uint16_t bus, uint16_t device, uint16_t function, uint16_t bar);

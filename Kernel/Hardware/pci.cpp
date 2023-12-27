@@ -31,10 +31,13 @@ void PCI::get_base_address_register(uint16_t bus, uint16_t device, uint16_t func
             break;
         }
 
-    } else {
+    } else if (bar_value & 0x1) {
         bar.address = (uint8_t*)(bar_value & ~0x3);
         bar.prefetchable = false;
+        return;
     }
+
+    bar.address = (uint8_t*)(bar_value & ~0x7);
 }
 
 uint32_t PCI::read(uint16_t bus, uint16_t device, uint16_t function, uint32_t register_offset)
@@ -59,6 +62,16 @@ void PCI::write(uint16_t bus, uint16_t device, uint16_t function, uint32_t regis
         | (register_offset & 0xFC);
     command_port.write(id);
     data_port.write(value);
+}
+
+uint32_t PCI::read(device_descriptor_t device, uint32_t register_offset)
+{
+    return read(device.bus, device.device, device.function, register_offset);
+}
+
+void PCI::write(device_descriptor_t device, uint32_t register_offset, uint32_t value)
+{
+    return write(device.bus, device.device, device.function, register_offset, value);
 }
 
 bool PCI::device_has_functions(uint16_t bus, uint16_t device)
@@ -89,13 +102,13 @@ bool PCI::find_driver(driver_identifier_t identifier, uint16_t bus, uint16_t dev
 
         for (int bar_num = 0; bar_num < 6; bar_num++) {
             get_base_address_register(bus, device, function, bar_num);
-            if (bar.address && (bar.type == 1) && (bar_num == 0))
+            if (bar.address && (bar_num == 0))
                 dev.bar0 = (uint32_t)bar.address;
-            if (bar.address && (bar.type == 1) && (bar_num == 1))
+            if (bar.address && (bar_num == 1))
                 dev.bar1 = (uint32_t)bar.address;
-            if (bar.address && (bar.type == 1) && (bar_num == 2))
+            if (bar.address && (bar_num == 2))
                 dev.bar2 = (uint32_t)bar.address;
-            if (bar.address && (bar.type == 1) && (bar_num == 3))
+            if (bar.address && (bar_num == 3))
                 dev.bar3 = (uint32_t)bar.address;
         }
 
@@ -103,7 +116,8 @@ bool PCI::find_driver(driver_identifier_t identifier, uint16_t bus, uint16_t dev
             return true;
 
         if ((dev.class_id == identifier.class_id) && (dev.subclass_id == identifier.subclass_id))
-            return true;
+            if ((identifier.interface_id == dev.interface_id) || !identifier.interface_id)
+                return true;
     }
 
     return false;
@@ -136,5 +150,13 @@ void PCI::enable_busmaster(device_descriptor_t device)
     uint16_t cmd = read(device.bus, device.device, device.function, 0x04);
     uint16_t status = read(device.bus, device.device, device.function, 0x06);
     cmd |= (1 << 2);
+    write(device.bus, device.device, device.function, 0x04, (uint32_t)status << 16 | (uint32_t)cmd);
+}
+
+void PCI::enable_memory_space(device_descriptor_t device)
+{
+    uint16_t cmd = read(device.bus, device.device, device.function, 0x04);
+    uint16_t status = read(device.bus, device.device, device.function, 0x06);
+    cmd |= (1 << 1);
     write(device.bus, device.device, device.function, 0x04, (uint32_t)status << 16 | (uint32_t)cmd);
 }

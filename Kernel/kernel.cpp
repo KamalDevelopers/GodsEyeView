@@ -17,6 +17,7 @@
 #include "Filesystem/husky.hpp"
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
+#include "Hardware/Drivers/USB/ehci.hpp"
 #include "Hardware/Drivers/ac97.hpp"
 #include "Hardware/Drivers/am79c973.hpp"
 #include "Hardware/Drivers/ata.hpp"
@@ -121,6 +122,11 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     if (sb16.activated()) {
         klog("PCI: audio driver sb16");
         AUDIO->set_audio_driver(&sb16);
+    }
+
+    if (pci.find_driver(EHCI::identifier())) {
+        klog("PCI: USB EHCI driver");
+        EHCI* ehci = new EHCI(&interrupts, pci.get_descriptor());
     }
 
     if (pci.find_driver(ES1370::identifier())) {
