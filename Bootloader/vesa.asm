@@ -14,13 +14,13 @@ vbe_init:
     pop es
 
     cmp ax, 0x4F
-    jne .no_vbe
+    jne err_vbe2
 
     cmp dword[vbe_info_block], "VESA"
     jne .no_vbe
 
     cmp dword[vbe_info_block.version], 0x200
-    jl .no_vbe
+    jl err_vbe_version
 
     cmp ax, 0x4F
     jne .no_vbe
@@ -46,7 +46,7 @@ vbe_set_mode:
     mov [.height], bx
     mov [.bpp], cl
 
-    ; sti
+    sti
     push es 
     ; VBE BIOS info
     mov ax, 0x4F00

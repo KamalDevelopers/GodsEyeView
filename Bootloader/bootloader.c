@@ -76,3 +76,13 @@ void err_vbe()
 {
     print("\xD[-] VBE might not be supported, continuing\n\xD", 14);
 }
+
+void err_vbe2()
+{
+    print("\xD[-] VBE2 might not be supported, continuing\n\xD", 14);
+}
+
+void err_vbe_version()
+{
+    print("\xD[-] VBE version 0x200 not supported, continuing\n\xD", 14);
+}
