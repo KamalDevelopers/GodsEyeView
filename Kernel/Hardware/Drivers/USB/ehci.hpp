@@ -46,6 +46,9 @@ private:
     ehci_capabilities* capabilities = 0;
     ehci_operations* operations = 0;
 
+    bool is_active = 0;
+    uint16_t ehci_info = 0;
+    uint8_t ehci_version = 0;
     uint32_t base_address = 0;
     int port_count = 0;
 
@@ -54,8 +57,12 @@ public:
     ~EHCI();
 
     static driver_identifier_t identifier() { return { 0x0, 0x0, 0x0C, 0x03, 0x20 }; }
+
     bool take_ownership(device_descriptor_t device);
+    void probe_port(uint16_t port);
+    void probe_ports();
     void activate();
+    void validate_reset();
     void reset();
 
     static EHCI* active;
