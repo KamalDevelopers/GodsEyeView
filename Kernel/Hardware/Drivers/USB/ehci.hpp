@@ -29,8 +29,13 @@ struct ehci_operations {
     uint32_t port_source[MAX_PORT_SOURCES];
 } __attribute__((packed));
 
-struct ehci_queue_head {
-    uint32_t data[17];
+struct ehci_device_endpoint {
+    uint8_t length;
+    uint8_t type;
+    uint8_t address;
+    uint8_t attributes;
+    uint16_t packet_size;
+    uint8_t interval;
 } __attribute__((packed));
 
 struct ehci_device_descriptor_request {
@@ -40,6 +45,34 @@ struct ehci_device_descriptor_request {
     uint16_t index;
     uint16_t length;
 } __attribute__((packed));
+
+typedef struct {
+    uint8_t type;
+    uint8_t request;
+    uint16_t value;
+    uint16_t index;
+    uint16_t length;
+} __attribute__((packed)) ehci_command;
+
+typedef struct {
+    uint32_t next_link;
+    uint32_t alt_link;
+    uint32_t token;
+    uint32_t buffer[5];
+    uint32_t ext_buffer[5];
+} __attribute__((packed)) ehci_transfer_descriptor;
+
+typedef struct {
+    uint32_t horizontal_link;
+    uint32_t characteristics;
+    uint32_t capabilities;
+    uint32_t current_link;
+    uint32_t next_link;
+    uint32_t alt_link;
+    uint32_t token;
+    uint32_t buffer[5];
+    uint32_t ext_buffer[5];
+} __attribute__((packed)) ehci_queue_head;
 
 class EHCI : public InterruptHandler {
 private:
@@ -51,12 +84,24 @@ private:
     uint8_t ehci_version = 0;
     uint32_t base_address = 0;
     int port_count = 0;
+    int address_count = 0;
+
+    void non_irq_timeout()
+    {
+        /* 0.0062 seconds = 62 * 10^(-9) * 1000000 */
+        for (int timeout = 100000; timeout > 0; timeout--)
+            asm volatile("nop");
+    }
 
 public:
     EHCI(InterruptManager* interrupt_manager, device_descriptor_t device);
     ~EHCI();
 
+    static EHCI* active;
     static driver_identifier_t identifier() { return { 0x0, 0x0, 0x0C, 0x03, 0x20 }; }
+
+    void init_async_list();
+    void init_periodic_list();
 
     bool take_ownership(device_descriptor_t device);
     void probe_port(uint16_t port);
@@ -65,7 +110,14 @@ public:
     void validate_reset();
     void reset();
 
-    static EHCI* active;
+    bool device_address();
+    uint8_t transaction_send(ehci_transfer_descriptor* transfer);
+    bool device_descriptor(uint8_t address, uint32_t page_buffer_ptr, uint8_t type, uint8_t index, uint8_t size);
+
+    bool send_bulk_data(int address, uint32_t command, int end_point, void* buffer, uint32_t len);
+    bool receive_bulk_data(int address, uint32_t command, int end_point, void* buffer, uint32_t len);
+
+    virtual uint32_t interrupt(uint32_t esp);
 };
 
 #endif

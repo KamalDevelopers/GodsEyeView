@@ -18,6 +18,7 @@
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/USB/ehci.hpp"
+#include "Hardware/Drivers/USB/usb.hpp"
 #include "Hardware/Drivers/ac97.hpp"
 #include "Hardware/Drivers/am79c973.hpp"
 #include "Hardware/Drivers/ata.hpp"
@@ -156,6 +157,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 
     if (has_volatile_memory)
         klog("Volatile memory mode");
+    klog("USB: Devices connected %d", usb_devices_count());
     klog("ELF loader initialization");
     Elf elf_load("elf32");
     Loader loader;

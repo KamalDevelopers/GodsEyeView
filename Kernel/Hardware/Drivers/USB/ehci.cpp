@@ -1,5 +1,9 @@
 #include "ehci.hpp"
+#include "usb.hpp"
 
+#define HCI_VERSION 0x20
+#define PROTOCOL_VERSION 0x100
+#define VENDOR_QEMU 0x46f4
 #define USB_LEGACY 0x00
 #define HCCPARAMS_EECP_MASK 0xff00
 #define HCCPARAMS_EECP_SHIFT 8
@@ -10,10 +14,50 @@
 #define USB_COMMAND_ENABLE_INT 0x3f
 #define PCI_INFO_REG 0x60
 #define PERIODIC_FRAME_SIZE 1024
+#define ASYNC_LIST_SIZE 16
+
+#define QH_HS_TYPE_QHEAD (1 << 1)
+#define QH_HS_TVALID (0 << 0)
+#define QH_HS_TINVALID (1 << 0)
+
+#define PORT_RESET (1 << 8)
+#define PORT_ENABLE (1 << 2)
+#define PORT_CONNECTION_CHANGE (1 << 1)
+#define PORT_ENABLE_CHANGE (1 << 3)
+
+#define INT_ENABLE (1 << 0)
+#define INT_ERROR_ENABLE (1 << 1)
+#define INT_PORT_CHANGE (1 << 2)
+#define INT_FRAME_ROLLOVER (1 << 3)
+#define INT_HOST_ERROR (1 << 4)
+#define INT_ON_ASYNC (1 << 5)
+
+#define REQUEST_SYNCH_FRAME 12
+#define REQUEST_SET_INTERFACE 11
+#define REQUEST_GET_INTERFACE 10
+#define REQUEST_SET_CONFIGURATION 9
+#define REQUEST_GET_CONFIGURATION 8
+#define REQUEST_SET_DESCRIPTOR 7
+#define REQUEST_GET_DESCRIPTOR 6
+#define REQUEST_SET_ADDRESS 5
+#define REQUEST_SET_FEATURE 3
+#define REQUEST_CLEAR_FEATURE 1
+#define REQUEST_GET_STATUS 0
+
+#define DESCRIPTOR_TYPE_POWER 8
+#define DESCRIPTOR_TYPE_OTHER 7
+#define DESCRIPTOR_TYPE_QUALI 6
+#define DESCRIPTOR_TYPE_ENDPOINT 5
+#define DESCRIPTOR_TYPE_INTERFACE 4
+#define DESCRIPTOR_TYPE_STRING 3
+#define DESCRIPTOR_TYPE_CONFIGURATION 2
+#define DESCRIPTOR_TYPE_DEVICE 1
 
 static size_t periodic_list[PERIODIC_FRAME_SIZE] __attribute__((aligned(0x1000)));
-EHCI* EHCI::active = 0;
+static ehci_queue_head* queue_head_primary;
+static ehci_queue_head* queue_head_secondary;
 
+EHCI* EHCI::active = 0;
 EHCI::EHCI(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
 {
@@ -35,6 +79,12 @@ EHCI::EHCI(InterruptManager* interrupt_manager, device_descriptor_t device)
     activate();
 }
 
+EHCI::~EHCI()
+{
+    PMM->free_pages((uint32_t)queue_head_primary, PAGE_SIZE);
+    PMM->free_pages((uint32_t)queue_head_secondary, PAGE_SIZE);
+}
+
 void EHCI::activate()
 {
     if (is_active)
@@ -44,18 +94,25 @@ void EHCI::activate()
     reset();
     validate_reset();
 
-    if (capabilities->version != 0x100)
+    if (capabilities->version != PROTOCOL_VERSION)
         klog("EHCI: protocol unsupported version");
-    if (ehci_version != 0x20)
+    if (ehci_version != HCI_VERSION)
         klog("EHCI: unsupported HCI version");
 
-    for (uint32_t i = 0; i < PERIODIC_FRAME_SIZE; i++)
-        periodic_list[i] |= 1;
+    init_async_list();
+    init_periodic_list();
+
+    operations->periodic_frame_list = (uint32_t)((size_t)&periodic_list);
+    operations->async_list = (uint32_t)queue_head_primary;
 
     operations->control_dss = 0;
-    operations->interrupt = 7; // Enable all USB interrupt
-    operations->periodic_frame_list = (uint32_t)((size_t)&periodic_list);
-    operations->command = 0x80001 | (0x40 << 16);
+    operations->interrupt = INT_ENABLE | INT_ERROR_ENABLE;
+
+    non_irq_timeout();
+    // operations->command = 0x80001 | (0x40 << 16);
+    operations->command |= (8 << 16) | (1 << 5) | (1 << 4) | (1 << 0);
+
+    operations->configure_flag = 1;
     ((uint32_t*)(base_address + capabilities->length + 0x40))[0] |= 1;
     probe_ports();
 }
@@ -66,7 +123,7 @@ void EHCI::reset()
     while (operations->command & 1)
         asm volatile("nop");
     operations->command |= USB_COMMAND_RESET;
-    while (operations->command & 2)
+    while (operations->command & USB_COMMAND_RESET)
         asm volatile("nop");
 }
 
@@ -84,19 +141,71 @@ void EHCI::validate_reset()
         klog("EHCI: Warning unexpected CONFIGFLAG value");
 }
 
+void EHCI::init_async_list()
+{
+    queue_head_primary = (ehci_queue_head*)PMM->allocate_pages(PAGE_SIZE);
+    queue_head_secondary = (ehci_queue_head*)PMM->allocate_pages(PAGE_SIZE);
+    queue_head_primary->horizontal_link = (uint32_t)queue_head_secondary | QH_HS_TYPE_QHEAD;
+    queue_head_secondary->horizontal_link = (uint32_t)queue_head_primary | QH_HS_TYPE_QHEAD;
+}
+
+void EHCI::init_periodic_list()
+{
+    for (uint32_t i = 0; i < PERIODIC_FRAME_SIZE; i++)
+        periodic_list[i] = 1;
+}
+
 void EHCI::probe_port(uint16_t port)
 {
-    volatile uint32_t port_register = operations->port_source[port - 1];
+    uint16_t port_index = port;
+    volatile uint32_t port_register = operations->port_source[port_index];
     if (!(port_register & 3))
         return;
 
-    /* TODO: Create usb device */
-    klog("got connection on port=%d", port);
+    if (((port_register >> 10) & 0x3) == 1) {
+        klog("EHCI: Low speed device detected");
+        return;
+    }
+
+    uint32_t buffer = PMM->allocate_pages(PAGE_SIZE);
+    usb_device* usb = usb_allocate_device();
+    usb->protocol = 2;
+    usb->phys_port = port;
+
+    /* Reset port */
+    uint32_t reg = operations->port_source[port_index];
+    reg |= PORT_RESET;
+    operations->port_source[port_index] = reg;
+    non_irq_timeout();
+    operations->port_source[port_index] &= ~PORT_RESET;
+    non_irq_timeout();
+
+    usb->address = address_count;
+    if (!device_address())
+        klog("EHCI: Failed to assign device address");
+    non_irq_timeout();
+
+    memset((void*)buffer, 0, sizeof(usb_device_descriptor));
+    if (!device_descriptor(usb->address, buffer, DESCRIPTOR_TYPE_DEVICE, 0, sizeof(usb_device_descriptor)))
+        klog("EHCI: Failed to get device descriptor");
+    memcpy(&(usb->device_descriptor), (void*)buffer, sizeof(usb_device_descriptor));
+
+    int packet_size = sizeof(usb_conf_descriptor) + sizeof(usb_interface_descriptor) + sizeof(ehci_device_endpoint) * 2;
+    memset((void*)buffer, 0, packet_size);
+    if (!device_descriptor(usb->address, buffer, DESCRIPTOR_TYPE_CONFIGURATION, 0, packet_size))
+        klog("EHCI: Failed to get configuration descriptor");
+
+    if (usb->device_descriptor.type != DESCRIPTOR_TYPE_DEVICE)
+        klog("EHCI: Descriptor requests failed");
+    if (usb->device_descriptor.vendor == VENDOR_QEMU)
+        klog("USB: Virtual usb device connected");
+
+    PMM->free_pages(buffer, PAGE_SIZE);
 }
 
 void EHCI::probe_ports()
 {
-    for (uint16_t i = 1; i < port_count; i++)
+    for (uint16_t i = 0; i < port_count; i++)
         probe_port(i);
 }
 
@@ -123,4 +232,213 @@ bool EHCI::take_ownership(device_descriptor_t device)
     }
 
     return false;
+}
+
+uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
+{
+    operations->command |= (1 << 5);
+    uint8_t err;
+
+    for (;;) {
+        volatile uint32_t token = (volatile uint32_t)transfer->token;
+        non_irq_timeout();
+        if (operations->status & 0x8000)
+            continue;
+        err = 1;
+        if (token & (1 << 3)) {
+            klog("EHCI: Transaction error");
+            err = 3;
+            break;
+        }
+        if (token & (1 << 4)) {
+            klog("EHCI: Transaction babble error");
+            err = 4;
+            break;
+        }
+        if (token & (1 << 5)) {
+            klog("EHCI: Transaction data error");
+            err = 5;
+            break;
+        }
+        if (token & (1 << 6)) {
+            klog("EHCI: Transaction fatal error");
+            err = 6;
+            break;
+        }
+        if (token & (1 << 7)) {
+            err = 0;
+            break;
+        }
+    }
+
+    operations->command &= ~(1 << 5);
+    return err;
+}
+
+bool EHCI::device_descriptor(uint8_t address, uint32_t page_buffer_ptr, uint8_t type, uint8_t index, uint8_t size)
+{
+    /* Command structure */
+    ehci_command* command = (ehci_command*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(command, 0, sizeof(ehci_command));
+    command->request = REQUEST_GET_DESCRIPTOR;
+    command->length = size;
+    command->type |= (4 << 5);
+    command->value = (type << 8) | index;
+
+    /* Transfer descriptor structures */
+    ehci_transfer_descriptor* status = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(status, 0, sizeof(ehci_transfer_descriptor));
+    status->next_link = 1;
+    status->alt_link = 1;
+    status->token |= (1 << 7) | (0 << 8) | (3 << 10) | (0 << 16) | (1 << 31);
+
+    ehci_transfer_descriptor* transfer_command = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(transfer_command, 0, sizeof(ehci_transfer_descriptor));
+    transfer_command->next_link = (uint32_t)status;
+    transfer_command->alt_link = 1;
+    transfer_command->token |= (1 << 7) | (1 << 8) | (3 << 10) | (size << 16) | (1 << 31);
+    transfer_command->buffer[0] = page_buffer_ptr;
+
+    ehci_transfer_descriptor* transfer_descriptor = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(transfer_descriptor, 0, sizeof(ehci_transfer_descriptor));
+    transfer_descriptor->next_link = (uint32_t)transfer_command;
+    transfer_descriptor->alt_link = 1;
+    transfer_descriptor->token |= (1 << 7) | (2 << 8) | (3 << 10) | (8 << 16) | (0 << 31);
+    transfer_descriptor->buffer[0] = (uint32_t)command;
+
+    /* Queue head structures */
+    ehci_queue_head* head_primary = queue_head_primary;
+    memset(head_primary, 0, sizeof(ehci_queue_head));
+    head_primary->alt_link = 1;
+    head_primary->next_link = 1;
+    head_primary->characteristics |= (0 << 12) | (0 << 14) | (1 << 15) | (0 << 16) | (0 << 8) | 0;
+    head_primary->token = 0x40;
+
+    ehci_queue_head* head_secondary = queue_head_secondary;
+    memset(head_secondary, 0, sizeof(ehci_queue_head));
+    head_secondary->alt_link = 1;
+    head_secondary->next_link = (uint32_t)transfer_descriptor;
+    head_secondary->characteristics |= (2 << 12) | (1 << 14) | (0 << 15) | (64 << 16) | (0 << 8) | address;
+    head_secondary->capabilities = 0x40000000;
+
+    head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
+    head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
+
+    uint8_t err = transaction_send(status);
+
+    /* Done */
+    PMM->active->free_pages((uint32_t)command, PAGE_SIZE);
+    PMM->active->free_pages((uint32_t)status, PAGE_SIZE);
+    PMM->active->free_pages((uint32_t)transfer_command, PAGE_SIZE);
+    PMM->active->free_pages((uint32_t)transfer_descriptor, PAGE_SIZE);
+    return (err == 0);
+}
+
+bool EHCI::device_address()
+{
+    /* Command structure */
+    ehci_command* command = (ehci_command*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(command, 0, sizeof(ehci_command));
+    command->request = REQUEST_SET_ADDRESS;
+    command->value = address_count;
+
+    /* Transfer descriptor structures */
+    ehci_transfer_descriptor* status = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(status, 0, sizeof(ehci_transfer_descriptor));
+    status->next_link = 1;
+    status->alt_link = 1;
+    status->token |= (1 << 7) | (1 << 8) | (3 << 10) | (0 << 16) | (1 << 31);
+
+    ehci_transfer_descriptor* transfer_command = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(transfer_command, 0, sizeof(ehci_transfer_descriptor));
+    status->next_link = (uint32_t)status;
+    status->alt_link = 1;
+    status->token |= (1 << 7) | (2 << 8) | (3 << 10) | (8 << 16) | (0 << 31);
+    status->buffer[0] = (uint32_t)command;
+
+    /* Queue head structures */
+    ehci_queue_head* head_primary = queue_head_primary;
+    memset(head_primary, 0, sizeof(ehci_queue_head));
+    head_primary->alt_link = 1;
+    head_primary->next_link = 1;
+    head_primary->characteristics |= (0 << 12) | (0 << 14) | (1 << 15) | (0 << 16) | (0 << 8) | 0;
+    head_primary->token = 0x40;
+
+    ehci_queue_head* head_secondary = queue_head_secondary;
+    memset(head_secondary, 0, sizeof(ehci_queue_head));
+    head_secondary->alt_link = 1;
+    head_secondary->next_link = (uint32_t)transfer_command;
+    head_secondary->characteristics |= (2 << 12) | (1 << 14) | (0 << 15) | (64 << 16) | (0 << 8) | 0;
+    head_secondary->capabilities = 0x40000000;
+
+    head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
+    head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
+
+    uint8_t err = transaction_send(status);
+
+    /* Done */
+    PMM->active->free_pages((uint32_t)command, PAGE_SIZE);
+    PMM->active->free_pages((uint32_t)status, PAGE_SIZE);
+    PMM->active->free_pages((uint32_t)transfer_command, PAGE_SIZE);
+    address_count++;
+    return (err == 0);
+}
+
+bool EHCI::receive_bulk_data(int address, uint32_t command, int end_point, void* buffer, uint32_t len)
+{
+    return 0;
+}
+
+bool EHCI::send_bulk_data(int address, uint32_t command, int end_point, void* buffer, uint32_t len)
+{
+    /* Transfer descriptor structures */
+    ehci_transfer_descriptor* status = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(status, 0, sizeof(ehci_transfer_descriptor));
+    status->next_link = 1;
+    status->alt_link = 1;
+    status->token |= (1 << 7) | (0 << 8) | (3 << 10) | (0 << 16) | (1 << 31);
+
+    ehci_transfer_descriptor* transfer_command = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
+    memset(transfer_command, 0, sizeof(ehci_transfer_descriptor));
+    status->next_link = (uint32_t)status;
+    status->alt_link = 1;
+    status->token |= (1 << 7) | (0 << 8) | (3 << 10) | (len << 16) | (0 << 31);
+    status->buffer[0] = (uint32_t)command;
+
+    ehci_queue_head* head_primary = queue_head_primary;
+    memset(head_primary, 0, sizeof(ehci_queue_head));
+    head_primary->alt_link = 1;
+    head_primary->next_link = 1;
+    head_primary->characteristics |= (0 << 12) | (0 << 14) | (1 << 15) | (0 << 16) | (0 << 8) | 0;
+    head_primary->token = 0x40;
+
+    ehci_queue_head* head_secondary = queue_head_secondary;
+    memset(head_secondary, 0, sizeof(ehci_queue_head));
+    head_secondary->alt_link = 1;
+    head_secondary->next_link = (uint32_t)transfer_command;
+    head_secondary->characteristics |= (2 << 12) | (1 << 14) | (0 << 15) | (512 << 16) | (end_point << 8) | address;
+    head_secondary->capabilities = 0x40000000;
+
+    head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
+    head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
+
+    uint8_t err = transaction_send(status);
+
+    PMM->active->free_pages((uint32_t)status, PAGE_SIZE);
+    PMM->active->free_pages((uint32_t)transfer_command, PAGE_SIZE);
+    return (err == 0);
+}
+
+uint32_t EHCI::interrupt(uint32_t esp)
+{
+    uint32_t status = operations->status;
+
+    if (status & 0x2)
+        klog("EHCI: Interrupt status error");
+
+    /* if (status & 0x4)
+        klog("EHCI: Port change"); */
+
+    operations->status = operations->status;
+    return esp;
 }
