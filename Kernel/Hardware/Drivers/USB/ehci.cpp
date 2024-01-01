@@ -53,6 +53,7 @@
 #define DESCRIPTOR_TYPE_CONFIGURATION 2
 #define DESCRIPTOR_TYPE_DEVICE 1
 
+MUTEX(mutex_ehci);
 static size_t periodic_list[PERIODIC_FRAME_SIZE] __attribute__((aligned(0x1000)));
 static ehci_queue_head* queue_head_primary;
 static ehci_queue_head* queue_head_secondary;
@@ -115,6 +116,19 @@ void EHCI::activate()
     operations->configure_flag = 1;
     ((uint32_t*)(base_address + capabilities->length + 0x40))[0] |= 1;
     probe_ports();
+}
+
+void EHCI::wait()
+{
+    Mutex::lock(mutex_ehci);
+    Mutex::unlock(mutex_ehci);
+}
+
+void EHCI::non_irq_timeout()
+{
+    /* 0.0062 seconds = 62 * 10^(-9) * 1000000 */
+    for (int timeout = 100000; timeout > 0; timeout--)
+        asm volatile("nop");
 }
 
 void EHCI::reset()
@@ -254,9 +268,13 @@ uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
 
     for (;;) {
         volatile uint32_t token = (volatile uint32_t)transfer->token;
-        non_irq_timeout();
-        if (operations->status & 0x8000)
+        wait();
+
+        if (operations->status & 0x8000) {
+            non_irq_timeout();
             continue;
+        }
+
         err = 1;
         if (token & (1 << 3)) {
             kdbg("EHCI: Transaction error\n");
@@ -430,6 +448,7 @@ bool EHCI::receive_bulk_data(int address, int endpoint, uint8_t toggle, void* bu
     head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
     head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
 
+    Mutex::lock(mutex_ehci);
     uint8_t err = transaction_send(status);
 
     if (buffer)
@@ -473,6 +492,7 @@ bool EHCI::send_bulk_data(int address, int endpoint, void* buffer, uint32_t leng
     head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
     head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
 
+    Mutex::lock(mutex_ehci);
     uint8_t err = transaction_send(status);
 
     PMM->active->free_pages((uint32_t)status, PAGE_SIZE);
@@ -482,13 +502,15 @@ bool EHCI::send_bulk_data(int address, int endpoint, void* buffer, uint32_t leng
 
 uint32_t EHCI::interrupt(uint32_t esp)
 {
+    Mutex::unlock(mutex_ehci);
     uint32_t status = operations->status;
 
     if (status & 0x2)
         kdbg("EHCI: Interrupt status error\n");
 
     /* if (status & 0x4)
-        klog("EHCI: Port change"); */
+     * TODO: Support dynamic probing
+     *  klog("EHCI: Port change"); */
 
     operations->status = operations->status;
     return esp;

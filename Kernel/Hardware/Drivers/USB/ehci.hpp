@@ -1,6 +1,7 @@
 #ifndef EHCI_HPP
 #define EHCI_HPP
 
+#include "../../../Locks/mutex.hpp"
 #include "../../interrupts.hpp"
 #include "../../pci.hpp"
 #include <LibC/types.h>
@@ -89,12 +90,8 @@ private:
     void init_async_list();
     void init_periodic_list();
 
-    void non_irq_timeout()
-    {
-        /* 0.0062 seconds = 62 * 10^(-9) * 1000000 */
-        for (int timeout = 100000; timeout > 0; timeout--)
-            asm volatile("nop");
-    }
+    void wait();
+    void non_irq_timeout();
 
 public:
     EHCI(InterruptManager* interrupt_manager, device_descriptor_t device);
