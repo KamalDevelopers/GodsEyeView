@@ -53,7 +53,6 @@
 #define DESCRIPTOR_TYPE_CONFIGURATION 2
 #define DESCRIPTOR_TYPE_DEVICE 1
 
-MUTEX(mutex_ehci);
 static size_t periodic_list[PERIODIC_FRAME_SIZE] __attribute__((aligned(0x1000)));
 static ehci_queue_head* queue_head_primary;
 static ehci_queue_head* queue_head_secondary;
@@ -92,6 +91,7 @@ void EHCI::activate()
         return;
     is_active = true;
 
+    operations->interrupt = 0;
     reset();
     validate_reset();
 
@@ -109,7 +109,7 @@ void EHCI::activate()
     operations->control_dss = 0;
     operations->interrupt = INT_ENABLE | INT_ERROR_ENABLE;
 
-    non_irq_timeout();
+    timeout();
     // operations->command = 0x80001 | (0x40 << 16);
     operations->command |= (8 << 16) | (1 << 5) | (1 << 4) | (1 << 0);
 
@@ -118,17 +118,15 @@ void EHCI::activate()
     probe_ports();
 }
 
-void EHCI::wait()
-{
-    Mutex::lock(mutex_ehci);
-    Mutex::unlock(mutex_ehci);
-}
-
-void EHCI::non_irq_timeout()
+void EHCI::timeout(float modifier)
 {
     /* 0.0062 seconds = 62 * 10^(-9) * 1000000 */
-    for (int timeout = 100000; timeout > 0; timeout--)
+    int time = (int)(100000.0f * modifier);
+    for (int timeout = 100000; timeout > 0; timeout--) {
+        if (TM->is_active())
+            TM->yield();
         asm volatile("nop");
+    }
 }
 
 void EHCI::reset()
@@ -191,14 +189,14 @@ void EHCI::probe_port(uint16_t port)
     uint32_t reg = operations->port_source[port_index];
     reg |= PORT_RESET;
     operations->port_source[port_index] = reg;
-    non_irq_timeout();
+    timeout();
     operations->port_source[port_index] &= ~PORT_RESET;
-    non_irq_timeout();
+    timeout();
 
     usb->address = address_count;
     if (!device_address())
         kdbg("EHCI: Failed to assign device address\n");
-    non_irq_timeout();
+    timeout();
 
     memset((void*)buffer, 0, sizeof(usb_device_descriptor));
     if (!device_descriptor(usb->address, buffer, DESCRIPTOR_TYPE_DEVICE, 0, sizeof(usb_device_descriptor)))
@@ -267,13 +265,11 @@ uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
     uint8_t err;
 
     for (;;) {
-        volatile uint32_t token = (volatile uint32_t)transfer->token;
-        wait();
+        uint32_t token = transfer->token;
 
-        if (operations->status & 0x8000) {
-            non_irq_timeout();
+        timeout(0.1f);
+        if (operations->status & 0x8000)
             continue;
-        }
 
         err = 1;
         if (token & (1 << 3)) {
@@ -448,7 +444,6 @@ bool EHCI::receive_bulk_data(int address, int endpoint, uint8_t toggle, void* bu
     head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
     head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
 
-    Mutex::lock(mutex_ehci);
     uint8_t err = transaction_send(status);
 
     if (buffer)
@@ -492,7 +487,6 @@ bool EHCI::send_bulk_data(int address, int endpoint, void* buffer, uint32_t leng
     head_primary->horizontal_link = (uint32_t)head_secondary | QH_HS_TYPE_QHEAD;
     head_secondary->horizontal_link = (uint32_t)head_primary | QH_HS_TYPE_QHEAD;
 
-    Mutex::lock(mutex_ehci);
     uint8_t err = transaction_send(status);
 
     PMM->active->free_pages((uint32_t)status, PAGE_SIZE);
@@ -502,16 +496,15 @@ bool EHCI::send_bulk_data(int address, int endpoint, void* buffer, uint32_t leng
 
 uint32_t EHCI::interrupt(uint32_t esp)
 {
-    Mutex::unlock(mutex_ehci);
     uint32_t status = operations->status;
+    operations->status = status;
 
-    if (status & 0x2)
-        kdbg("EHCI: Interrupt status error\n");
+    if (status & 0x2) {
+        klog("EHCI: Transaction error");
+    }
 
     /* if (status & 0x4)
      * TODO: Support dynamic probing
      *  klog("EHCI: Port change"); */
-
-    operations->status = operations->status;
     return esp;
 }

@@ -1,6 +1,6 @@
 #include "mutex.hpp"
 
-bool is_enabled = false;
+static bool is_enabled = 0;
 
 void Mutex::enable()
 {

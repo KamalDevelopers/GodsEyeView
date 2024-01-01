@@ -89,9 +89,7 @@ private:
 
     void init_async_list();
     void init_periodic_list();
-
-    void wait();
-    void non_irq_timeout();
+    void timeout(float modifier = 1.0f);
 
 public:
     EHCI(InterruptManager* interrupt_manager, device_descriptor_t device);
