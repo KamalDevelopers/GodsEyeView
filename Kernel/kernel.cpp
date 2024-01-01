@@ -18,6 +18,7 @@
 #include "Filesystem/tar.hpp"
 #include "Filesystem/vfs.hpp"
 #include "Hardware/Drivers/USB/ehci.hpp"
+#include "Hardware/Drivers/USB/scsi.hpp"
 #include "Hardware/Drivers/USB/usb.hpp"
 #include "Hardware/Drivers/ac97.hpp"
 #include "Hardware/Drivers/am79c973.hpp"
@@ -155,9 +156,18 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         ethernet.set_network_driver(rtl8139);
     }
 
+    klog("USB: Enumerating devices");
+    klog("USB: Devices connected %d", usb_devices_count());
+    for (uint32_t i = 0; i < usb_devices_count(); ++i) {
+        usb_device* device = usb_device_at(i);
+        if (device->protocol != 2)
+            continue;
+        SCSI* scsi_device = new SCSI(device);
+        /* TODO: Add as storage medium*/
+    }
+
     if (has_volatile_memory)
         klog("Volatile memory mode");
-    klog("USB: Devices connected %d", usb_devices_count());
     klog("ELF loader initialization");
     Elf elf_load("elf32");
     Loader loader;

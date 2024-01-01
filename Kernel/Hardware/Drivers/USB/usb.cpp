@@ -11,6 +11,7 @@ usb_device* usb_allocate_device()
     usb_device_bitmap.bit_set(i);
     devices_in_use = (i == 0) ? 0 : devices_in_use;
     devices_in_use++;
+    usb_devices[i].controller = USB_CONTROLLER_NONE;
     return &usb_devices[i];
 }
 
@@ -28,4 +29,9 @@ void usb_free_device(usb_device* device)
 uint32_t usb_devices_count()
 {
     return devices_in_use;
+}
+
+usb_device* usb_device_at(uint32_t i)
+{
+    return &usb_devices[i];
 }

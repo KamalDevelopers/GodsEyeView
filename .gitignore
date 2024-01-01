@@ -10,8 +10,8 @@ compile_flags.txt
 .ccls-cache
 libc.a
 libaudio.a
-dump.dat
 virtdrive
+*.dat
 
 /Bootloader/*.bin
 /Bootloader/*.o

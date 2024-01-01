@@ -4,6 +4,8 @@
 #include <LibC/types.h>
 
 #define MAX_USB_DEVICES 160
+#define USB_CONTROLLER_NONE 0
+#define USB_CONTROLLER_EHCI 1
 
 typedef struct {
     uint8_t length;
@@ -53,7 +55,10 @@ typedef struct {
 typedef struct {
     uint8_t address;
     uint8_t protocol;
-    uint8_t phys_port;
+    uint8_t port;
+    uint8_t ep_in;
+    uint8_t ep_out;
+    uint8_t controller;
 
     usb_device_descriptor device_descriptor;
 } usb_device;
@@ -61,5 +66,6 @@ typedef struct {
 usb_device* usb_allocate_device();
 void usb_free_device(usb_device* device);
 uint32_t usb_devices_count();
+usb_device* usb_device_at(uint32_t i);
 
 #endif

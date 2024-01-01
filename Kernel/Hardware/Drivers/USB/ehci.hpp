@@ -86,6 +86,9 @@ private:
     int port_count = 0;
     int address_count = 0;
 
+    void init_async_list();
+    void init_periodic_list();
+
     void non_irq_timeout()
     {
         /* 0.0062 seconds = 62 * 10^(-9) * 1000000 */
@@ -100,9 +103,6 @@ public:
     static EHCI* active;
     static driver_identifier_t identifier() { return { 0x0, 0x0, 0x0C, 0x03, 0x20 }; }
 
-    void init_async_list();
-    void init_periodic_list();
-
     bool take_ownership(device_descriptor_t device);
     void probe_port(uint16_t port);
     void probe_ports();
@@ -114,8 +114,8 @@ public:
     uint8_t transaction_send(ehci_transfer_descriptor* transfer);
     bool device_descriptor(uint8_t address, uint32_t page_buffer_ptr, uint8_t type, uint8_t index, uint8_t size);
 
-    bool send_bulk_data(int address, uint32_t command, int end_point, void* buffer, uint32_t len);
-    bool receive_bulk_data(int address, uint32_t command, int end_point, void* buffer, uint32_t len);
+    bool send_bulk_data(int address, int endpoint, void* buffer, uint32_t length);
+    bool receive_bulk_data(int address, int endpoint, uint8_t toggle, void* buffer, uint32_t length);
 
     virtual uint32_t interrupt(uint32_t esp);
 };
