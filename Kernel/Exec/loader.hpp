@@ -22,12 +22,12 @@ typedef struct executable {
 
 class Execf {
 public:
-    Execf(char* n);
-    ~Execf();
+    Execf(char* n) { }
+    ~Execf() { }
 
-    virtual int probe(uint8_t* file_data);
-    virtual executable_t exec(uint8_t* file_data);
-    virtual char* name();
+    virtual int probe(uint8_t* file_data) { return {}; }
+    virtual executable_t exec(uint8_t* file_data) { return {}; }
+    virtual char* name() { return {}; }
 };
 
 class Loader {

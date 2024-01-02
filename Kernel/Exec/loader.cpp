@@ -1,28 +1,5 @@
 #include "loader.hpp"
 
-Execf::Execf(char* n)
-{
-}
-
-Execf::~Execf()
-{
-}
-
-int Execf::probe(uint8_t* file_data)
-{
-    return 0;
-}
-
-executable_t Execf::exec(uint8_t* file_data)
-{
-    return executable_t {};
-}
-
-char* Execf::name()
-{
-    return 0;
-}
-
 Loader* Loader::load = 0;
 Loader::Loader()
 {
