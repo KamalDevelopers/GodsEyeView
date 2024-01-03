@@ -1,6 +1,7 @@
 #ifndef SCSI_HPP
 #define SCSI_HPP
 
+#include "../../storage.hpp"
 #include "usb.hpp"
 
 typedef struct {
@@ -20,7 +21,7 @@ typedef struct {
     uint8_t status;
 } __attribute__((packed)) scsi_command_status_wrapper;
 
-class SCSI {
+class SCSI : public StorageDevice {
 private:
     usb_device* usb = 0;
     uint8_t toggle = 0;
@@ -33,8 +34,11 @@ public:
     SCSI(usb_device* device);
     ~SCSI();
 
-    uint8_t scsi_read_sector10(uint8_t* data, uint32_t sector, int sector_count);
-    uint8_t scsi_write_sector10(uint8_t* data, uint32_t sector, int sector_count);
+    uint8_t read_sector10(uint8_t* data, uint32_t sector, int sector_count);
+    uint8_t write_sector10(uint8_t* data, uint32_t sector, int sector_count);
+
+    void read(uint8_t* data, uint32_t sector, uint32_t count, size_t seek = 0);
+    void write(uint8_t* data, uint32_t sector, uint32_t count);
 };
 
 #endif
