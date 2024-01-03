@@ -23,9 +23,6 @@ PhysicalMemoryManager::PhysicalMemoryManager(uint32_t pages)
     slab0_ptr = PHYSICAL_MEMORY_START;
     slab1_ptr = slab0_ptr + slab0_size * SLAB0;
     slab2_ptr = slab1_ptr + slab1_size * SLAB1;
-
-    /* if (available_pages >= MAX_PAGES)
-        available_pages = MAX_PAGES - 1; */
 }
 
 PhysicalMemoryManager::~PhysicalMemoryManager()

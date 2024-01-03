@@ -1,12 +1,15 @@
 #include "ata.hpp"
 #include <LibC/ctype.h>
 
-MUTEX(mutex_ata);
-#ifdef RAMDISK
-extern char _binary_hdd_tar_start;
-extern char _binary_hdd_tar_end;
-#endif
+#define MAX_TRANSFER_SIZE 59392
+#define MED_TRANSFER_SIZE 4096
+#define MIN_TRANSFER_SIZE 512
 
+#define MAX_TRANSFER_SECT 116
+#define MED_TRANSFER_SECT 8
+#define MIN_TRANSFER_SECT 1
+
+MUTEX(mutex_ata);
 ATActrl::ATActrl(InterruptManager* interrupt_manager, device_descriptor_t device)
     : ata0m(interrupt_manager, device, 0x1F0, 1)
     , ata0s(interrupt_manager, device, 0x1F0, 0)
@@ -21,8 +24,18 @@ void ATActrl::identify_all()
     ata0s.identify();
     ata1m.identify();
     ata1s.identify();
+}
 
-    find_boot_drive();
+void ATActrl::register_all(Storage* storage)
+{
+    if (ata0m.exists())
+        storage->register_storage_device(&ata0m);
+    if (ata0s.exists())
+        storage->register_storage_device(&ata0s);
+    if (ata1m.exists())
+        storage->register_storage_device(&ata1m);
+    if (ata1s.exists())
+        storage->register_storage_device(&ata1s);
 }
 
 void ATActrl::enable_dma()
@@ -43,8 +56,7 @@ void ATActrl::disable_dma()
 
 void ATActrl::kernel_debug_info_drive(ATA* drive, const char* name)
 {
-    klog("ATA: Drive %s %s %s %s", name,
-        (drive == boot_drive()) ? "{boot}" : "",
+    klog("ATA: Drive %s %s %s", name,
         drive->exists() ? drive->firmware : "",
         drive->exists() ? drive->model : "");
 }
@@ -55,40 +67,6 @@ void ATActrl::kernel_debug_info()
     kernel_debug_info_drive(&ata0s, "Primary Slave");
     kernel_debug_info_drive(&ata1m, "Secondary Master");
     kernel_debug_info_drive(&ata1s, "Secondary Slave");
-}
-
-void ATActrl::find_boot_drive()
-{
-    ATA* drive = 0;
-    for (int i = 0; i < 4; i++) {
-        if (i == 0)
-            drive = &ata0m;
-        if (i == 1)
-            drive = &ata0s;
-        if (i == 2)
-            drive = &ata1m;
-        if (i == 3)
-            drive = &ata1s;
-        if (!drive)
-            continue;
-        if (is_boot_drive(drive))
-            boot_drive_ptr = drive;
-    }
-}
-
-bool ATActrl::is_boot_drive(ATA* drive)
-{
-    if (!drive->exists())
-        return 0;
-
-    uint8_t buff[4];
-    buff[0] = 0;
-    buff[3] = 0;
-
-    drive->read28_pio(11, buff, 4);
-    if (buff[0] == 'g' && buff[1] == 'o' && buff[2] == 'd' && buff[3] == 's')
-        return 1;
-    return 0;
 }
 
 /* IDENT data structure found here: */
@@ -114,6 +92,7 @@ ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32
     PCI::active->enable_busmaster(device);
     dma = false;
 
+    transfer_buffer = (uint8_t*)kmalloc(MAX_TRANSFER_SIZE);
     memset(&prdt, 0, sizeof(ata_prdt_t));
     prdt.buffer_phys = 0;
     prdt.transfer_size = 512;
@@ -129,6 +108,7 @@ ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32
 
 ATA::~ATA()
 {
+    kfree(transfer_buffer);
 }
 
 void ATA::set_dma(bool dma)
@@ -203,14 +183,8 @@ bool ATA::identify()
     return 1;
 }
 
-uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int sector_count)
+void ATA::read28_dma(uint32_t sector_number, uint8_t* data, uint32_t count, int sector_count)
 {
-#ifdef RAMDISK
-    uint8_t* disk = (uint8_t*)&_binary_hdd_tar_start;
-    memcpy(data, disk + sector_num * 512, count);
-    return data;
-#endif
-
     Mutex::lock(mutex_ata);
     prdt.transfer_size = count;
     prdt.buffer_phys = (uint32_t)data;
@@ -223,13 +197,13 @@ uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int sect
 
     outb(bar4, 0);
     outbl(bar4 + 4, (uint32_t)&prdt);
-    device_port.write(0xE0 | (!master) << 4 | (sector_num & 0x0f000000) >> 24);
+    device_port.write(0xE0 | (!master) << 4 | (sector_number & 0x0f000000) >> 24);
     if (count > 512 && sector_count == 1)
         sector_count = count / 512;
     sector_count_port.write(sector_count);
-    lba_low_port.write(sector_num & 0x000000ff);
-    lba_mid_port.write((sector_num & 0x0000ff00) >> 8);
-    lba_hi_port.write((sector_num & 0x00ff0000) >> 16);
+    lba_low_port.write(sector_number & 0x000000ff);
+    lba_mid_port.write((sector_number & 0x0000ff00) >> 8);
+    lba_hi_port.write((sector_number & 0x00ff0000) >> 16);
     command_port.write(0xC8);
     outb(bar4 + 0x02, inb(bar4 + 0x02) | 0x04 | 0x02);
     outb(bar4, 0x8 | 0x1);
@@ -247,35 +221,25 @@ uint8_t* ATA::read28_dma(uint32_t sector_num, uint8_t* data, int count, int sect
         memcpy(data, sector, count);
 
     Mutex::unlock(mutex_ata);
-    return data;
+    return;
 }
 
-uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
+void ATA::read28_pio(uint32_t sector_number, uint8_t* data, uint32_t count)
 {
-#ifdef RAMDISK
-    uint8_t* disk = (uint8_t*)&_binary_hdd_tar_start;
-    memcpy(data, disk + sector_num * 512, count);
-    return data;
-#endif
-
     Mutex::lock(mutex_ata);
-    static uint8_t buffer[BUFSIZ];
     uint16_t index = 0;
 
-    for (int i = 0; i < BUFSIZ; i++)
-        buffer[i] = 0;
-
-    if (sector_num > 0x0FFFFFFF) {
+    if (sector_number > 0x0FFFFFFF) {
         Mutex::unlock(mutex_ata);
-        return nullptr;
+        return;
     }
 
-    device_port.write((master ? 0xE0 : 0xF0) | ((sector_num & 0x0F000000) >> 24));
+    device_port.write((master ? 0xE0 : 0xF0) | ((sector_number & 0x0F000000) >> 24));
     error_port.write(0);
     sector_count_port.write(1);
-    lba_low_port.write(sector_num & 0x000000FF);
-    lba_mid_port.write((sector_num & 0x0000FF00) >> 8);
-    lba_hi_port.write((sector_num & 0x00FF0000) >> 16);
+    lba_low_port.write(sector_number & 0x000000FF);
+    lba_mid_port.write((sector_number & 0x0000FF00) >> 8);
+    lba_hi_port.write((sector_number & 0x00FF0000) >> 16);
     command_port.write(0x20);
 
     uint8_t status = command_port.read();
@@ -285,14 +249,11 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
 
     if (status & 0x01) {
         Mutex::unlock(mutex_ata);
-        return nullptr;
+        return;
     }
 
     for (int i = 0; i < count; i += 2) {
         uint16_t wdata = data_port.read();
-
-        buffer[index] = wdata & 0x0FF;
-        buffer[index + 1] = (wdata >> 8) & 0x0FF;
         index += 2;
 
         data[i] = wdata & 0x00FF;
@@ -304,24 +265,21 @@ uint8_t* ATA::read28_pio(uint32_t sector_num, uint8_t* data, int count)
         data_port.read();
 
     Mutex::unlock(mutex_ata);
-    return buffer;
+    return;
 }
 
-void ATA::write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count)
+void ATA::write28_pio(uint32_t sector_number, uint8_t* data, uint32_t count)
 {
-#ifdef RAMDISK
-    return;
-#endif
-    if ((sector_num > 0x0FFFFFFF) || (count > BUFSIZ))
+    if ((sector_number > 0x0FFFFFFF) || (count > BUFSIZ))
         return;
 
     Mutex::lock(mutex_ata);
-    device_port.write((master ? 0xE0 : 0xF0) | ((sector_num & 0x0F000000) >> 24));
+    device_port.write((master ? 0xE0 : 0xF0) | ((sector_number & 0x0F000000) >> 24));
     error_port.write(0);
     sector_count_port.write(1);
-    lba_low_port.write(sector_num & 0x000000FF);
-    lba_mid_port.write((sector_num & 0x0000FF00) >> 8);
-    lba_hi_port.write((sector_num & 0x00FF0000) >> 16);
+    lba_low_port.write(sector_number & 0x000000FF);
+    lba_mid_port.write((sector_number & 0x0000FF00) >> 8);
+    lba_hi_port.write((sector_number & 0x00FF0000) >> 16);
     command_port.write(0x30);
 
     for (int i = 0; i < count; i += 2) {
@@ -336,7 +294,7 @@ void ATA::write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count)
     Mutex::unlock(mutex_ata);
 }
 
-void ATA::write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count)
+void ATA::write28_dma(uint32_t sector_number, uint8_t* data, uint32_t count)
 {
     Mutex::lock(mutex_ata);
 
@@ -352,11 +310,11 @@ void ATA::write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count)
         prdt.buffer_phys = (uint32_t)sector;
     }
 
-    device_port.write(0xE0 | (!master) << 4 | (sector_num & 0x0f000000) >> 24);
+    device_port.write(0xE0 | (!master) << 4 | (sector_number & 0x0f000000) >> 24);
     sector_count_port.write(1);
-    lba_low_port.write(sector_num & 0x000000ff);
-    lba_mid_port.write((sector_num & 0x0000ff00) >> 8);
-    lba_hi_port.write((sector_num & 0x00ff0000) >> 16);
+    lba_low_port.write(sector_number & 0x000000ff);
+    lba_mid_port.write((sector_number & 0x0000ff00) >> 8);
+    lba_hi_port.write((sector_number & 0x00ff0000) >> 16);
     command_port.write(0xCA);
     outb(bar4, 0x1);
 
@@ -375,9 +333,7 @@ void ATA::flush_pio()
 {
     if (dma)
         return;
-#ifdef RAMDISK
-    return;
-#endif
+
     device_port.write(master ? 0xE0 : 0xF0);
     command_port.write(0xE7);
 
@@ -395,18 +351,68 @@ void ATA::flush_pio()
         return;
 }
 
-uint8_t* ATA::read28(uint32_t sector_num, uint8_t* data, int count, int sector_count)
+void ATA::read28(uint32_t sector_number, uint8_t* data, uint32_t count, int sector_count)
 {
     if (dma)
-        return read28_dma(sector_num, data, count, sector_count);
-    return read28_pio(sector_num, data, count);
+        return read28_dma(sector_number, data, count, sector_count);
+    return read28_pio(sector_number, data, count);
 }
 
-void ATA::write28(uint32_t sector_num, uint8_t* data, uint32_t count)
+void ATA::write28(uint32_t sector_number, uint8_t* data, uint32_t count)
 {
     if (dma)
-        return write28_dma(sector_num, data, count);
-    write28_pio(sector_num, data, count);
+        return write28_dma(sector_number, data, count);
+    write28_pio(sector_number, data, count);
+}
+
+void ATA::read(uint8_t* data, uint32_t sector, uint32_t count, size_t seek)
+{
+    int size = count;
+    int sector_offset = 0;
+    int data_index = 0;
+    uint32_t tsize = MED_TRANSFER_SIZE;
+    uint32_t ssize = MED_TRANSFER_SECT;
+
+    if (count >= MAX_TRANSFER_SIZE) {
+        tsize = MAX_TRANSFER_SIZE;
+        ssize = MAX_TRANSFER_SECT;
+    }
+
+    if (!is_dma() || count <= MIN_TRANSFER_SIZE) {
+        tsize = MIN_TRANSFER_SIZE;
+        ssize = MIN_TRANSFER_SECT;
+    }
+
+    if (seek > tsize)
+        sector += (seek - sector_offset) / tsize;
+
+    for (; size > 0; size -= tsize) {
+        if (size < tsize) {
+            tsize = MIN_TRANSFER_SIZE;
+            ssize = MIN_TRANSFER_SECT;
+        }
+
+        read28(sector + sector_offset, transfer_buffer, tsize, ssize);
+        int i = (sector_offset) ? 0 : (seek % tsize);
+
+        for (; i < tsize; i++) {
+            if (data_index <= count)
+                data[data_index] = transfer_buffer[i];
+            data_index++;
+        }
+        sector_offset += ssize;
+    }
+}
+
+void ATA::write(uint8_t* data, uint32_t sector, uint32_t count)
+{
+    uint32_t sector_offset = 0;
+    for (uint32_t i = 0; i < count;) {
+        uint32_t siz = ((count - i) >= 512) ? 512 : count - i;
+        write28(sector + sector_offset, data + i, siz);
+        sector_offset++;
+        i += siz;
+    }
 }
 
 void ATA::flush()

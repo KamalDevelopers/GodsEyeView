@@ -26,7 +26,7 @@ void usb_free_device(usb_device* device)
     }
 }
 
-uint32_t usb_devices_count()
+uint32_t usb_device_count()
 {
     return devices_in_use;
 }

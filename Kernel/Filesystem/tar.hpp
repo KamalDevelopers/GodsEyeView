@@ -1,25 +1,17 @@
 #ifndef TAR_HPP
 #define TAR_HPP
 
-#include "../Hardware/Drivers/ata.hpp"
+#include "../Hardware/storage.hpp"
 #include "../Mem/mm.hpp"
 #include "vfs.hpp"
 #include <LibC/stdio.h>
 #include <LibC/stdlib.h>
 #include <LibC/string.h>
 
-#define MAX_TRANSFER_SIZE 59392
-#define MED_TRANSFER_SIZE 4096
-#define MIN_TRANSFER_SIZE 512
-
-#define MAX_TRANSFER_SECT 116
-#define MED_TRANSFER_SECT 8
-#define MIN_TRANSFER_SECT 1
-
 #define SB_OFFSET 1024
 #define MAX_FILES 200
 #define MAX_DIRS 200
-#define MAGIC "ustar"
+#define MAGIC_TAR "ustar"
 
 struct posix_header {   /* byte offset */
     char name[100];     /*   0 */
@@ -44,7 +36,7 @@ struct posix_header {   /* byte offset */
 class Tar : public Filesystem {
 
 private:
-    ATA* ata;
+    StorageDevice* storage;
     uint32_t tar_end;
     int dir_index;
     int file_index;
@@ -58,7 +50,7 @@ private:
     int get_mode(int file_id, int utype);
 
 public:
-    Tar(ATA* ata);
+    Tar(StorageDevice* storage);
     ~Tar();
 
     int mount();
@@ -78,10 +70,7 @@ public:
     int read_dir(char* dirname, fs_entry_t* entries, uint32_t count);
     int exists(char* name);
     int chmod(char* file_name, char* permissions);
-
     void sector_swap(int sector_src, int sector_dest);
-    void write_data(uint32_t sector_start, uint8_t* fdata, int count);
-    void read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t seek = 0);
 
     posix_header* file_calculate_checksum(posix_header* header_data);
     int calculate_checksum(posix_header* header_data);

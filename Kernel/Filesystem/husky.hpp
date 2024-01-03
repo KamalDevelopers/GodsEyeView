@@ -1,8 +1,9 @@
 #ifndef HUSKY_HPP
 #define HUSKY_HPP
 
-#include "../Hardware/Drivers/ata.hpp"
 #include "../Hardware/Drivers/cmos.hpp"
+#include "../Hardware/storage.hpp"
+#include "../panic.hpp"
 #include "vfs.hpp"
 
 #define MAX_TRANSFER_SIZE 59392
@@ -55,7 +56,7 @@ typedef struct node {
 class Husky : public Filesystem {
 
 private:
-    ATA* ata;
+    StorageDevice* storage;
     uint32_t* ptrs_cache = 0;
     uint8_t* transfer_buffer;
     uint32_t mount_start_sector = 0;
@@ -78,11 +79,10 @@ private:
         uint32_t* total_written, uint32_t* size_to_write, uint32_t max_blocks);
     uint32_t read_file_data_block_list(uint32_t* ptr_list, uint8_t* read_data_ptr, uint32_t* seek,
         uint32_t* total_read, uint32_t* size_to_read, uint32_t max_blocks);
-
     int8_t write_file_data(node_t* node, const char* data, size_t size);
 
 public:
-    Husky(ATA* ata);
+    Husky(StorageDevice* storage);
     ~Husky();
 
     int mount();
@@ -97,10 +97,6 @@ public:
     int unlink(char* pathname);
     int read_dir(char* dirname, fs_entry_t* entries, uint32_t count);
     void mkdir(char* pathname);
-
-    void sector_swap(int sector_src, int sector_dest);
-    void write_data(uint32_t sector_start, uint8_t* fdata, int count);
-    void read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t seek = 0);
 };
 
 #endif

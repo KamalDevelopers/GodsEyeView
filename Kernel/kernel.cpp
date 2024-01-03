@@ -84,12 +84,19 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     uint32_t memory_divide = (total_memory >= 100 * MB) ? (MB * 100) : (MB * 10);
     total_memory = (total_memory - (total_memory % (memory_divide))) - 20 * MB;
     uint32_t available_pages = PAGE_ALIGN(total_memory) / PAGE_SIZE;
+    bool has_volatile_storage = has_volatile_disk();
     bool has_volatile_memory = 0;
+
+    if (has_volatile_storage)
+        klog("RAM disk mode");
+    if (has_volatile_memory)
+        klog("Volatile memory mode");
 
     PhysicalMemoryManager pmm(available_pages);
     if (!has_volatile_memory)
         Paging::init();
 
+    klog("Initializing drivers and syscalls");
     VGA vga;
     Vesa vesa(multiboot_info_ptr->vesa_framebuffer,
         multiboot_info_ptr->vesa_width,
@@ -97,26 +104,25 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         multiboot_info_ptr->vesa_pitch,
         multiboot_info_ptr->vesa_bpp);
 
-    klog("Initializing drivers and syscalls");
     InterruptManager interrupts(0x20, &task_manager);
     Syscalls syscalls(&interrupts, 0x80);
     SoundBlaster16 sb16(&interrupts);
 
-    klog("Filesystem mounting started");
     if (!pci.find_driver(ATA::identifier()))
         klog("Could not find ATA device");
 
+    klog("Driver initialization");
+    Storage storage;
     ATActrl atactrl(&interrupts, pci.get_descriptor());
     atactrl.identify_all();
+    atactrl.register_all(&storage);
     atactrl.disable_dma();
-    if (atactrl.boot_drive() == 0)
-        klog("ATA: Could not find boot drive");
 
-    Tar fs_tar(atactrl.boot_drive());
-    Husky fs_husky(atactrl.boot_drive());
-    uint8_t has_filesystem = 0;
+    if (has_volatile_storage) {
+        VolatileStorage volatile_storage(RAM_DISK);
+        storage.register_storage_device(&volatile_storage);
+    }
 
-    klog("Driver initialization");
     MouseDriver mouse(&interrupts, multiboot_info_ptr->vesa_width,
         multiboot_info_ptr->vesa_height);
     KeyboardDriver keyboard(&interrupts);
@@ -157,17 +163,23 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     }
 
     klog("USB: Enumerating devices");
-    klog("USB: Devices connected %d", usb_devices_count());
-    for (uint32_t i = 0; i < usb_devices_count(); ++i) {
+    klog("USB: Devices connected %d", usb_device_count());
+    for (uint32_t i = 0; i < usb_device_count(); ++i) {
         usb_device* device = usb_device_at(i);
         if (device->protocol != 2)
             continue;
         SCSI* scsi_device = new SCSI(device);
-        /* TODO: Add as storage medium*/
+        storage.register_storage_device(scsi_device);
     }
 
-    if (has_volatile_memory)
-        klog("Volatile memory mode");
+    if (!storage.find_boot_storage())
+        klog("Could not find boot storage device");
+
+    klog("Filesystem mounting started");
+    Tar fs_tar(storage.boot_device());
+    Husky fs_husky(storage.boot_device());
+    uint8_t has_filesystem = 0;
+
     klog("ELF loader initialization");
     Elf elf_load("elf32");
     Loader loader;

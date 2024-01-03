@@ -65,7 +65,7 @@ typedef struct {
 
 usb_device* usb_allocate_device();
 void usb_free_device(usb_device* device);
-uint32_t usb_devices_count();
+uint32_t usb_device_count();
 usb_device* usb_device_at(uint32_t i);
 
 #endif

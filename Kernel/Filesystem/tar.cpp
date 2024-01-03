@@ -2,15 +2,13 @@
 
 /* TODO: support '/' path prefix for compatibility */
 
-Tar::Tar(ATA* ata)
+Tar::Tar(StorageDevice* storage)
 {
-    transfer_buffer = (uint8_t*)kmalloc(MAX_TRANSFER_SIZE);
-    this->ata = ata;
+    this->storage = storage;
 }
 
 Tar::~Tar()
 {
-    kfree(transfer_buffer);
 }
 
 int Tar::oct_bin(char* str, int size)
@@ -75,8 +73,8 @@ int Tar::rename_file(char* file_name, char* new_file_name)
     file_calculate_checksum(&meta_head);
     files[file_id] = meta_head;
 
-    ata->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
-    ata->flush();
+    storage->write((uint8_t*)&files[file_id], sector_links_file[file_id], sizeof(posix_header));
+    storage->flush();
     return 0;
 }
 
@@ -102,8 +100,8 @@ int Tar::chmod(char* file_name, char* permissions)
     file_calculate_checksum(&meta_head);
     files[file_id] = meta_head;
 
-    ata->write28(sector_links_file[file_id], (uint8_t*)&files[file_id], sizeof(posix_header));
-    ata->flush();
+    storage->write((uint8_t*)&files[file_id], sector_links_file[file_id], sizeof(posix_header));
+    storage->flush();
     return 0;
 }
 
@@ -164,56 +162,6 @@ int Tar::read_dir(char* dirname, fs_entry_t* entries, uint32_t count)
     return index;
 }
 
-void Tar::read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t seek)
-{
-    int size = count;
-    int sector_offset = 0;
-    int data_index = 0;
-    uint32_t tsize = MED_TRANSFER_SIZE;
-    uint32_t ssize = MED_TRANSFER_SECT;
-
-    if (count >= MAX_TRANSFER_SIZE) {
-        tsize = MAX_TRANSFER_SIZE;
-        ssize = MAX_TRANSFER_SECT;
-    }
-
-    if (!ata->is_dma() || count <= MIN_TRANSFER_SIZE) {
-        tsize = MIN_TRANSFER_SIZE;
-        ssize = MIN_TRANSFER_SECT;
-    }
-
-    if (seek > tsize)
-        sector_start += (seek - sector_offset) / tsize;
-
-    for (; size > 0; size -= tsize) {
-        if (size < tsize) {
-            tsize = MIN_TRANSFER_SIZE;
-            ssize = MIN_TRANSFER_SECT;
-        }
-
-        ata->read28(sector_start + sector_offset, transfer_buffer, tsize, ssize);
-        int i = (sector_offset) ? 0 : (seek % tsize);
-
-        for (; i < tsize; i++) {
-            if (data_index <= count)
-                fdata[data_index] = transfer_buffer[i];
-            data_index++;
-        }
-        sector_offset += ssize;
-    }
-}
-
-void Tar::write_data(uint32_t sector_start, uint8_t* fdata, int count)
-{
-    int sector_offset = 0;
-    for (uint32_t i = 0; i < count;) {
-        ata->write28(sector_start + sector_offset, fdata + i, 512);
-        sector_offset++;
-        i += 512;
-    }
-    ata->flush();
-}
-
 int Tar::get_mode(int file_id, int utype)
 {
     char p = 0;
@@ -260,7 +208,7 @@ int Tar::read_file(int file_id, uint8_t* data, size_t size, size_t seek)
     if (size > data_size)
         size = data_size;
 
-    read_data(data_offset, data, size, seek);
+    storage->read(data, data_offset, size, seek);
     return size;
 }
 
@@ -401,17 +349,17 @@ int Tar::write_file(char* file_name, uint8_t* data, size_t size)
     uint8_t buffer[512];
     memset(buffer, 0, 512);
     memcpy(buffer, meta_head, sizeof(posix_header));
-    ata->write28(data_offset + data_size + 1, buffer, 512);
-    write_data(data_offset + data_size + 2, data, size);
+    storage->write(buffer, data_offset + data_size + 1, 512);
+    storage->write(data, data_offset + data_size + 2, size);
     return 0;
 }
 
 void Tar::sector_swap(int sector_src, int sector_dest)
 {
     uint8_t buffer[513];
-    ata->read28(sector_src, buffer, 512);
-    ata->write28(sector_dest, buffer, 512);
-    ata->flush();
+    storage->read(buffer, sector_src, 512);
+    storage->write(buffer, sector_dest, 512);
+    storage->flush();
 }
 
 void Tar::update_disk(int uentry, int uentry_size)
@@ -434,28 +382,28 @@ void Tar::update_disk(int uentry, int uentry_size)
     memset(buffer, 0, 513);
 
     for (uint32_t i = tar_end - uentry_size; i < tar_end; i++)
-        ata->write28(i, (uint8_t*)&buffer, 512);
+        storage->write((uint8_t*)&buffer, i, 512);
 
     for (uint32_t i = 0; i < file_index; i++)
         if (sector_links_file[i] > uentry)
             sector_links_file[i] -= uentry_size + 1;
 
-    ata->flush();
+    storage->flush();
 }
 
 /* Stores all files and directories in RAM */
 int Tar::mount()
 {
     uint32_t sector_offset = 0;
-    char magic[6] = MAGIC;
+    char magic[6] = MAGIC_TAR;
 
     while (1) {
         posix_header meta_head;
-        ata->read28(sector_offset, (uint8_t*)&meta_head, sizeof(posix_header));
+        storage->read((uint8_t*)&meta_head, sector_offset, sizeof(posix_header));
 
         /* Check for valid header else break mount */
         memcpy(magic, meta_head.magic, 4);
-        if (strcmp(magic, MAGIC) != 0)
+        if (strcmp(magic, MAGIC_TAR) != 0)
             break;
 
         /* Check type and add it to ram */

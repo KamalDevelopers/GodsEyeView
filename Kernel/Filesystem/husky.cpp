@@ -1,76 +1,23 @@
 #include "husky.hpp"
 
-Husky::Husky(ATA* ata)
+Husky::Husky(StorageDevice* storage)
 {
-    transfer_buffer = (uint8_t*)kmalloc(MAX_TRANSFER_SIZE);
     ptrs_cache = (uint32_t*)kmalloc(sizeof(uint32_t) * 1280);
-    memset(transfer_buffer, 0, MAX_TRANSFER_SIZE);
     memset(ptrs_cache, 0, sizeof(uint32_t) * 1280);
     previous_node_ptr = 0;
     previous_block_ptr = 0;
-    this->ata = ata;
+    this->storage = storage;
 }
 
 Husky::~Husky()
 {
     kfree(ptrs_cache);
-    kfree(transfer_buffer);
     kfree(nodes_cache);
 }
 
 void Husky::available_disk_size(uint32_t size)
 {
     disk_size = size;
-}
-
-void Husky::read_data(uint32_t sector_start, uint8_t* fdata, int count, size_t seek)
-{
-    int size = count;
-    int sector_offset = 0;
-    int data_index = 0;
-    uint32_t tsize = MED_TRANSFER_SIZE;
-    uint32_t ssize = MED_TRANSFER_SECT;
-
-    if (count >= MAX_TRANSFER_SIZE) {
-        tsize = MAX_TRANSFER_SIZE;
-        ssize = MAX_TRANSFER_SECT;
-    }
-
-    if (!ata->is_dma() || count <= MIN_TRANSFER_SIZE) {
-        tsize = MIN_TRANSFER_SIZE;
-        ssize = MIN_TRANSFER_SECT;
-    }
-
-    if (seek > tsize)
-        sector_start += (seek - sector_offset) / tsize;
-
-    for (; size > 0; size -= tsize) {
-        if (size < tsize) {
-            tsize = MIN_TRANSFER_SIZE;
-            ssize = MIN_TRANSFER_SECT;
-        }
-
-        ata->read28(sector_start + sector_offset, transfer_buffer, tsize, ssize);
-        int i = (sector_offset) ? 0 : (seek % tsize);
-
-        for (; i < tsize; i++) {
-            if (data_index <= count)
-                fdata[data_index] = transfer_buffer[i];
-            data_index++;
-        }
-        sector_offset += ssize;
-    }
-}
-
-void Husky::write_data(uint32_t sector_start, uint8_t* fdata, int count)
-{
-    int sector_offset = 0;
-    for (uint32_t i = 0; i < count;) {
-        uint32_t siz = ((count - i) >= 512) ? 512 : count - i;
-        ata->write28(sector_start + sector_offset, fdata + i, siz);
-        sector_offset++;
-        i += siz;
-    }
 }
 
 static inline uint32_t murmur3_32_scramble(uint32_t k)
@@ -126,7 +73,7 @@ int Husky::mount()
 
     disk_size = 10000 * sizeof(node_t);
     while (mount_start_sector * 512 < disk_size) {
-        ata->read28(mount_start_sector, (uint8_t*)&super_node, sizeof(super_node_t), 1);
+        storage->read((uint8_t*)&super_node, mount_start_sector, sizeof(super_node_t));
         mount_start_sector++;
         if (super_node.magic[0] != 'm')
             continue;
@@ -143,7 +90,7 @@ int Husky::mount()
     previous_node_ptr = 0;
     previous_block_ptr = mount_start_sector;
     nodes_cache = (node_t*)kmalloc(super_node.nodes_count * sizeof(node_t));
-    read_data(mount_start_sector, (uint8_t*)nodes_cache, super_node.nodes_count * sizeof(node_t));
+    storage->read((uint8_t*)nodes_cache, mount_start_sector, super_node.nodes_count * sizeof(node_t));
     create_root_directory();
     return 0;
 }
@@ -196,7 +143,7 @@ uint8_t Husky::find_empty_block(uint32_t* block_ptr, uint32_t* sector_ptr)
     uint32_t sector_search = (super_node.nodes_count * sizeof(node_t)) / 512 + empty_block_ptr * block_siz_div;
 
     for (;;) {
-        ata->read28(mount_start_sector + sector_search, (uint8_t*)&block, sizeof(block_t));
+        storage->read((uint8_t*)&block, mount_start_sector + sector_search, sizeof(block_t));
         if (!block.flags)
             break;
 
@@ -234,7 +181,7 @@ void Husky::create_root_directory()
     strcpy(root_node.name, pathname);
 
     memcpy(nodes_cache, &root_node, sizeof(node_t));
-    write_data(mount_start_sector, (uint8_t*)&root_node, sizeof(node_t));
+    storage->write((uint8_t*)&root_node, mount_start_sector, sizeof(node_t));
 }
 
 uint8_t Husky::find_node(hhash_t* hsh, int type, uint32_t* node_ptr)
@@ -261,8 +208,8 @@ void Husky::write_node(node_t* node)
     uint32_t free_node_sector = 0;
     find_empty_node(&free_node_ptr, &free_node_sector);
     memcpy(&nodes_cache[free_node_ptr], node, sizeof(node_t));
-    write_data(mount_start_sector + free_node_sector, (uint8_t*)node, sizeof(node_t));
-    ata->flush();
+    storage->write((uint8_t*)node, mount_start_sector + free_node_sector, sizeof(node_t));
+    storage->flush();
 }
 
 void Husky::mkdir(char* pathname)
@@ -357,19 +304,19 @@ uint8_t Husky::delete_file_data(node_t* node)
     for (uint32_t i = 0; i < sizeof(node->blocks_ptrs) / 4; ++i) {
         if (!data_blocks_to_remove)
             return 0;
-        ata->write28(mount_start_sector + node->blocks_ptrs[i], (uint8_t*)&block, sizeof(block_t));
+        storage->write((uint8_t*)&block, mount_start_sector + node->blocks_ptrs[i], sizeof(block_t));
         data_blocks_to_remove--;
     }
 
     for (uint32_t i = 0; i < sizeof(node->iblocks_ptrs) / 4; ++i) {
-        read_data(mount_start_sector + node->iblocks_ptrs[i], (uint8_t*)ptrs_cache, super_node.data_block_size);
+        storage->read((uint8_t*)ptrs_cache, mount_start_sector + node->iblocks_ptrs[i], super_node.data_block_size);
         for (uint32_t i = 0; i < 1279; ++i) {
             if (!data_blocks_to_remove)
                 return 0;
-            ata->write28(mount_start_sector + ptrs_cache[i], (uint8_t*)&block, sizeof(block_t));
+            storage->write((uint8_t*)&block, mount_start_sector + ptrs_cache[i], sizeof(block_t));
             data_blocks_to_remove--;
         }
-        ata->write28(mount_start_sector + node->iblocks_ptrs[i], (uint8_t*)&block, sizeof(block_t));
+        storage->write((uint8_t*)&block, mount_start_sector + node->iblocks_ptrs[i], sizeof(block_t));
     }
 
     return 0;
@@ -405,7 +352,7 @@ int Husky::unlink(char* pathname)
 
     node.type = 0;
     nodes_cache[node_ptr].type = node.type;
-    ata->write28(mount_start_sector + (node_ptr * sizeof(node_t)) / 512, (uint8_t*)&node, sizeof(node_t));
+    storage->write((uint8_t*)&node, mount_start_sector + (node_ptr * sizeof(node_t)) / 512, sizeof(node_t));
     return 0;
 }
 
@@ -431,7 +378,7 @@ uint32_t Husky::write_file_data_block_list(uint32_t* ptr_list, const char* writt
 
         memcpy(sector, &block, sizeof(block_t));
         memcpy(sector + sizeof(block_t), written_data_ptr, sector_size_cpy);
-        ata->write28(mount_start_sector + sector_ptr, (uint8_t*)sector, 512);
+        storage->write((uint8_t*)sector, mount_start_sector + sector_ptr, 512);
         written_data_ptr += sector_size_cpy;
         *size_to_write = *size_to_write - sector_size_cpy;
         written += sector_size_cpy;
@@ -445,7 +392,7 @@ uint32_t Husky::write_file_data_block_list(uint32_t* ptr_list, const char* writt
         if (!siz)
             break;
 
-        write_data(mount_start_sector + sector_ptr, (uint8_t*)written_data_ptr, siz);
+        storage->write((uint8_t*)written_data_ptr, mount_start_sector + sector_ptr, siz);
         written += siz;
         written_data_ptr += siz;
         *size_to_write = *size_to_write - siz;
@@ -479,14 +426,14 @@ int8_t Husky::write_file_data(node_t* node, const char* data, size_t size)
 
         block_t block;
         block.flags = 5;
-        write_data(mount_start_sector + sector_ptr, (uint8_t*)&block, sizeof(block_t));
+        storage->write((uint8_t*)&block, mount_start_sector + sector_ptr, sizeof(block_t));
 
         node->iblocks_ptrs[indirect_node] = sector_ptr;
         uint32_t blocks_used = write_file_data_block_list(ptrs_cache + 1, written_data_ptr, &written, &size_to_write, 1279);
         written_data_ptr += written;
         ptrs_cache[0] = 0;
         memcpy(ptrs_cache, &block.flags, sizeof(block));
-        write_data(mount_start_sector + sector_ptr, (uint8_t*)ptrs_cache, super_node.data_block_size);
+        storage->write((uint8_t*)ptrs_cache, mount_start_sector + sector_ptr, super_node.data_block_size);
 
         if (!blocks_used && size_to_write)
             return 1;
@@ -536,7 +483,7 @@ int Husky::write_file(char* pathname, uint8_t* data, size_t size)
 
     if (overwrite) {
         memcpy(&nodes_cache[node_ptr], &node, sizeof(node_t));
-        write_data(mount_start_sector + sizeof(node_t) * node_ptr, (uint8_t*)&node, sizeof(node_t));
+        storage->write((uint8_t*)&node, mount_start_sector + sizeof(node_t) * node_ptr, sizeof(node_t));
         return 0;
     }
 
@@ -552,7 +499,7 @@ uint32_t Husky::read_file_data_block_list(uint32_t* ptr_list, uint8_t* read_data
 
     for (uint32_t i = 0; i < max_blocks; ++i) {
         char sector[512];
-        ata->read28(mount_start_sector + ptr_list[i], (uint8_t*)sector, 512);
+        storage->read((uint8_t*)sector, mount_start_sector + ptr_list[i], 512);
         block_t block;
         memcpy(&block, sector, sizeof(block_t));
 
@@ -593,7 +540,7 @@ uint32_t Husky::read_file_data_block_list(uint32_t* ptr_list, uint8_t* read_data
         if (*seek) {
             sectors_to_skip = *seek / 512;
             bytes_to_skip = *seek % 512;
-            ata->read28(mount_start_sector + ptr_list[i] + 1 + sectors_to_skip, (uint8_t*)sector, 512);
+            storage->read((uint8_t*)sector, mount_start_sector + ptr_list[i] + 1 + sectors_to_skip, 512);
             uint32_t siz = 512 - bytes_to_skip;
             if (*size_to_read < siz)
                 siz = *size_to_read;
@@ -611,7 +558,7 @@ uint32_t Husky::read_file_data_block_list(uint32_t* ptr_list, uint8_t* read_data
 
         if (*size_to_read < siz)
             siz = *size_to_read;
-        read_data(mount_start_sector + ptr_list[i] + 1 + sectors_to_skip, read_data_ptr, siz);
+        storage->read(read_data_ptr, mount_start_sector + ptr_list[i] + 1 + sectors_to_skip, siz);
         read_data_ptr += siz;
         size_read += siz;
         *size_to_read = *size_to_read - siz;
@@ -673,7 +620,7 @@ int Husky::read_file(char* pathname, uint8_t* data, size_t size, size_t seek)
     }
 
     for (uint32_t indirect_node = 0; indirect_node < sizeof(node.iblocks_ptrs) / 4; ++indirect_node) {
-        read_data(mount_start_sector + node.iblocks_ptrs[indirect_node], (uint8_t*)ptrs_cache, super_node.data_block_size);
+        storage->read((uint8_t*)ptrs_cache, mount_start_sector + node.iblocks_ptrs[indirect_node], super_node.data_block_size);
         if (seek_blocks >= 1279) {
             seek_blocks -= 1279;
             continue;

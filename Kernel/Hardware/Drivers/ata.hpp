@@ -4,6 +4,7 @@
 #include "../../Locks/mutex.hpp"
 #include "../pci.hpp"
 #include "../port.hpp"
+#include "../storage.hpp"
 #include <LibC/stdio.h>
 #include <LibC/string.h>
 #include <LibC/types.h>
@@ -14,7 +15,8 @@ typedef struct ata_prdt {
     uint16_t mark_end;
 } __attribute__((packed)) ata_prdt_t;
 
-class ATA : public InterruptHandler {
+class ATA : public InterruptHandler
+    , public StorageDevice {
     friend class ATActrl;
 
 protected:
@@ -34,6 +36,7 @@ protected:
 private:
     char model[40];
     char firmware[8];
+    uint8_t* transfer_buffer = 0;
     bool does_exist = 0;
     bool master = 0;
     uint32_t bar4 = 0;
@@ -51,14 +54,17 @@ public:
     bool is_dma() { return this->dma; }
     void set_dma(bool dma);
     bool identify();
-    uint8_t* read28(uint32_t sector_num, uint8_t* data, int count = 512, int sector_count = 1);
-    void write28(uint32_t sector_num, uint8_t* data, uint32_t count);
-    uint8_t* read28_dma(uint32_t sector_num, uint8_t* data, int count = 512, int sector_count = 1);
-    uint8_t* read28_pio(uint32_t sector_num, uint8_t* data, int count = 512);
-    void write28_pio(uint32_t sector_num, uint8_t* data, uint32_t count);
-    void write28_dma(uint32_t sector_num, uint8_t* data, uint32_t count);
+    void read28(uint32_t sector_number, uint8_t* data, uint32_t count = 512, int sector_count = 1);
+    void write28(uint32_t sector_number, uint8_t* data, uint32_t count);
+    void read28_dma(uint32_t sector_number, uint8_t* data, uint32_t count = 512, int sector_count = 1);
+    void read28_pio(uint32_t sector_number, uint8_t* data, uint32_t count = 512);
+    void write28_pio(uint32_t sector_number, uint8_t* data, uint32_t count);
+    void write28_dma(uint32_t sector_number, uint8_t* data, uint32_t count);
     void flush_pio();
     void flush();
+
+    void read(uint8_t* data, uint32_t sector, uint32_t count, size_t seek = 0);
+    void write(uint8_t* data, uint32_t sector, uint32_t count);
 
     virtual uint32_t interrupt(uint32_t esp);
 };
@@ -70,9 +76,6 @@ private:
     ATA ata1m;
     ATA ata1s;
 
-    ATA* boot_drive_ptr = 0;
-    bool is_boot_drive(ATA* drive);
-
 public:
     ATActrl(InterruptManager* interrupt_manager, device_descriptor_t device);
     ~ATActrl();
@@ -81,15 +84,14 @@ public:
     ATA* primary_slave() { return &ata0s; }
     ATA* secondary_master() { return &ata1m; }
     ATA* secondary_slave() { return &ata1s; }
-    ATA* boot_drive() { return boot_drive_ptr; }
 
     void kernel_debug_info_drive(ATA* drive, const char* name);
     void kernel_debug_info();
 
+    void register_all(Storage* storage);
     void identify_all();
     void enable_dma();
     void disable_dma();
-    void find_boot_drive();
 };
 
 #endif
