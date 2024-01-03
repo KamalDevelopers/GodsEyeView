@@ -123,8 +123,8 @@ void EHCI::timeout(float modifier)
     /* 0.0062 seconds = 62 * 10^(-9) * 1000000 */
     int time = (int)(100000.0f * modifier);
     for (int timeout = 100000; timeout > 0; timeout--) {
-        if (TM->is_active())
-            TM->yield();
+        /* if (TM->is_active())
+            TM->yield(); */
         asm volatile("nop");
     }
 }
@@ -262,16 +262,10 @@ bool EHCI::take_ownership(device_descriptor_t device)
 uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
 {
     operations->command |= (1 << 5);
-    uint8_t err;
+    uint8_t err = 0;
 
-    for (;;) {
-        uint32_t token = transfer->token;
-
-        timeout(0.1f);
-        if (operations->status & 0x8000)
-            continue;
-
-        err = 1;
+    while (1) {
+        volatile uint32_t token = (volatile uint32_t)transfer->token;
         if (token & (1 << 3)) {
             kdbg("EHCI: Transaction error\n");
             err = 3;
@@ -292,10 +286,9 @@ uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
             err = 6;
             break;
         }
-        if (token & (1 << 7)) {
-            err = 0;
+        if (!(token & (1 << 7)))
             break;
-        }
+        timeout();
     }
 
     operations->command &= ~(1 << 5);
@@ -378,10 +371,10 @@ bool EHCI::device_address()
 
     ehci_transfer_descriptor* transfer_command = (ehci_transfer_descriptor*)PMM->active->allocate_pages(PAGE_SIZE);
     memset(transfer_command, 0, sizeof(ehci_transfer_descriptor));
-    status->next_link = (uint32_t)status;
-    status->alt_link = 1;
-    status->token |= (1 << 7) | (2 << 8) | (3 << 10) | (8 << 16) | (0 << 31);
-    status->buffer[0] = (uint32_t)command;
+    transfer_command->next_link = (uint32_t)status;
+    transfer_command->alt_link = 1;
+    transfer_command->token |= (1 << 7) | (2 << 8) | (3 << 10) | (8 << 16) | (0 << 31);
+    transfer_command->buffer[0] = (uint32_t)command;
 
     /* Queue head structures */
     ehci_queue_head* head_primary = queue_head_primary;
