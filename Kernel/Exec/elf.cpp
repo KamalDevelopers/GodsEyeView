@@ -2,7 +2,7 @@
 #include "../panic.hpp"
 
 Elf::Elf(char* name)
-    : Execf(name)
+    : ExecutableFormat(name)
 {
     strcpy(format_name, name);
 }

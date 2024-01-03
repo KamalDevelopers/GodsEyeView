@@ -20,10 +20,10 @@ typedef struct executable {
     memory_region_t memory;
 } executable_t;
 
-class Execf {
+class ExecutableFormat {
 public:
-    Execf(char* n) { }
-    ~Execf() { }
+    ExecutableFormat(char* n) { }
+    ~ExecutableFormat() { }
 
     virtual int probe(uint8_t* file_data) { return {}; }
     virtual executable_t exec(uint8_t* file_data) { return {}; }
@@ -32,8 +32,8 @@ public:
 
 class Loader {
 private:
-    uint32_t loader_num;
-    Execf* execfs[MAX_LOADERS];
+    uint32_t formats = 0;
+    ExecutableFormat* execfs[MAX_LOADERS];
 
 public:
     Loader();
@@ -41,7 +41,7 @@ public:
 
     static Loader* load;
 
-    void add(Execf* l);
+    void add(ExecutableFormat* loadable);
     int probe(uint8_t* file_buffer, char* loader_name);
     executable_t exec(uint8_t* file_buffer, char* loader_name = 0);
 };

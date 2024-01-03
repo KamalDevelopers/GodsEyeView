@@ -136,7 +136,7 @@ typedef struct {
     elf32_word p_align;  /* memory alignment */
 } elf32_phdr;
 
-class Elf : public Execf {
+class Elf : public ExecutableFormat {
 private:
     char format_name[100];
 
