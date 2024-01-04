@@ -46,7 +46,8 @@ vbe_set_mode:
     mov [.height], bx
     mov [.bpp], cl
 
-    ; sti
+    sti
+
     push es 
     ; VBE BIOS info
     mov ax, 0x4F00
@@ -148,6 +149,7 @@ vbe_set_mode:
     dec ax
     mov word[vbe_screen.y_max], ax
 
+    cli
     clc
     ret
      
