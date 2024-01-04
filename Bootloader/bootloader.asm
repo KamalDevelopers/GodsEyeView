@@ -282,6 +282,7 @@ trampoline64:
 
 multiboot:
     .reserv            dd 0
+    .magic             dd 0xCAFE
     .vesa_width        dd 0
     .vesa_height       dd 0
     .vesa_bpp          dd 0

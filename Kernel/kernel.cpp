@@ -96,6 +96,9 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
     if (!has_volatile_memory)
         Paging::init();
 
+    if (multiboot_info_ptr->magic != 0xCAFE)
+        PANIC("Invalid multiboot magic");
+
     klog("Initializing drivers and syscalls");
     VGA vga;
     Vesa vesa(multiboot_info_ptr->vesa_framebuffer,

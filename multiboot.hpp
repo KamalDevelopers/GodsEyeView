@@ -3,6 +3,7 @@
 /* custom multiboot header */
 typedef struct multi {
     uint32_t resv;
+    uint32_t magic;
     uint32_t vesa_width;
     uint32_t vesa_height;
     uint32_t vesa_bpp;
