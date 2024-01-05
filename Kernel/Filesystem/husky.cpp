@@ -498,14 +498,16 @@ uint32_t Husky::read_file_data_block_list(uint32_t* ptr_list, uint8_t* read_data
     uint32_t size_read = 0;
 
     for (uint32_t i = 0; i < max_blocks; ++i) {
-        char sector[512];
+        static char sector[512];
         storage->read((uint8_t*)sector, mount_start_sector + ptr_list[i], 512);
         block_t block;
         memcpy(&block, sector, sizeof(block_t));
 
         if (block.flags != 2) {
-            kdbg("FS ERROR: points to invalid block\n");
-            return 0;
+            kdbg("FS ERROR: points to invalid block debug, sector=%d\n", mount_start_sector + ptr_list[i]);
+            /* Disk error? Try again */
+            storage->read((uint8_t*)sector, mount_start_sector + ptr_list[i], 512);
+            /* return 0; */
         }
 
         uint32_t siz = (*seek >= 511) ? 0 : 511 - *seek;
