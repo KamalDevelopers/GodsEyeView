@@ -57,6 +57,7 @@ void Paging::map_page(uint32_t virtual_address, uint32_t physical_address)
     table->pages[table_index].reserved2 = 0;
     table->pages[table_index].available = 0;
     table->pages[table_index].frame = physical_address >> 12;
+    flush_tlb_single(virtual_address);
 }
 
 int Paging::unmap_page(uint32_t virtual_address)
@@ -98,6 +99,7 @@ void Paging::init()
 {
     /* kernel_page_directory = (page_directory_t*)KERNEL_PAGE_DIR_START; */
     kernel_page_directory = (page_directory_t*)PMM->allocate_pages(PAGE_ALIGN(5 * MB));
+    memset(kernel_page_directory, 0, PAGE_ALIGN(5 * MB));
     is_paging_enabled = true;
 
     uint32_t page = 0;
