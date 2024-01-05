@@ -220,9 +220,15 @@ void ATA::read28_dma(uint32_t sector_number, uint8_t* data, uint32_t count, int 
     has_interrupt = 0;
     outb(bar4, 0x08 | 0x1);
 
+    if (TM->is_active()) {
+        while (!has_interrupt)
+            TM->yield();
+    }
+
     while (1) {
         if (!has_interrupt)
             continue;
+
         int status = inb(bar4 + 2);
         dstatus = command_port.read();
         if (!(status & 0x04))
