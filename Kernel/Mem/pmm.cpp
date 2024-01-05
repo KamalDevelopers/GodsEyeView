@@ -104,7 +104,7 @@ uint32_t PhysicalMemoryManager::allocate_pages(size_t size)
         address = allocate_slab2(size);
 
     if (!address) {
-        klog("PMM: out of memory!");
+        klog("PMM: out of memory! [%d]/[%d]", available_pages, used_pages);
         return 0;
     }
 

@@ -325,6 +325,7 @@ TaskManager::TaskManager()
     active = this;
     current_task = -1;
     cpu_usage = 0;
+    is_running = 0;
 }
 
 TaskManager* TM = 0;
