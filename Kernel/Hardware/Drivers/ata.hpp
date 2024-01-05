@@ -48,7 +48,7 @@ public:
     ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32_t port_base, bool master);
     ~ATA();
 
-    static driver_identifier_t identifier() { return { 0x8086, 0x7010 }; }
+    static driver_identifier_t identifier() { return { 0, 0, 1, 1 }; }
 
     bool exists() { return does_exist; }
     bool is_dma() { return this->dma; }
