@@ -5,7 +5,28 @@ vbe_width           dw 1440 ; config vesa width
 vbe_height          dw 900  ; config vesa height
 vbe_bpp             dw 32
 
+bakup_vbe_width     dw 1024
+bakup_vbe_height    dw 768
+bakup_vbe_bpp       dw 32
+bakup_vbe           dw 0
+
 vbe_init:
+    jmp .first_try
+
+    .second_try:
+        mov word[bakup_vbe], 1
+
+        mov ax, [bakup_vbe_width]
+        mov [vbe_width], ax
+
+        mov ax, [bakup_vbe_height]
+        mov [vbe_height], ax
+
+        mov ax, [bakup_vbe_bpp]
+        mov [vbe_bpp], ax
+
+    .first_try:
+
     push es
     mov dword[vbe_info_block], "VBE2"
     mov ax, 0x4F00
@@ -160,6 +181,10 @@ vbe_set_mode:
     jmp .vbe_find_mode
  
 .vbe_error:
+    mov ax, [bakup_vbe]
+    cmp ax, 0b
+    je vbe_init.second_try
+
     jmp err_vbe
     ret
 
