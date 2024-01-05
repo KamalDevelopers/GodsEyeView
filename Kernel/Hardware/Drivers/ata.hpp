@@ -30,17 +30,19 @@ protected:
     Port8Bit command_port;
     Port8Bit control_port;
 
-    ata_prdt_t prdt;
+    ata_prdt_t* prdt;
     device_descriptor_t device;
 
 private:
     char model[40];
     char firmware[8];
     uint8_t* transfer_buffer = 0;
+    uint32_t transfer_buffer_size = 0;
     bool does_exist = 0;
     bool master = 0;
     uint32_t bar4 = 0;
     bool dma = 0;
+    bool has_interrupt = 0;
 
     void identify_data();
 

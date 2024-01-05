@@ -78,7 +78,7 @@ void ATActrl::kernel_debug_info()
 #define ATA_IDENT_DATA_FIRMW_END 26
 
 ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32_t port_base, bool master)
-    : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt + 14)
+    : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + 14)
     , data_port(port_base)
     , error_port(port_base + 0x1)
     , sector_count_port(port_base + 0x2)
@@ -92,11 +92,14 @@ ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32
     PCI::active->enable_busmaster(device);
     dma = false;
 
-    transfer_buffer = (uint8_t*)kmalloc(MAX_TRANSFER_SIZE);
-    memset(&prdt, 0, sizeof(ata_prdt_t));
-    prdt.buffer_phys = 0;
-    prdt.transfer_size = 512;
-    prdt.mark_end = 0x8000;
+    transfer_buffer_size = PAGE_ALIGN(MAX_TRANSFER_SIZE);
+    transfer_buffer = (uint8_t*)PMM->allocate_pages(transfer_buffer_size);
+
+    prdt = (ata_prdt_t*)PMM->allocate_pages(PAGE_SIZE);
+    memset(prdt, 0, sizeof(ata_prdt_t));
+    prdt->buffer_phys = 0;
+    prdt->transfer_size = 512;
+    prdt->mark_end = 0x8000;
 
     bar4 = PCI::active->read(device.bus, device.device, device.function, 0x20);
     if (bar4 & 0x1)
@@ -108,7 +111,8 @@ ATA::ATA(InterruptManager* interrupt_manager, device_descriptor_t device, uint32
 
 ATA::~ATA()
 {
-    kfree(transfer_buffer);
+    PMM->free_pages((uint32_t)transfer_buffer, transfer_buffer_size);
+    PMM->free_pages((uint32_t)prdt, PAGE_SIZE);
 }
 
 void ATA::set_dma(bool dma)
@@ -186,39 +190,48 @@ bool ATA::identify()
 void ATA::read28_dma(uint32_t sector_number, uint8_t* data, uint32_t count, int sector_count)
 {
     Mutex::lock(mutex_ata);
-    prdt.transfer_size = count;
-    prdt.buffer_phys = (uint32_t)data;
 
-    uint8_t sector[512];
-    if (count < 512 && sector_count == 1) {
-        prdt.transfer_size = 512;
-        prdt.buffer_phys = (uint32_t)sector;
-    }
+    prdt->transfer_size = (count < 512) ? 512 : count;
+    prdt->buffer_phys = (uint32_t)transfer_buffer;
 
     outb(bar4, 0);
-    outbl(bar4 + 4, (uint32_t)&prdt);
     device_port.write(0xE0 | (!master) << 4 | (sector_number & 0x0f000000) >> 24);
+    outb(bar4 + 2, inb(bar4 + 0x02) | 0x04 | 0x02);
+    outbl(bar4 + 4, (uint32_t)prdt);
+    outb(bar4, 0x08);
+
+    int dstatus = 0;
+    while ((dstatus & (1 << 6)) == 0)
+        dstatus = command_port.read();
+
     if (count > 512 && sector_count == 1)
         sector_count = count / 512;
     sector_count_port.write(sector_count);
     lba_low_port.write(sector_number & 0x000000ff);
     lba_mid_port.write((sector_number & 0x0000ff00) >> 8);
     lba_hi_port.write((sector_number & 0x00ff0000) >> 16);
+
     command_port.write(0xC8);
-    outb(bar4 + 0x02, inb(bar4 + 0x02) | 0x04 | 0x02);
-    outb(bar4, 0x8 | 0x1);
+
+    dstatus = 0;
+    while ((dstatus & (1 << 3)) == 0)
+        dstatus = command_port.read();
+
+    has_interrupt = 0;
+    outb(bar4, 0x08 | 0x1);
 
     while (1) {
+        if (!has_interrupt)
+            continue;
         int status = inb(bar4 + 2);
-        int dstatus = command_port.read();
+        dstatus = command_port.read();
         if (!(status & 0x04))
             continue;
         if (!(dstatus & 0x80))
             break;
     }
 
-    if (count < 512 && sector_count == 1)
-        memcpy(data, sector, count);
+    memcpy(data, transfer_buffer, count);
 
     Mutex::unlock(mutex_ata);
     return;
@@ -298,17 +311,12 @@ void ATA::write28_dma(uint32_t sector_number, uint8_t* data, uint32_t count)
 {
     Mutex::lock(mutex_ata);
 
-    prdt.transfer_size = count;
-    prdt.buffer_phys = (uint32_t)data;
-    outb(bar4, 0);
-    outbl(bar4 + 4, (uint32_t)&prdt);
+    memcpy(transfer_buffer, data, count);
+    prdt->transfer_size = (count < 512) ? 512 : count;
+    prdt->buffer_phys = (uint32_t)transfer_buffer;
 
-    uint8_t sector[512];
-    if (count < 512) {
-        memcpy(sector, data, 512);
-        prdt.transfer_size = 512;
-        prdt.buffer_phys = (uint32_t)sector;
-    }
+    outb(bar4, 0);
+    outbl(bar4 + 4, (uint32_t)prdt);
 
     device_port.write(0xE0 | (!master) << 4 | (sector_number & 0x0f000000) >> 24);
     sector_count_port.write(1);
@@ -326,6 +334,7 @@ void ATA::write28_dma(uint32_t sector_number, uint8_t* data, uint32_t count)
         if (!(dstatus & 0x80))
             break;
     }
+
     Mutex::unlock(mutex_ata);
 }
 
@@ -424,8 +433,9 @@ void ATA::flush()
 
 uint32_t ATA::interrupt(uint32_t esp)
 {
-    control_port.read();
-    inb(bar4 + 2);
+    uint8_t dstatus = control_port.read();
+    uint8_t status = inb(bar4 + 2);
     outb(bar4, 0x0);
+    has_interrupt = 1;
     return esp;
 }
