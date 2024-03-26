@@ -43,6 +43,25 @@ void WindowManager::set_active_window(uint32_t index)
     compositor->require_update();
 }
 
+void WindowManager::send_global_event(uint8_t type, uint16_t d0, uint16_t d1)
+{
+    static global_wm_event_t global_wm_event;
+    global_wm_event.type = type;
+    global_wm_event.d0 = d0;
+    global_wm_event.d1 = d1;
+
+    uint32_t sent_to_windows = 0;
+    for (uint32_t i = 0; i < MAX_LISTENERS; i++) {
+        if (sent_to_windows >= global_listener_windows_count)
+            break;
+
+        if (global_listener_windows[i]) {
+            global_listener_windows[i]->global_event(&global_wm_event);
+            sent_to_windows++;
+        }
+    }
+}
+
 void WindowManager::mouse_event(mouse_event_t* event)
 {
     if (event->modifier == 1) {
@@ -68,6 +87,8 @@ void WindowManager::keyboard_event(keyboard_event_t* event)
     if ((event->key >= 49 && event->key <= 49 + WORKSPACES - 1) && (event->modifier == 2) && (WORKSPACES > 1)) {
         int workspace = CLAMP(event->key - 49, 0, WORKSPACES - 1);
         set_workspace(workspace);
+        send_global_event(GLOBAL_WM_EVENT_TYPE_PROBE, 0, 0);
+        send_global_event(GLOBAL_WM_EVENT_TYPE_WORKSPACE, active_windows, WORKSPACES);
         return;
     }
 
@@ -286,6 +307,16 @@ void WindowManager::create_window(uint32_t width, uint32_t height, int pid, uint
         tiled_windows++;
     }
 
+    if ((flags & DISPLAY_FLAG_GLOBAL_EVENT_LISTENER) > 0) {
+        for (uint32_t i = 0; i < MAX_LISTENERS; ++i) {
+            if (i != 0)
+                continue;
+            window->set_global_listener_id(i);
+            global_listener_windows[i] = window;
+            global_listener_windows_count++;
+        }
+    }
+
     update_window_positions();
 
     canvas_set(window->get_canvas()->framebuffer, bg, window->get_canvas()->size);
@@ -310,6 +341,11 @@ void WindowManager::destroy_window(uint32_t index)
     compositor->remove_render_layer(windows()[index]->get_canvas());
     if (windows()[index]->get_controlled())
         tiled_windows--;
+
+    if (windows()[index]->get_is_global_listener()) {
+        global_listener_windows_count--;
+        global_listener_windows[windows()[index]->get_global_listener_id()] = 0;
+    }
 
     windows()[index]->die();
     if (tiled_windows) {

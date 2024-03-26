@@ -18,6 +18,18 @@ void Window::die()
     zombie = true;
 }
 
+int Window::get_is_global_listener()
+{
+    if (global_listener_id >= 0)
+        return true;
+    return false;
+}
+
+void Window::set_global_listener_id(int id)
+{
+    global_listener_id = id;
+}
+
 void Window::set_position(uint32_t x, uint32_t y)
 {
     if (zombie)
@@ -121,5 +133,16 @@ void Window::keyboard_event(keyboard_event_t* event)
     display_event_t send_event;
     send_event.type = DISPLAY_EVENT_KEYBOARD;
     memcpy(&send_event.keyboard, event, sizeof(keyboard_event_t));
+    write(process_send_event_file, &send_event, sizeof(display_event_t));
+}
+
+void Window::global_event(global_wm_event_t* event)
+{
+    if (zombie)
+        return;
+
+    display_event_t send_event;
+    send_event.type = DISPLAY_EVENT_GLOBAL;
+    memcpy(&send_event.global_event, event, sizeof(global_wm_event_t));
     write(process_send_event_file, &send_event, sizeof(display_event_t));
 }

@@ -7,7 +7,7 @@ Launcher::Launcher()
     request_framebuffer(&fb, &width, &height);
     height = 17;
 
-    uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED;
+    uint8_t flags = 0 | DISPLAY_FLAG_DISOWNED | DISPLAY_FLAG_GLOBAL_EVENT_LISTENER;
     window_events_file = request_display_window(window_canvas, width, height, bg, flags);
     canvas_set(window_canvas.framebuffer, bg, window_canvas.size);
     default_font = font_load("/home/bitmaps/font.tftf");
@@ -27,6 +27,14 @@ void Launcher::resize_window(display_event_t* display_event)
     /* request_update_window(); */
 }
 
+void Launcher::receive_global_event(display_event_t* display_event)
+{
+    if (display_event->global_event.type == GLOBAL_WM_EVENT_TYPE_WORKSPACE) {
+        active_workspace = display_event->global_event.d0;
+        max_workspaces = display_event->global_event.d1;
+    }
+}
+
 void Launcher::receive_keyboard_event(display_event_t* display_event)
 {
     keyboard_event_t keyboard_event;
@@ -41,14 +49,18 @@ void Launcher::receive_events()
             return receive_keyboard_event(&display_event);
         if (display_event.type == DISPLAY_EVENT_RESIZE)
             return resize_window(&display_event);
+        if (display_event.type == DISPLAY_EVENT_GLOBAL)
+            return receive_global_event(&display_event);
     }
 }
 
 uint32_t Launcher::display_string(const char* text, int pos_x, int pos_y)
 {
     size_t size = strlen(text);
+    if (text[0] == ' ' && size == 1)
+        return pos_x + default_font->font_header->width;
     for (uint32_t i = 0; i < size; i++)
-        pos_x = font_display_character_with_bg(default_font, &window_canvas, text[i], pos_x, pos_y, fg, bg, false);
+        pos_x = font_display_character(default_font, &window_canvas, text[i], pos_x, pos_y, fg);
     return pos_x;
 }
 
@@ -79,13 +91,13 @@ void Launcher::display_time()
     y += (m <= 2);
 
     char minutes[10];
-    memset(&minutes, 0, 10);
+    memset(minutes, 0, 10);
     itoa(min, minutes);
     char hours[10];
-    memset(&hours, 0, 10);
+    memset(hours, 0, 10);
     itoa(hour, hours);
     char day[10];
-    memset(&day, 0, 10);
+    memset(day, 0, 10);
     itoa(y, day);
 
     int pos_x = width - 150;
@@ -114,7 +126,7 @@ void Launcher::display_cpu_usage()
     uint32_t number = ((uint32_t)usage > 100) ? 100 : (uint32_t)usage;
 
     char usage_string[3];
-    memset(&usage_string, 0, 10);
+    memset(usage_string, 0, 3);
     itoa(number, usage_string);
 
     int pos_x = 18;
@@ -134,6 +146,25 @@ void Launcher::display_cpu_usage()
     pos_x = display_string("%", pos_x, pos_y);
 }
 
+void Launcher::display_workspace()
+{
+    int pos_x = 100;
+    int pos_y = 6;
+    char workspace_string[3];
+    memset(workspace_string, 0, 3);
+
+    for (int i = 0; i < max_workspaces; i++) {
+        if (i != 0)
+            pos_x = display_string(" ", pos_x, pos_y);
+        if (i == active_workspace) {
+            itoa(active_workspace + 1, workspace_string);
+            pos_x = display_string(workspace_string, pos_x, pos_y);
+        } else {
+            pos_x = display_string(".", pos_x, pos_y);
+        }
+    }
+}
+
 void Launcher::run()
 {
     is_running = true;
@@ -145,11 +176,11 @@ void Launcher::run()
         canvas_set(window_canvas.framebuffer, bg, window_canvas.size);
         display_time();
         display_cpu_usage();
+        display_workspace();
         request_update_window();
 
         poll(polls, 1, 3200);
         receive_events();
-        request_update_window();
 
         if (!is_running)
             return;

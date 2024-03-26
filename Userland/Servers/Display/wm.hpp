@@ -6,6 +6,7 @@
 
 // clang-format off
 #define WORKSPACES 3
+#define MAX_LISTENERS 10
 #define MAX_VISIBLE_WINDOWS 4
 #define WINDOW_TOP_GAP 20
 #define WINDOW_GAP 43
@@ -26,11 +27,13 @@ class WindowManager {
 private:
     window_group_t workspaces[WORKSPACES + 1];
     Compositor* compositor;
+    Window* global_listener_windows[MAX_LISTENERS];
 
     int active_fullscreen_window = -1;
     int active_windows = 0;
     int active_window = -1;
     uint32_t tiled_windows = 0;
+    uint32_t global_listener_windows_count = 0;
 
     Window* compose_window(int pid);
 
@@ -42,6 +45,7 @@ public:
     void require_update(int pid);
     void mouse_event(mouse_event_t* event);
     void keyboard_event(keyboard_event_t* event);
+    void send_global_event(uint8_t type, uint16_t d0, uint16_t d1);
 
     int find_window_with_pid(int pid);
     void update_window_positions();

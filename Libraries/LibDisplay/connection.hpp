@@ -17,8 +17,10 @@
 #define DISPLAY_EVENT_RESIZE 2
 #define DISPLAY_EVENT_MOUSE 3
 #define DISPLAY_EVENT_KEYBOARD 4
+#define DISPLAY_EVENT_GLOBAL 5
 
 #define DISPLAY_FLAG_DISOWNED (1 << 0)
+#define DISPLAY_FLAG_GLOBAL_EVENT_LISTENER (1 << 1)
 
 typedef struct display_request {
     int pid = -1;
@@ -33,6 +35,7 @@ typedef struct display_event {
     int type = 0;
     mouse_event_t mouse;
     keyboard_event_t keyboard;
+    global_wm_event global_event;
     canvas_t canvas;
 } __attribute__((packed)) display_event_t;
 
