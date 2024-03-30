@@ -7,6 +7,7 @@
 #define USB_LEGACY 0x00
 #define HCCPARAMS_EECP_MASK 0xff00
 #define HCCPARAMS_EECP_SHIFT 8
+#define HCCPARAMS_64_BIT 0x1
 #define USB_LEGACY_HC_BIOS 0x0001000
 #define USB_LEGACY_HC_OS 0x01000000
 #define USB_STATUS_HALT 0x1000
@@ -21,9 +22,10 @@
 #define QH_HS_TINVALID (1 << 0)
 
 #define PORT_RESET (1 << 8)
+#define PORT_ENABLE_CHANGE (1 << 3)
 #define PORT_ENABLE (1 << 2)
 #define PORT_CONNECTION_CHANGE (1 << 1)
-#define PORT_ENABLE_CHANGE (1 << 3)
+#define PORT_CONNECTION (1 << 0)
 
 #define INT_ENABLE (1 << 0)
 #define INT_ERROR_ENABLE (1 << 1)
@@ -62,7 +64,13 @@ EHCI::EHCI(InterruptManager* interrupt_manager, device_descriptor_t device)
     : InterruptHandler(interrupt_manager, interrupt_manager->get_hardware_interrupt_offset() + device.interrupt)
 {
     active = this;
-    Paging::map_page(PAGE_ALIGN_DOWN(device.bar0), PAGE_ALIGN_DOWN((device.bar0)));
+
+    if ((device.bar0 % 4096) == 0) {
+        Paging::map_page(device.bar0, (device.bar0));
+    } else {
+        Paging::map_page(PAGE_ALIGN_DOWN(device.bar0), PAGE_ALIGN_DOWN((device.bar0)));
+        Paging::map_page(PAGE_ALIGN(device.bar0), PAGE_ALIGN((device.bar0)));
+    }
 
     base_address = device.bar0;
     capabilities = (ehci_capabilities*)base_address;
@@ -94,11 +102,17 @@ void EHCI::activate()
     operations->interrupt = 0;
     reset();
     validate_reset();
+    // Halt
+    operations->interrupt = 0;
+    operations->command &= ~(1 << 0);
+    timeout();
 
     if (capabilities->version != PROTOCOL_VERSION)
         klog("EHCI: protocol unsupported version");
     if (ehci_version != HCI_VERSION)
         klog("EHCI: unsupported HCI version");
+    if (capabilities->hcc_params & HCCPARAMS_64_BIT)
+        klog("EHCI: has 64-bit addressing");
 
     init_async_list();
     init_periodic_list();
@@ -115,6 +129,11 @@ void EHCI::activate()
 
     operations->configure_flag = 1;
     ((uint32_t*)(base_address + capabilities->length + 0x40))[0] |= 1;
+
+    // Start
+    operations->command |= (1 << 0);
+    timeout();
+
     probe_ports();
 }
 
@@ -134,6 +153,8 @@ void EHCI::reset()
     operations->command &= ~1;
     while (operations->command & 1)
         asm volatile("nop");
+    while (!(operations->status & (1 << 12)))
+        asm volatile("nop");
     operations->command |= USB_COMMAND_RESET;
     while (operations->command & USB_COMMAND_RESET)
         asm volatile("nop");
@@ -142,7 +163,7 @@ void EHCI::reset()
 void EHCI::validate_reset()
 {
     if (operations->command != 0x80000)
-        klog("EHCI: Warning unexpected USBCMD value");
+        klog("EHCI: Warning unexpected USBCMD value %d", operations->command >> 8);
     if (operations->interrupt != 0)
         klog("EHCI: Warning unexpected USBINT value");
     if (operations->control_dss != 0)
@@ -170,7 +191,7 @@ void EHCI::init_periodic_list()
 void EHCI::probe_port(uint16_t port)
 {
     uint16_t port_index = port;
-    volatile uint32_t port_register = operations->port_source[port_index];
+    volatile uint32_t port_register = operations->port_sc[port_index];
     if (!(port_register & 3))
         return;
 
@@ -185,13 +206,23 @@ void EHCI::probe_port(uint16_t port)
     usb->port = port;
     usb->controller = USB_CONTROLLER_EHCI;
 
+    operations->port_sc[port_index] &= ~PORT_CONNECTION_CHANGE;
     /* Reset port */
-    uint32_t reg = operations->port_source[port_index];
+    uint32_t reg = operations->port_sc[port_index];
+    reg &= ~PORT_ENABLE;
     reg |= PORT_RESET;
-    operations->port_source[port_index] = reg;
+    operations->port_sc[port_index] = reg;
     timeout();
-    operations->port_source[port_index] &= ~PORT_RESET;
     timeout();
+    timeout();
+    operations->port_sc[port_index] &= ~PORT_RESET;
+    timeout();
+
+    if (!(operations->port_sc[port_index] & PORT_ENABLE))
+        klog("EHCI: Port failed to enable after reset");
+
+    if (!(operations->port_sc[port_index] & PORT_CONNECTION))
+        klog("EHCI: No device present on port");
 
     usb->address = address_count;
     if (!device_address())
@@ -220,8 +251,10 @@ void EHCI::probe_port(uint16_t port)
         usb->ep_in = ep_secondary->address & 0xF;
     }
 
-    if (usb->device_descriptor.type != DESCRIPTOR_TYPE_DEVICE)
+    if (usb->device_descriptor.type != DESCRIPTOR_TYPE_DEVICE) {
         kdbg("EHCI: Descriptor requests failed\n");
+        usb_free_device(usb);
+    }
     /* if (usb->device_descriptor.vendor == VENDOR_QEMU)
         kdbg("USB: Virtual usb device connected\n"); */
 
@@ -236,14 +269,14 @@ void EHCI::probe_ports()
 
 bool EHCI::take_ownership(device_descriptor_t device)
 {
-    uint32_t ecp_offset = (capabilities->hcc_params & HCCPARAMS_EECP_MASK)
+    volatile uint32_t ecp_offset = (capabilities->hcc_params & HCCPARAMS_EECP_MASK)
         >> HCCPARAMS_EECP_SHIFT;
 
     if (ecp_offset < 40)
         return true;
 
-    uint32_t legacy_offset = ecp_offset + USB_LEGACY;
-    uint32_t legsup = PCI::active->read(device, legacy_offset);
+    volatile uint32_t legacy_offset = ecp_offset + USB_LEGACY;
+    volatile uint32_t legsup = PCI::active->read(device, legacy_offset);
 
     if (!(legsup & USB_LEGACY_HC_BIOS))
         return true;
@@ -259,7 +292,7 @@ bool EHCI::take_ownership(device_descriptor_t device)
     return false;
 }
 
-uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
+uint8_t EHCI::transaction_send(volatile ehci_transfer_descriptor* transfer)
 {
     operations->command |= (1 << 5);
     uint8_t err = 0;
@@ -267,7 +300,7 @@ uint8_t EHCI::transaction_send(ehci_transfer_descriptor* transfer)
     while (1) {
         volatile uint32_t token = (volatile uint32_t)transfer->token;
         if (token & (1 << 3)) {
-            kdbg("EHCI: Transaction error\n");
+            kdbg("EHCI: Transaction error token=%d\n", token & 0xFF);
             err = 3;
             break;
         }
