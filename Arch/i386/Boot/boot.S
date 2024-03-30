@@ -21,12 +21,25 @@ loader:
     cli
     cld
 
+.enable_sse:
+    mov %cr0, %eax
+    and $0xFFFB, %ax
+    or $0x2, %ax
+    mov %eax, %cr0
+    mov %cr4, %eax
+    or $0x600, %ax
+    mov %eax, %cr4
+
+
     mov sbss, %ebx
+
+
 .zloop:
     movb $0, (%ebx)
     inc %ebx
     cmp ebss, %ebx
     jb .zloop
+
 
     pushl %eax
     pushl %ebx

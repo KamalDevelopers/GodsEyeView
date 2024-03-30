@@ -4,37 +4,325 @@
 extern "C" {
 #endif
 
+#define rep_memcpy(to, from, n)                    \
+    {                                              \
+        unsigned long int dummy;                   \
+        __asm__ __volatile__(                      \
+            "rep; movsb"                           \
+            : "=&D"(to), "=&S"(from), "=&c"(dummy) \
+            : "0"(to), "1"(from), "2"(n)           \
+            : "memory");                           \
+    }
+
+#define MIN_LEN 0x40
+#define SSE_MMREG_SIZE 16
+#define MMX_MMREG_SIZE 8
+#define MMX1_MIN_LEN 0x800
+
+/*  Currently a single thread can lock the sse at a time,
+ *  thus not allowing threads to simultaneously use sse.
+ *  However, it is possible for two threads to grab the sse lock,
+ *  which will cause a fault. As it is now, only the display server 
+ *  has the userspace sse lock, since it is the most memcpy
+ *  heavy userspace application. */
+
+/* TODO: In the future we could move the sse lock to the kernel.
+ * With this solution a syscall would be required to grab the sse lock.
+ * Another solution, which might be more common, is to change the sse 
+ * stack at every task switch. I find this solution to0 expensive currently. 
+ * */
+
+static bool s_sse_lock = false;
+
+void grab_sse_lock()
+{
+    s_sse_lock = true;
+}
+
+void release_sse_lock()
+{
+    s_sse_lock = false;
+}
+
+bool has_sse_lock()
+{
+    return s_sse_lock;
+}
+
+void* sse_memcpy(void* to, const void* from, size_t len)
+{
+    void* retval;
+    size_t i;
+    retval = to;
+
+    __asm__ __volatile__(
+        "   prefetchnta (%0)\n"
+        "   prefetchnta 64(%0)\n"
+        "   prefetchnta 128(%0)\n"
+        "   prefetchnta 192(%0)\n"
+        "   prefetchnta 256(%0)\n"
+        :
+        : "r"(from));
+
+    if (len >= MIN_LEN) {
+        unsigned long int delta;
+        /* Align destinition to MMREG_SIZE -boundary */
+        delta = ((unsigned long int)to) & (SSE_MMREG_SIZE - 1);
+        if (delta) {
+            delta = SSE_MMREG_SIZE - delta;
+            len -= delta;
+            rep_memcpy(to, from, delta);
+        }
+        i = len >> 6; /* len/64 */
+        len &= 63;
+        if (((unsigned long)from) & 15)
+            /* if SRC is misaligned */
+            for (; i > 0; i--) {
+                __asm__ __volatile__(
+                    "prefetchnta 320(%0)\n"
+                    "movups (%0), %%xmm0\n"
+                    "movups 16(%0), %%xmm1\n"
+                    "movups 32(%0), %%xmm2\n"
+                    "movups 48(%0), %%xmm3\n"
+                    "movntps %%xmm0, (%1)\n"
+                    "movntps %%xmm1, 16(%1)\n"
+                    "movntps %%xmm2, 32(%1)\n"
+                    "movntps %%xmm3, 48(%1)\n" ::"r"(from),
+                    "r"(to)
+                    : "memory");
+                from = ((const unsigned char*)from) + 64;
+                to = ((unsigned char*)to) + 64;
+            }
+        else
+            /*
+               Only if SRC is aligned on 16-byte boundary.
+               It allows to use movaps instead of movups, which required
+               data to be aligned or a general-protection exception (#GP)
+               is generated.
+            */
+            for (; i > 0; i--) {
+                __asm__ __volatile__(
+                    "prefetchnta 320(%0)\n"
+                    "movaps (%0), %%xmm0\n"
+                    "movaps 16(%0), %%xmm1\n"
+                    "movaps 32(%0), %%xmm2\n"
+                    "movaps 48(%0), %%xmm3\n"
+                    "movntps %%xmm0, (%1)\n"
+                    "movntps %%xmm1, 16(%1)\n"
+                    "movntps %%xmm2, 32(%1)\n"
+                    "movntps %%xmm3, 48(%1)\n" ::"r"(from),
+                    "r"(to)
+                    : "memory");
+                from = ((const unsigned char*)from) + 64;
+                to = ((unsigned char*)to) + 64;
+            }
+        /* since movntq is weakly-ordered, a "sfence"
+         * is needed to become ordered again. */
+        __asm__ __volatile__("sfence" ::
+                                 : "memory");
+        /* enables to use FPU */
+        __asm__ __volatile__("emms" ::
+                                 : "memory");
+    }
+    /*
+     * Now do the tail of the block
+     */
+    if (len)
+        memcpy(to, from, len);
+    return retval;
+}
+
+void* mmx_memcpy(void* to, const void* from, size_t len)
+{
+    void* retval;
+    size_t i;
+    retval = to;
+
+    if (len >= MMX1_MIN_LEN) {
+        unsigned long int delta;
+        /* Align destinition to MMREG_SIZE -boundary */
+        delta = ((unsigned long int)to) & (MMX_MMREG_SIZE - 1);
+        if (delta) {
+            delta = MMX_MMREG_SIZE - delta;
+            len -= delta;
+            rep_memcpy(to, from, delta);
+        }
+        i = len >> 6; /* len/64 */
+        len &= 63;
+        for (; i > 0; i--) {
+            __asm__ __volatile__(
+                "movq (%0), %%mm0\n"
+                "movq 8(%0), %%mm1\n"
+                "movq 16(%0), %%mm2\n"
+                "movq 24(%0), %%mm3\n"
+                "movq 32(%0), %%mm4\n"
+                "movq 40(%0), %%mm5\n"
+                "movq 48(%0), %%mm6\n"
+                "movq 56(%0), %%mm7\n"
+                "movq %%mm0, (%1)\n"
+                "movq %%mm1, 8(%1)\n"
+                "movq %%mm2, 16(%1)\n"
+                "movq %%mm3, 24(%1)\n"
+                "movq %%mm4, 32(%1)\n"
+                "movq %%mm5, 40(%1)\n"
+                "movq %%mm6, 48(%1)\n"
+                "movq %%mm7, 56(%1)\n" ::"r"(from),
+                "r"(to)
+                : "memory");
+            from = ((const unsigned char*)from) + 64;
+            to = ((unsigned char*)to) + 64;
+        }
+        __asm__ __volatile__("emms" ::
+                                 : "memory");
+    }
+    /*
+     * Now do the tail of the block
+     */
+    if (len)
+        memcpy(to, from, len);
+    return retval;
+}
+
+void* sse2_memcpy(void* to, const void* from, size_t len)
+{
+    void* retval;
+    size_t i;
+    retval = to;
+
+    __asm__ __volatile__(
+        "   prefetchnta (%0)\n"
+        "   prefetchnta 64(%0)\n"
+        "   prefetchnta 128(%0)\n"
+        "   prefetchnta 192(%0)\n"
+        "   prefetchnta 256(%0)\n"
+        /*
+        "   prefetchnta 320(%0)\n"
+        "   prefetchnta 384(%0)\n"
+        "   prefetchnta 448(%0)\n"
+        "   prefetchnta 512(%0)\n"
+        */
+        :
+        : "r"(from));
+
+    if (len >= MIN_LEN) {
+        unsigned long int delta;
+        /* Align destinition to MMREG_SIZE -boundary */
+        delta = ((unsigned long int)to) & (SSE_MMREG_SIZE - 1);
+        if (delta) {
+            delta = SSE_MMREG_SIZE - delta;
+            len -= delta;
+            rep_memcpy(to, from, delta);
+        }
+        i = len >> 7; /* len/128 */
+        len &= 127;
+        if (((unsigned long)from) & 15)
+            /* if SRC is misaligned */
+            for (; i > 0; i--) {
+                __asm__ __volatile__(
+                    "prefetchnta 640(%0)\n"
+
+                    "movdqu (%0), %%xmm0\n"
+                    "movdqu 16(%0), %%xmm1\n"
+                    "movdqu 32(%0), %%xmm2\n"
+                    "movdqu 48(%0), %%xmm3\n"
+
+                    "movntdq %%xmm0, (%1)\n"
+                    "movntdq %%xmm1, 16(%1)\n"
+                    "movntdq %%xmm2, 32(%1)\n"
+                    "movntdq %%xmm3, 48(%1)\n"
+
+                    "movdqu 64(%0), %%xmm4\n"
+                    "movdqu 80(%0), %%xmm5\n"
+                    "movdqu 96(%0), %%xmm6\n"
+                    "movdqu 112(%0), %%xmm7\n"
+
+                    "movntdq %%xmm4, 64(%1)\n"
+                    "movntdq %%xmm5, 80(%1)\n"
+                    "movntdq %%xmm6, 96(%1)\n"
+                    "movntdq %%xmm7, 112(%1)\n" ::"r"(from),
+                    "r"(to)
+                    : "memory");
+                from = ((const unsigned char*)from) + 128;
+                to = ((unsigned char*)to) + 128;
+            }
+        else
+            /*
+               Only if SRC is aligned on 16-byte boundary.
+               It allows to use movaps instead of movups, which required
+               data to be aligned or a general-protection exception (#GP)
+               is generated.
+            */
+            for (; i > 0; i--) {
+                __asm__ __volatile__(
+                    "prefetchnta 640(%0)\n"
+
+                    "movapd (%0), %%xmm0\n"
+                    "movapd 16(%0), %%xmm1\n"
+                    "movapd 32(%0), %%xmm2\n"
+                    "movapd 48(%0), %%xmm3\n"
+
+                    "movntdq %%xmm0, (%1)\n"
+                    "movntdq %%xmm1, 16(%1)\n"
+                    "movntdq %%xmm2, 32(%1)\n"
+                    "movntdq %%xmm3, 48(%1)\n"
+
+                    "movapd 64(%0), %%xmm4\n"
+                    "movapd 80(%0), %%xmm5\n"
+                    "movapd 96(%0), %%xmm6\n"
+                    "movapd 112(%0), %%xmm7\n"
+
+                    "movntdq %%xmm4, 64(%1)\n"
+                    "movntdq %%xmm5, 80(%1)\n"
+                    "movntdq %%xmm6, 96(%1)\n"
+                    "movntdq %%xmm7, 112(%1)\n" ::"r"(from),
+                    "r"(to)
+                    : "memory");
+                from = ((const unsigned char*)from) + 128;
+                to = ((unsigned char*)to) + 128;
+            }
+        /* since movntq is weakly-ordered, a "sfence"
+         * is needed to become ordered again. */
+        __asm__ __volatile__("mfence" ::
+                                 : "memory");
+        /* enables to use FPU */
+        __asm__ __volatile__("emms" ::
+                                 : "memory");
+    }
+    /*
+     * Now do the tail of the block
+     */
+    if (len)
+        memcpy(to, from, len);
+    return retval;
+}
+
 void* memmove(void* dst, const void* src, size_t cnt)
 {
     void* temp = dst;
     if ((uintptr_t)dst <= (uintptr_t)src || (uintptr_t)dst >= (uintptr_t)src + cnt) {
-        asm volatile (
+        asm volatile(
             "rep movsb"
-            :"=D"(dst),"=S"(src),"=c"(cnt)
-            :"0"(dst),"1"(src),"2"(cnt)
-            :"memory"
-        );
-    }
-    else {
-        asm volatile (
+            : "=D"(dst), "=S"(src), "=c"(cnt)
+            : "0"(dst), "1"(src), "2"(cnt)
+            : "memory");
+    } else {
+        asm volatile(
             "std\n\t"
             "rep movsb\n\t"
             "cld"
-            :"=D"(dst),"=S"(src),"=c"(cnt)
-            :"0"((uintptr_t)dst + cnt - 1),"1"((uintptr_t)src + cnt - 1),"2"(cnt)
-            :"memory"
-        );
+            : "=D"(dst), "=S"(src), "=c"(cnt)
+            : "0"((uintptr_t)dst + cnt - 1), "1"((uintptr_t)src + cnt - 1), "2"(cnt)
+            : "memory");
     }
     return temp;
 }
 
-
 int memcmp(const void* buf1, const void* buf2, size_t count)
 {
     if (!count)
-        return(0);
+        return (0);
 
-    while (--count && *(char*)buf1 == *(char*)buf2 ) {
+    while (--count && *(char*)buf1 == *(char*)buf2) {
         buf1 = (char*)buf1 + 1;
         buf2 = (char*)buf2 + 1;
     }
@@ -56,12 +344,11 @@ void* memchr(const void* s, int c, size_t n)
 void* memcpy(void* d, const void* s, uint32_t c)
 {
     void* temp = d;
-    asm volatile (
+    asm volatile(
         "rep movsb"
-        :"=D"(d),"=S"(s),"=c"(c)
-        :"0"(d),"1"(s),"2"(c)
-        :"memory"
-    );
+        : "=D"(d), "=S"(s), "=c"(c)
+        : "0"(d), "1"(s), "2"(c)
+        : "memory");
     return temp;
 }
 
@@ -84,13 +371,12 @@ void* memcpy32(void* dst, const void* src, size_t cnt)
 
 void* memset(void* d, int s, size_t c)
 {
-    void * temp = d;
-    asm volatile (
+    void* temp = d;
+    asm volatile(
         "rep stosb"
-        :"=D"(d),"=c"(c)
-        :"0"(d),"a"(s),"1"(c)
-        :"memory"
-    );
+        : "=D"(d), "=c"(c)
+        : "0"(d), "a"(s), "1"(c)
+        : "memory");
     return temp;
 }
 
@@ -112,7 +398,6 @@ inline int pfree(void* ptr, int size)
         : "a"(91), "b"(ptr), "c"(size));
     return 0;
 }
-
 
 /* STMP8_MAX = PAGE_SIZE * 126 */
 #define STMP8_MAX 516096
@@ -220,7 +505,7 @@ int16_t find_free_pool(uint32_t chunk_size_index)
 }
 
 void sh_stamp_pool(const void* address, int* range,
-        uint8_t* stamp, uint8_t* pool, int8_t* chunk_size_index)
+    uint8_t* stamp, uint8_t* pool, int8_t* chunk_size_index)
 {
     /* Determine pool number */
     *stamp = ((uint8_t*)address - 1)[0];
@@ -255,7 +540,7 @@ void sh_free_pool(const void* address)
 
     /* Case 2: when pool index > MAX_BUFFER_POOLS
      * last chunk free'd, delete pool */
-    if (range == 1 && pool > MAX_BUFFER_POOLS)  {
+    if (range == 1 && pool > MAX_BUFFER_POOLS) {
         pfree(major.pools[chunk_size_index][pool].address, 4096);
         major.free_pool[chunk_size_index] = pool;
         major.pools[chunk_size_index][pool].is_open = 0;
@@ -403,8 +688,8 @@ void free(const void* address)
 
 void* calloc(size_t count, size_t size)
 {
-  if (count == 0 || size == 0)
-      return 0;
+    if (count == 0 || size == 0)
+        return 0;
 
     void* p = malloc(count * size);
     memset(p, 0, size * count);

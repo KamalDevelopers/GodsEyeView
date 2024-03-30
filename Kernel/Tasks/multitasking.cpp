@@ -335,10 +335,8 @@ TaskManager::~TaskManager()
 
 bool TaskManager::add_task(Task* task)
 {
-    if (strcmp(task->get_name(), "idle") == 0) {
-        /* The first task in 'tasks' should always be the idle task */
-        if (tasks.size() > 0)
-            return false;
+    /* The first task in 'tasks' should always be the idle task */
+    if (tasks.size() == 0 && strcmp(task->get_name(), "idle") == 0) {
         task->priority = MAX_PRIORITIES + 1;
         tasks.append(task);
         return true;

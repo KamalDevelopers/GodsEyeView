@@ -7,8 +7,16 @@
 extern "C" {
 #endif
 
+/* FIXME: Kernel sse lock, see mem.c "TODO" */
+void grab_sse_lock();
+void release_sse_lock();
+bool has_sse_lock();
+void* sse2_memcpy(void* to, const void* from, size_t len);
+void* sse_memcpy(void* to, const void* from, size_t len);
+void* mmx_memcpy(void* to, const void* from, size_t len);
+
 int memcmp(const void* buf1, const void* buf2, size_t count);
-void* memmove(void *dest, const void *src, size_t n);
+void* memmove(void* dest, const void* src, size_t n);
 void* memchr(const void* s, int c, size_t n);
 void* memcpy32(void* dst, const void* src, size_t cnt);
 void* memcpy(void* dst, const void* src, uint32_t cnt);

@@ -10,6 +10,7 @@ canvas_t* request_canvas(uint32_t width, uint32_t height)
 {
     canvas_t* canvas = (canvas_t*)malloc(sizeof(canvas_t));
     canvas->size = height * width;
+
     canvas->framebuffer = (uint32_t*)malloc(canvas->size * sizeof(int32_t));
     canvas->x = 0;
     canvas->y = 0;
@@ -120,6 +121,11 @@ void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, alpha_
 
 void canvas_copy(uint32_t* destination, uint32_t* source, int size)
 {
+    if (has_sse_lock()) {
+        sse2_memcpy((void*)destination, (void*)source, size * sizeof(int32_t));
+        return;
+    }
+
     memcpy32(destination, source, size * sizeof(int32_t));
 }
 
@@ -148,10 +154,18 @@ void canvas_blit(canvas_t* destination, canvas_t* source)
     uint32_t destination_address = source->y * destination_pitch + source->x * sizeof(int32_t) + (uint32_t)destination->framebuffer;
     uint32_t source_address = (uint32_t)(source->framebuffer);
 
-    for (uint32_t y = 0; y < source->height; y++) {
-        memcpy32((uint32_t*)destination_address, (uint32_t*)source_address, source_pitch);
-        source_address += source_pitch;
-        destination_address += destination_pitch;
+    if (has_sse_lock()) {
+        for (uint32_t y = 0; y < source->height; y++) {
+            sse2_memcpy((uint32_t*)destination_address, (uint32_t*)source_address, source_pitch);
+            source_address += source_pitch;
+            destination_address += destination_pitch;
+        }
+    } else {
+        for (uint32_t y = 0; y < source->height; y++) {
+            memcpy32((uint32_t*)destination_address, (uint32_t*)source_address, source_pitch);
+            source_address += source_pitch;
+            destination_address += destination_pitch;
+        }
     }
 }
 

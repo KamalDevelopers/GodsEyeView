@@ -50,6 +50,7 @@ typedef void (*constructor)();
 extern "C" uint8_t kernel_end;
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
+static char userspace_fxsave_region[512] __attribute__((aligned(16)));
 
 extern "C" void call_constructors()
 {
@@ -216,6 +217,8 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
         DHCP::discover();
         ARP::broadcast_mac_address(DHCP::gateway());
     }
+
+    asm volatile(" fxsave %0 " ::"m"(userspace_fxsave_region));
 
     klog("Spawning init system");
     TM->spawn(SYSTEM_INIT, 0, 0);
