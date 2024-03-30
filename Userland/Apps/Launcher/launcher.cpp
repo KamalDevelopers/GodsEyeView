@@ -129,7 +129,7 @@ void Launcher::display_cpu_usage()
     memset(usage_string, 0, 3);
     itoa(number, usage_string);
 
-    int pos_x = 18;
+    int pos_x = 90;
     int pos_y = 6;
 
     pos_x = display_string("cpu:", pos_x, pos_y);
@@ -148,7 +148,7 @@ void Launcher::display_cpu_usage()
 
 void Launcher::display_workspace()
 {
-    int pos_x = 100;
+    int pos_x = 18;
     int pos_y = 6;
     char workspace_string[3];
     memset(workspace_string, 0, 3);
