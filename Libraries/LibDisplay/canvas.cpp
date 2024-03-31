@@ -121,7 +121,7 @@ void canvas_copy_alpha(uint32_t* destination, uint32_t* source, int size, alpha_
 
 void canvas_copy(uint32_t* destination, uint32_t* source, int size)
 {
-    if (has_sse_lock()) {
+    if (has_sse()) {
         sse2_memcpy((void*)destination, (void*)source, size * sizeof(int32_t));
         return;
     }
@@ -131,8 +131,11 @@ void canvas_copy(uint32_t* destination, uint32_t* source, int size)
 
 void canvas_set(uint32_t* destination, uint32_t rgb, int size)
 {
-    for (uint32_t i = 0; i < size; i++)
-        destination[i] = rgb;
+    if (has_sse() && rgb == 0) {
+        sse2_memset8(destination, 0, size * 2);
+    } else {
+        memset32(destination, rgb, size);
+    }
 }
 
 void canvas_copy(canvas_t* destination, canvas_t* source)
@@ -154,7 +157,7 @@ void canvas_blit(canvas_t* destination, canvas_t* source)
     uint32_t destination_address = source->y * destination_pitch + source->x * sizeof(int32_t) + (uint32_t)destination->framebuffer;
     uint32_t source_address = (uint32_t)(source->framebuffer);
 
-    if (has_sse_lock()) {
+    if (has_sse()) {
         for (uint32_t y = 0; y < source->height; y++) {
             sse2_memcpy((uint32_t*)destination_address, (uint32_t*)source_address, source_pitch);
             source_address += source_pitch;

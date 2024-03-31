@@ -8,7 +8,6 @@
 
 int main(int argc, char** argv)
 {
-    grab_sse_lock();
     nice(1);
 
     events_files_t event_files = init_events();
@@ -42,6 +41,5 @@ int main(int argc, char** argv)
         compositor.render_stack();
     }
 
-    release_sse_lock();
     return 0;
 }

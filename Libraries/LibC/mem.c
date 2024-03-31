@@ -32,21 +32,37 @@ extern "C" {
  * stack at every task switch. I find this solution to0 expensive currently. 
  * */
 
-static bool s_sse_lock = false;
-
-void grab_sse_lock()
+bool has_sse()
 {
-    s_sse_lock = true;
+    return true;
 }
 
-void release_sse_lock()
+void* sse2_memset8(void* s, char c, size_t n)
 {
-    s_sse_lock = false;
-}
+    size_t i = 0;
+    if ((size_t)s & (SSE_MMREG_SIZE - 1)) {
+        while (((size_t)s + i) & (SSE_MMREG_SIZE - 1) && i < n) {
+            asm("stosb;" :: "D"((size_t)s + i), "a"(c));
+            i++;
+        }
+    }
+ 
+    asm volatile("movd %%eax, %%xmm0"
+            :
+            : "a"(c));
+    asm volatile("pshufd $(0x00), %%xmm0, %%xmm0"::);
 
-bool has_sse_lock()
-{
-    return s_sse_lock;
+    for(; i + 64 <= n; i += 64) {
+        asm volatile(" movdqa %%xmm0, 0(%0);	"
+                     " movdqa %%xmm0, 16(%0);	"
+                     " movdqa %%xmm0, 32(%0);	"
+                     " movdqa %%xmm0, 48(%0);	"
+                     :: "r"((size_t)s + i));
+    }
+ 
+    asm(" rep stosb; " :: "a"((size_t)(c)), "D"(((size_t)s) + i), "c"(n - i));
+    i += n - i;
+    return (void*)(((size_t)s) + i);
 }
 
 void* sse_memcpy(void* to, const void* from, size_t len)
@@ -369,13 +385,36 @@ void* memcpy32(void* dst, const void* src, size_t cnt)
     return dst;
 }
 
-void* memset(void* d, int s, size_t c)
+void* memset32(void* d, uint32_t c, size_t n)
+{
+    int temp0, temp1;
+    asm volatile("rep\n\t"
+    "stosl"
+    : "=&c" (temp0), "=&D" (temp1)
+    : "a" (c), "1" (d), "0" (n)
+    : "memory");
+
+    return d;
+}
+
+void* memset16(void* d, uint16_t c, size_t n)
+{
+	int temp0, temp1;
+    asm volatile("rep\n\t"
+    "stosw"
+    : "=&c" (temp0), "=&D" (temp1)
+    : "a" (c), "1" (d), "0" (n)
+    : "memory");
+    return d;
+}
+
+void* memset(void* d, int c, size_t n)
 {
     void* temp = d;
     asm volatile(
         "rep stosb"
-        : "=D"(d), "=c"(c)
-        : "0"(d), "a"(s), "1"(c)
+        : "=D"(d), "=c"(n)
+        : "0"(d), "a"(c), "1"(n)
         : "memory");
     return temp;
 }
