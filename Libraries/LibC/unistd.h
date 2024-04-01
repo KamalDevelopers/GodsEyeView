@@ -29,7 +29,7 @@ struct osinfo {
     uint32_t uptime;
     uint32_t uptime_ms;
     char cpu_string[50];
-    uint32_t cpu_usage_ticks;
+    uint32_t cpu_task_running_time;
     bool cpu_is64;
 };
 

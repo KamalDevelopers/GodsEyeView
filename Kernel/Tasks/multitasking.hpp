@@ -43,6 +43,7 @@
 #define MAX_TASKS 512
 #define MAX_MEMORY_REGIONS 512
 #define MAX_SIZE_ARGS 500
+
 #define TM TaskManager::active
 
 struct cpu_state {
@@ -141,8 +142,7 @@ private:
     uint32_t current_ticks = 0;
     bool is_running = false;
     bool check_kill = false;
-    uint32_t cpu_usage = 0;
-    int cpu_usage_tick = 0;
+    uint32_t running_task_time = 0;
     Vector<Task*, MAX_TASKS> tasks;
 
 public:
@@ -169,7 +169,7 @@ public:
     ipv4_socket_t** sockets();
     Task* task(int pid);
 
-    uint32_t last_cpu_usage();
+    uint32_t used_task_time();
     int poll(pollfd* pollfds, uint32_t npolls, int timeout);
     void sleep(uint32_t ticks);
     int waitpid(int pid);

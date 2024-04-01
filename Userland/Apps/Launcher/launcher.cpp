@@ -120,10 +120,15 @@ void Launcher::display_cpu_usage()
 {
     struct osinfo info;
     sys_osinfo(&info);
-    double cpu_ticks = info.cpu_usage_ticks;
-    double cpu_max_ticks = 10000;
-    double usage = cpu_ticks / cpu_max_ticks * 100;
-    uint32_t number = ((uint32_t)usage > 100) ? 100 : (uint32_t)usage;
+
+    double usage = 0.0f;
+    if (cpu_last_running_time) {
+        uint32_t difference = info.cpu_task_running_time - cpu_last_running_time;
+        usage = (double)difference / (double)poll_time * 10.0f;
+    }
+
+    cpu_last_running_time = info.cpu_task_running_time;
+    uint32_t number = (uint32_t)usage;
 
     char usage_string[3];
     memset(usage_string, 0, 3);
@@ -179,7 +184,7 @@ void Launcher::run()
         display_workspace();
         request_update_window();
 
-        poll(polls, 1, 3200);
+        poll(polls, 1, poll_time);
         receive_events();
 
         if (!is_running)
