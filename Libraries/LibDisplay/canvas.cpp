@@ -131,11 +131,7 @@ void canvas_copy(uint32_t* destination, uint32_t* source, int size)
 
 void canvas_set(uint32_t* destination, uint32_t rgb, int size)
 {
-    if (has_sse() && rgb == 0) {
-        sse2_memset8(destination, 0, size * 2);
-    } else {
-        memset32(destination, rgb, size);
-    }
+    sse2_memset32(destination, rgb, size);
 }
 
 void canvas_copy(canvas_t* destination, canvas_t* source)
