@@ -22,14 +22,14 @@ extern "C" {
 /*  Currently a single thread can lock the sse at a time,
  *  thus not allowing threads to simultaneously use sse.
  *  However, it is possible for two threads to grab the sse lock,
- *  which will cause a fault. As it is now, only the display server 
+ *  which will cause a fault. As it is now, only the display server
  *  has the userspace sse lock, since it is the most memcpy
  *  heavy userspace application. */
 
 /* TODO: In the future we could move the sse lock to the kernel.
  * With this solution a syscall would be required to grab the sse lock.
- * Another solution, which might be more common, is to change the sse 
- * stack at every task switch. I find this solution to0 expensive currently. 
+ * Another solution, which might be more common, is to change the sse
+ * stack at every task switch. I find this solution to0 expensive currently.
  * */
 
 bool has_sse()
@@ -41,26 +41,53 @@ void* sse2_memset8(void* s, char c, size_t n)
 {
     size_t i = 0;
     if ((size_t)s & (SSE_MMREG_SIZE - 1)) {
-        while (((size_t)s + i) & (SSE_MMREG_SIZE - 1) && i < n) {
-            asm("stosb;" :: "D"((size_t)s + i), "a"(c));
+        while ((((size_t)s + i) & (SSE_MMREG_SIZE - 1)) && i < n) {
+            ((char*)s + i)[0] = c;
             i++;
         }
     }
- 
-    asm volatile("movd %%eax, %%xmm0"
-            :
-            : "a"(c));
-    asm volatile("pshufd $(0x00), %%xmm0, %%xmm0"::);
 
-    for(; i + 64 <= n; i += 64) {
+    asm volatile("movd %%eax, %%xmm0\n"
+                 "pshufd $(0x00), %%xmm0, %%xmm0"
+                 :
+                 : "a"((uint32_t)c));
+
+    for (; i + 64 <= n; i += 64) {
         asm volatile(" movdqa %%xmm0, 0(%0);	"
                      " movdqa %%xmm0, 16(%0);	"
                      " movdqa %%xmm0, 32(%0);	"
-                     " movdqa %%xmm0, 48(%0);	"
-                     :: "r"((size_t)s + i));
+                     " movdqa %%xmm0, 48(%0);	" ::"r"((size_t)s + i));
     }
- 
-    asm(" rep stosb; " :: "a"((size_t)(c)), "D"(((size_t)s) + i), "c"(n - i));
+
+    asm(" rep stosb; " ::"a"((size_t)(c)), "D"(((size_t)s) + i), "c"(n - i));
+    i += n - i;
+    return (void*)(((size_t)s) + i);
+}
+
+void* sse2_memset32(void* s, uint32_t c, size_t n)
+{
+    size_t i = 0;
+    n *= 4;
+    if ((size_t)s & (SSE_MMREG_SIZE - 1)) {
+        while ((((size_t)s + i) & (SSE_MMREG_SIZE - 1)) && i < n) {
+            memset32((void*)((size_t)s + i), c, 1);
+            i += 4;
+        }
+    }
+
+    asm volatile("movd %%eax, %%xmm0\n"
+                 "pshufd $(0x00), %%xmm0, %%xmm0"
+                 :
+                 : "a"((uint32_t)c));
+
+    for (; i + 64 <= n; i += 64) {
+        asm volatile(" movdqa %%xmm0, 0(%0);	"
+                     " movdqa %%xmm0, 16(%0);	"
+                     " movdqa %%xmm0, 32(%0);	"
+                     " movdqa %%xmm0, 48(%0);	" ::"r"((size_t)s + i));
+    }
+
+    memset((void*)((size_t)s + i), c, n - i);
     i += n - i;
     return (void*)(((size_t)s) + i);
 }
@@ -389,22 +416,22 @@ void* memset32(void* d, uint32_t c, size_t n)
 {
     int temp0, temp1;
     asm volatile("rep\n\t"
-    "stosl"
-    : "=&c" (temp0), "=&D" (temp1)
-    : "a" (c), "1" (d), "0" (n)
-    : "memory");
+                 "stosl"
+                 : "=&c"(temp0), "=&D"(temp1)
+                 : "a"(c), "1"(d), "0"(n)
+                 : "memory");
 
     return d;
 }
 
 void* memset16(void* d, uint16_t c, size_t n)
 {
-	int temp0, temp1;
+    int temp0, temp1;
     asm volatile("rep\n\t"
-    "stosw"
-    : "=&c" (temp0), "=&D" (temp1)
-    : "a" (c), "1" (d), "0" (n)
-    : "memory");
+                 "stosw"
+                 : "=&c"(temp0), "=&D"(temp1)
+                 : "a"(c), "1"(d), "0"(n)
+                 : "memory");
     return d;
 }
 

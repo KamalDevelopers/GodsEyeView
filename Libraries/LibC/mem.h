@@ -10,6 +10,7 @@ extern "C" {
 /* FIXME: Kernel sse lock, see mem.c "TODO" */
 bool has_sse();
 void* sse2_memset8(void* s, char c, size_t n);
+void* sse2_memset32(void* s, uint32_t c, size_t n);
 void* sse2_memcpy(void* to, const void* from, size_t len);
 void* sse_memcpy(void* to, const void* from, size_t len);
 void* mmx_memcpy(void* to, const void* from, size_t len);
