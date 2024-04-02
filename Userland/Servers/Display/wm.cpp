@@ -147,13 +147,17 @@ void WindowManager::set_window_master(uint32_t index)
     if (windows_size() <= 0 || index > windows_size())
         return;
 
+    int change_to = 0;
+    while (!windows()[change_to]->get_controlled() && (change_to < windows_size()))
+        change_to++;
+
     Window* window_ptr_source = windows()[index];
-    Window* window_ptr_destination = windows()[0];
-    windows()[0] = window_ptr_source;
+    Window* window_ptr_destination = windows()[change_to];
+    windows()[change_to] = window_ptr_source;
     windows()[index] = window_ptr_destination;
 
-    active_window = 0;
-    update_window_border(0);
+    active_window = change_to;
+    update_window_border(change_to);
     update_window_border(index);
     update_window_positions();
     compositor->require_update();
