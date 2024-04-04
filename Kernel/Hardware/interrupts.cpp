@@ -129,6 +129,8 @@ InterruptManager::InterruptManager(uint16_t hardware_interrupt_offset, TaskManag
     asm volatile("lidt %0"
                  :
                  : "m"(idt_pointer));
+
+    set_pit_hz();
 }
 
 InterruptManager::~InterruptManager()
@@ -140,14 +142,6 @@ void InterruptManager::activate()
 {
     if (active_handler != 0)
         active_handler->deactivate();
-
-    /* set PIT frequency  */
-    outb(0x43, 0x36);
-    uint32_t divisor = 1193180 / PIT_HZ;
-    uint8_t l = (uint8_t)(divisor & 0xFF);
-    uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
-    outb(0x40, l);
-    outb(0x40, h);
 
     active_handler = this;
     if (TM->is_active())
@@ -213,9 +207,9 @@ uint32_t InterruptManager::handle_interrupt(uint8_t interrupt, uint32_t esp)
     }
 
     if (hardware_interrupt_offset <= interrupt && interrupt < hardware_interrupt_offset + 16) {
-        master_command_port.write(0x20);
+        master_command_port.write_fast(0x20);
         if (hardware_interrupt_offset + 8 <= interrupt)
-            slave_command_port.write(0x20);
+            slave_command_port.write_fast(0x20);
     }
 
     return esp;

@@ -9,6 +9,16 @@
 
 #define PIT_HZ 800
 
+inline void set_pit_hz()
+{
+    outb(0x43, 0x36);
+    uint32_t divisor = 1193180 / PIT_HZ;
+    uint8_t l = (uint8_t)(divisor & 0xFF);
+    uint8_t h = (uint8_t)((divisor >> 8) & 0xFF);
+    outb(0x40, l);
+    outb(0x40, h);
+}
+
 class InterruptManager;
 
 class InterruptHandler {

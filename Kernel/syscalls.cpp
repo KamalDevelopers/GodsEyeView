@@ -371,9 +371,16 @@ int Syscalls::sys_uname(utsname* buffer)
     return 0;
 }
 
-int Syscalls::sys_sleep(int sec)
+int Syscalls::sys_seconds_sleep(uint32_t secs)
 {
-    TM->sleep(sec * 18);
+    TM->sleep(secs * PIT_HZ);
+    TM->yield();
+    return 0;
+}
+
+int Syscalls::sys_sleep(uint32_t millis)
+{
+    TM->sleep((millis * PIT_HZ) / 1000);
     TM->yield();
     return 0;
 }
@@ -394,7 +401,8 @@ int Syscalls::sys_spawn(char* file, char** args, uint8_t argc)
 /* TODO: Add timespec and sigmask */
 int Syscalls::sys_poll(pollfd* fds, uint32_t nfds, int timeout)
 {
-    return TM->poll(fds, nfds, timeout * 180);
+    /* Milisecond timeout */
+    return TM->poll(fds, nfds, (int)((timeout * PIT_HZ) / 1000));
 }
 
 /* TODO: Replace with getdents */
@@ -540,6 +548,10 @@ uint32_t Syscalls::interrupt(uint32_t esp)
 
     case 158:
         TM->yield();
+        break;
+
+    case 161:
+        cpu->eax = sys_seconds_sleep((uint32_t)cpu->ebx);
         break;
 
     case 162:

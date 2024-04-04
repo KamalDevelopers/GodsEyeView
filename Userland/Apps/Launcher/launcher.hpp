@@ -21,7 +21,7 @@ private:
     uint32_t height = 0;
     const uint32_t bg = 0x65080808;
     const uint32_t fg = 0xA8A9AD;
-    const uint32_t poll_time = 3200;
+    const uint32_t poll_time = 1200;
     font_t* default_font;
     canvas_t window_canvas;
 

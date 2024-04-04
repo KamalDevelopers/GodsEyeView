@@ -330,6 +330,16 @@ TaskManager::~TaskManager()
 {
 }
 
+void TaskManager::yield()
+{
+    /* NOTE: Remove a tick from the counter since
+     * the counter assumes that we are running
+     * at PIT frequency (int $0x20 PIT interrupt) */
+    if (current_ticks)
+        current_ticks--;
+    asm volatile("int $0x20");
+}
+
 inline Task* TaskManager::task_at(uint32_t index)
 {
     Task* t = tasks.at(index);

@@ -52,7 +52,8 @@ private:
     int sys_munmap(void* addr, size_t length);
     int sys_fchown(int fd, uint32_t owner, uint32_t group);
     int sys_uname(utsname* buffer);
-    int sys_sleep(int time);
+    int sys_seconds_sleep(uint32_t secs);
+    int sys_sleep(uint32_t millis);
     int sys_mkfifo(char* pathname, int mode);
     int sys_spawn(char* pathname, char** args, uint8_t argc);
     int sys_spawn_orphan(char* pathname, char** args, uint8_t argc);

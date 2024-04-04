@@ -98,18 +98,18 @@ void sched_yield()
                  : "a"(158));
 }
 
-void usleep(int ticks)
+void usleep(uint32_t ticks)
 {
     asm volatile("int $0x80"
                  :
                  : "a"(162), "b"(ticks));
 }
 
-void sleep(int sec)
+void sleep(uint32_t sec)
 {
-    int start_time = time();
-    while ((time() - start_time) <= sec)
-        usleep(100);
+    asm volatile("int $0x80"
+                 :
+                 : "a"(161), "b"(sec));
 }
 
 uint32_t time()

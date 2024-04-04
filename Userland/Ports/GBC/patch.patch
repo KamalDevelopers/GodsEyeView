@@ -277,7 +277,7 @@ index 0000000..6edb2d2
 +
 +int gui_lcd_init(int width, int height, int zoom, char *wintitle) {
 +    memset(key_press_buffer, 0, sizeof(key_press_buffer));
-+    usleep_time = 450;
++    usleep_time = 20;
 +    window_events_file = request_display_window(window_canvas, width * zoom, height * zoom, 0x000000);
 +    if (width * zoom > window_canvas.width || height * zoom > window_canvas.height)
 +        zoom = 1;

@@ -124,7 +124,7 @@ void Launcher::display_cpu_usage()
     double usage = 0.0f;
     if (cpu_last_running_time) {
         uint32_t difference = info.cpu_task_running_time - cpu_last_running_time;
-        usage = (double)difference / (double)poll_time * 10.0f;
+        usage = (double)difference / (double)poll_time;
     }
 
     cpu_last_running_time = info.cpu_task_running_time;

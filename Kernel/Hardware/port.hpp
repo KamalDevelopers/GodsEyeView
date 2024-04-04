@@ -25,6 +25,7 @@ public:
 
     virtual uint8_t read();
     virtual void write(uint8_t data);
+    virtual void write_fast(uint8_t data);
 
 protected:
     static inline uint8_t read8(uint16_t port)

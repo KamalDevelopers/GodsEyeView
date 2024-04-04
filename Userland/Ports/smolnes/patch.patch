@@ -1276,7 +1276,7 @@ index a0bd1ec..d606a42 100644
 -              frame_buffer[scany * 256 + dot] =
 -                  rgba[palette_ram[color ? palette | color : 0]];
 +                request_update_window();
-+                usleep(300);
++                usleep(10);
              }
  
 -            // Update shift registers every cycle.

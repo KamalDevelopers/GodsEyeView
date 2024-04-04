@@ -66,6 +66,7 @@ extern "C" [[noreturn]] void kernel_main(void* multiboot_structure, unsigned int
 {
     gdt();
     tss(5, 0x10, 0);
+    set_pit_hz();
 
     QemuSerial qemu_serial;
     if (qemu_serial.is_supported())

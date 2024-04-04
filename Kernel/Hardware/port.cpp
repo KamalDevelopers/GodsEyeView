@@ -77,6 +77,11 @@ void Port8Bit::write(uint8_t data)
     write8(portnumber, data);
 }
 
+void Port8Bit::write_fast(uint8_t data)
+{
+    outb(portnumber, data);
+}
+
 uint8_t Port8Bit::read()
 {
     return read8(portnumber);

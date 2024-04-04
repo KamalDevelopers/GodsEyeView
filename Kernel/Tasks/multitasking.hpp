@@ -161,12 +161,12 @@ public:
 
     uint32_t ticks() { return current_ticks; }
     bool is_active() { return is_running; }
-    void yield() { asm volatile("int $0x20"); }
     int task_count() { return tasks.size(); }
     void task_count_info(int* sleeping, int* zombie, int* polling);
     Task* task() { return tasks.at(current_task); }
     TTY* tty() { return tasks.at(current_task)->tty; }
     inline Task* task_at(uint32_t index);
+    void yield();
     file_table_t* file_table();
     ipv4_socket_t** sockets();
     Task* task(int pid);
@@ -186,7 +186,7 @@ public:
 
 static void kernel_idle()
 {
-    for (;;)
+    while (true)
         TM->yield();
 }
 
