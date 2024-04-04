@@ -3,7 +3,7 @@
 
 #include <LibC/types.h>
 
-template<typename T, size_t storage_capacity>
+template<typename T, size_t storage_capacity, bool safe = false>
 class Vector {
 private:
     T storage[storage_capacity];
@@ -12,9 +12,32 @@ private:
 public:
     T at(uint32_t index)
     {
-        if (index >= storage_size)
-            return {};
-        return storage[index];
+        if (index < storage_size)
+            return storage[index];
+
+        if (safe) {
+#ifdef PANIC
+            PANIC("Vector out of range");
+#endif
+            while (1)
+                ;
+        }
+        return {};
+    }
+
+    T* at_ptr(uint32_t index)
+    {
+        if (index < storage_size)
+            return &(storage[index]);
+
+        if (safe) {
+#ifdef PANIC
+            PANIC("Vector out of range");
+#endif
+            while (1)
+                ;
+        }
+        return {};
     }
 
     int remove_at(uint32_t index)

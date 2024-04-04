@@ -50,7 +50,7 @@ typedef struct file_entry {
 } file_entry_t;
 
 typedef struct file_table {
-    Vector<file_entry_t, MAX_OPENFILES> files;
+    Vector<file_entry_t, MAX_OPENFILES, false> files;
     int descriptor_index = 4;
 } file_table_t;
 
@@ -73,6 +73,7 @@ public:
     static VirtualFilesystem* active;
     void mount(Filesystem* fs);
 
+    inline file_entry_t* file_at(uint32_t index);
     bool is_virtual_directory(char* dirname);
     int list_directory(char* dirname, fs_entry_t* entries, uint32_t count);
     int open_fifo(char* file_name, int flags = 0);

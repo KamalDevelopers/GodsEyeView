@@ -5,7 +5,7 @@
 #include <LibC++/vector.hpp>
 
 uint32_t tcp_port = 32880;
-Vector<tcp_socket_t*, MAX_TCP_SOCKETS> tcp_sockets;
+Vector<tcp_socket_t*, MAX_TCP_SOCKETS, true> tcp_sockets;
 
 int socket_ack_received(tcp_socket_t* socket, void* packet, uint16_t size, uint32_t from_ip)
 {
@@ -225,6 +225,9 @@ void TCP::close(tcp_socket_t* socket)
 
 void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flags)
 {
+    if (!socket)
+        return;
+
     uint32_t packet_size = size + sizeof(tcp_header_t) + sizeof(tcp_pseudo_header_t);
     uint8_t* buffer = (uint8_t*)kmalloc(packet_size);
     memset(buffer, 0, packet_size);

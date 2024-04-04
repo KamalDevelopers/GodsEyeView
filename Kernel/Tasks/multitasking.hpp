@@ -75,8 +75,8 @@ private:
     TTY* tty;
     executable_t loaded_executable;
     file_table_t process_file_table;
-    Vector<memory_region_t, MAX_MEMORY_REGIONS> allocated_memory;
-    Vector<ipv4_socket_t*, 25> sockets;
+    Vector<memory_region_t, MAX_MEMORY_REGIONS, true> allocated_memory;
+    Vector<ipv4_socket_t*, 25, true> sockets;
     pollfd polls[10];
 
     uint32_t num_poll = 0;
@@ -143,7 +143,8 @@ private:
     bool is_running = false;
     bool check_kill = false;
     uint32_t running_task_time = 0;
-    Vector<Task*, MAX_TASKS> tasks;
+
+    Vector<Task*, MAX_TASKS, false> tasks;
 
 public:
     TaskManager();
@@ -165,6 +166,7 @@ public:
     void task_count_info(int* sleeping, int* zombie, int* polling);
     Task* task() { return tasks.at(current_task); }
     TTY* tty() { return tasks.at(current_task)->tty; }
+    inline Task* task_at(uint32_t index);
     file_table_t* file_table();
     ipv4_socket_t** sockets();
     Task* task(int pid);

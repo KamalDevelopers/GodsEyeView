@@ -2,7 +2,7 @@
 #include "../Tasks/multitasking.hpp"
 #include <LibC++/vector.hpp>
 
-Vector<uint32_t, 25> received_pongs;
+Vector<uint32_t, 25, true> received_pongs;
 
 bool ICMP::has_pong(uint32_t destination_ip)
 {

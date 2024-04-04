@@ -330,6 +330,14 @@ TaskManager::~TaskManager()
 {
 }
 
+inline Task* TaskManager::task_at(uint32_t index)
+{
+    Task* t = tasks.at(index);
+    if (t == 0)
+        PANIC("TM failed during 'task_at(index)' out of range");
+    return t;
+}
+
 bool TaskManager::add_task(Task* task)
 {
     /* The first task in 'tasks' should always be the idle task */
@@ -369,27 +377,27 @@ uint32_t TaskManager::used_task_time()
 
 void TaskManager::kill()
 {
-    tasks.at(current_task)->suicide(SIGTERM);
+    task_at(current_task)->suicide(SIGTERM);
 }
 
 Task* TaskManager::task(int pid)
 {
     for (uint32_t i = 0; i < tasks.size(); i++)
-        if (tasks.at(i)->pid == pid)
-            return tasks.at(i);
+        if (task_at(i)->pid == pid)
+            return task_at(i);
     return 0;
 }
 
 file_table_t* TaskManager::file_table()
 {
     if (testing_poll_task == -1)
-        return tasks.at(current_task)->get_file_table();
-    return tasks.at(testing_poll_task)->get_file_table();
+        return task_at(current_task)->get_file_table();
+    return task_at(testing_poll_task)->get_file_table();
 }
 
 ipv4_socket_t** TaskManager::sockets()
 {
-    return tasks.at(current_task)->sockets.elements();
+    return task_at(current_task)->sockets.elements();
 }
 
 void TaskManager::task_count_info(int* sleeping, int* zombie, int* polling)
@@ -399,11 +407,11 @@ void TaskManager::task_count_info(int* sleeping, int* zombie, int* polling)
     *polling = 0;
 
     for (uint32_t i = 0; i < tasks.size(); i++) {
-        if (tasks.at(i)->state != ALIVE)
+        if (task_at(i)->state != ALIVE)
             (*zombie)++;
-        else if (tasks.at(i)->sleeping < 0)
+        else if (task_at(i)->sleeping < 0)
             (*polling)++;
-        else if (tasks.at(i)->sleeping > 0)
+        else if (task_at(i)->sleeping > 0)
             (*sleeping)++;
     }
 }
@@ -413,15 +421,15 @@ int8_t TaskManager::send_signal(int pid, int sig)
     /* TODO: Implement process groups */
     if (pid == 0) {
         for (uint32_t i = 0; i < tasks.size(); i++)
-            if ((tasks.at(i)->process_group == tasks.at(current_task)->pid) && (current_task != i))
-                tasks.at(i)->notify(sig);
+            if ((task_at(i)->process_group == task_at(current_task)->pid) && (current_task != i))
+                task_at(i)->notify(sig);
         return 0;
     }
 
     Task* receiver = task(pid);
     if (receiver == 0)
         return -1;
-    if (receiver->privilege > tasks.at(current_task)->privilege)
+    if (receiver->privilege > task_at(current_task)->privilege)
         return -1;
     return receiver->notify(sig);
 }
@@ -431,24 +439,24 @@ int TaskManager::poll(pollfd* pollfds, uint32_t npolls, int timeout)
     int ticks = 0;
     if (timeout > 0)
         ticks = current_ticks + timeout;
-    return tasks.at(current_task)->poll(pollfds, npolls, ticks);
+    return task_at(current_task)->poll(pollfds, npolls, ticks);
 }
 
 void TaskManager::sleep(uint32_t ticks)
 {
-    tasks.at(current_task)->sleep(current_ticks + ticks);
+    task_at(current_task)->sleep(current_ticks + ticks);
 }
 
 void TaskManager::test_poll()
 {
     for (uint32_t i = 0; i < tasks.size(); i++) {
-        if (tasks.at(i)->sleeping == -SLEEP_WAIT_POLL) {
+        if (task_at(i)->sleeping == -SLEEP_WAIT_POLL) {
             testing_poll_task = i;
-            tasks.at(i)->test_poll();
+            task_at(i)->test_poll();
         }
 
-        if ((tasks.at(i)->sleeping == -SLEEP_WAIT_STDIN) && tasks.at(i)->tty->should_wake_stdin())
-            tasks.at(i)->wake_from_poll();
+        if ((task_at(i)->sleeping == -SLEEP_WAIT_STDIN) && task_at(i)->tty->should_wake_stdin())
+            task_at(i)->wake_from_poll();
     }
     testing_poll_task = -1;
 }
@@ -459,9 +467,9 @@ int TaskManager::waitpid(int pid)
     if (child == 0)
         return -1;
 
-    child->wake_pid_on_exit = tasks.at(current_task)->get_pid();
-    tasks.at(current_task)->sleeping = -SLEEP_WAIT_WAKE;
-    tasks.at(current_task)->quantum = 0;
+    child->wake_pid_on_exit = task_at(current_task)->get_pid();
+    task_at(current_task)->sleeping = -SLEEP_WAIT_WAKE;
+    task_at(current_task)->quantum = 0;
     return pid;
 }
 
@@ -486,8 +494,13 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
 
     int parent = (current_task != -1 && task()->spawn_with_parent) ? task()->get_pid() : -1;
     Task* child = new Task(file, 0, 0, parent);
-    strcpy(child->working_directory, tasks.at(current_task)->working_directory);
     child->executable(exec);
+
+    if (current_task < tasks.size() && current_task >= 0) {
+        strcpy(child->working_directory, task_at(current_task)->working_directory);
+    } else {
+        child->working_directory[0] = '\0';
+    }
 
     if (args && argc) {
         int args_size = MAX_SIZE_ARGS;
@@ -514,14 +527,17 @@ void TaskManager::kill_zombie_tasks()
         return;
 
     for (uint32_t i = 0; i < tasks.size(); i++) {
-        if (tasks.at(i)->state == ALIVE)
+        if (task_at(i)->state == ALIVE)
             continue;
 
-        if (tasks.at(i)->wake_pid_on_exit)
-            task(tasks.at(i)->wake_pid_on_exit)->wake();
+        if (task_at(i)->wake_pid_on_exit) {
+            Task* task_to_wake = task(task_at(i)->wake_pid_on_exit);
+            if (task_to_wake)
+                task_to_wake->wake();
+        }
 
-        pid_bitmap.bit_clear(tasks.at(i)->get_pid());
-        delete tasks.at(i);
+        pid_bitmap.bit_clear(task_at(i)->get_pid());
+        delete task_at(i);
         tasks.remove_at(i);
         i--;
     }
@@ -542,21 +558,21 @@ void TaskManager::pick_next_task()
     if (current_task >= tasks.size())
         current_task = 0;
 
-    if (tasks.at(current_task)->priority != scheduler_priority)
+    if (task_at(current_task)->priority != scheduler_priority)
         pick_next_task();
 
-    if (tasks.at(current_task)->state != ALIVE)
+    if (task_at(current_task)->state != ALIVE)
         pick_next_task();
 
-    if (tasks.at(current_task)->sleeping < 0) {
-        if (tasks.at(current_task)->poll_sleeping > 0 && current_ticks >= tasks.at(current_task)->poll_sleeping)
-            tasks.at(current_task)->wake_from_poll();
+    if (task_at(current_task)->sleeping < 0) {
+        if (task_at(current_task)->poll_sleeping > 0 && current_ticks >= task_at(current_task)->poll_sleeping)
+            task_at(current_task)->wake_from_poll();
         else
             pick_next_task();
     }
 
-    if (current_ticks >= tasks.at(current_task)->sleeping)
-        tasks.at(current_task)->sleeping = 0;
+    if (current_ticks >= task_at(current_task)->sleeping)
+        task_at(current_task)->sleeping = 0;
     else
         pick_next_task();
 }
@@ -566,14 +582,14 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
     current_ticks++;
 
     if (current_task >= 0)
-        tasks.at(current_task)->cpustate = cpustate;
+        task_at(current_task)->cpustate = cpustate;
 
     if ((tasks.size() <= 0) || (is_running == 0))
         return cpustate;
 
-    if (tasks.at(current_task)->quantum > 0) {
-        tasks.at(current_task)->quantum--;
-        return tasks.at(current_task)->cpustate;
+    if (current_task >= 0 && task_at(current_task)->quantum > 0) {
+        task_at(current_task)->quantum--;
+        return task_at(current_task)->cpustate;
     }
 
     tasks[current_task]->quantum = PROCESS_QUANTUM;
@@ -592,8 +608,8 @@ cpu_state* TaskManager::schedule(cpu_state* cpustate)
             break;
     }
 
-    if (tasks.at(current_task)->priority != (MAX_PRIORITIES + 1))
-        running_task_time += tasks.at(current_task)->quantum;
+    if (task_at(current_task)->priority != (MAX_PRIORITIES + 1))
+        running_task_time += task_at(current_task)->quantum;
 
-    return tasks.at(current_task)->cpustate;
+    return task_at(current_task)->cpustate;
 }

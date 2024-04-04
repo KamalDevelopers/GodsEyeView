@@ -9,7 +9,7 @@
 #include <LibC/network.h>
 
 uint32_t udp_port = 1024;
-Vector<udp_socket_t*, MAX_UDP_SOCKETS> udp_sockets;
+Vector<udp_socket_t*, MAX_UDP_SOCKETS, true> udp_sockets;
 
 void UDP::connect(udp_socket_t* socket, uint32_t ip, uint16_t port)
 {

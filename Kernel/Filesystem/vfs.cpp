@@ -18,6 +18,14 @@ VirtualFilesystem::VirtualFilesystem()
     active = this;
 }
 
+inline file_entry_t* VirtualFilesystem::file_at(uint32_t index)
+{
+    file_entry_t* f = ft()->files.at_ptr(index);
+    if (f == 0)
+        PANIC("VFS failed during 'file_at(index)' out of range");
+    return f;
+}
+
 file_table* VirtualFilesystem::ft()
 {
     if (TM->is_active())
@@ -37,8 +45,8 @@ void VirtualFilesystem::mount(Filesystem* fs)
 int VirtualFilesystem::open_fifo(char* file_name, int flags)
 {
     for (int i = 0; i < ft()->files.size(); i++)
-        if (strcmp(file_name, ft()->files.at(i).file_name) == 0)
-            return ft()->files.at(i).descriptor;
+        if (strcmp(file_name, file_at(i)->file_name) == 0)
+            return file_at(i)->descriptor;
 
     for (int i = 0; i < kernel_file_table.files.size(); i++) {
         if (strcmp(file_name, kernel_file_table.files.at(i).file_name) == 0) {
@@ -172,7 +180,7 @@ int VirtualFilesystem::close(int descriptor)
 int VirtualFilesystem::search(int descriptor)
 {
     for (int i = 0; i < ft()->files.size(); i++) {
-        if (ft()->files.at(i).descriptor == descriptor)
+        if (file_at(i)->descriptor == descriptor)
             return i;
     }
     return -1;
@@ -184,11 +192,11 @@ int VirtualFilesystem::write(int descriptor, uint8_t* data, size_t size)
     if ((index == -1) || (size <= 0))
         return -1;
 
-    if (ft()->files.at(index).flags == O_RDONLY)
+    if (file_at(index)->flags == O_RDONLY)
         return -1;
 
-    if (ft()->files.at(index).type == FS_TYPE_FIFO) {
-        if (ft()->files.at(index).flags & O_APPEND)
+    if (file_at(index)->type == FS_TYPE_FIFO) {
+        if (file_at(index)->flags & O_APPEND)
             return Pipe::append(ft()->files[index].pipe, data, size);
         return Pipe::write(ft()->files[index].pipe, data, size);
     }
@@ -203,13 +211,13 @@ int VirtualFilesystem::read(int descriptor, uint8_t* data, size_t size)
     if (index == -1)
         return -1;
 
-    if (ft()->files.at(index).flags & O_WRONLY)
+    if (file_at(index)->flags & O_WRONLY)
         return -1;
 
-    if (ft()->files.at(index).type == FS_TYPE_FIFO)
-        return Pipe::read(ft()->files.at(index).pipe, data, size);
+    if (file_at(index)->type == FS_TYPE_FIFO)
+        return Pipe::read(file_at(index)->pipe, data, size);
 
-    Filesystem* mount = mounts[ft()->files.at(index).mountfs];
+    Filesystem* mount = mounts[file_at(index)->mountfs];
     int read_size = mount->read_file(ft()->files[index].file_name, data, size, ft()->files[index].file_position);
     if (read_size > 0)
         ft()->files[index].file_position += size;
@@ -224,8 +232,8 @@ int VirtualFilesystem::stat(int descriptor, struct stat* statbuf)
         return -1;
     }
 
-    if (ft()->files.at(index).type == FS_TYPE_FIFO) {
-        statbuf->st_size = ft()->files.at(index).pipe->size;
+    if (file_at(index)->type == FS_TYPE_FIFO) {
+        statbuf->st_size = file_at(index)->pipe->size;
         return 0;
     }
 
@@ -239,8 +247,8 @@ int VirtualFilesystem::size(int descriptor)
         return -1;
 
     struct stat statbuf;
-    if (ft()->files.at(index).type == FS_TYPE_FIFO)
-        return ft()->files.at(index).pipe->size;
+    if (file_at(index)->type == FS_TYPE_FIFO)
+        return file_at(index)->pipe->size;
     mounts[ft()->files[index].mountfs]->stat(ft()->files[index].file_name, &statbuf);
     return statbuf.st_size;
 }

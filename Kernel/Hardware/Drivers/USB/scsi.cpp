@@ -68,7 +68,7 @@ uint8_t SCSI::read_sector10(uint8_t* data, uint32_t sector, int size)
     /* Sector offset */
     cbw->data[6] = 0;
     cbw->data[7] = (uint8_t)((sector_count >> 8) & 0xFF);
-    cbw->data[8] = (uint8_t)((sector_count)&0xFF);
+    cbw->data[8] = (uint8_t)((sector_count) & 0xFF);
 
     toggle = 0;
     if (!send_bulk_data(cbw, sizeof(scsi_command_block_wrapper)))
