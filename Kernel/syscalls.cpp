@@ -74,7 +74,6 @@ int Syscalls::sys_write(int fd, void* data, int length)
         break;
 
     case 1:
-        kdbg((char*)data);
         TM->tty()->write_stdout((uint8_t*)data, length);
         break;
 
