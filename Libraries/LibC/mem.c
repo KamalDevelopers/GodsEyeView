@@ -682,7 +682,7 @@ void* sh_realloc_pool(const void* address, uint32_t size)
         return 0;
 
     uint32_t old_size = 2 << (chunk_size_index - 1);
-    void* new_alloc = malloc(old_size);
+    void* new_alloc = malloc(size);
     memcpy(new_alloc, address, old_size);
     sh_free_pool(address);
     return new_alloc;
