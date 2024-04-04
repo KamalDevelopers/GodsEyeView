@@ -323,8 +323,6 @@ TaskManager::TaskManager()
 {
     pid_bitmap.bit_set(0);
     active = this;
-    current_task = -1;
-    is_running = 0;
 }
 
 TaskManager* TM = 0;
@@ -337,6 +335,7 @@ bool TaskManager::add_task(Task* task)
     /* The first task in 'tasks' should always be the idle task */
     if (tasks.size() == 0 && strcmp(task->get_name(), "idle") == 0) {
         task->priority = MAX_PRIORITIES + 1;
+        task->quantum = 0;
         tasks.append(task);
         return true;
     }

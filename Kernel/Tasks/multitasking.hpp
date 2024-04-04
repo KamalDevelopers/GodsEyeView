@@ -135,7 +135,7 @@ public:
 
 class TaskManager {
 private:
-    int current_task = 0;
+    int current_task = -1;
     int testing_poll_task = -1;
     int scheduler_checked_tasks = 0;
     int scheduler_priority = 0;
