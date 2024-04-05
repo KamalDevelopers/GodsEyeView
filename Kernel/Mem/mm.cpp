@@ -42,21 +42,8 @@ void kfree(void* mem)
     PMM->free_pages(meta->pmm_address, total_size);
 }
 
-void* kmalloc(size_t size)
+void* kmalloc_non_eternal(size_t size)
 {
-    /* Eternal allocation */
-    if ((size <= KETERNAL_MAX) && ((keternal_page.size + size) < PAGE_SIZE)) {
-        if (!keternal_page.address) {
-            keternal_page.address = PMM->allocate_pages(PAGE_SIZE);
-            keternal_page.head = keternal_page.address;
-        }
-
-        uint32_t address = keternal_page.head;
-        keternal_page.head += size;
-        keternal_page.size += size;
-        return (void*)keternal_page.head;
-    }
-
     /* Kernel heap allocation */
     int total_size = size + KMALLOC_OFFSET;
     if ((total_size % PAGE_SIZE) != 0)
@@ -69,6 +56,25 @@ void* kmalloc(size_t size)
     meta->pmm_address = address;
     meta->magic = 0xBEEF;
     return (void*)meta->address;
+}
+
+void* kmalloc(size_t size)
+{
+    /* Eternal allocation */
+    if ((size <= KETERNAL_MAX) && ((keternal_page.size + size) < PAGE_SIZE)) {
+        if (!keternal_page.address) {
+            keternal_page.address = PMM->allocate_pages(PAGE_SIZE);
+            keternal_page.head = keternal_page.address;
+            keternal_page.size = 0;
+        }
+
+        uint32_t address = keternal_page.head;
+        keternal_page.head += size;
+        keternal_page.size += size;
+        return (void*)keternal_page.head;
+    }
+
+    return kmalloc_non_eternal(size);
 }
 
 void* operator new(size_t size)

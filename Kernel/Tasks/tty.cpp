@@ -86,6 +86,7 @@ int TTY::task_read_stdin(uint8_t* buffer, uint32_t size)
 int TTY::task_getchar(int* character)
 {
     set_raw(true);
+
     read_stdin_size = 1;
     TM->task()->sleep(-SLEEP_WAIT_STDIN);
     TM->yield();
@@ -95,6 +96,7 @@ int TTY::task_getchar(int* character)
     buffer[0] = 0;
     int siz = Pipe::read(pipe_stdin, buffer, 1);
     *character = buffer[0];
+
     set_raw(false);
     return siz;
 }

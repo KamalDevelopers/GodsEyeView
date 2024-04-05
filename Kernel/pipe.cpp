@@ -6,7 +6,7 @@ MUTEX(mutex_pipe);
 
 pipe_t* Pipe::create()
 {
-    pipe_t* pipe = new pipe_t;
+    pipe_t* pipe = (pipe_t*)kmalloc(sizeof(pipe_t));
     pipe->total_size = 0;
     pipe->size = 0;
     expand(pipe, PIPE_SIZE);
@@ -102,7 +102,7 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
 
     Mutex::lock(mutex_pipe);
     if (size + pipe->size > pipe->total_size) {
-        uint8_t* temporary = new uint8_t[pipe->total_size];
+        uint8_t* temporary = (uint8_t*)kmalloc(pipe->total_size);
         int temporary_size = pipe->total_size;
         memcpy(temporary, pipe->buffer, pipe->size);
         expand(pipe, size + pipe->size);

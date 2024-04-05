@@ -72,6 +72,7 @@ private:
     uint8_t stack[4096];
     cpu_state* cpustate;
 
+    TTY local_tty;
     TTY* tty;
     executable_t loaded_executable;
     file_table_t process_file_table;
@@ -81,7 +82,7 @@ private:
 
     uint32_t num_poll = 0;
     bool is_executable = false;
-    bool is_inherited_tty = false;
+    bool has_inherited_tty = false;
     int sleeping = 0;
     int poll_sleeping = -1;
     int quantum = PROCESS_QUANTUM;
@@ -120,6 +121,7 @@ public:
     int become_tty_master();
     void wake_from_poll();
     int setsid();
+    void disown();
 
     void process_mmap(memory_region_t region);
     void process_munmap(memory_region_t region);
@@ -144,7 +146,7 @@ private:
     bool check_kill = false;
     uint32_t running_task_time = 0;
 
-    Vector<Task*, MAX_TASKS, false> tasks;
+    Vector<Task*, MAX_TASKS> tasks;
 
 public:
     TaskManager();

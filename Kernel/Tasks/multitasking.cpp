@@ -36,14 +36,12 @@ Task::Task(char* task_name, uint32_t eip, int privilege_level, int parent)
     pid = pid_bitmap.find_unset();
     pid_bitmap.bit_set(pid);
 
+    tty = &local_tty;
+    process_group = pid;
     if (parent != -1) {
+        has_inherited_tty = true;
         tty = TM->task(parent)->tty;
-        is_inherited_tty = true;
         process_group = TM->task(parent)->process_group;
-    } else {
-        tty = new TTY;
-        is_inherited_tty = false;
-        process_group = pid;
     }
 
     execute = 0;
@@ -63,11 +61,6 @@ Task::~Task()
 
     for (uint32_t i = 0; i < allocated_memory.size(); i++)
         PMM->free_pages(allocated_memory.at(i).physical_address, allocated_memory.at(i).size);
-
-    /* FIXME: If the child runs when the parent is dead,
-     *        the child tty will cause a page fault. */
-    if (!is_inherited_tty)
-        kfree(tty);
 }
 
 void Task::executable(executable_t exec)
@@ -110,6 +103,12 @@ void Task::suicide(int error)
     TM->yield();
 }
 
+void Task::disown()
+{
+    tty = &local_tty;
+    process_group = pid;
+}
+
 int Task::setsid()
 {
     process_group = pid;
@@ -148,11 +147,11 @@ void Task::cwd(char* buffer)
 
 int Task::become_tty_master()
 {
-    if (!is_inherited_tty)
+    if (!has_inherited_tty)
         return 1;
 
-    tty = new TTY;
-    is_inherited_tty = true;
+    tty = &local_tty;
+    has_inherited_tty = false;
     return 0;
 }
 
@@ -504,6 +503,9 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
 
     int parent = (current_task != -1 && task()->spawn_with_parent) ? task()->get_pid() : -1;
     Task* child = new Task(file, 0, 0, parent);
+    if (child == 0)
+        return -E_UNKNOWN;
+
     child->executable(exec);
 
     if (current_task < tasks.size() && current_task >= 0) {
@@ -519,6 +521,8 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
             args_size -= strlen(args[i]);
             if (args_size <= 0)
                 return -E_OVERFLOW;
+            if ((i == argc - 1) && args[i][0] == '&' && args[i][1] == '\0')
+                child->disown();
 
             strcat(child->arguments, args[i]);
             strcat(child->arguments, " ");
@@ -540,13 +544,24 @@ void TaskManager::kill_zombie_tasks()
         if (task_at(i)->state == ALIVE)
             continue;
 
-        if (task_at(i)->wake_pid_on_exit) {
-            Task* task_to_wake = task(task_at(i)->wake_pid_on_exit);
+        Task* zombie = task_at(i);
+
+        if (zombie->wake_pid_on_exit) {
+            Task* task_to_wake = task(zombie->wake_pid_on_exit);
             if (task_to_wake)
                 task_to_wake->wake();
         }
 
-        pid_bitmap.bit_clear(task_at(i)->get_pid());
+        /* TODO: Find a faster method */
+        pid_bitmap.bit_clear(zombie->get_pid());
+        if (!zombie->has_inherited_tty) {
+            for (uint32_t c = 0; c < tasks.size(); c++) {
+                Task* child = task_at(c);
+                if (child->tty == zombie->tty)
+                    child->tty = &child->local_tty;
+            }
+        }
+
         delete task_at(i);
         tasks.remove_at(i);
         i--;

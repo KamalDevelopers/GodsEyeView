@@ -4,6 +4,7 @@
 #include "pmm.hpp"
 #include <LibC/types.h>
 
+void* kmalloc_non_eternal(size_t size);
 void* kmalloc(size_t size);
 void kfree(void* mem);
 

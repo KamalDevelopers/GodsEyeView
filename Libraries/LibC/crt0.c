@@ -76,8 +76,13 @@ void _entry()
      * as a single string. */
     int count = 0;
     while (arg && (count < argc)) {
-        args[count] = arg;
-        count++;
+        /* Ignore 'disown' argument */
+        if (arg[0] == '\0' || !(arg[0] == '&' && arg[1] == '\0')) {
+            args[count] = arg;
+            count++;
+        } else {
+            argc--;
+        }
         arg = strtok(NULL, " ");
     }
 
