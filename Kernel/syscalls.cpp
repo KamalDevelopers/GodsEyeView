@@ -378,9 +378,10 @@ int Syscalls::sys_seconds_sleep(uint32_t secs)
     return 0;
 }
 
+/* NOTE: Approx. milliseconds */
 int Syscalls::sys_sleep(uint32_t millis)
 {
-    TM->sleep((millis * PIT_HZ) / 1000);
+    TM->sleep(millis);
     TM->yield();
     return 0;
 }
