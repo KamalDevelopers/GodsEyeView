@@ -503,8 +503,10 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
 
     int parent = (current_task != -1 && task()->spawn_with_parent) ? task()->get_pid() : -1;
     Task* child = new Task(file, 0, 0, parent);
-    if (child == 0)
+    if (child == 0) {
+        kfree(elfdata);
         return -E_UNKNOWN;
+    }
 
     child->executable(exec);
 
@@ -519,8 +521,10 @@ int TaskManager::spawn(char* file, char** args, uint8_t argc)
 
         for (uint32_t i = 0; i < argc; i++) {
             args_size -= strlen(args[i]);
-            if (args_size <= 0)
+            if (args_size <= 0) {
+                kfree(elfdata);
                 return -E_OVERFLOW;
+            }
             if ((i == argc - 1) && args[i][0] == '&' && args[i][1] == '\0')
                 child->disown();
 

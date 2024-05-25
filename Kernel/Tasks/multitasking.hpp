@@ -77,7 +77,7 @@ private:
     executable_t loaded_executable;
     file_table_t process_file_table;
     Vector<memory_region_t, MAX_MEMORY_REGIONS, true> allocated_memory;
-    Vector<ipv4_socket_t*, 25, true> sockets;
+    Vector<ipv4_socket_t*, 25, false> sockets;
     pollfd polls[10];
 
     uint32_t num_poll = 0;
