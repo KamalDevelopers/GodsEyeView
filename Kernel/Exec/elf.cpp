@@ -9,7 +9,6 @@ Elf::Elf(char* name)
 
 Elf::~Elf()
 {
-    kfree(format_name);
 }
 
 int Elf::probe(uint8_t* file_data)
