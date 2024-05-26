@@ -2,6 +2,9 @@
 
 Language::Language()
 {
+    script_line = (char*)malloc(BUFSIZ);
+    program = (char*)malloc(BUFSIZ);
+
     has_parsed_function = false;
     has_exit = false;
     script_index = 0;
@@ -19,6 +22,9 @@ Language::~Language()
     for (uint32_t i = 0; i < MAX_PROGRAM_ARGS; i++)
         free(program_arguments[i]);
     free(program_arguments);
+
+    free(program);
+    free(script_line);
 }
 
 void Language::builtin_stat(char* file)
@@ -143,7 +149,7 @@ int Language::parse_token(char* token)
 
 int Language::exec()
 {
-    char program_path[100];
+    static char program_path[100];
     memset(program_path, 0, sizeof(program_path));
 
     int fd = open(program, O_RDONLY);

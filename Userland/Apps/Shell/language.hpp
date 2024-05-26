@@ -14,8 +14,8 @@ private:
     size_t script_index = 0;
     size_t script_size = 0;
     size_t cd_index = 0;
-    char script_line[BUFSIZ];
-    char program[100];
+    char* script_line;
+    char* program;
     char** program_arguments = 0;
     uint32_t program_arguments_count = 0;
     bool has_parsed_function = false;
