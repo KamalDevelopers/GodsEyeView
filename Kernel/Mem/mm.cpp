@@ -72,7 +72,7 @@ void* kmalloc(size_t size)
         uint32_t address = keternal_page.head;
         keternal_page.head += size;
         keternal_page.size += size;
-        return (void*)keternal_page.head;
+        return (void*)address;
     }
 
     return kmalloc_non_eternal(size, "UNOWN");
