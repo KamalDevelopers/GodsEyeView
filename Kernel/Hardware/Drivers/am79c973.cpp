@@ -119,7 +119,7 @@ void AM79C973::receive()
                 size -= 4;
 
             uint8_t* buffer = (uint8_t*)(receive_buffer_descriptions[receive_buffer_index].address);
-            uint8_t* persistent_buffer = (uint8_t*)kmalloc(size);
+            uint8_t* persistent_buffer = (uint8_t*)kmalloc_non_eternal(size, "AM79C");
             memcpy(persistent_buffer, buffer, size);
             ETH->handle_packet(persistent_buffer, size);
             kfree(persistent_buffer);

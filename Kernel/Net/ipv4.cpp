@@ -49,7 +49,7 @@ bool IPV4::handle_packet(ipv4_packet_t* ipv4, uint32_t size)
 
 void IPV4::send_packet(uint32_t destination_ip, uint8_t protocol, uint8_t* buffer, uint32_t size)
 {
-    uint8_t* packet = (uint8_t*)kmalloc(sizeof(ipv4_packet_t) + size);
+    uint8_t* packet = (uint8_t*)kmalloc_non_eternal(sizeof(ipv4_packet_t) + size, "IPV4");
     memset(packet, 0, sizeof(ipv4_packet_t) + size);
     ipv4_packet_t* header = (ipv4_packet_t*)packet;
 
@@ -77,4 +77,5 @@ void IPV4::send_packet(uint32_t destination_ip, uint8_t protocol, uint8_t* buffe
         route = DHCP::gateway();
 
     ETH->send_packet(ARP::resolve(route), packet, sizeof(ipv4_packet_t) + size, ETHERNET_TYPE_IP);
+    kfree(packet);
 }

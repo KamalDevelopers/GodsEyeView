@@ -2,6 +2,7 @@
 #define UDP_HPP
 
 #include "../pipe.hpp"
+#include <LibC/network.h>
 #include <LibC/types.h>
 
 #define IPV4_PROTOCOL_UDP 17
@@ -25,7 +26,7 @@ typedef struct udp_socket {
 namespace UDP {
 void connect(udp_socket_t* socket, uint32_t ip, uint16_t port);
 void close(udp_socket_t* socket);
-void send(udp_socket_t* socket, uint8_t* data, uint16_t size);
+void send(udp_socket_t* socket, uint8_t* data, uint32_t size);
 void receive(void* packet, uint32_t from_ip);
 }
 

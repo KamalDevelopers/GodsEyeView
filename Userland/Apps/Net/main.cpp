@@ -4,7 +4,7 @@
 #include <LibC/stdlib.h>
 #include <LibC/string.h>
 
-char recvbuffer[4096];
+static char recvbuffer[4096];
 
 void protocol_icmp(uint32_t ip)
 {
@@ -68,8 +68,8 @@ void protocol_http(char* url, uint16_t port)
 {
     size_t url_path_seek = 0;
     size_t url_size = strlen(url);
-    char host[BUFSIZ];
-    char web_path[BUFSIZ];
+    static char host[BUFSIZ];
+    static char web_path[BUFSIZ];
 
     memset(host, 0, BUFSIZ);
     memset(web_path, 0, BUFSIZ);

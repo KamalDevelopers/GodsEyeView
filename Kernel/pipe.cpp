@@ -6,7 +6,7 @@ MUTEX(mutex_pipe);
 
 pipe_t* Pipe::create()
 {
-    pipe_t* pipe = (pipe_t*)kmalloc(sizeof(pipe_t));
+    pipe_t* pipe = (pipe_t*)kmalloc_non_eternal(sizeof(pipe_t), "PIPEP");
     pipe->total_size = 0;
     pipe->size = 0;
     expand(pipe, PIPE_SIZE);
@@ -23,13 +23,13 @@ void Pipe::destroy(pipe_t* pipe)
 void Pipe::expand(pipe_t* pipe, size_t size)
 {
     if (pipe->total_size == 0)
-        pipe->buffer = (uint8_t*)kmalloc(sizeof(int8_t) * size);
+        pipe->buffer = (uint8_t*)kmalloc_non_eternal(sizeof(int8_t) * size, "PIPE");
 
     if (pipe->total_size != 0) {
-        uint8_t* temp_buffer = (uint8_t*)kmalloc(sizeof(int8_t) * pipe->size);
+        uint8_t* temp_buffer = (uint8_t*)kmalloc_non_eternal(sizeof(int8_t) * pipe->size, "PIPET");
         memcpy(temp_buffer, pipe->buffer, sizeof(int8_t) * pipe->size);
         uint8_t* temp_ptr = pipe->buffer;
-        pipe->buffer = (uint8_t*)kmalloc(sizeof(int8_t) * size);
+        pipe->buffer = (uint8_t*)kmalloc_non_eternal(sizeof(int8_t) * size, "PIPE");
         memcpy(pipe->buffer, temp_buffer, sizeof(int8_t) * pipe->size);
         kfree(temp_buffer);
         kfree(temp_ptr);
@@ -46,9 +46,12 @@ void Pipe::collapse(pipe_t* pipe, size_t size)
     if (pipe->total_size <= size)
         return;
 
-    kfree(pipe->buffer);
-    if (size != 0)
-        pipe->buffer = (uint8_t*)kmalloc(sizeof(int8_t) * size);
+    uint8_t* temp_ptr = pipe->buffer;
+    if (size != 0) {
+        pipe->buffer = (uint8_t*)kmalloc_non_eternal(sizeof(int8_t) * size, "PIPE");
+        memcpy(pipe->buffer, temp_ptr, size);
+    }
+    kfree(temp_ptr);
     pipe->total_size = size;
 }
 
@@ -102,7 +105,7 @@ int Pipe::append(pipe_t* pipe, uint8_t* buffer, size_t size)
 
     Mutex::lock(mutex_pipe);
     if (size + pipe->size > pipe->total_size) {
-        uint8_t* temporary = (uint8_t*)kmalloc(pipe->total_size);
+        uint8_t* temporary = (uint8_t*)kmalloc_non_eternal(pipe->total_size, "PIPET");
         int temporary_size = pipe->total_size;
         memcpy(temporary, pipe->buffer, pipe->size);
         expand(pipe, size + pipe->size);

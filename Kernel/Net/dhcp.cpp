@@ -42,7 +42,7 @@ void DHCP::set_info(dhcp_packet_t* packet)
 
 void DHCP::discover()
 {
-    dhcp_packet_t* packet = (dhcp_packet_t*)kmalloc(sizeof(dhcp_packet_t));
+    dhcp_packet_t* packet = (dhcp_packet_t*)kmalloc_non_eternal(sizeof(dhcp_packet_t), "DHCP1");
     memset(packet, 0, sizeof(dhcp_packet_t));
     create_packet(packet, 1, 0x0);
 
@@ -58,7 +58,7 @@ void DHCP::discover()
 
 void DHCP::request(uint32_t request_ip)
 {
-    dhcp_packet_t* packet = (dhcp_packet_t*)kmalloc(sizeof(dhcp_packet_t));
+    dhcp_packet_t* packet = (dhcp_packet_t*)kmalloc_non_eternal(sizeof(dhcp_packet_t), "DHCP2");
     memset(packet, 0, sizeof(dhcp_packet_t));
     create_packet(packet, 3, request_ip);
 

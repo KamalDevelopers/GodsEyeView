@@ -229,7 +229,7 @@ void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flag
         return;
 
     uint32_t packet_size = size + sizeof(tcp_header_t) + sizeof(tcp_pseudo_header_t);
-    uint8_t* buffer = (uint8_t*)kmalloc(packet_size);
+    uint8_t* buffer = (uint8_t*)kmalloc_non_eternal(packet_size, "TCP");
     memset(buffer, 0, packet_size);
 
     tcp_pseudo_header_t* pheader = (tcp_pseudo_header_t*)buffer;
@@ -263,4 +263,5 @@ void TCP::send(tcp_socket_t* socket, uint8_t* data, uint16_t size, uint16_t flag
     header->checksum = IPV4::calculate_checksum((uint16_t*)buffer, packet_size);
 
     IPV4::send_packet(socket->remote_ip, 0x06, (uint8_t*)(buffer + sizeof(tcp_pseudo_header_t)), size + sizeof(tcp_header_t));
+    kfree(buffer);
 }

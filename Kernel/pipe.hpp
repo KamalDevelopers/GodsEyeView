@@ -3,7 +3,7 @@
 
 #include <LibC/types.h>
 
-#define PIPE_SIZE 1024
+#define PIPE_SIZE 2000
 
 typedef struct pipe {
     uint8_t* buffer;

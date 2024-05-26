@@ -57,7 +57,7 @@ bool Ethernet::send_packet(uint64_t mac, uint8_t* buffer, uint32_t size, uint16_
     if (!has_driver)
         return false;
 
-    uint8_t* packet = (uint8_t*)kmalloc(sizeof(ethernet_frame_t) + size);
+    uint8_t* packet = (uint8_t*)kmalloc_non_eternal(sizeof(ethernet_frame_t) + size, "ETH");
     ethernet_frame_t* frame = (ethernet_frame_t*)packet;
 
     frame->destination_mac = mac;

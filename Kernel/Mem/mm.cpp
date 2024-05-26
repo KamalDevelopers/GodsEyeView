@@ -2,8 +2,7 @@
 #include "../Hardware/interrupts.hpp"
 #include "paging.hpp"
 
-/* FIXME: Faults when < 0x1000 */
-#define KMALLOC_OFFSET 0x1000
+#define KMALLOC_OFFSET 0x20
 #define KETERNAL_MAX 1024
 
 typedef struct kmem_meta {
@@ -11,6 +10,7 @@ typedef struct kmem_meta {
     uint32_t address;
     uint32_t pmm_address;
     uint32_t size;
+    char comment[4];
 } kmem_meta;
 
 typedef struct keternal {
@@ -30,7 +30,7 @@ void kfree(void* mem)
     /* Kernel heap allocation */
     kmem_meta* meta = (kmem_meta*)((uint32_t)mem - KMALLOC_OFFSET);
     if (meta->address != (uint32_t)mem || meta->magic != 0xBEEF) {
-        klog("invalid kfree() detected, magic=%x", meta->magic);
+        klog("invalid kfree() detected, magic=%x, comment=%s at=%x", meta->magic, meta->comment, (uint32_t)mem);
         return;
     }
 
@@ -42,7 +42,7 @@ void kfree(void* mem)
     PMM->free_pages(meta->pmm_address, total_size);
 }
 
-void* kmalloc_non_eternal(size_t size)
+void* kmalloc_non_eternal(size_t size, const char* comment)
 {
     /* Kernel heap allocation */
     int total_size = size + KMALLOC_OFFSET;
@@ -51,6 +51,7 @@ void* kmalloc_non_eternal(size_t size)
 
     uint32_t address = PMM->allocate_pages(total_size);
     kmem_meta* meta = (kmem_meta*)address;
+    memcpy(meta->comment, comment, sizeof(meta->comment));
     meta->size = size;
     meta->address = address + KMALLOC_OFFSET;
     meta->pmm_address = address;
@@ -74,7 +75,7 @@ void* kmalloc(size_t size)
         return (void*)keternal_page.head;
     }
 
-    return kmalloc_non_eternal(size);
+    return kmalloc_non_eternal(size, "UNOWN");
 }
 
 void* operator new(size_t size)

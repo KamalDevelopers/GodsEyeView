@@ -4,7 +4,7 @@
 #include "pmm.hpp"
 #include <LibC/types.h>
 
-void* kmalloc_non_eternal(size_t size);
+void* kmalloc_non_eternal(size_t size, const char* comment);
 void* kmalloc(size_t size);
 void kfree(void* mem);
 

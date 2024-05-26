@@ -89,7 +89,7 @@ uint32_t DNS::get_host_ip(const char* host)
 void DNS::query_host(const char* host, uint32_t host_len)
 {
     uint32_t packet_len = sizeof(dns_header_t) + host_len + 6;
-    uint8_t* packet = (uint8_t*)kmalloc(packet_len);
+    uint8_t* packet = (uint8_t*)kmalloc_non_eternal(packet_len * 2, "DNS");
     memset(packet, 0, packet_len);
 
     dns_header_t* header = (dns_header_t*)packet;
@@ -132,5 +132,7 @@ void DNS::query_host(const char* host, uint32_t host_len)
     socket.remote_ip = DHCP::info()->dns_address;
     socket.local_port = htons(53);
     socket.remote_port = htons(53);
+
     UDP::send(&socket, packet, packet_len);
+    kfree(packet);
 }

@@ -47,10 +47,10 @@ void UDP::close(udp_socket_t* socket)
     udp_sockets.remove_at(socket_index);
 }
 
-void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
+void UDP::send(udp_socket_t* socket, uint8_t* data, uint32_t size)
 {
     uint16_t length = size + sizeof(udp_header_t);
-    uint8_t* buffer = (uint8_t*)kmalloc(length);
+    uint8_t* buffer = (uint8_t*)kmalloc_non_eternal(length, "UDP");
     memset(buffer, 0, length);
 
     udp_header_t* head = (udp_header_t*)buffer;
@@ -61,6 +61,7 @@ void UDP::send(udp_socket_t* socket, uint8_t* data, uint16_t size)
     memcpy(buffer + sizeof(udp_header_t), data, size);
 
     IPV4::send_packet(socket->remote_ip, IPV4_PROTOCOL_UDP, buffer, length);
+    kfree(buffer);
 }
 
 void UDP::receive(void* packet, uint32_t from_ip)
