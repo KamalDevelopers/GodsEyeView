@@ -1,6 +1,9 @@
 #include "draw.hpp"
 #include <LibFont/font.hpp>
 
+#define CLAMP(a, b, c) (a < b ? b : a > c ? c \
+                                          : a)
+
 static const uint32_t text_mode_colors[] = {
     0x0, 0xAB3030, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0xc0c0c0,
     0x808080, 0xFF2F2F, 0x33BC33, 0xffff00, 0xa5d1f2, 0xff00ff, 0x79f7f7, 0xffffff
@@ -94,6 +97,7 @@ bool handle_escape_flag_legacy(canvas_t* canvas, int index)
 {
     static char legacy_escape_sequence[25];
     static int legacy_escape_sequence_index;
+    static int flush_color_value;
     bool do_return = 0;
 
     if (index == '[') {
@@ -133,6 +137,12 @@ bool handle_escape_flag_legacy(canvas_t* canvas, int index)
         return 1;
     }
 
+    if (escape_flag == 505 && (index >= 48 && index <= 57)) {
+        flush_color_value = flush_color_value * 10;
+        flush_color_value = flush_color_value + (index - 48);
+        return 1;
+    }
+
     if (index >= 48 && index <= 57 && escape_flag == 200) {
         if (legacy_escape_sequence_index < sizeof(legacy_escape_sequence) - 1) {
             legacy_escape_sequence[legacy_escape_sequence_index] = index;
@@ -153,6 +163,12 @@ bool handle_escape_flag_legacy(canvas_t* canvas, int index)
         return 1;
     }
 
+    if (index == '5' && escape_flag == 500) {
+        escape_flag = 505;
+        flush_color_value = 0;
+        return 1;
+    }
+
     if (escape_flag == 202) {
         escape_flag = 200;
         if (index == 'J')
@@ -163,9 +179,12 @@ bool handle_escape_flag_legacy(canvas_t* canvas, int index)
     if (escape_flag == 203) {
         escape_flag = 200;
         int term_color_index = index - 48;
-        if (term_color_index < 0 || term_color_index > 16)
+        if (term_color_index < 0 || term_color_index > 7) {
+            if (term_color_index == 8)
+                escape_flag = 500;
             return 1;
-        color = text_mode_colors[term_color_index];
+        }
+        color = text_mode_colors[term_color_index * 2];
         return 1;
     }
 
@@ -175,12 +194,30 @@ bool handle_escape_flag_legacy(canvas_t* canvas, int index)
     }
 
     if (index == ';') {
-        escape_flag = 200;
+        if (escape_flag < 500)
+            escape_flag = 200;
         legacy_escape_sequence_index = 0;
         return 1;
     }
 
-    if (index == 'm' && escape_flag == 200) {
+    if (index == 'm' && (escape_flag == 200 || escape_flag == 505)) {
+        if (flush_color_value) {
+            if (flush_color_value < 16) {
+                color = text_mode_colors[flush_color_value];
+            } else {
+                flush_color_value -= 16;
+                uint32_t r = CLAMP((flush_color_value / 36), 0, 5);
+                flush_color_value -= r * 36;
+                uint32_t g = CLAMP((flush_color_value / 6), 0, 5);
+                flush_color_value -= g * 6;
+                uint32_t b = CLAMP(flush_color_value, 0, 5);
+                color = (((r == 0) ? 0 : (55 + r * 40)) << 16)
+                    + (((g == 0) ? 0 : (55 + g * 40)) << 8)
+                    + ((b == 0) ? 0 : (55 + b * 40));
+            }
+        }
+
+        flush_color_value = 0;
         escape_flag = 0;
         legacy_escape_sequence_index = 0;
         return 1;
@@ -229,6 +266,8 @@ bool handle_escape_flag(canvas_t* canvas, int index)
 
     if (escape_flag == 2) {
         escape_flag = 0;
+        if (index < 0 || index > 15)
+            return 1;
         color = text_mode_colors[index];
         return 1;
     }
