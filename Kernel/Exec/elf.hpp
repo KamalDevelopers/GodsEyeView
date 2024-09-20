@@ -9,7 +9,7 @@
 #define ELF_NIDENT 16
 #define EM_386 (3)     /* x86 Machine Type */
 #define EV_CURRENT (1) /* Current Version */
-#define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
+#define ROUND_UP(N, S) ((((N) + (S) - 1) / (S)) * (S))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 #define PF_X 0x1

@@ -1,7 +1,7 @@
 #include "rtl8139.hpp"
 #include "../../Mem/paging.hpp"
 
-#define ROUND(a, b) (((a) + (b)-1) & ~((b)-1))
+#define ROUND(a, b) (((a) + (b) - 1) & ~((b) - 1))
 uint8_t tsad_ports[4] = { 0x20, 0x24, 0x28, 0x2C };
 uint8_t tsd_ports[4] = { 0x10, 0x14, 0x18, 0x1C };
 
