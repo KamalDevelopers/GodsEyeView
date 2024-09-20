@@ -465,32 +465,36 @@ inline int pfree(void* ptr, int size)
     return 0;
 }
 
-/* STMP8_MAX = PAGE_SIZE * 126 */
-#define STMP8_MAX 516096
-#define PAGE_SIZE 4096
-#define MAX_BUFFER_POOLS 10
 
-typedef struct pool {
+
+#define POOL_SIZE(i) (4096 * ((i > 5) ? (i < 12) ? (i >> 1) : ((i >> 1) * (i >> 1)) : 1))
+#define ALIGN_UP(addr, size) (((addr) + ((size) - 1)) & (~((typeof(addr))(size) - 1)))
+#define MAX_CHUNKS_SIZES 16
+#define STMP8_MAX 516096 /* PAGE_SIZE * 126 */
+
+typedef struct __attribute__((packed)) pool {
     void* address;
     uint8_t is_open;
 } pool_t;
 
-typedef struct major {
-    uint8_t open_pools[11];
-    int16_t free_pool[11];
-    uint8_t cached_open_pools[11];
-    pool_t pools[11][126];
+typedef struct __attribute__((packed)) major {
+    pool_t pools[MAX_CHUNKS_SIZES][126];
+    uint8_t open_pools[MAX_CHUNKS_SIZES];
+    int16_t free_pool[MAX_CHUNKS_SIZES];
+    uint8_t cached_open_pools[MAX_CHUNKS_SIZES];
+    uint32_t major_index;
+    struct major* next;
 } major_t;
 
-static major_t major;
+static major_t first_major;
 
 void* sh_malloc_stamp(uint32_t size)
 {
     uint8_t is_big = (size > STMP8_MAX);
     uint32_t total_size = size + is_big * is_big + 1;
 
-    if ((total_size % PAGE_SIZE) != 0)
-        total_size = (total_size & ~(PAGE_SIZE - 1)) + 4096;
+    if ((total_size % 4096) != 0)
+        total_size = (total_size & ~(4096 - 1)) + 4096;
 
     uint8_t* base = (uint8_t*)palloc(total_size);
     if (is_big) {
@@ -523,19 +527,19 @@ void sh_free_stamp(const void* addr)
     pfree(address, stamp * 4096);
 }
 
-int8_t find_open_pool(uint32_t chunk_size_index, uint8_t* pool_index)
+int8_t find_open_pool(uint32_t chunk_size_index, uint8_t* pool_index, major_t* major)
 {
     /* With cache */
-    uint8_t cached_open = major.cached_open_pools[chunk_size_index];
-    if (major.pools[chunk_size_index][cached_open].is_open) {
+    uint8_t cached_open = major->cached_open_pools[chunk_size_index];
+    if (major->pools[chunk_size_index][cached_open].is_open) {
         *pool_index = cached_open;
         return 0;
     }
 
     /* Without cache */
     for (*pool_index = 0; *pool_index < 126; ++(*pool_index)) {
-        if (major.pools[chunk_size_index][*pool_index].is_open) {
-            major.cached_open_pools[chunk_size_index] = *pool_index;
+        if (major->pools[chunk_size_index][*pool_index].is_open) {
+            major->cached_open_pools[chunk_size_index] = *pool_index;
             return 0;
         }
     }
@@ -545,13 +549,13 @@ int8_t find_open_pool(uint32_t chunk_size_index, uint8_t* pool_index)
     return 1;
 }
 
-int8_t find_open_pool_pos(pool_t* pool, uint32_t chunk_size, uint32_t* index_in_pool)
+int8_t find_open_pool_pos(pool_t* pool, uint32_t pool_size, uint32_t chunk_size, uint32_t* index_in_pool)
 {
     uint32_t start = 0;
     uint32_t i = 0;
 
     /* Scan pool for free spaces */
-    while (start < 4096) {
+    while (start < pool_size) {
         if (!((uint8_t*)(pool->address) + start)[0]) {
             *index_in_pool = i;
             return 0;
@@ -562,30 +566,39 @@ int8_t find_open_pool_pos(pool_t* pool, uint32_t chunk_size, uint32_t* index_in_
     return 1;
 }
 
-int16_t find_free_pool(uint32_t chunk_size_index)
+int16_t find_free_pool(uint32_t chunk_size_index, major_t* major)
 {
     for (uint16_t i = 0; i < 126; ++i)
-        if (!major.pools[chunk_size_index][i].address)
+        if (!major->pools[chunk_size_index][i].address)
             return i;
     return -1;
 }
 
-void sh_stamp_pool(const void* address, int* range,
-    uint8_t* stamp, uint8_t* pool, int8_t* chunk_size_index)
+major_t* sh_stamp_to_pool(const void* address, int* range, uint8_t* stamp,
+    uint8_t* pool, int8_t* chunk_size_index, major_t* major)
 {
-    /* Determine pool number */
+    if (!major)
+        return 0;
+    
+    /* Determine pool number & size */
     *stamp = ((uint8_t*)address - 1)[0];
     *pool = (*stamp >> 1) - 1;
+    if (*stamp == 0) *pool = 0;
 
     /* Determine chunk size index */
     *chunk_size_index = -1;
-    for (uint8_t i = 0; i < 11; ++i) {
-        *range = (uint8_t*)address - (uint8_t*)major.pools[i][*pool].address;
-        if (*range > 0 && *range < 4096) {
+    for (uint8_t i = 0; i < MAX_CHUNKS_SIZES; ++i) {
+        uint32_t pool_size = POOL_SIZE(i);
+        *range = (uint8_t*)address - (uint8_t*)major->pools[i][*pool].address;
+        if (*range > 0 && *range < pool_size) {
             *chunk_size_index = i;
-            break;
+            return major;
         }
     }
+
+    /* Not found, try next major */
+    return sh_stamp_to_pool(address, range, stamp, pool,
+        chunk_size_index, (major_t*)major->next);
 }
 
 void sh_free_pool(const void* address)
@@ -593,30 +606,45 @@ void sh_free_pool(const void* address)
     int range;
     uint8_t stamp, pool;
     int8_t chunk_size_index;
-    sh_stamp_pool(address, &range, &stamp, &pool, &chunk_size_index);
-    if (chunk_size_index < 0)
+    major_t* major = sh_stamp_to_pool(address, &range, &stamp, &pool, &chunk_size_index, &first_major);
+    if (chunk_size_index < 0 || !major)
         return;
+
     *((uint8_t*)address - 1) = 0;
 
     /* Case 1: pool was full but is re-opened */
-    if (!major.pools[chunk_size_index][pool].is_open) {
-        major.pools[chunk_size_index][pool].is_open = 1;
-        major.open_pools[chunk_size_index]++;
+    if (!major->pools[chunk_size_index][pool].is_open) {
+        major->pools[chunk_size_index][pool].is_open = 1;
+        major->open_pools[chunk_size_index]++;
+        return;
     }
 
-    /* Case 2: when pool index > MAX_BUFFER_POOLS
-     * last chunk free'd, delete pool */
-    if (range == 1 && pool > MAX_BUFFER_POOLS) {
-        pfree(major.pools[chunk_size_index][pool].address, 4096);
-        major.free_pool[chunk_size_index] = pool;
-        major.pools[chunk_size_index][pool].is_open = 0;
-        major.pools[chunk_size_index][pool].address = 0;
-        major.open_pools[chunk_size_index] -= 1;
+    uint32_t pool_size = POOL_SIZE(chunk_size_index);
+    if (chunk_size_index == 0)
+        chunk_size_index = 1;
+    uint32_t chunk_size = 2 << (chunk_size_index - 1);
+    bool is_last = true;
+
+    for (int32_t i = 0; i < pool_size; i += chunk_size + 1) {
+        if (((uint8_t*)major->pools[chunk_size_index][pool].address)[i]) {
+            is_last = false;
+            break;
+        }
+    }
+
+    /* Case 2: last chunk free'd, delete pool */
+    if (is_last)  {
+        pfree(major->pools[chunk_size_index][pool].address, pool_size);
+        major->free_pool[chunk_size_index] = pool;
+        major->pools[chunk_size_index][pool].is_open = 0;
+        major->pools[chunk_size_index][pool].address = 0;
+        major->open_pools[chunk_size_index] -= 1;
     }
 }
 
-void* sh_malloc_pool(uint32_t size)
+void* sh_malloc_pool(uint32_t size, void* major_ptr)
 {
+    major_t* major = (major_t*)major_ptr;
     uint32_t chunk_size = size;
     chunk_size |= chunk_size >> 1;
     chunk_size |= chunk_size >> 2;
@@ -625,51 +653,59 @@ void* sh_malloc_pool(uint32_t size)
     chunk_size |= chunk_size >> 16;
     chunk_size++;
     uint8_t chunk_size_index = __builtin_ffs(chunk_size) - 1;
+    uint32_t pool_size = POOL_SIZE(chunk_size_index);
 
-    /* Check for pool */
+    /* Try to find open pool */
     uint8_t pool;
     int8_t do_create_pool = 1;
-    if (major.open_pools[chunk_size_index])
-        do_create_pool = find_open_pool(chunk_size_index, &pool);
+    if (major->open_pools[chunk_size_index])
+        do_create_pool = find_open_pool(chunk_size_index, &pool, major);
 
-    /* Create new pool, slow? */
+    /* Case 1: no pool found, create new pool */
     if (do_create_pool) {
-        /* FIXME: plan b... we should make pool size greater */
-        if (major.free_pool[chunk_size_index] < 0)
-            return sh_malloc_stamp(size); // plan b
+        /* Case 1.1: no available pool in major,
+         *           create new major */
+        if (major->free_pool[chunk_size_index] < 0) {
+            if (!major->next) {
+                major_t* next = (major_t*)palloc(ALIGN_UP(sizeof(major_t), 4096));
+                memset(next, 0, sizeof(major_t));
+                next->major_index = major->major_index + 1;
+                major->next = (struct major*)next;
+            }
+            return sh_malloc_pool(size, major->next);
+        }
 
-        uint8_t* address = (uint8_t*)palloc(4096);
-        for (int16_t i = 0; i < 4096; i += chunk_size + 1)
+        /* Case 1.2: available pool in major, allocate it */
+        uint8_t* address = (uint8_t*)palloc(pool_size);
+        for (int32_t i = 0; i < pool_size; i += chunk_size + 1)
             ((uint8_t*)address)[i] = 0;
 
-        major.pools[chunk_size_index][major.free_pool[chunk_size_index]].address = address;
-        major.pools[chunk_size_index][major.free_pool[chunk_size_index]].is_open = 1;
-        major.open_pools[chunk_size_index] += 1;
-        uint8_t stamp = ((major.free_pool[chunk_size_index] + 1) << 1) & ~(1 << 0);
+        major->pools[chunk_size_index][major->free_pool[chunk_size_index]].address = address;
+        major->pools[chunk_size_index][major->free_pool[chunk_size_index]].is_open = 1;
+        major->open_pools[chunk_size_index] += 1;
+        uint8_t stamp = ((major->free_pool[chunk_size_index] + 1) << 1) & ~(1 << 0);
         ((uint8_t*)address)[0] = stamp;
 
-        major.free_pool[chunk_size_index] = find_free_pool(chunk_size_index);
+        major->free_pool[chunk_size_index] = find_free_pool(chunk_size_index, major);
         return address + 1;
     }
 
+    /* Case 2: has open pool */
     uint32_t index_in_pool;
-    pool_t* p = &major.pools[chunk_size_index][pool];
-    int8_t no_position = find_open_pool_pos(p, chunk_size, &index_in_pool);
+    pool_t* p = &major->pools[chunk_size_index][pool];
+    int8_t no_position = find_open_pool_pos(p, pool_size, chunk_size, &index_in_pool);
+    if (no_position) return 0;
 
-    if (!no_position) {
-        uint8_t stamp = ((pool + 1) << 1) & ~(1 << 0);
-        uint8_t* address = ((uint8_t*)p->address) + index_in_pool * (chunk_size + 1);
-        ((uint8_t*)address)[0] = stamp;
+    uint8_t stamp = ((pool + 1) << 1) & ~(1 << 0);
+    uint8_t* address = ((uint8_t*)p->address) + index_in_pool * (chunk_size + 1);
+    ((uint8_t*)address)[0] = stamp;
 
-        if ((address + 1 + chunk_size) > (((uint8_t*)p->address) + 4096)) {
-            p->is_open = 0;
-            major.open_pools[chunk_size_index]--;
-        }
-        return address + 1;
+    if ((address + 1 + chunk_size) > (((uint8_t*)p->address) + pool_size)) {
+        p->is_open = 0;
+        major->open_pools[chunk_size_index]--;
     }
 
-    /* Assert not reached! */
-    return 0;
+    return address + 1;
 }
 
 void* sh_realloc_pool(const void* address, uint32_t size)
@@ -677,12 +713,16 @@ void* sh_realloc_pool(const void* address, uint32_t size)
     int range;
     uint8_t stamp, pool;
     int8_t chunk_size_index;
-    sh_stamp_pool(address, &range, &stamp, &pool, &chunk_size_index);
-    if (chunk_size_index < 0)
+    major_t* major = sh_stamp_to_pool(address, &range, &stamp, &pool, &chunk_size_index, &first_major);
+
+    if (chunk_size_index < 0 || !major)
         return 0;
 
+    if (chunk_size_index == 0)
+        chunk_size_index = 1;
+
     uint32_t old_size = 2 << (chunk_size_index - 1);
-    void* new_alloc = malloc(size);
+    void* new_alloc = malloc(old_size);
     memcpy(new_alloc, address, old_size);
     sh_free_pool(address);
     return new_alloc;
@@ -732,10 +772,11 @@ void* sh_malloc(size_t size)
 {
     if (!size)
         return 0;
-    if (size <= 1024)
-        return sh_malloc_pool(size);
+    if (size <= 32767)
+        return sh_malloc_pool(size, &first_major);
     return sh_malloc_stamp(size);
 }
+
 
 void* malloc(size_t size)
 {
