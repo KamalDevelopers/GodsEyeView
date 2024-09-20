@@ -32,7 +32,7 @@ uint32_t CMOS::timestamp()
     t += (30 * m) + (3 * (m + 1) / 5) + d;
     t -= 719561;
     t *= 86400;
-    t += (3600 * hour) + (60 * minute) + second;
+    t += (3600 * (hour - timezone_offset)) + (60 * minute) + second;
     return t;
 }
 

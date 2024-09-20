@@ -36,11 +36,12 @@ void Language::builtin_stat(char* file)
 
     struct stat statbuffer;
     stat(file, &statbuffer);
+    uint32_t current_time = time();
     if (statbuffer.st_size == -1) {
         printf("Could not stat '%s'\n", file);
     } else {
-        printf("uid: (%d) gid: (%d) \nname: %s\nsize: %d\n",
-            statbuffer.st_uid, statbuffer.st_gid, file, statbuffer.st_size);
+        printf("[%s] \nuid: (%d) gid: (%d) \nctime: %d mins ago \nsize: %d\n",
+            file, statbuffer.st_uid, statbuffer.st_gid, (current_time - statbuffer.st_ctime) / 60, statbuffer.st_size);
     }
 }
 

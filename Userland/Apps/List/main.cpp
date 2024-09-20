@@ -32,7 +32,7 @@ int read_dir(char* name, bool root)
 
 int main(int argc, char** argv)
 {
-    char cwd[100];
+    static char cwd[100];
     getcwd(cwd);
 
     if (!argc) {
