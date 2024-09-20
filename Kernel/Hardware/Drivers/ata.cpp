@@ -317,9 +317,12 @@ void ATA::write28_dma(uint32_t sector_number, uint8_t* data, uint32_t count)
 {
     Mutex::lock(mutex_ata);
 
-    memcpy(transfer_buffer, data, count);
+    /* FIXME: Writing with transfer buffer doesn't work on qemu */
+    // memcpy(transfer_buffer, data, count);
+    // prdt->buffer_phys = (uint32_t)transfer_buffer;
     prdt->transfer_size = (count < 512) ? 512 : count;
-    prdt->buffer_phys = (uint32_t)transfer_buffer;
+
+    prdt->buffer_phys = (uint32_t)data;
 
     outb(bar4, 0);
     outbl(bar4 + 4, (uint32_t)prdt);
