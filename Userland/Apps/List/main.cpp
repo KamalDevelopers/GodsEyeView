@@ -32,14 +32,25 @@ int read_dir(char* name, bool root)
 
 int main(int argc, char** argv)
 {
-    static char cwd[100];
+    static char cwd[512];
     getcwd(cwd);
 
     if (!argc) {
         read_dir(cwd, true);
     } else {
-        strcat(cwd, argv[0]);
-        read_dir(argv[0], false);
+        size_t sz = strlen(cwd) + strlen(argv[0]);
+        if (sz >= sizeof(cwd)) {
+            char* buffer = (char*)malloc(sz);
+            if (!buffer)
+                return -1;
+            strcat(buffer, cwd);
+            strcat(buffer, argv[0]);
+            read_dir(buffer, false);
+            free(buffer);
+        } else {
+            strcat(cwd, argv[0]);
+            read_dir(cwd, false);
+        }
     }
     printf("\n");
     return 0;
